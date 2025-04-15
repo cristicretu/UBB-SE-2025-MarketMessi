@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.ReturnItemPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Return_Item"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Button x:Name="Back_Button" Content="Back" Click="Click_Back" Width="150" Height="50" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30" BorderThickness="2" BorderBrush="Black" CornerRadius="10" Padding="20" Background="DarkSlateGray">
+            <TextBlock x:Name="Describe_TextBlock" Text="Describe reason for Return:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBox x:Name="Description_TextBox" PlaceholderText="Ex: The product is damaged upon arrival / The wrong product arrived" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="Moneyback_CheckBox" Content="Give my money back" Click="Click_MoneyCheckBox"  HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <CheckBox x:Name="Anotherproduct_CheckBox" Content="Get me another product" Click="Click_ProductCheckBox" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <Button x:Name="Button_Return_Item" Content="Return Item" Click="Click_Return_Item" Width="150" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="Display_TextBlock"  Text=" " HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.OpenHelpTicketPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel>
+        <TextBlock Text="Open a help ticket:" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <TextBox PlaceholderText="User ID" 
+             HorizontalAlignment="Center" 
+             VerticalAlignment="Center" 
+             Width="250"
+             x:Name="TextBoxOpenTicketUserID"/>
+        <TextBox PlaceholderText="User's name" 
+             HorizontalAlignment="Center" 
+             VerticalAlignment="Center" 
+             Width="250"
+             x:Name="TextBoxOpenTicketUserName"/>
+        <TextBox PlaceholderText="Description" 
+             HorizontalAlignment="Center" 
+             VerticalAlignment="Center" 
+             Width="250"
+             AcceptsReturn="True"
+             TextWrapping="Wrap"
+             x:Name="TextBoxOpenTicketDescription"/>
+        <TextBlock Text="Fill all fields!"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" 
+                   Visibility="Collapsed" 
+                   x:Name="TextBlockOpenTicketEmptyFields"/>
+        <TextBlock Text="User ID not found!"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed" 
+                   x:Name="TextBlockOpenTicketUserNotFound"/>
+        <TextBlock Text="Ticket added succesfuly to database!"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed" 
+                   x:Name="TextBlockOpenTicketTicketAddedSuccessfully"/>
+        <TextBlock Text="Failde to add ticket to database! Retry"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed" 
+                   x:Name="TextBlockOpenTicketTicketAddFailed"/>
+        <Button Content="Open ticket" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Click="OnButtonClickAdminOpenHelpTicket"
+                            x:Name="ButtonAdminOpenHelpTicket"/>
+        <Button Content="Cancel" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Click="OnButtonClickAdminNavigateOpenHelpTicketPageAdminAccountPage"
+                            x:Name="ButtonAdminNavigateOpenHelpTicketPageAdminAccountPage"/>
+        </StackPanel>
+    </Grid>
+</Page>

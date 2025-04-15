@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.MainMarketplacePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Panel - Items List -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Items Header -->
+            <Border Grid.Row="0" 
+                BorderBrush="{ThemeResource SystemAccentColor}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="20"
+                Margin="0,0,20,15"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <TextBlock Text="Available Items" 
+                       Style="{StaticResource SubtitleTextBlockStyle}" 
+                       HorizontalAlignment="Left"/>
+            </Border>
+
+            <!-- Items List -->
+            <Border Grid.Row="1" 
+                BorderBrush="{ThemeResource SystemAccentColorLight2}" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                Padding="10"
+                Margin="0,0,20,0"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" 
+                          VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="10" x:Name="ItemsPanel">
+
+
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- Right Panel - Account and Help -->
+        <Grid Grid.Column="1">
+            <StackPanel Spacing="15" Margin="0,0,0,0">
+                <Border BorderBrush="{ThemeResource SystemAccentColor}" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="20"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Account" 
+                               Style="{StaticResource SubtitleTextBlockStyle}" 
+                               HorizontalAlignment="Left"
+                               Margin="0,0,0,15"/>
+                        <Button Content="Open Account" 
+                            Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Stretch" 
+                            Padding="15,10"
+                            Click="OnButtonClickOpenAccount"
+                            x:Name="ButtonOpenAccount"/>
+                    </StackPanel>
+                </Border>
+
+                <Border BorderBrush="{ThemeResource SystemAccentColorLight2}" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="20"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Support" 
+                               Style="{StaticResource SubtitleTextBlockStyle}" 
+                               HorizontalAlignment="Left"
+                               Margin="0,0,0,15"/>
+                        <Button Content="Open Help" 
+                            HorizontalAlignment="Stretch" 
+                            Padding="15,10"
+                            Click="OnButtonClickOpenHelp"
+                            x:Name="ButtonOpenHelp"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- You could add more sections here as needed -->
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
