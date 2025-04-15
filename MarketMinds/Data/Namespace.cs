@@ -104,37 +104,6 @@ namespace Marketplace_SE.Objects
     }
 }
 
-namespace Marketplace_SE.Utilities
-{
-    public class Notification
-    {
-        public Microsoft.UI.Xaml.Controls.Button OkButton { get; private set; }
-        private Microsoft.UI.Window window;
-
-        public Notification(string title, string message)
-        {
-            // Simple implementation
-            window = new Microsoft.UI.Window();
-            OkButton = new Microsoft.UI.Xaml.Controls.Button();
-        }
-
-        public Microsoft.UI.Window GetWindow()
-        {
-            return window;
-        }
-    }
-
-    public class DataEncoder
-    {
-        public static DateTime ConvertTimestampToLocalDateTime(long timestamp)
-        {
-            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dateTime = dateTime.AddSeconds(timestamp).ToLocalTime();
-            return dateTime;
-        }
-    }
-}
-
 // Windows.UI and Microsoft.UI namespaces
 namespace Windows.UI.Text
 {
@@ -187,6 +156,12 @@ namespace Marketplace_SE
 
 namespace Microsoft.UI.Xaml.Controls
 {
+    public enum Orientation
+    {
+        Horizontal,
+        Vertical
+    }
+
     public class Button
     {
         public object Content { get; set; }
@@ -196,6 +171,11 @@ namespace Microsoft.UI.Xaml.Controls
     public class Page
     {
         public Microsoft.UI.Xaml.Controls.Frame Frame { get; protected set; }
+        
+        protected virtual void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            // Base implementation
+        }
     }
 
     public class Frame
@@ -204,5 +184,224 @@ namespace Microsoft.UI.Xaml.Controls
         {
             // Navigation implementation
         }
+    }
+
+    public class StackPanel
+    {
+        public Orientation Orientation { get; set; }
+        public Microsoft.UI.Xaml.Thickness Margin { get; set; }
+        public System.Collections.Generic.IList<UIElement> Children { get; } = new System.Collections.Generic.List<UIElement>();
+    }
+
+    public class TextBlock : UIElement
+    {
+        public string Text { get; set; }
+        public Microsoft.UI.Xaml.TextWrapping TextWrapping { get; set; }
+        public Microsoft.UI.Xaml.Thickness Margin { get; set; }
+    }
+
+    public class UIElement
+    {
+        public Microsoft.UI.Xaml.HorizontalAlignment HorizontalAlignment { get; set; }
+        public Microsoft.UI.Xaml.VerticalAlignment VerticalAlignment { get; set; }
+    }
+}
+
+namespace Microsoft.UI.Xaml.Navigation
+{
+    public class NavigationEventArgs : EventArgs
+    {
+        public object Parameter { get; set; }
+        public Type SourcePageType { get; set; }
+    }
+
+    public static class FrameNavigation
+    {
+        public static void NavigateWithConstructorParameters<T>(Frame frame, object parameter)
+        {
+            // Implementation
+        }
+    }
+}
+
+namespace Microsoft.UI.Xaml
+{
+    public class Thickness
+    {
+        public Thickness(double uniformSize) { }
+        public Thickness(double left, double top, double right, double bottom) { }
+    }
+
+    public enum HorizontalAlignment
+    {
+        Left,
+        Center,
+        Right,
+        Stretch
+    }
+
+    public enum VerticalAlignment
+    {
+        Top,
+        Center,
+        Bottom,
+        Stretch
+    }
+
+    public class RoutedEventArgs : EventArgs
+    {
+    }
+    
+    public enum TextWrapping
+    {
+        NoWrap,
+        Wrap,
+        WrapWholeWords
+    }
+}
+
+// Add Windows.Graphics namespace
+namespace Windows.Graphics
+{
+    public struct PointInt32
+    {
+        public int X;
+        public int Y;
+
+        public PointInt32(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+    }
+
+    public struct SizeInt32
+    {
+        public int Width;
+        public int Height;
+
+        public SizeInt32(int width, int height)
+        {
+            Width = width;
+            Height = height;
+        }
+    }
+}
+
+// Add WinRT namespace
+namespace WinRT.Interop
+{
+    public static class WindowNative
+    {
+        public static IntPtr GetWindowHandle(object window)
+        {
+            return IntPtr.Zero; // Stub implementation
+        }
+    }
+}
+
+// Add Win32Interop and Windowing namespace
+namespace Microsoft.UI
+{
+    public static class Win32Interop
+    {
+        public static WindowId GetWindowIdFromWindow(IntPtr hwnd)
+        {
+            return new WindowId(); // Stub implementation
+        }
+    }
+
+    public struct WindowId
+    {
+        public ulong Value;
+    }
+
+    namespace Windowing
+    {
+        public enum DisplayAreaFallback
+        {
+            None,
+            Nearest
+        }
+
+        public class DisplayArea
+        {
+            public WorkArea WorkArea { get; } = new WorkArea();
+            public WindowId Id { get; }
+
+            public static DisplayArea GetFromWindowId(WindowId windowId, DisplayAreaFallback fallback)
+            {
+                return new DisplayArea(); // Stub implementation
+            }
+        }
+
+        public class WorkArea
+        {
+            public int Width { get; } = 1920;
+            public int Height { get; } = 1080;
+        }
+
+        public class AppWindow
+        {
+            public WindowId Id { get; }
+
+            public static AppWindow GetFromWindowId(WindowId windowId)
+            {
+                return new AppWindow(); // Stub implementation
+            }
+
+            public void Resize(Windows.Graphics.SizeInt32 size)
+            {
+                // Stub implementation
+            }
+
+            public void Move(Windows.Graphics.PointInt32 point)
+            {
+                // Stub implementation
+            }
+        }
+    }
+}
+
+namespace Marketplace_SE.Service
+{
+    public class HelpTicket
+    {
+        public string TicketID { get; }
+        public string UserID { get; }
+        public string UserName { get; }
+        public string DateAndTime { get; }
+        public string Descript { get; }
+        public string Closed { get; }
+
+        public HelpTicket(string TicketID_, string UserID_, string UserName_, string DateHour_, string Description_, string Closed_)
+        {
+            TicketID = TicketID_;
+            UserID = UserID_;
+            UserName = UserName_;
+            DateAndTime = DateHour_;
+            Descript = Description_;
+            Closed = Closed_;
+        }
+
+        public string toStringExceptDescription()
+        {
+            return $"TicketID: {TicketID}, UserID: {UserID}, UserName: {UserName}, DateAndTime: {DateAndTime}, Closed: {Closed}";
+        }
+
+        public static HelpTicket FromHelpTicketFromDB(HelpTicketFromDB other)
+        {
+            return new HelpTicket(other.TicketID.ToString(), other.UserID, other.UserName, other.DateAndTime, other.Descript, other.Closed);
+        }
+    }
+
+    public class HelpTicketFromDB
+    {
+        public int TicketID;
+        public string UserID;
+        public string UserName;
+        public string DateAndTime;
+        public string Descript;
+        public string Closed;
     }
 } 
