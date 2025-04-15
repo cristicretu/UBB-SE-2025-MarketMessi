@@ -23,6 +23,7 @@ using MarketMinds.Services.ProductConditionService;
 using MarketMinds.Services.ReviewService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
+using MarketMinds.Services.ApiService;
 
 namespace MarketMinds
 {
@@ -76,23 +77,28 @@ namespace MarketMinds
         private const int BUYER = 1;
         private const int SELLER = 2;
 
+        private static IConfiguration appConfiguration;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
         public App()
         {
+            InitializeComponent();
+            // Initialize configuration
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            appConfiguration = builder.Build();
+            // Initialize API configuration
+            ApiConfig.Initialize(appConfiguration);
             InitializeConfiguration();
-            this.InitializeComponent();
         }
 
         private IConfiguration InitializeConfiguration()
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            Configuration = builder.Build();
+            Configuration = appConfiguration;
             return Configuration;
         }
 
