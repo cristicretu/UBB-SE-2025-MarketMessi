@@ -103,7 +103,8 @@ namespace MarketMinds.Services.AuctionProductsService
             if (auction.BidHistory.Count > 0)
             {
                 var previousBid = auction.BidHistory.Last();
-                Console.WriteLine($"Warning: Client-side refund logic for bidder ID {previousBid.Bidder.Id} needs review.");
+                Console.WriteLine($"Warning: Client-side refund logic for bidder ID {previousBid.Bidder.Id} needs review!!!!!!!!!.");
+                previousBid.Bidder.Balance += previousBid.Price;
             }
         }
 
