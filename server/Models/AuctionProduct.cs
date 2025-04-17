@@ -12,35 +12,72 @@ namespace server.Models // Adjusted namespace to server.Models
         public float StartingPrice { get; set; }
         public float CurrentPrice { get; set; }
 
-        public List<Bid> BidHistory { get; set; } // Uncommented
+        // Navigation properties
+        public ICollection<Bid> BidHistory { get; set; }
+        public ICollection<AuctionProductImage> Images { get; set; }
+        public ICollection<AuctionProductProductTag> ProductTags { get; set; }
+        
+        // Legacy properties for backward compatibility with the repository
+        public List<ProductTag> Tags { get; set; }
+        public List<Image> LegacyImages { get; set; }
 
-        public AuctionProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
-            List<ProductTag> productTags, List<Image> images, DateTime startAuctionDate, DateTime endAuctionDate, float startingPrice)
+        public AuctionProduct()
         {
-            this.Id = id;
-            this.Description = description;
-            this.Title = title;
-            this.Seller = seller; // Uncommented
-            this.Condition = productCondition; // Uncommented
-            this.Category = productCategory; // Uncommented
-            this.Tags = productTags;
-            // this.Seller = seller; // Duplicate line from original - Removed
-            this.Images = images;
-            this.StartAuctionDate = startAuctionDate;
-            this.EndAuctionDate = endAuctionDate;
-            this.StartingPrice = startingPrice;
-            this.CurrentPrice = startingPrice;
-            this.BidHistory = new List<Bid>(); // Uncommented
+            BidHistory = new List<Bid>();
+            Images = new List<AuctionProductImage>();
+            ProductTags = new List<AuctionProductProductTag>();
+            Tags = new List<ProductTag>();
+            LegacyImages = new List<Image>();
         }
 
-        // Uncommented - definition now exists
+        // Constructor for new Entity Framework implementation
+        public AuctionProduct(int id, string title, string description, User seller, 
+            ProductCondition condition, ProductCategory category, DateTime startAuctionDate, 
+            DateTime endAuctionDate, float startingPrice)
+        {
+            Id = id;
+            Title = title;
+            Description = description;
+            Seller = seller;
+            Condition = condition;
+            Category = category;
+            StartAuctionDate = startAuctionDate;
+            EndAuctionDate = endAuctionDate;
+            StartingPrice = startingPrice;
+            CurrentPrice = startingPrice;
+            BidHistory = new List<Bid>();
+            Images = new List<AuctionProductImage>();
+            ProductTags = new List<AuctionProductProductTag>();
+            Tags = new List<ProductTag>();
+            LegacyImages = new List<Image>();
+        }
+
+        // Legacy constructor for the repository
+        public AuctionProduct(int id, string title, string description, User seller, 
+            ProductCondition condition, ProductCategory category, List<ProductTag> tags, 
+            List<Image> images, DateTime startAuctionDate, DateTime endAuctionDate, float startingPrice)
+        {
+            Id = id;
+            Title = title;
+            Description = description;
+            Seller = seller;
+            Condition = condition;
+            Category = category;
+            StartAuctionDate = startAuctionDate;
+            EndAuctionDate = endAuctionDate;
+            StartingPrice = startingPrice;
+            CurrentPrice = startingPrice;
+            BidHistory = new List<Bid>();
+            Images = new List<AuctionProductImage>();
+            ProductTags = new List<AuctionProductProductTag>();
+            Tags = tags;
+            LegacyImages = images;
+        }
+
         public void AddBid(Bid bid)
         {
-            this.CurrentPrice = bid.Price;
-            this.BidHistory.Add(bid);
+            CurrentPrice = bid.Price;
+            BidHistory.Add(bid);
         }
-        
-        // Default constructor for framework needs
-        public AuctionProduct() { }
     }
 } 

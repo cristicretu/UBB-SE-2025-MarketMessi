@@ -4,6 +4,9 @@ namespace server.Models // Adjusted namespace
 {
     public class Bid
     {
+        public int Id { get; set; }
+        public int BidderId { get; set; }
+        public int ProductId { get; set; }
         public User Bidder { get; set; } // Assumes User is defined in server.Models
         public float Price { get; set; }
         public DateTime Timestamp { get; set; }
@@ -12,6 +15,7 @@ namespace server.Models // Adjusted namespace
         public Bid(User bidder, float price, DateTime timestamp)
         {
             Bidder = bidder;
+            BidderId = bidder.Id;
             Price = price;
             Timestamp = timestamp;
         }

@@ -6,6 +6,11 @@ namespace server.Models // Adjusted namespace to server.Models
     {
         public int Id { get; set; }
         public string DisplayTitle { get; set; } = string.Empty;
+        // Adding Title property to match what's being referenced in ApplicationDbContext
+        public string Title { 
+            get { return DisplayTitle; }
+            set { DisplayTitle = value; }
+        }
 
         public ProductTag(int id, string displayTitle)
         {

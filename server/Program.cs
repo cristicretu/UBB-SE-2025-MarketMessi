@@ -1,5 +1,7 @@
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
+using Microsoft.EntityFrameworkCore;
+using server.DataAccessLayer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,10 @@ builder.Services.AddSingleton<DataBaseConnection>();
 
 // Register AuctionProductsRepository
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
+
+// Configure Entity Framework with SQL Server
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MarketPlaceConnection")));
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
