@@ -36,10 +36,10 @@ namespace server.Models // Adjusted namespace to server.Models
         public DateTime EndTime { get; set; }
 
         [Column("starting_price")]
-        public decimal StartPrice { get; set; }
+        public double StartPrice { get; set; }
 
         [Column("current_price")]
-        public decimal CurrentPrice { get; set; }
+        public double CurrentPrice { get; set; }
 
         // Navigation properties
         [ForeignKey("SellerId")]
@@ -61,7 +61,7 @@ namespace server.Models // Adjusted namespace to server.Models
 
         public AuctionProduct(string title, string? description, int sellerId, int? conditionId, 
                              int? categoryId, DateTime startTime, 
-                             DateTime endTime, decimal startPrice)
+                             DateTime endTime, double startPrice)
         {
             Title = title;
             Description = description;

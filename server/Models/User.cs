@@ -25,12 +25,12 @@ namespace server.Models
         public int UserType { get; set; }
         
         [Column("balance")]
-        public float Balance { get; set; }
+        public double Balance { get; set; }
         
         [Column("rating")]
-        public float Rating { get; set; }
+        public double Rating { get; set; }
 
-        private const float MAX_BALANCE = 999999; // Consider if this constant is needed
+        private const double MAX_BALANCE = 999999; 
 
         // Navigation properties
         public ICollection<AuctionProduct> SellingItems { get; set; }

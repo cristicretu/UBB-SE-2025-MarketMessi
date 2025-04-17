@@ -18,7 +18,7 @@ namespace server.Models
         public int ProductId { get; set; }
         
         [Column("price")]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
         
         [Column("timestamp")]
         public DateTime Timestamp { get; set; }
@@ -33,7 +33,7 @@ namespace server.Models
         // Default constructor for EF Core
         public Bid() { }
 
-        public Bid(int bidderId, int productId, decimal price)
+        public Bid(int bidderId, int productId, double price)
         {
             BidderId = bidderId;
             ProductId = productId;

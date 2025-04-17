@@ -2,11 +2,16 @@ using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.MaxDepth = 64; 
+});
 
 // Register DataBaseConnection (Singleton is usually appropriate if thread-safe)
 // It reads configuration internally now
