@@ -1,23 +1,36 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models // Adjusted namespace
+namespace server.Models
 {
+    [Table("ProductCategories")]
     public class ProductCategory
     {
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
-        public string DisplayTitle { get; set; } = string.Empty;
-        // Adding Title property to match what's being referenced in ApplicationDbContext
-        public string Title { 
-            get { return DisplayTitle; }
-            set { DisplayTitle = value; }
+        
+        [Required]
+        [Column("title")]
+        public string Title { get; set; } = string.Empty;
+        
+        // DisplayTitle property for backward compatibility
+        [NotMapped]
+        public string DisplayTitle
+        {
+            get { return Title; }
+            set { Title = value; }
         }
+        
+        [Column("description")]
         public string Description { get; set; } = string.Empty;
 
         // Constructor used by Repository
         public ProductCategory(int id, string displayTitle, string description)
         {
             this.Id = id;
-            this.DisplayTitle = displayTitle;
+            this.Title = displayTitle;
             this.Description = description;
         }
 

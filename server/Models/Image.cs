@@ -2,7 +2,9 @@ using System;
 
 namespace server.Models
 {
-    // This is a legacy class used by the repository
+    /// <summary>
+    /// Legacy Image class for backward compatibility with existing repository code
+    /// </summary>
     public class Image
     {
         public int Id { get; set; }

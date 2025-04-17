@@ -1,21 +1,32 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models // Adjusted namespace to server.Models
+namespace server.Models
 {
+    [Table("ProductTags")]
     public class ProductTag
     {
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
-        public string DisplayTitle { get; set; } = string.Empty;
-        // Adding Title property to match what's being referenced in ApplicationDbContext
-        public string Title { 
-            get { return DisplayTitle; }
-            set { DisplayTitle = value; }
+        
+        [Required]
+        [Column("title")]
+        public string Title { get; set; } = string.Empty;
+        
+        // DisplayTitle property for backward compatibility
+        [NotMapped]
+        public string DisplayTitle
+        {
+            get { return Title; }
+            set { Title = value; }
         }
 
         public ProductTag(int id, string displayTitle)
         {
             this.Id = id;
-            this.DisplayTitle = displayTitle;
+            this.Title = displayTitle;
         }
 
         // Default constructor for potential framework needs (e.g., deserialization)

@@ -12,18 +12,17 @@ builder.Services.AddControllers();
 // It reads configuration internally now
 builder.Services.AddSingleton<DataBaseConnection>(); 
 
-// Register AuctionProductsRepository
+var InitialCatalog = builder.Configuration["InitialCatalog"];
+var LocalDataSource = builder.Configuration["LocalDataSource"];
+var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 
-// Configure Entity Framework with SQL Server
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MarketPlaceConnection")));
-
-// Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -36,18 +35,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Enable CORS
 app.UseCors();
 
-// Comment out HTTPS redirection to avoid issues in development
-// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
