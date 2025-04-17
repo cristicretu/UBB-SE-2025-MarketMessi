@@ -4,36 +4,31 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models
 {
-    [Table("Categories")]
+    [Table("ProductCategories")]
     public class Category
     {
         [Key]
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("name")]
+        [Column("title")]
         public string Name { get; set; }
 
-        [Column("parent_id")]
-        public int? ParentId { get; set; }
+        [Column("description")]
+        public string Description { get; set; }
 
         // Navigation properties
-        [ForeignKey("ParentId")]
-        public Category Parent { get; set; }
-        public ICollection<Category> Subcategories { get; set; }
         public ICollection<AuctionProduct> Products { get; set; }
 
         public Category()
         {
-            Subcategories = new List<Category>();
             Products = new List<AuctionProduct>();
         }
 
-        public Category(string name, int? parentId = null)
+        public Category(string name, string description = null)
         {
             Name = name;
-            ParentId = parentId;
-            Subcategories = new List<Category>();
+            Description = description;
             Products = new List<AuctionProduct>();
         }
     }

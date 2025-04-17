@@ -12,8 +12,8 @@ namespace server.Repositories
         public DbSet<User> Users { get; set; }
         public DbSet<AuctionProduct> AuctionProducts { get; set; }
         public DbSet<Bid> Bids { get; set; }
-        public DbSet<ProductCondition> ProductConditions { get; set; }
-        public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<Condition> ProductConditions { get; set; }
+        public DbSet<Category> ProductCategories { get; set; }
         public DbSet<ProductTag> ProductTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -18,17 +18,8 @@ namespace server.Models
         [Column("email")]
         public string Email { get; set; }
         
-        [Column("password_hash")]
+        [Column("passwordHash")]
         public string PasswordHash { get; set; }
-        
-        [Column("full_name")]
-        public string FullName { get; set; }
-        
-        [Column("address")]
-        public string Address { get; set; }
-        
-        [Column("phone_number")]
-        public string PhoneNumber { get; set; }
         
         [Column("userType")]
         public int UserType { get; set; }

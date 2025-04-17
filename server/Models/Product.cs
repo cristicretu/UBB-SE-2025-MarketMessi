@@ -34,9 +34,9 @@ namespace server.Models // Adjusted namespace to server.Models
         public User Seller { get; set; }
 
         [ForeignKey("ConditionId")]
-        public ProductCondition Condition { get; set; }
+        public Condition Condition { get; set; }
 
         [ForeignKey("CategoryId")]
-        public ProductCategory Category { get; set; }
+        public Category Category { get; set; }
     }
 } 

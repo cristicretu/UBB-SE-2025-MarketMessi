@@ -18,7 +18,7 @@ namespace server.Models
         }
 
         public BuyProduct(int id, string title, string description, User seller, 
-            ProductCondition condition, ProductCategory category, float price)
+            Condition condition, Category category, float price)
         {
             Id = id;
             Title = title;

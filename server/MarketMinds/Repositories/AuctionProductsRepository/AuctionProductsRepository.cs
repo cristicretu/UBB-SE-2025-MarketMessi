@@ -27,105 +27,25 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public List<AuctionProduct> GetProducts()
         {
-            // Reverting to original raw SQL implementation due to schema mapping issues
-            List<AuctionProduct> auctions = new List<AuctionProduct>();
-            DataTable productsTable = new DataTable();
-            SqlConnection sqlConn = _connection.GetConnection(); 
-
-            string mainQuery = @"
-            SELECT 
-                ap.id, ap.title, ap.description, ap.seller_id, u.username, u.email,
-                ap.condition_id, pc.title AS conditionTitle, pc.description AS conditionDescription,
-                ap.category_id, cat.title AS categoryTitle, cat.description AS categoryDescription,
-                ap.start_datetime, ap.end_datetime, ap.starting_price, ap.current_price
-            FROM AuctionProducts ap
-            JOIN Users u ON ap.seller_id = u.id
-            JOIN ProductConditions pc ON ap.condition_id = pc.id
-            JOIN ProductCategories cat ON ap.category_id = cat.id";
-
             try
             {
-                _connection.OpenConnection(); 
+                // Use Entity Framework to get all auction products with related data
+                var products = _context.AuctionProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Bids)
+                        .ThenInclude(b => b.Bidder)
+                    .Include(p => p.Images)
+                    .ToList();
 
-                
-                using (SqlCommand cmd = new SqlCommand(mainQuery, sqlConn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    productsTable.Load(reader);
-                } 
-
-                
-                foreach (DataRow row in productsTable.Rows)
-                {
-                    int id = (int)row["id"];
-                    string title = (string)row["title"];
-                    string description = (string)row["description"];
-
-                    int sellerId = (int)row["seller_id"];
-                    string username = (string)row["username"];
-                    string email = (string)row["email"];
-                    User seller = new User();
-                    seller.Id = sellerId;
-                    seller.Username = username;
-                    seller.Email = email;
-
-                    int conditionId = (int)row["condition_id"];
-                    string conditionTitle = (string)row["conditionTitle"];
-                    string conditionDescription = (string)row["conditionDescription"];
-                    Condition condition = new Condition();
-                    condition.Id = conditionId;
-                    condition.Name = conditionTitle;
-
-                    int categoryId = (int)row["category_id"];
-                    string categoryTitle = (string)row["categoryTitle"];
-                    string categoryDescription = (string)row["categoryDescription"];
-                    Category category = new Category();
-                    category.Id = categoryId;
-                    category.Name = categoryTitle;
-
-                    DateTime start = (DateTime)row["start_datetime"];
-                    DateTime end = (DateTime)row["end_datetime"];
-                    
-                    decimal startingPrice = Convert.ToDecimal(row["starting_price"]); 
-                    
-                    decimal currentPrice = row["current_price"] == DBNull.Value ? startingPrice : Convert.ToDecimal(row["current_price"]);
-
-                    AuctionProduct auction = new AuctionProduct();
-                    auction.Id = id;
-                    auction.Title = title;
-                    auction.Description = description;
-                    auction.SellerId = sellerId;
-                    auction.Seller = seller;
-                    auction.ConditionId = conditionId;
-                    auction.Condition = condition;
-                    auction.CategoryId = categoryId;
-                    auction.Category = category;
-                    auction.StartTime = start;
-                    auction.EndTime = end;
-                    auction.StartPrice = startingPrice;
-                    auction.CurrentPrice = currentPrice;
-
-                    // Get images and convert them to ProductImage objects
-                    List<Image> legacyImages = GetImages(id, sqlConn);
-                    foreach (var img in legacyImages)
-                    {
-                        auction.Images.Add(new ProductImage { ProductId = id, Url = img.Url });
-                    }
-
-                    auctions.Add(auction);
-                }
+                return products;
             }
             catch (Exception ex)
             {
-                
-                Console.WriteLine($"Error in GetProducts: {ex.Message}");
-                throw; 
+                Console.WriteLine($"Error in GetProducts using EF: {ex.Message}");
+                throw;
             }
-            finally
-            {
-                _connection.CloseConnection(); 
-            }
-            return auctions;
         }
 
         
@@ -333,109 +253,35 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public AuctionProduct GetProductByID(int id)
         {
-            AuctionProduct auction = null;
-            SqlConnection sqlConn = _connection.GetConnection();
-
-            string query = @"
-            SELECT 
-                ap.id, ap.title, ap.description, ap.seller_id, u.username, u.email,
-                ap.condition_id, pc.title AS conditionTitle, pc.description AS conditionDescription,
-                ap.category_id, cat.title AS categoryTitle, cat.description AS categoryDescription,
-                ap.start_datetime, ap.end_datetime, ap.starting_price, ap.current_price
-            FROM AuctionProducts ap
-            JOIN Users u ON ap.seller_id = u.id
-            JOIN ProductConditions pc ON ap.condition_id = pc.id
-            JOIN ProductCategories cat ON ap.category_id = cat.id
-            WHERE ap.id = @APid";
-            
             try
             {
-                _connection.OpenConnection();
-                DataRow productRow = null;
-                DataTable dt = new DataTable();
+                // Use Entity Framework to get the auction product by ID with related data
+                var product = _context.AuctionProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Bids)
+                        .ThenInclude(b => b.Bidder)
+                    .Include(p => p.Images)
+                    .FirstOrDefault(p => p.Id == id);
 
-                using (SqlCommand cmd = new SqlCommand(query, sqlConn))
+                if (product == null)
                 {
-                    cmd.Parameters.AddWithValue("@APid", id);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        dt.Load(reader);
-                        if (dt.Rows.Count > 0) {
-                            productRow = dt.Rows[0];
-                        }
-                    }
+                    throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.");
                 }
 
-                if (productRow != null)
-                {
-                    int productId = (int)productRow["id"]; 
-                    string title = (string)productRow["title"];
-                    string description = (string)productRow["description"];
-
-                    int sellerId = (int)productRow["seller_id"];
-                    string username = (string)productRow["username"];
-                    string email = (string)productRow["email"];
-                    User seller = new User();
-                    seller.Id = sellerId;
-                    seller.Username = username;
-                    seller.Email = email;
-
-                    int conditionId = (int)productRow["condition_id"];
-                    string conditionTitle = (string)productRow["conditionTitle"];
-                    string conditionDescription = (string)productRow["conditionDescription"];
-                    Condition condition = new Condition();
-                    condition.Id = conditionId;
-                    condition.Name = conditionTitle;
-
-                    int categoryId = (int)productRow["category_id"];
-                    string categoryTitle = (string)productRow["categoryTitle"];
-                    string categoryDescription = (string)productRow["categoryDescription"];
-                    Category category = new Category();
-                    category.Id = categoryId;
-                    category.Name = categoryTitle;
-
-                    DateTime start = (DateTime)productRow["start_datetime"];
-                    DateTime end = (DateTime)productRow["end_datetime"];
-                    decimal startingPrice = Convert.ToDecimal(productRow["starting_price"]);
-                    decimal currentPrice = productRow["current_price"] == DBNull.Value ? startingPrice : Convert.ToDecimal(productRow["current_price"]);
-
-                    auction = new AuctionProduct();
-                    auction.Id = productId;
-                    auction.Title = title;
-                    auction.Description = description;
-                    auction.SellerId = sellerId;
-                    auction.Seller = seller;
-                    auction.ConditionId = conditionId;
-                    auction.Condition = condition;
-                    auction.CategoryId = categoryId;
-                    auction.Category = category;
-                    auction.StartTime = start;
-                    auction.EndTime = end;
-                    auction.StartPrice = startingPrice;
-                    auction.CurrentPrice = currentPrice;
-
-                    // Get images and convert them to ProductImage objects
-                    List<Image> legacyImages = GetImages(productId, sqlConn);
-                    foreach (var img in legacyImages)
-                    {
-                        auction.Images.Add(new ProductImage { ProductId = productId, Url = img.Url });
-                    }
-                }
+                return product;
+            }
+            catch (KeyNotFoundException)
+            {
+                // Rethrow KeyNotFoundException to be handled by the controller
+                throw;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetProductByID: {ex.Message}");
+                Console.WriteLine($"Error in GetProductByID using EF: {ex.Message}");
                 throw;
             }
-            finally
-            {
-                _connection.CloseConnection();
-            }
-
-            if (auction == null) {
-                throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.");
-            }
-            return auction;
         }
          
         

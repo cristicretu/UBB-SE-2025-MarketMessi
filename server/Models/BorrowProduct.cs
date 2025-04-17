@@ -22,7 +22,7 @@ namespace server.Models
         }
         
         public BorrowProduct(int id, string title, string description, User seller,
-            ProductCondition condition, ProductCategory category, DateTime timeLimit, 
+            Condition condition, Category category, DateTime timeLimit, 
             float dailyRate)
         {
             Id = id;

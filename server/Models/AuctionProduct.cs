@@ -7,15 +7,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models // Adjusted namespace to server.Models
 {
-    // Define the AuctionStatus enum
-    public enum AuctionStatus
-    {
-        Pending = 0,
-        Active = 1,
-        Completed = 2,
-        Cancelled = 3
-    }
-
     [Table("AuctionProducts")]
     public class AuctionProduct
     {
@@ -49,12 +40,6 @@ namespace server.Models // Adjusted namespace to server.Models
 
         [Column("current_price")]
         public decimal CurrentPrice { get; set; }
-
-        [Column("status")]
-        public AuctionStatus Status { get; set; } = AuctionStatus.Pending;
-
-        [Column("featured_product")]
-        public bool FeaturedProduct { get; set; } = false;
 
         // Navigation properties
         [ForeignKey("SellerId")]

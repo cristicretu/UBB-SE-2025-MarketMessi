@@ -12,8 +12,8 @@ namespace server.DataAccessLayer
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<ProductCondition> ProductConditions { get; set; }
-        public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<Condition> ProductConditions { get; set; }
+        public DbSet<Category> ProductCategories { get; set; }
         public DbSet<ProductTag> ProductTags { get; set; }
         
         // Reviews
@@ -23,7 +23,7 @@ namespace server.DataAccessLayer
         // Auction products
         public DbSet<AuctionProduct> AuctionProducts { get; set; }
         public DbSet<Bid> Bids { get; set; }
-        public DbSet<AuctionProductImage> AuctionProductImages { get; set; }
+        public DbSet<ProductImage> AuctionProductImages { get; set; }
         public DbSet<AuctionProductProductTag> AuctionProductProductTags { get; set; }
         
         // Buy products
@@ -57,13 +57,13 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<ReviewPicture>().HasKey(rp => rp.Id);
 
             // Product metadata
-            modelBuilder.Entity<ProductCondition>().ToTable("ProductConditions");
-            modelBuilder.Entity<ProductCondition>().HasKey(pc => pc.Id);
-            modelBuilder.Entity<ProductCondition>().HasIndex(pc => pc.Title).IsUnique();
+            modelBuilder.Entity<Condition>().ToTable("ProductConditions");
+            modelBuilder.Entity<Condition>().HasKey(pc => pc.Id);
+            modelBuilder.Entity<Condition>().HasIndex(pc => pc.Name).IsUnique();
 
-            modelBuilder.Entity<ProductCategory>().ToTable("ProductCategories");
-            modelBuilder.Entity<ProductCategory>().HasKey(pc => pc.Id);
-            modelBuilder.Entity<ProductCategory>().HasIndex(pc => pc.Title).IsUnique();
+            modelBuilder.Entity<Category>().ToTable("ProductCategories");
+            modelBuilder.Entity<Category>().HasKey(pc => pc.Id);
+            modelBuilder.Entity<Category>().HasIndex(pc => pc.Name).IsUnique();
 
             modelBuilder.Entity<ProductTag>().ToTable("ProductTags");
             modelBuilder.Entity<ProductTag>().HasKey(pt => pt.Id);
@@ -73,8 +73,8 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<AuctionProduct>().ToTable("AuctionProducts");
             modelBuilder.Entity<AuctionProduct>().HasKey(ap => ap.Id);
             
-            modelBuilder.Entity<AuctionProductImage>().ToTable("AuctionProductsImages");
-            modelBuilder.Entity<AuctionProductImage>().HasKey(i => i.Id);
+            modelBuilder.Entity<ProductImage>().ToTable("AuctionProductsImages");
+            modelBuilder.Entity<ProductImage>().HasKey(i => i.Id);
             
             modelBuilder.Entity<AuctionProductProductTag>().ToTable("AuctionProductProductTags");
             modelBuilder.Entity<AuctionProductProductTag>().HasKey(pt => pt.Id);

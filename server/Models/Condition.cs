@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models
 {
-    [Table("Conditions")]
+    [Table("ProductConditions")]
     public class Condition
     {
         [Key]
         [Column("id")]
         public int Id { get; set; }
 
-        [Column("name")]
+        [Column("title")]
         public string Name { get; set; }
 
         // Navigation property
