@@ -1,7 +1,17 @@
+using DataAccessLayer; // Add namespace for DataBaseConnection
+using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Register DataBaseConnection (Singleton is usually appropriate if thread-safe)
+// It reads configuration internally now
+builder.Services.AddSingleton<DataBaseConnection>(); 
+
+// Register AuctionProductsRepository
+builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
