@@ -23,8 +23,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public List<Product> GetProducts()
         {
-            return [];
-            List<Product> auctions = new List<Product>();
+            return new List<Product>();
             DataTable productsTable = new DataTable();
 
             string mainQuery = @"
