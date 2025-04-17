@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using MarketMinds.Repositories.AuctionProductsRepository; // Corrected namespace if necessary
-using DomainLayer.Domain; // Use domain model namespace
+using DataAccessLayer; // Corrected namespace
+using server.Models; // Added using statement
+using MarketMinds.Repositories.AuctionProductsRepository; // Corrected namespace
+// using DomainLayer.Domain; // Removed incorrect using
 using System.Collections.Generic;
 using System;
 using System.Net;

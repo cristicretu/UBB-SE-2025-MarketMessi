@@ -1,5 +1,7 @@
-using DomainLayer.Domain; // Assuming Product model is here
+// using DomainLayer.Domain; // Removed incorrect using
+using server.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {

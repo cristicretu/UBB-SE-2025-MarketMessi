@@ -1,10 +1,11 @@
 using DataAccessLayer; // Use the namespace for DataBaseConnection
-using DomainLayer.Domain; // Use the namespace for domain models
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using server.Models;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {
