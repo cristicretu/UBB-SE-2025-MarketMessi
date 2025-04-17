@@ -23,7 +23,6 @@ using MarketMinds.Services.ProductConditionService;
 using MarketMinds.Services.ReviewService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
-using MarketMinds.Services.ApiService;
 
 namespace MarketMinds
 {
@@ -92,7 +91,6 @@ namespace MarketMinds
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             appConfiguration = builder.Build();
             // Initialize API configuration
-            ApiConfig.Initialize(appConfiguration);
             InitializeConfiguration();
         }
 
