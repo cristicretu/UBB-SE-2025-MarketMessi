@@ -3,25 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace DomainLayer.Domain
 {
     public class AuctionProduct : Product
     {
+        [JsonPropertyName("startAuctionDate")]
         public DateTime StartAuctionDate { get; set; }
+        [JsonPropertyName("endAuctionDate")]
         public DateTime EndAuctionDate { get; set; }
+        [JsonPropertyName("startingPrice")]
         public float StartingPrice { get; set; }
+        [JsonPropertyName("currentPrice")]
         public float CurrentPrice { get; set; }
 
+        [JsonPropertyName("bidHistory")]
         public List<Bid> BidHistory { get; set; }
 
-        // Add a parameterless constructor for JSON deserialization
-        public AuctionProduct() : base() // Call base constructor if Product has one
+        
+        public AuctionProduct() : base() 
         {
-            // Initialize collections to avoid null references
+            
             BidHistory = new List<Bid>();
-            Tags = new List<ProductTag>(); // Assuming Tags is inherited from Product
-            Images = new List<Image>(); // Assuming Images is inherited from Product
+            Tags = new List<ProductTag>(); 
+            Images = new List<Image>(); 
         }
 
         public AuctionProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,

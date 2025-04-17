@@ -7,7 +7,11 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 {
     public interface IAuctionProductsRepository
     {
-        List<Product> GetProducts();
+        /// <summary>
+        /// Retrieves all auction products from the repository.
+        /// </summary>
+        /// <returns>A list of all auction products.</returns>
+        new List<AuctionProduct> GetProducts();
         AuctionProduct GetProductByID(int id);
         void AddProduct(Product product);
         void UpdateProduct(Product product);

@@ -1,4 +1,4 @@
-using DataAccessLayer; // Use the namespace for DataBaseConnection
+using DataAccessLayer; 
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -11,22 +11,21 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 {
     public class AuctionProductsRepository : IAuctionProductsRepository
     {
-        private readonly DataBaseConnection _connection; // Use injected DataBaseConnection
+        private readonly DataBaseConnection _connection; 
         private const int BASE_ID = 0;
         private const int BASE_PRICE = 0;
 
-        // Corrected constructor to use DataBaseConnection
+        
         public AuctionProductsRepository(DataBaseConnection connection)
         {
             _connection = connection;
         }
 
-        public List<Product> GetProducts()
+        public List<AuctionProduct> GetProducts()
         {
-            // Removed incorrect 'return [];'
-            List<Product> auctions = new List<Product>();
+            List<AuctionProduct> auctions = new List<AuctionProduct>();
             DataTable productsTable = new DataTable();
-            SqlConnection sqlConn = _connection.GetConnection(); // Get the connection object
+            SqlConnection sqlConn = _connection.GetConnection(); 
 
             string mainQuery = @"
             SELECT 
@@ -41,16 +40,16 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
             try
             {
-                _connection.OpenConnection(); // Open connection once
+                _connection.OpenConnection(); 
 
-                // Load all products first
+                
                 using (SqlCommand cmd = new SqlCommand(mainQuery, sqlConn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     productsTable.Load(reader);
-                } // Reader is disposed here, freeing the connection for next commands
+                } 
 
-                // Process each product to retrieve tags and images
+                
                 foreach (DataRow row in productsTable.Rows)
                 {
                     int id = (int)row["id"];
@@ -74,13 +73,13 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
                     DateTime start = (DateTime)row["start_datetime"];
                     DateTime end = (DateTime)row["end_datetime"];
-                    // Ensure starting_price is handled correctly (assuming float in model)
+                    
                     float startingPrice = Convert.ToSingle(row["starting_price"]); 
-                    // Handle potential null current_price if needed, or use starting if guaranteed not null
+                    
                     float currentPrice = row["current_price"] == DBNull.Value ? startingPrice : Convert.ToSingle(row["current_price"]);
 
 
-                    // Fetch tags and images using the already open connection
+                    
                     List<ProductTag> tags = GetProductTags(id, sqlConn);
                     List<Image> images = GetImages(id, sqlConn);
 
@@ -88,7 +87,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                         id, title, description, seller, condition, category,
                         tags, images, start, end, startingPrice)
                         {
-                            // Assuming AuctionProduct has a CurrentPrice property
+                            
                              CurrentPrice = currentPrice 
                         }; 
 
@@ -97,18 +96,18 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             }
             catch (Exception ex)
             {
-                // Log exception (consider using a proper logging framework)
+                
                 Console.WriteLine($"Error in GetProducts: {ex.Message}");
-                throw; // Re-throw or handle as appropriate
+                throw; 
             }
             finally
             {
-                _connection.CloseConnection(); // Ensure connection is closed
+                _connection.CloseConnection(); 
             }
             return auctions;
         }
 
-        // Modified to accept an open SqlConnection
+        
         private List<Image> GetImages(int productId, SqlConnection sqlConn)
         {
             List<Image> images = new List<Image>();
@@ -117,20 +116,20 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             using (SqlCommand cmd = new SqlCommand(query, sqlConn))
             {
                 cmd.Parameters.AddWithValue("@ProductId", productId);
-                // Connection should already be open
+                
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         string url = reader.GetString(reader.GetOrdinal("url"));
-                        images.Add(new Image(url)); // Assuming Image constructor takes url
+                        images.Add(new Image(url)); 
                     }
                 }
             }
             return images;
         }
 
-        // Modified to accept an open SqlConnection
+        
         private List<ProductTag> GetProductTags(int productId, SqlConnection sqlConn)
         {
             List<ProductTag> tags = new List<ProductTag>();
@@ -143,14 +142,14 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             using (SqlCommand cmd = new SqlCommand(query, sqlConn))
             {
                 cmd.Parameters.AddWithValue("@ProductId", productId);
-                 // Connection should already be open
+                 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         int tagId = reader.GetInt32(reader.GetOrdinal("id"));
                         string tagTitle = reader.GetString(reader.GetOrdinal("title"));
-                        tags.Add(new ProductTag(tagId, tagTitle)); // Assuming ProductTag constructor
+                        tags.Add(new ProductTag(tagId, tagTitle)); 
                     }
                 }
             }
@@ -160,7 +159,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public void DeleteProduct(Product product)
         {
-             // Cast might fail if it's not an AuctionProduct, consider interface property or different method signature
+             
             if (!(product is AuctionProduct auction)) 
             {
                  throw new ArgumentException("Product must be of type AuctionProduct for deletion.", nameof(product));
@@ -174,7 +173,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 _connection.OpenConnection();
-                // Use a transaction to ensure atomicity
+                
                 using (SqlTransaction transaction = sqlConn.BeginTransaction())
                 {
                     using (SqlCommand cmdTags = new SqlCommand(deleteProductTagsQuery, sqlConn, transaction))
@@ -192,7 +191,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                         cmdProduct.Parameters.AddWithValue("@Id", auction.Id);
                         int rowsAffected = cmdProduct.ExecuteNonQuery();
                         if (rowsAffected == 0) {
-                             transaction.Rollback(); // Or just don't commit
+                             transaction.Rollback(); 
                              throw new KeyNotFoundException($"AuctionProduct with ID {auction.Id} not found for deletion.");
                         }
                     }
@@ -223,7 +222,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             (title, description, seller_id, condition_id, category_id, start_datetime, end_datetime, starting_price, current_price)
             VALUES 
             (@Title, @Description, @SellerId, @ConditionId, @CategoryId, @StartDateTime, @EndDateTime, @StartingPrice, @CurrentPrice);
-            SELECT SCOPE_IDENTITY();"; // Get the newly inserted ID
+            SELECT SCOPE_IDENTITY();"; 
 
             string insertTagQuery = @"
             INSERT INTO AuctionProductProductTags (product_id, tag_id)
@@ -241,7 +240,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 _connection.OpenConnection();
                 using (SqlTransaction transaction = sqlConn.BeginTransaction())
                 {
-                    // Insert base product
+                    
                     using (SqlCommand cmdProduct = new SqlCommand(insertProductQuery, sqlConn, transaction))
                     {
                         cmdProduct.Parameters.AddWithValue("@Title", auction.Title);
@@ -252,31 +251,31 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                         cmdProduct.Parameters.AddWithValue("@StartDateTime", auction.StartAuctionDate);
                         cmdProduct.Parameters.AddWithValue("@EndDateTime", auction.EndAuctionDate);
                         cmdProduct.Parameters.AddWithValue("@StartingPrice", auction.StartingPrice);
-                        // Assuming CurrentPrice starts same as StartingPrice for a new auction
+                        
                         cmdProduct.Parameters.AddWithValue("@CurrentPrice", auction.StartingPrice); 
 
-                        object result = cmdProduct.ExecuteScalar(); // Get the new ID
+                        object result = cmdProduct.ExecuteScalar(); 
                          if (result == null || result == DBNull.Value) {
                              transaction.Rollback();
                              throw new Exception("Failed to insert auction product and retrieve new ID.");
                          }
                         newProductId = Convert.ToInt32(result);
-                        auction.Id = newProductId; // Update the object's ID
+                        auction.Id = newProductId; 
                     }
 
-                    // Insert tags
+                    
                     foreach (var tag in auction.Tags)
                     {
                         using (SqlCommand cmdTag = new SqlCommand(insertTagQuery, sqlConn, transaction))
                         {
                             cmdTag.Parameters.AddWithValue("@ProductId", newProductId);
-                            // Ensure tag has a valid ID. If tags can be new, need tag creation logic first.
+                            
                             cmdTag.Parameters.AddWithValue("@TagId", tag.Id); 
                             cmdTag.ExecuteNonQuery();
                         }
                     }
 
-                    // Insert images
+                    
                     foreach (var image in auction.Images)
                     {
                         using (SqlCommand cmdImage = new SqlCommand(insertImageQuery, sqlConn, transaction))
@@ -308,10 +307,10 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                  throw new ArgumentException("Product must be of type AuctionProduct for update.", nameof(product));
             }
 
-             // Decide what fields are updatable. Just CurrentPrice? Or more?
-             // Example: Updating only current price
+             
+             
             string query = "UPDATE AuctionProducts SET current_price = @CurrentPrice WHERE Id = @Id"; 
-            // If updating more fields, add them to SET clause and add parameters
+            
 
             SqlConnection sqlConn = _connection.GetConnection();
              try
@@ -319,7 +318,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 _connection.OpenConnection();
                  using (SqlCommand cmd = new SqlCommand(query, sqlConn))
                 {
-                    // Add parameters for all fields being updated
+                    
                     cmd.Parameters.AddWithValue("@CurrentPrice", auction.CurrentPrice); 
                     cmd.Parameters.AddWithValue("@Id", auction.Id);
 
@@ -328,8 +327,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                          throw new KeyNotFoundException($"AuctionProduct with ID {auction.Id} not found for update.");
                      }
                 }
-                 // If updating Tags/Images is needed, add logic here (delete existing, insert new)
-                 // This often involves more complex logic within a transaction
+                 
+                 
             }
              catch (Exception ex)
             {
@@ -380,7 +379,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
                 if (productRow != null)
                 {
-                    int productId = (int)productRow["id"]; // Already have 'id' from input
+                    int productId = (int)productRow["id"]; 
                     string title = (string)productRow["title"];
                     string description = (string)productRow["description"];
 
@@ -404,7 +403,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                     float startingPrice = Convert.ToSingle(productRow["starting_price"]);
                     float currentPrice = productRow["current_price"] == DBNull.Value ? startingPrice : Convert.ToSingle(productRow["current_price"]);
 
-                    // Fetch tags and images using the open connection
+                    
                     List<ProductTag> tags = GetProductTags(productId, sqlConn);
                     List<Image> images = GetImages(productId, sqlConn);
 
@@ -432,11 +431,11 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             return auction;
         }
          
-        // Remove the explicit interface implementation if not needed, 
-        // the public GetProductByID(int) already satisfies the interface if named correctly.
-        // Product IProductsRepository.GetProductByID(int id) 
-        // {
-        //     return GetProductByID(id); 
-        // }
+        
+        
+        
+        
+        
+        
     }
 } 
