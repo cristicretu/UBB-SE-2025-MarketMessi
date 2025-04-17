@@ -13,7 +13,7 @@ namespace ViewModelLayer.ViewModel
         public AuctionProductsService? AuctionProductsService { get; set; }
         public override void CreateListing(Product product)
         {
-            AuctionProductsService?.AddProduct(product);
+            AuctionProductsService?.CreateListing(product);
         }
     }
 }
