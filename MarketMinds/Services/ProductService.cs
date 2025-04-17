@@ -21,36 +21,46 @@ namespace MarketMinds.Services.ProductTagService
 
         public virtual List<Product> GetProducts()
         {
-            if (productRepository == null) 
+            if (productRepository == null)
+            {
                 throw new InvalidOperationException("Product repository is not initialized in the base class.");
+            }
             return productRepository.GetProducts();
         }
 
         public virtual Product GetProductById(int id)
         {
-            if (productRepository == null) 
+            if (productRepository == null)
+            {
                 throw new InvalidOperationException("Product repository is not initialized in the base class.");
+            }
             return productRepository.GetProductByID(id);
         }
 
         public virtual void AddProduct(Product product)
         {
-            if (productRepository == null) 
-                throw new InvalidOperationException("Product repository is not initialized in the base class.");
-            productRepository.AddProduct(product);
+            if (productRepository == null)
+            {
+                 throw new InvalidOperationException("Product repository is not initialized in the base class.");
+            }
+           productRepository.AddProduct(product);
         }
 
         public virtual void UpdateProduct(Product product)
         {
-            if (productRepository == null) 
-                throw new InvalidOperationException("Product repository is not initialized in the base class.");
+            if (productRepository == null)
+            {
+                 throw new InvalidOperationException("Product repository is not initialized in the base class.");
+            }
             productRepository.UpdateProduct(product);
         }
 
         public virtual void DeleteProduct(Product product)
         {
-            if (productRepository == null) 
+            if (productRepository == null)
+            {
                 throw new InvalidOperationException("Product repository is not initialized in the base class.");
+            }
             productRepository.DeleteProduct(product);
         }
 

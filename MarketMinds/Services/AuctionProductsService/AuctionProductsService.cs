@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using System.Text;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using DomainLayer.Domain;
-using System.Net.Http;
-using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
 
@@ -15,15 +15,18 @@ namespace MarketMinds.Services.AuctionProductsService
     {
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
-        private readonly HttpClient _httpClient;
-        private readonly string _apiBaseUrl;
+        private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
 
         public AuctionProductsService(IConfiguration configuration) : base(null)
         {
-            _httpClient = new HttpClient();
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (!_apiBaseUrl.EndsWith("/")) _apiBaseUrl += "/";
-            _httpClient.BaseAddress = new Uri(_apiBaseUrl + "api/");
+            httpClient = new HttpClient();
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
         public void CreateListing(Product product)
@@ -32,7 +35,7 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
-            var response = _httpClient.PostAsJsonAsync("auctionproducts", auctionProduct).Result;
+            var response = httpClient.PostAsJsonAsync("auctionproducts", auctionProduct).Result;
             response.EnsureSuccessStatusCode();
         }
 
@@ -50,7 +53,7 @@ namespace MarketMinds.Services.AuctionProductsService
 
             ExtendAuctionTime(auction);
 
-            var response = _httpClient.PutAsJsonAsync($"auctionproducts/{auction.Id}", auction).Result;
+            var response = httpClient.PutAsJsonAsync($"auctionproducts/{auction.Id}", auction).Result;
             response.EnsureSuccessStatusCode();
         }
 
@@ -60,7 +63,7 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw new ArgumentException("Auction Product ID must be set for delete.", nameof(auction.Id));
             }
-            var response = _httpClient.DeleteAsync($"auctionproducts/{auction.Id}").Result;
+            var response = httpClient.DeleteAsync($"auctionproducts/{auction.Id}").Result;
             response.EnsureSuccessStatusCode();
         }
 
@@ -116,13 +119,13 @@ namespace MarketMinds.Services.AuctionProductsService
 
         public override List<Product> GetProducts()
         {
-            var products = _httpClient.GetFromJsonAsync<List<AuctionProduct>>("auctionproducts").Result;
+            var products = httpClient.GetFromJsonAsync<List<AuctionProduct>>("auctionproducts").Result;
             return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
 
         public override Product GetProductById(int id)
         {
-            var product = _httpClient.GetFromJsonAsync<AuctionProduct>($"auctionproducts/{id}").Result;
+            var product = httpClient.GetFromJsonAsync<AuctionProduct>($"auctionproducts/{id}").Result;
             if (product == null)
             {
                 throw new KeyNotFoundException($"Auction product with ID {id} not found.");

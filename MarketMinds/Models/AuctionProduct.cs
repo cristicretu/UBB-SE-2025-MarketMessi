@@ -21,13 +21,11 @@ namespace DomainLayer.Domain
         [JsonPropertyName("bidHistory")]
         public List<Bid> BidHistory { get; set; }
 
-        
-        public AuctionProduct() : base() 
+        public AuctionProduct() : base()
         {
-            
             BidHistory = new List<Bid>();
-            Tags = new List<ProductTag>(); 
-            Images = new List<Image>(); 
+            Tags = new List<ProductTag>();
+            Images = new List<Image>();
         }
 
         public AuctionProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
