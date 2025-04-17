@@ -4,9 +4,10 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using DomainLayer.Domain;
-using MarketMinds.Repositories.AuctionProductsRepository;
+using System.Net.Http;
+using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MarketMinds.Services.AuctionProductsService
 {
@@ -14,15 +15,25 @@ namespace MarketMinds.Services.AuctionProductsService
     {
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
-        private IAuctionProductsRepository auctionRepository;
-        public AuctionProductsService(IAuctionProductsRepository repository) : base(repository)
+        private readonly HttpClient _httpClient;
+        private readonly string _apiBaseUrl;
+
+        public AuctionProductsService(IConfiguration configuration) : base(null)
         {
-            auctionRepository = repository;
+            _httpClient = new HttpClient();
+            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (!_apiBaseUrl.EndsWith("/")) _apiBaseUrl += "/";
+            _httpClient.BaseAddress = new Uri(_apiBaseUrl + "api/");
         }
 
         public void CreateListing(Product product)
         {
-            AddProduct(product);
+            if (!(product is AuctionProduct auctionProduct))
+            {
+                throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
+            }
+            var response = _httpClient.PostAsJsonAsync("auctionproducts", auctionProduct).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
@@ -39,8 +50,31 @@ namespace MarketMinds.Services.AuctionProductsService
 
             ExtendAuctionTime(auction);
 
-            auctionRepository.UpdateProduct(auction);
+            var response = _httpClient.PutAsJsonAsync($"auctionproducts/{auction.Id}", auction).Result;
+            response.EnsureSuccessStatusCode();
         }
+
+        public void ConcludeAuction(AuctionProduct auction)
+        {
+            if (auction.Id == 0)
+            {
+                throw new ArgumentException("Auction Product ID must be set for delete.", nameof(auction.Id));
+            }
+            var response = _httpClient.DeleteAsync($"auctionproducts/{auction.Id}").Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        public string GetTimeLeft(AuctionProduct auction)
+        {
+            var timeLeft = auction.EndAuctionDate - DateTime.Now;
+            return timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
+        }
+
+        public bool IsAuctionEnded(AuctionProduct auction)
+        {
+            return DateTime.Now >= auction.EndAuctionDate;
+        }
+
         private void ValidateBid(AuctionProduct auction, User bidder, float bidAmount)
         {
             float minBid = auction.BidHistory.Count == NULL_BID_AMOUNT ? auction.StartingPrice : auction.CurrentPrice + 1;
@@ -66,33 +100,40 @@ namespace MarketMinds.Services.AuctionProductsService
             if (auction.BidHistory.Count > 0)
             {
                 var previousBid = auction.BidHistory.Last();
-                previousBid.Bidder.Balance += previousBid.Price;
+                Console.WriteLine($"Warning: Client-side refund logic for bidder ID {previousBid.Bidder.Id} needs review.");
             }
         }
+
         private void ExtendAuctionTime(AuctionProduct auction)
         {
             var timeRemaining = auction.EndAuctionDate - DateTime.Now;
 
             if (timeRemaining.TotalMinutes < MAX_AUCTION_TIME)
             {
-                auction.EndAuctionDate = auction.EndAuctionDate.AddMinutes(1);
+                auction.EndAuctionDate = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
             }
         }
 
-        public void ConcludeAuction(AuctionProduct auction)
+        public override List<Product> GetProducts()
         {
-            auctionRepository.DeleteProduct(auction);
+            var products = _httpClient.GetFromJsonAsync<List<AuctionProduct>>("auctionproducts").Result;
+            return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
 
-        public string GetTimeLeft(AuctionProduct auction)
+        public override Product GetProductById(int id)
         {
-            var timeLeft = auction.EndAuctionDate - DateTime.Now;
-            return timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
+            var product = _httpClient.GetFromJsonAsync<AuctionProduct>($"auctionproducts/{id}").Result;
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Auction product with ID {id} not found.");
+            }
+            return product;
         }
 
-        public bool IsAuctionEnded(AuctionProduct auction)
+        public Task<IEnumerable<Product>> SortAndFilter(string sortOption, string filterOption, string filterValue)
         {
-            return DateTime.Now >= auction.EndAuctionDate;
+            Console.WriteLine("Warning: SortAndFilter not implemented with specific API call yet. Returning all products.");
+            return Task.FromResult(GetProducts().Cast<Product>());
         }
     }
 }

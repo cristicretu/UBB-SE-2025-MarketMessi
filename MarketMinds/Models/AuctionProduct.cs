@@ -15,6 +15,15 @@ namespace DomainLayer.Domain
 
         public List<Bid> BidHistory { get; set; }
 
+        // Add a parameterless constructor for JSON deserialization
+        public AuctionProduct() : base() // Call base constructor if Product has one
+        {
+            // Initialize collections to avoid null references
+            BidHistory = new List<Bid>();
+            Tags = new List<ProductTag>(); // Assuming Tags is inherited from Product
+            Images = new List<Image>(); // Assuming Images is inherited from Product
+        }
+
         public AuctionProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
             List<ProductTag> productTags, List<Image> images, DateTime startAuctionDate, DateTime endAuctionDate, float startingPrice)
         {
