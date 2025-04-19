@@ -75,6 +75,17 @@ namespace MarketMinds.Controllers
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
 
+            // Validate dates
+            if (product.EndDate <= product.StartDate)
+            {
+                return BadRequest("End date must be after start date.");
+            }
+
+            if (product.DailyRate <= 0)
+            {
+                return BadRequest("Daily rate must be positive.");
+            }
+
             try
             {
                 _borrowProductsRepository.AddProduct(product);
@@ -101,6 +112,17 @@ namespace MarketMinds.Controllers
             if (product == null || id != product.Id || !ModelState.IsValid)
             {
                 return BadRequest("Product data is invalid or ID mismatch.");
+            }
+
+            // Validate dates
+            if (product.EndDate <= product.StartDate)
+            {
+                return BadRequest("End date must be after start date.");
+            }
+
+            if (product.DailyRate <= 0)
+            {
+                return BadRequest("Daily rate must be positive.");
             }
 
             try
