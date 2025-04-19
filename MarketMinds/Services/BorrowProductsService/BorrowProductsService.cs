@@ -160,7 +160,6 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
         {
             var response = httpClient.GetAsync("borrowproducts").Result;
             response.EnsureSuccessStatusCode();
-            
             var products = response.Content.ReadFromJsonAsync<List<BorrowProduct>>().Result;
             return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
