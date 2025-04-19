@@ -129,7 +129,7 @@ namespace MarketMinds
             // Instantiate services
             ProductService = new ProductService(BorrowProductsRepository);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
-            BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
+            BorrowProductsService = new BorrowProductsService(Configuration);
             AuctionProductsService = new AuctionProductsService(Configuration);
             CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(ProductTagRepository);
