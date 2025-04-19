@@ -1,5 +1,6 @@
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
+using MarketMinds.Repositories.BuyProductsRepository; // Add namespace for BuyProductsRepository
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddSingleton<DataBaseConnection>();
 
 // Register AuctionProductsRepository
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
+// Register BuyProductsRepository
+builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();

@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using MarketMinds.Repositories.BuyProductsRepository;
+using DataAccessLayer;
 using server.Models;
+using MarketMinds.Repositories.BuyProductsRepository;
+using System.Collections.Generic;
+using System;
+using System.Net;
 
 namespace MarketMinds.Controllers
 {
@@ -16,7 +20,9 @@ namespace MarketMinds.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Product>> GetAllProducts()
+        [ProducesResponseType(typeof(List<Product>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetProducts()
         {
             try
             {
@@ -25,79 +31,123 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error getting all products: {ex}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Product> GetProductById(int id)
+        [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetProductById(int id)
         {
             try
             {
                 var product = _buyProductsRepository.GetProductByID(id);
-                if (product == null)
-                {
-                    return NotFound($"Product with ID {id} not found");
-                }
                 return Ok(product);
+            }
+            catch (KeyNotFoundException knfex)
+            {
+                return NotFound(knfex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error getting product by ID {id}: {ex}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
 
         [HttpPost]
-        public ActionResult<Product> AddProduct([FromBody] Product product)
+        [ProducesResponseType(typeof(Product), (int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult CreateProduct([FromBody] Product product)
         {
+            if (product == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (product.Id != 0)
+            {
+                return BadRequest("Product ID should not be provided when creating a new product.");
+            }
+
             try
             {
                 _buyProductsRepository.AddProduct(product);
                 return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
             }
+            catch (ArgumentException aex)
+            {
+                return BadRequest(aex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error creating product: {ex}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
             }
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateProduct(int id, [FromBody] Product product)
         {
+            if (product == null || id != product.Id || !ModelState.IsValid)
+            {
+                return BadRequest("Product data is invalid or ID mismatch.");
+            }
+
             try
             {
-                if (id != product.Id)
-                {
-                    return BadRequest("Product ID mismatch");
-                }
-
                 _buyProductsRepository.UpdateProduct(product);
                 return NoContent();
             }
+            catch (KeyNotFoundException knfex)
+            {
+                return NotFound(knfex.Message);
+            }
+            catch (ArgumentException aex)
+            {
+                return BadRequest(aex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error updating product ID {id}: {ex}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult DeleteProduct(int id)
         {
             try
             {
-                var product = _buyProductsRepository.GetProductByID(id);
-                if (product == null)
-                {
-                    return NotFound($"Product with ID {id} not found");
-                }
-
-                _buyProductsRepository.DeleteProduct(product);
+                var productToDelete = _buyProductsRepository.GetProductByID(id);
+                _buyProductsRepository.DeleteProduct(productToDelete);
                 return NoContent();
+            }
+            catch (KeyNotFoundException knfex)
+            {
+                return NotFound(knfex.Message);
+            }
+            catch (ArgumentException aex)
+            {
+                return BadRequest(aex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error deleting product ID {id}: {ex}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
         }
     }
-} 
+}
