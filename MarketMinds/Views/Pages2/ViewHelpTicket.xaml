@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.ViewHelpTicket"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketNumber"/>
+            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketUserID"/>
+            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketUserName"/>
+            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketDateAndTime"/>
+            <TextBlock Text="Description:" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBox Text="" 
+             HorizontalAlignment="Center" 
+             VerticalAlignment="Center" 
+             Width="250"
+             TextChanged="OnTextChangedTextBoxViewHelpTicketDescription"
+             x:Name="TextBoxViewHelpTicketDescription"/>
+            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketClosed"/>
+            <TextBlock Text="Description modification failed! Retry" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketDescriptionModificationFailed"/>
+            <TextBlock Text="Description modification succeeded!" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketDescriptionModificationSucceeded"/>
+            <TextBlock Text="Ticket closure failed! Retry" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketTicketClosureFailed"/>
+            <TextBlock Text="Ticket closure succeeded!" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketTicketClosureSucceeded"/>
+            <Button Content="Close ticket" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Visibility="Collapsed"
+                            Click="OnButtonClickViewHelpTicketCloseTicket"
+                            x:Name="ButtonViewHelpTicketCloseTicket"/>
+            <Button Content="Save description modifications" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Visibility="Collapsed"
+                            Click="OnButtonClickViewHelpTicketSaveDescriptionModifications"
+                            x:Name="ButtonViewHelpTicketSaveDescriptionModifications"/>
+            <Button Content="Return" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Click="OnButtonClickNavigateViewHelpTicketPageAdminAccountPage"
+                            x:Name="ButtonNavigateViewHelpTicketPageAdminAccountPage"/>
+        </StackPanel>
+    </Grid>
+</Page>

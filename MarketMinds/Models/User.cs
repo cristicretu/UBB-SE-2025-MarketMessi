@@ -15,15 +15,17 @@ namespace DomainLayer.Domain
         public float Balance { get; set; }
         public float Rating { get; set; }
         public float Password { get; set; }
+        public string Token { get; set; } = string.Empty;
 
         private const float MAX_BALANCE = 999999;
 
-        public User(int id, string username, string email)
+        public User(int id, string username, string email, string token)
         {
             this.Id = id;
             this.Username = username;
             this.Email = email;
             this.Balance = MAX_BALANCE;
+            this.Token = token;
         }
     }
 }

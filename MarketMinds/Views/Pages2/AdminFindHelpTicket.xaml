@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.AdminFindHelpTicket"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="Look up tickets by User ID" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBox PlaceholderText="User ID" 
+             HorizontalAlignment="Center" 
+             VerticalAlignment="Center" 
+             Width="250"
+             x:Name="TextBoxLookupHelpTicketUserID"/>
+            <TextBlock Text="User ID not found!" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockAdminFindHelpTicketUserIDNotFound" Visibility="Collapsed"/>
+            <TextBlock Text="Type a user ID!" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockAdminFindHelpTicketTypeUserID" Visibility="Collapsed"/>
+            <ScrollViewer>
+                <StackPanel x:Name="StackPanelAdminFindHelpTickets">
+
+                </StackPanel>
+            </ScrollViewer>
+            <Button Content="Search" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Click="OnButtonClickAdminSearchHelpTicket"
+                            x:Name="ButtonAdminSearchHelpTicket"/>
+            <Button Content="Return" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Width="250" 
+                            Height="50" 
+                            Click="OnButtonClickNavigateAdminSearchHelpTicketPageAdminAccountPage"
+                            x:Name="ButtonNavigateAdminSearchHelpTicketPageAdminAccountPage"/>
+        </StackPanel>
+    </Grid>
+</Page>
