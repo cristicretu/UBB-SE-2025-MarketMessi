@@ -13,22 +13,27 @@ namespace DomainLayer.Domain
         public DateTime TimeLimit { get; set; }
         public float DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
+
+        // Parameterless constructor for JSON deserialization
+        public BorrowProduct() { }
+
         public BorrowProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
             List<ProductTag> productTags, List<Image> images, DateTime timeLimit, DateTime startDate, DateTime endDate, float dailyRate, bool isBorrowed)
         {
             this.Id = id;
-            this.Title = title;
             this.Description = description;
+            this.Title = title;
             this.Seller = seller;
             this.Condition = productCondition;
             this.Category = productCategory;
             this.Tags = productTags;
             this.Images = images;
+            this.TimeLimit = timeLimit;
             this.StartDate = startDate;
             this.EndDate = endDate;
-            this.TimeLimit = timeLimit;
             this.DailyRate = dailyRate;
             this.IsBorrowed = isBorrowed;
         }
+
     }
 }

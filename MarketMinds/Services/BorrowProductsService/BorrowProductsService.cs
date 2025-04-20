@@ -154,20 +154,10 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
         }
     }
 
-    public override List<Product> GetProducts()
+     public override List<Product> GetProducts()
     {
-        try
-        {
-            var response = httpClient.GetAsync("borrowproducts").Result;
-            response.EnsureSuccessStatusCode();
-            var products = response.Content.ReadFromJsonAsync<List<BorrowProduct>>().Result;
-            return products?.Cast<Product>().ToList() ?? new List<Product>();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching borrow products: {ex}");
-            return new List<Product>();
-        }
+        var products = httpClient.GetFromJsonAsync<List<BorrowProduct>>("borrowproducts").Result;
+        return products?.Cast<Product>().ToList() ?? new List<Product>();
     }
 
     public override Product GetProductById(int id)

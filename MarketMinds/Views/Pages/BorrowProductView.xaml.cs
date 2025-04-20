@@ -41,6 +41,16 @@ namespace MarketMinds
             Debug.WriteLine("[BorrowProductView] Initializing date controls");
             try
             {
+                // Ensure dates are valid
+                if (Product.StartDate == DateTime.MinValue)
+                {
+                    Product.StartDate = DateTime.Today;
+                }
+                if (Product.TimeLimit == DateTime.MinValue)
+                {
+                    Product.TimeLimit = DateTime.Today.AddDays(30); // Default to 30 days from today
+                }
+
                 // Ensure valid date range
                 if (Product.StartDate > Product.TimeLimit)
                 {
@@ -50,11 +60,14 @@ namespace MarketMinds
                     Product.TimeLimit = temp;
                 }
 
+                // Format dates for display
                 StartDateTextBlock.Text = Product.StartDate.ToString("d");
                 TimeLimitTextBlock.Text = Product.TimeLimit.ToString("d");
-                // Set the DatePicker's range
-                EndDatePicker.MinDate = Product.StartDate;
-                EndDatePicker.MaxDate = Product.TimeLimit;
+
+                // Set the DatePicker's range with proper DateTimeOffset conversion
+                EndDatePicker.MinDate = new DateTimeOffset(Product.StartDate);
+                EndDatePicker.MaxDate = new DateTimeOffset(Product.TimeLimit);
+
                 Debug.WriteLine($"[BorrowProductView] Date controls initialized - StartDate: {StartDateTextBlock.Text}, TimeLimit: {TimeLimitTextBlock.Text}");
                 Debug.WriteLine($"[BorrowProductView] DatePicker range set - Min: {EndDatePicker.MinDate}, Max: {EndDatePicker.MaxDate}");
             }
@@ -62,6 +75,11 @@ namespace MarketMinds
             {
                 Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {ex.Message}");
                 Debug.WriteLine($"[BorrowProductView] Stack trace: {ex.StackTrace}");
+                // Set default dates in case of error
+                StartDateTextBlock.Text = DateTime.Today.ToString("d");
+                TimeLimitTextBlock.Text = DateTime.Today.AddDays(30).ToString("d");
+                EndDatePicker.MinDate = new DateTimeOffset(DateTime.Today);
+                EndDatePicker.MaxDate = new DateTimeOffset(DateTime.Today.AddDays(30));
             }
 
             LoadProductDetails();
