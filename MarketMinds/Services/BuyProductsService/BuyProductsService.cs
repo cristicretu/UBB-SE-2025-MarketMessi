@@ -27,6 +27,12 @@ namespace MarketMinds.Services.BuyProductsService
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
+        public override List<Product> GetProducts()
+        {
+            var products = httpClient.GetFromJsonAsync<List<BuyProduct>>("buyproducts").Result;
+            return products?.Cast<Product>().ToList() ?? new List<Product>();
+        }
+
         public void CreateListing(Product product)
         {
             if (!(product is BuyProduct buyProduct))

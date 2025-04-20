@@ -9,6 +9,13 @@ namespace DomainLayer.Domain
     public class BuyProduct : Product
     {
         public float Price { get; set; }
+
+        public BuyProduct()
+        {
+            Tags = new List<ProductTag>();
+            Images = new List<Image>();
+        }
+
         public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
             List<ProductTag> productTags, List<Image> images, float price)
         {
