@@ -9,12 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-    options.JsonSerializerOptions.MaxDepth = 64; 
+    options.JsonSerializerOptions.ReferenceHandler = null;
+    
+    // Enable camel casing to match frontend expectations
+    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    
+    // Ignore null values in the output
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// Register DataBaseConnection (Singleton is usually appropriate if thread-safe)
-// It reads configuration internally now
+// compatibility with old API without EF, need to remove this when EF is fully implemented
 builder.Services.AddSingleton<DataBaseConnection>(); 
 
 var InitialCatalog = builder.Configuration["InitialCatalog"];

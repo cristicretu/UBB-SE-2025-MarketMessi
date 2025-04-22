@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer; 
 using server.Models; 
 using MarketMinds.Repositories.AuctionProductsRepository; 
+using server.Models.DTOs;
+using server.Models.DTOs.Mappers;
 
 using System.Collections.Generic;
 using System;
@@ -22,14 +24,15 @@ namespace MarketMinds.Controllers
 
         
         [HttpGet]
-        [ProducesResponseType(typeof(List<AuctionProduct>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<AuctionProductDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetAuctionProducts()
         {
             try
             {
                 var products = _auctionProductsRepository.GetProducts();
-                return Ok(products);
+                var dtos = AuctionProductMapper.ToDTOList(products);
+                return Ok(dtos);
             }
             catch (Exception ex)
             {
@@ -41,7 +44,7 @@ namespace MarketMinds.Controllers
 
         
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(AuctionProduct), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AuctionProductDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetAuctionProductById(int id)
@@ -49,8 +52,8 @@ namespace MarketMinds.Controllers
              try
             {
                 var product = _auctionProductsRepository.GetProductByID(id);
-                
-                return Ok(product);
+                var dto = AuctionProductMapper.ToDTO(product);
+                return Ok(dto);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -66,7 +69,7 @@ namespace MarketMinds.Controllers
 
         
         [HttpPost]
-        [ProducesResponseType(typeof(AuctionProduct), (int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(AuctionProductDTO), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
@@ -86,9 +89,8 @@ namespace MarketMinds.Controllers
             try
             {
                 _auctionProductsRepository.AddProduct(product);
-                 
-                 
-                return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, product);
+                var dto = AuctionProductMapper.ToDTO(product);
+                return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, dto);
             }
              catch (ArgumentException aex)
             {
@@ -147,12 +149,6 @@ namespace MarketMinds.Controllers
         {
              try
             {
-                 
-                 
-                 
-                 
-                 
-                
                  var productToDelete = _auctionProductsRepository.GetProductByID(id);
                  
                  _auctionProductsRepository.DeleteProduct(productToDelete);
