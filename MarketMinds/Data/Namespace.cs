@@ -2,14 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Marketplace_SE.Data
 {
     public class Database
     {
-        public static Database database { get; set; }
+        public static Database Databases { get; set; }
         private SqlConnection connection;
         private string connectionString;
+        internal static object databasee;
 
         public Database(string connectionString)
         {
@@ -55,15 +57,14 @@ namespace Marketplace_SE.Data
             {
                 command.Parameters.AddWithValue(parameters[i], values[i]);
             }
-            
             SqlDataAdapter adapter = new SqlDataAdapter(command);
             DataTable dataTable = new DataTable();
             adapter.Fill(dataTable);
-            
             return dataTable;
         }
 
-        public List<T> ConvertToObject<T>(DataTable dataTable) where T : new()
+        public List<T> ConvertToObject<T>(DataTable dataTable)
+            where T : new()
         {
             List<T> objects = new List<T>();
             foreach (DataRow row in dataTable.Rows)
@@ -87,19 +88,19 @@ namespace Marketplace_SE.Objects
 {
     public class User
     {
-        public int id { get; private set; }
-        public string username { get; private set; }
-        public string password { get; private set; }
+        public int Id { get; private set; }
+        public string Username { get; private set; }
+        public string Password { get; private set; }
 
         public User(string username, string password)
         {
-            this.username = username;
-            this.password = password;
+            this.Username = username;
+            this.Password = password;
         }
 
         public void SetId(int id)
         {
-            this.id = id;
+            this.Id = id;
         }
     }
 }
@@ -118,290 +119,295 @@ namespace Microsoft.UI
 {
     public class Window
     {
-        public void Activate() { }
-        public void Close() { }
-    }
-    
-    public class Colors
-    {
-        public static object Black { get; } = new object();
-        public static object Green { get; } = new object();
-        public static object Red { get; } = new object();
-    }
-}
-
-namespace Microsoft.UI.Text
-{
-    public class FontWeights
-    {
-        public static object Bold { get; } = new object();
-    }
-}
-
-// Basic user order class
-namespace Marketplace_SE
-{
-    public class UserOrder
-    {
-        public int id;
-        public string name;
-        public string description;
-        public decimal cost;
-        public long created;
-        public string orderStatus;
-        public int sellerId;
-        public int buyerId;
-    }
-}
-
-namespace Microsoft.UI.Xaml.Controls
-{
-    public enum Orientation
-    {
-        Horizontal,
-        Vertical
-    }
-
-    public class Button
-    {
-        public object Content { get; set; }
-        public event EventHandler Click;
-    }
-
-    public class Page
-    {
-        public Microsoft.UI.Xaml.Controls.Frame Frame { get; protected set; }
-        
-        protected virtual void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        public void Activate()
         {
-            // Base implementation
+        }
+        public void Close()
+        {
+        }
+        public class Colors
+        {
+            public static object Black { get; } = new object();
+            public static object Green { get; } = new object();
+            public static object Red { get; } = new object();
         }
     }
 
-    public class Frame
+    namespace Microsoft.UI.Text
     {
-        public void Navigate(Type pageType)
+        public class FontWeights
         {
-            // Navigation implementation
+            public static object Bold { get; } = new object();
         }
     }
 
-    public class StackPanel
+    // Basic user order class
+    namespace Marketplace_SE
     {
-        public Orientation Orientation { get; set; }
-        public Microsoft.UI.Xaml.Thickness Margin { get; set; }
-        public System.Collections.Generic.IList<UIElement> Children { get; } = new System.Collections.Generic.List<UIElement>();
-    }
-
-    public class TextBlock : UIElement
-    {
-        public string Text { get; set; }
-        public Microsoft.UI.Xaml.TextWrapping TextWrapping { get; set; }
-        public Microsoft.UI.Xaml.Thickness Margin { get; set; }
-    }
-
-    public class UIElement
-    {
-        public Microsoft.UI.Xaml.HorizontalAlignment HorizontalAlignment { get; set; }
-        public Microsoft.UI.Xaml.VerticalAlignment VerticalAlignment { get; set; }
-    }
-}
-
-namespace Microsoft.UI.Xaml.Navigation
-{
-    public class NavigationEventArgs : EventArgs
-    {
-        public object Parameter { get; set; }
-        public Type SourcePageType { get; set; }
-    }
-
-    public static class FrameNavigation
-    {
-        public static void NavigateWithConstructorParameters<T>(Frame frame, object parameter)
+        public class UserOrder
         {
-            // Implementation
-        }
-    }
-}
-
-namespace Microsoft.UI.Xaml
-{
-    public class Thickness
-    {
-        public Thickness(double uniformSize) { }
-        public Thickness(double left, double top, double right, double bottom) { }
-    }
-
-    public enum HorizontalAlignment
-    {
-        Left,
-        Center,
-        Right,
-        Stretch
-    }
-
-    public enum VerticalAlignment
-    {
-        Top,
-        Center,
-        Bottom,
-        Stretch
-    }
-
-    public class RoutedEventArgs : EventArgs
-    {
-    }
-    
-    public enum TextWrapping
-    {
-        NoWrap,
-        Wrap,
-        WrapWholeWords
-    }
-}
-
-// Add Windows.Graphics namespace
-namespace Windows.Graphics
-{
-    public struct PointInt32
-    {
-        public int X;
-        public int Y;
-
-        public PointInt32(int x, int y)
-        {
-            X = x;
-            Y = y;
+            public int Id;
+            public string Name;
+            public string Description;
+            public decimal Cost;
+            public long Created;
+            public string OrderStatus;
+            public int SellerId;
+            public int BuyerId;
         }
     }
 
-    public struct SizeInt32
+    namespace Microsoft.UI.Xaml.Controls
     {
-        public int Width;
-        public int Height;
-
-        public SizeInt32(int width, int height)
+        public enum Orientation
         {
-            Width = width;
-            Height = height;
-        }
-    }
-}
-
-// Add WinRT namespace
-namespace WinRT.Interop
-{
-    public static class WindowNative
-    {
-        public static IntPtr GetWindowHandle(object window)
-        {
-            return IntPtr.Zero; // Stub implementation
-        }
-    }
-}
-
-// Add Win32Interop and Windowing namespace
-namespace Microsoft.UI
-{
-    public static class Win32Interop
-    {
-        public static WindowId GetWindowIdFromWindow(IntPtr hwnd)
-        {
-            return new WindowId(); // Stub implementation
-        }
-    }
-
-    public struct WindowId
-    {
-        public ulong Value;
-    }
-
-    namespace Windowing
-    {
-        public enum DisplayAreaFallback
-        {
-            None,
-            Nearest
+            Horizontal,
+            Vertical
         }
 
-        public class DisplayArea
+        public class Button
         {
-            public WorkArea WorkArea { get; } = new WorkArea();
-            public WindowId Id { get; }
+            public object Content { get; set; }
+            public event EventHandler Click;
+        }
 
-            public static DisplayArea GetFromWindowId(WindowId windowId, DisplayAreaFallback fallback)
+        public class Page
+        {
+            public Microsoft.UI.Xaml.Controls.Frame Frame { get; protected set; }
+            protected virtual void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
             {
-                return new DisplayArea(); // Stub implementation
+                // Base implementation
             }
         }
 
-        public class WorkArea
+        public class Frame
         {
-            public int Width { get; } = 1920;
-            public int Height { get; } = 1080;
+            public void Navigate(Type pageType)
+            {
+                // Navigation implementation
+            }
         }
 
-        public class AppWindow
+        public class StackPanel
         {
-            public WindowId Id { get; }
+            public Orientation Orientation { get; set; }
+            public Microsoft.UI.Xaml.Thickness Margin { get; set; }
+           // public System.Collections.Generic.IList<UIElement> Children { get; } = new System.Collections.Generic.List<UIElement>();
+        }
 
-            public static AppWindow GetFromWindowId(WindowId windowId)
+        public class TextBlock : UIElement
+        {
+            public string Text { get; set; }
+            public Microsoft.UI.Xaml.TextWrapping TextWrapping { get; set; }
+            public Microsoft.UI.Xaml.Thickness Margin { get; set; }
+        }
+
+        public class UIElement
+        {
+            public Microsoft.UI.Xaml.HorizontalAlignment HorizontalAlignment { get; set; }
+            public Microsoft.UI.Xaml.VerticalAlignment VerticalAlignment { get; set; }
+        }
+    }
+
+    namespace Microsoft.UI.Xaml.Navigation
+    {
+        public class NavigationEventArgs : EventArgs
+        {
+            public object Parameter { get; set; }
+            public Type SourcePageType { get; set; }
+        }
+
+        public static class FrameNavigation
+        {
+            public static void NavigateWithConstructorParameters<T>(Frame frame, object parameter)
             {
-                return new AppWindow(); // Stub implementation
+                // Implementation
+            }
+        }
+    }
+
+    namespace Microsoft.UI.Xaml
+    {
+        public class Thickness
+        {
+            public Thickness(double uniformSize)
+            {
+            }
+            public Thickness(double left, double top, double right, double bottom)
+            {
+            }
+        }
+
+        public enum HorizontalAlignment
+        {
+            Left,
+            Center,
+            Right,
+            Stretch
+        }
+
+        public enum VerticalAlignment
+        {
+            Top,
+            Center,
+            Bottom,
+            Stretch
+        }
+
+        public class RoutedEventArgs : EventArgs
+        {
+        }
+        public enum TextWrapping
+        {
+            NoWrap,
+            Wrap,
+            WrapWholeWords
+        }
+    }
+
+    // Add Windows.Graphics namespace
+    namespace Windows.Graphics
+    {
+        public struct PointInt32
+        {
+            public int X;
+            public int Y;
+
+            public PointInt32(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+        }
+
+        public struct SizeInt32
+        {
+            public int Width;
+            public int Height;
+
+            public SizeInt32(int width, int height)
+            {
+                Width = width;
+                Height = height;
+            }
+        }
+    }
+
+    // Add WinRT namespace
+    namespace WinRT.Interop
+    {
+        public static class WindowNative
+        {
+            public static IntPtr GetWindowHandle(object window)
+            {
+                return IntPtr.Zero; // Stub implementation
+            }
+        }
+    }
+
+    // Add Win32Interop and Windowing namespace
+    namespace Microsoft.UI
+    {
+        public static class Win32Interop
+        {
+            public static WindowId GetWindowIdFromWindow(IntPtr hwnd)
+            {
+                return new WindowId(); // Stub implementation
+            }
+        }
+
+        public struct WindowId
+        {
+            public ulong Value;
+        }
+
+        namespace Windowing
+        {
+            public enum DisplayAreaFallback
+            {
+                None,
+                Nearest
             }
 
-            public void Resize(Windows.Graphics.SizeInt32 size)
+            public class DisplayArea
             {
-                // Stub implementation
+                public WorkArea WorkArea { get; } = new WorkArea();
+                public WindowId Id { get; }
+
+                public static DisplayArea GetFromWindowId(WindowId windowId, DisplayAreaFallback fallback)
+                {
+                    return new DisplayArea(); // Stub implementation
+                }
             }
 
-            public void Move(Windows.Graphics.PointInt32 point)
+            public class WorkArea
             {
-                // Stub implementation
+                public int Width { get; } = 1920;
+                public int Height { get; } = 1080;
             }
+
+            public class AppWindow
+            {
+                public WindowId Id { get; }
+
+                public static AppWindow GetFromWindowId(WindowId windowId)
+                {
+                    return new AppWindow(); // Stub implementation
+                }
+
+                public void Resize(Windows.Graphics.SizeInt32 size)
+                {
+                    // Stub implementation
+                }
+
+                public void Move(Windows.Graphics.PointInt32 point)
+                {
+                    // Stub implementation
+                }
+            }
+        }
+    }
+
+    namespace Marketplace_SE.Service
+    {
+        public class HelpTicket
+        {
+            public string TicketID { get; }
+            public string UserID { get; }
+            public string UserName { get; }
+            public string DateAndTime { get; }
+            public string Descript { get; }
+            public string Closed { get; }
+
+            public HelpTicket(string ticketID_, string userID_, string userName_, string dateHour_, string description_, string closed_)
+            {
+                TicketID = ticketID_;
+                UserID = userID_;
+                UserName = userName_;
+                DateAndTime = dateHour_;
+                Descript = description_;
+                Closed = closed_;
+            }
+
+            public string ToStringExceptDescription()
+            {
+                return $"TicketID: {TicketID}, UserID: {UserID}, UserName: {UserName}, DateAndTime: {DateAndTime}, Closed: {Closed}";
+            }
+
+            public static HelpTicket FromHelpTicketFromDB(HelpTicketFromDB other)
+            {
+                return new HelpTicket(other.TicketID.ToString(), other.UserID, other.UserName, other.DateAndTime, other.Descript, other.Closed);
+            }
+        }
+
+        public class HelpTicketFromDB
+        {
+            public int TicketID;
+            public string UserID;
+            public string UserName;
+            public string DateAndTime;
+            public string Descript;
+            public string Closed;
         }
     }
 }
-
-namespace Marketplace_SE.Service
-{
-    public class HelpTicket
-    {
-        public string TicketID { get; }
-        public string UserID { get; }
-        public string UserName { get; }
-        public string DateAndTime { get; }
-        public string Descript { get; }
-        public string Closed { get; }
-
-        public HelpTicket(string TicketID_, string UserID_, string UserName_, string DateHour_, string Description_, string Closed_)
-        {
-            TicketID = TicketID_;
-            UserID = UserID_;
-            UserName = UserName_;
-            DateAndTime = DateHour_;
-            Descript = Description_;
-            Closed = Closed_;
-        }
-
-        public string toStringExceptDescription()
-        {
-            return $"TicketID: {TicketID}, UserID: {UserID}, UserName: {UserName}, DateAndTime: {DateAndTime}, Closed: {Closed}";
-        }
-
-        public static HelpTicket FromHelpTicketFromDB(HelpTicketFromDB other)
-        {
-            return new HelpTicket(other.TicketID.ToString(), other.UserID, other.UserName, other.DateAndTime, other.Descript, other.Closed);
-        }
-    }
-
-    public class HelpTicketFromDB
-    {
-        public int TicketID;
-        public string UserID;
-        public string UserName;
-        public string DateAndTime;
-        public string Descript;
-        public string Closed;
-    }
-} 

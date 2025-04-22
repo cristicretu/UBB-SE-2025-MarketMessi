@@ -19,7 +19,7 @@ namespace DomainLayer.Domain
 
         private const float MAX_BALANCE = 999999;
 
-        public User(int id, string username, string email, string token)
+        public User(int id, string username, string email, string token = "")
         {
             this.Id = id;
             this.Username = username;

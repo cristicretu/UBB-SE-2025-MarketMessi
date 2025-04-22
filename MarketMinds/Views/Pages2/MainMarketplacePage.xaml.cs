@@ -37,65 +37,49 @@ namespace Marketplace_SE
             this.me = new User("test", "");
             this.me.SetId(0);
 
-            Database.database = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.database.Connect();
+            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.databasee.Connect();
 
             if (!status)
             {
-                //database connection failed
-                //ShowDialog("Database connection error", "Error connecting to database");
-
                 Notification notification = new Notification("Database connection error", "Error connecting to database");
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.database.Close();
+                    Database.databasee.Close();
                     Frame.Navigate(typeof(MainMarketplacePage));
                 };
                 notification.GetWindow().Activate();
                 return;
             }
 
-            var data = Database.database.Get("SELECT * FROM Orders WHERE buyerId=-1", new string[]
+            var data = Database.databasee.Get("SELECT * FROM Orders WHERE buyerId=-1", new string[]
             {
                 "@MyId"
             }, new object[]
             {
-                this.me.id
+                this.me.Id
             });
 
-            List<UserNotSoldOrder> orders = Database.database.ConvertToObject<UserNotSoldOrder>(data);
-
-            //don't need to sort
-            /*
-            orders.Sort((a, b) =>
-            {
-                return (int)(b.created - a.created);
-            });
-            */
-
+            List<UserNotSoldOrder> orders = Database.databasee.ConvertToObject<UserNotSoldOrder>(data);
 
             this.InitializeComponent();
 
-            for(int i = 0; i < orders.Count; i++)
+            for (int i = 0; i < orders.Count; i++)
             {
                 createUIOrder(orders[i]);
             }
         }
-
-
-
-
         public void createUIOrder(UserNotSoldOrder order)
         {
             
              Border itemBorder = new Border
             {
-                BorderBrush = new SolidColorBrush(Color.FromArgb(255,118,185,237)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(255, 118, 185, 237)),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(15),
-                Background = new SolidColorBrush(Color.FromArgb(255,0,0,0))
+                Background = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0))
             };
 
             
@@ -112,10 +96,6 @@ namespace Marketplace_SE
                 HorizontalAlignment = HorizontalAlignment.Left
             };
 
-
-            // DB get seller name
-            // but now hardcoded to ID
-
             TextBlock sellerInfo = new TextBlock
             {
                 Text = $"Seller Id: {order.sellerId}",
@@ -129,10 +109,10 @@ namespace Marketplace_SE
             Button buyButton = new Button
             {
                 Content = "Buy item",
-                Background = new SolidColorBrush(Color.FromArgb(255,0,90,158)),
+                Background = new SolidColorBrush(Color.FromArgb(255, 0, 90, 158)),
                 Foreground = new SolidColorBrush(Colors.White),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Padding = new Thickness(15, 8,15,8),
+                Padding = new Thickness(15, 8, 15, 8),
                 Margin = new Thickness(0, 5, 0, 5)
             };
             buyButton.Name = $"ButtonBuyItem_{order.id}";
@@ -176,14 +156,14 @@ namespace Marketplace_SE
         }
         public void OnButtonClickChatWithSeller(object sender, RoutedEventArgs e)
         {
-            //IONUT AND CALIN HERE
             if (selected_item.sellerId == 1)
             {
-                FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame,0);
-            } else if(selected_item.sellerId == 0){
+                FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, 0);
+            }
+            else if (selected_item.sellerId == 0)
+            {
                 FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, 1);
             }
-            //Frame.Navigate(typeof(ChatPage));
         }
 
         public void OnButtonClickOpenHelp(object sender, RoutedEventArgs e)

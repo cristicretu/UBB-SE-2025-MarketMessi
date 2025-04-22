@@ -40,8 +40,8 @@ namespace Marketplace_SE
             this.me = new User("test", "");
             this.me.SetId(0);
 
-            Database.database = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.database.Connect();
+            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.databasee.Connect();
 
             if (!status)
             {
@@ -52,22 +52,22 @@ namespace Marketplace_SE
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.database.Close();
+                    Database.databasee.Close();
                     Frame.Navigate(typeof(MainMarketplacePage));
                 };
                 notification.GetWindow().Activate();
                 return;
             }
 
-            var data = Database.database.Get("SELECT * FROM Orders WHERE sellerId=@MyId OR buyerId=@MyId", new string[]
+            var data = Database.databasee.Get("SELECT * FROM Orders WHERE sellerId=@MyId OR buyerId=@MyId", new string[]
             {
                 "@MyId"
             }, new object[]
             {
-                this.me.id
+                this.me.Id
             });
 
-            List<UserOrder> orders = Database.database.ConvertToObject<UserOrder>(data);
+            List<UserOrder> orders = Database.databasee.ConvertToObject<UserOrder>(data);
 
             //sort after creation time descending
             orders.Sort((a, b) =>
@@ -78,7 +78,7 @@ namespace Marketplace_SE
 
             this.InitializeComponent();
 
-            UserInfoText.Text = "Name - " + this.me.username;
+            UserInfoText.Text = "Name - " + this.me.Username;
 
             for (int i = 0; i < orders.Count; i++)
             {
@@ -104,7 +104,7 @@ namespace Marketplace_SE
                 Orientation = Orientation.Vertical
             };
 
-            bool isBuyOrder = order.buyerId == me.id;
+            bool isBuyOrder = order.buyerId == me.Id;
 
             Grid orderTypeGrid = new Grid
             {

@@ -34,13 +34,13 @@ namespace Marketplace_SE
             this.InitializeComponent();
 
             // Initialize database connection if not already initialized
-            if (Database.database == null)
+            if (Database.databasee == null)
             {
                 try
                 {
                     // Create database connection 
-                    Database.database = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-                    bool connected = Database.database.Connect();
+                    Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+                    bool connected = Database.databasee.Connect();
 
                     if (connected)
                     {
@@ -70,7 +70,7 @@ namespace Marketplace_SE
             // Register for page loading event to ensure XamlRoot is set
             Loaded += FinalizeOrderPage_Loaded;
 
-            Database.database.Close();
+            Database.databasee.Close();
         }
 
         private void FinalizeOrderPage_Loaded(object sender, RoutedEventArgs e)
@@ -135,7 +135,7 @@ namespace Marketplace_SE
             {
                 try
                 {
-                    if (Database.database != null)
+                    if (Database.databasee != null)
                     {
                         // Prepare the SQL query
                         string query = @"
@@ -144,7 +144,8 @@ namespace Marketplace_SE
 
                         // Prepare parameters
                         string[] args = new string[] { "@UserID", "@Rating", "@Comment", "@Timestamp", "@AppVersion" };
-                        object[] values = new object[] {
+                        object[] values = new object[]
+                        {
                             ratingData.UserID,
                             ratingData.Rating,
                             ratingData.Comment ?? (object)DBNull.Value,
@@ -152,13 +153,13 @@ namespace Marketplace_SE
                             ratingData.AppVersion
                         };
 
-                        Database.database = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-                        bool connected = Database.database.Connect();
+                        Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+                        bool connected = Database.databasee.Connect();
 
                         // Execute the query
-                        int result = Database.database.Execute(query, args, values);
+                        int result = Database.databasee.Execute(query, args, values);
 
-                        Database.database.Close();
+                        Database.databasee.Close();
                     }
                 }
                 catch (Exception ex)
@@ -175,7 +176,7 @@ namespace Marketplace_SE
             {
                 try
                 {
-                    if (Database.database != null)
+                    if (Database.databasee != null)
                     {
                         // Prepare the SQL query
                         string query = @"
@@ -193,7 +194,8 @@ namespace Marketplace_SE
                             )";
 
                         // Prepare parameters
-                        string[] args = new string[] {
+                        string[] args = new string[]
+                        {
                             "@DeviceID", "@DeviceType", "@OperatingSystem", "@OSVersion",
                             "@BrowserName", "@BrowserVersion", "@ScreenResolution",
                             "@AvailableRAM", "@CPUInformation", "@GPUInformation",
@@ -216,11 +218,11 @@ namespace Marketplace_SE
                             hardwareData.AppVersion
                         };
 
-                        Database.database = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-                        bool connected = Database.database.Connect();
+                        Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+                        bool connected = Database.databasee.Connect();
 
                         // Execute the query
-                        int result = Database.database.Execute(query, args, values);
+                        int result = Database.databasee.Execute(query, args, values);
 
                         // Print data to console for demonstration
                         System.Diagnostics.Debug.WriteLine("========== HARDWARE SURVEY DATA SAVED TO DATABASE ==========");
@@ -232,7 +234,7 @@ namespace Marketplace_SE
                         System.Diagnostics.Debug.WriteLine($"GPU: {hardwareData.GPUInformation}");
                         System.Diagnostics.Debug.WriteLine($"Connection: {hardwareData.ConnectionType}");
 
-                        Database.database.Close();
+                        Database.databasee.Close();
                     }
                 }
                 catch (Exception ex)
