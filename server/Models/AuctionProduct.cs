@@ -1,46 +1,88 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 // TODO: Define or import User, ProductCondition, ProductCategory, Bid if they are needed by the server
 
 namespace server.Models // Adjusted namespace to server.Models
 {
-    public class AuctionProduct : Product
+    [Table("AuctionProducts")]
+    public class AuctionProduct
     {
-        public DateTime StartAuctionDate { get; set; }
-        public DateTime EndAuctionDate { get; set; }
-        public float StartingPrice { get; set; }
-        public float CurrentPrice { get; set; }
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
 
-        public List<Bid> BidHistory { get; set; } // Uncommented
+        [Column("title")]
+        public string Title { get; set; }
 
-        public AuctionProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
-            List<ProductTag> productTags, List<Image> images, DateTime startAuctionDate, DateTime endAuctionDate, float startingPrice)
+        [Column("description")]
+        public string? Description { get; set; }
+
+        [Column("seller_id")]
+        public int SellerId { get; set; }
+
+        [Column("condition_id")]
+        public int? ConditionId { get; set; }
+
+        [Column("category_id")]
+        public int? CategoryId { get; set; }
+
+        [Column("start_datetime")]
+        public DateTime StartTime { get; set; }
+
+        [Column("end_datetime")]
+        public DateTime EndTime { get; set; }
+
+        [Column("starting_price")]
+        public double StartPrice { get; set; }
+
+        [Column("current_price")]
+        public double CurrentPrice { get; set; }
+
+        // Navigation properties
+        [ForeignKey("SellerId")]
+        public User Seller { get; set; } = null!;
+
+        [ForeignKey("ConditionId")]
+        public Condition? Condition { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
+
+        public ICollection<Bid> Bids { get; set; } = new List<Bid>();
+        
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
+        public AuctionProduct()
         {
-            this.Id = id;
-            this.Description = description;
-            this.Title = title;
-            this.Seller = seller; // Uncommented
-            this.Condition = productCondition; // Uncommented
-            this.Category = productCategory; // Uncommented
-            this.Tags = productTags;
-            // this.Seller = seller; // Duplicate line from original - Removed
-            this.Images = images;
-            this.StartAuctionDate = startAuctionDate;
-            this.EndAuctionDate = endAuctionDate;
-            this.StartingPrice = startingPrice;
-            this.CurrentPrice = startingPrice;
-            this.BidHistory = new List<Bid>(); // Uncommented
         }
 
-        // Uncommented - definition now exists
+        public AuctionProduct(string title, string? description, int sellerId, int? conditionId, 
+                             int? categoryId, DateTime startTime, 
+                             DateTime endTime, double startPrice)
+        {
+            Title = title;
+            Description = description;
+            SellerId = sellerId;
+            ConditionId = conditionId;
+            CategoryId = categoryId;
+            StartTime = startTime;
+            EndTime = endTime;
+            StartPrice = startPrice;
+            CurrentPrice = startPrice;
+            Bids = new List<Bid>();
+            Images = new List<ProductImage>();
+        }
+
         public void AddBid(Bid bid)
         {
-            this.CurrentPrice = bid.Price;
-            this.BidHistory.Add(bid);
+            Bids.Add(bid);
+            if (bid.Price > CurrentPrice)
+            {
+                CurrentPrice = bid.Price;
+            }
         }
-        
-        // Default constructor for framework needs
-        public AuctionProduct() { }
     }
 } 

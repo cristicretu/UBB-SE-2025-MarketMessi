@@ -1,9 +1,13 @@
 using System;
 
-namespace server.Models // Adjusted namespace to server.Models
+namespace server.Models
 {
+    /// <summary>
+    /// Legacy Image class for backward compatibility with existing repository code
+    /// </summary>
     public class Image
     {
+        public int Id { get; set; }
         public string Url { get; set; } = string.Empty;
 
         public Image(string url)
@@ -11,7 +15,7 @@ namespace server.Models // Adjusted namespace to server.Models
             this.Url = url;
         }
 
-        // Default constructor for potential framework needs (e.g., deserialization)
+        // Default constructor for potential framework needs
         public Image() { }
     }
 } 
