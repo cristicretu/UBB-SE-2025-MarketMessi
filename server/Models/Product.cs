@@ -15,5 +15,18 @@ namespace server.Models // Adjusted namespace to server.Models
         public List<ProductTag> Tags { get; set; }
         public List<Image> Images { get; set; }
         public User Seller { get; set; }
+
+        // Default constructor for JSON serialization/deserialization
+        protected Product()
+        {
+            Id = 0;
+            Title = string.Empty;
+            Description = string.Empty;
+            Condition = null;
+            Category = null;
+            Tags = new List<ProductTag>();
+            Images = new List<Image>();
+            Seller = null;
+        }
     }
-} 
+}
