@@ -13,6 +13,14 @@ namespace MarketMinds.Test.Services
     [TestFixture]
     public class ListingCreationServiceTest
     {
+        // Constants for listing types
+        private const string BuyListingType = "buy";
+        private const string BorrowListingType = "borrow";
+        private const string AuctionListingType = "auction";
+        private const string InvalidListingType = "invalid_type";
+        private const string UppercaseBuyListingType = "BUY";
+        private const string InvalidListingTypeErrorMessage = "Invalid listing type";
+
         private Mock<IBuyProductsService> _mockBuyService;
         private Mock<IBorrowProductsService> _mockBorrowService;
         private Mock<IAuctionProductsService> _mockAuctionService;
@@ -35,9 +43,20 @@ namespace MarketMinds.Test.Services
         [Test]
         public void CreateMarketListing_BuyType_CallsBuyProductsService()
         {
-            _service.CreateMarketListing(_testProduct, "buy");
+            // Act
+            _service.CreateMarketListing(_testProduct, BuyListingType);
 
+            // Assert
             _mockBuyService.Verify(s => s.CreateListing(_testProduct), Times.Once);
+        }
+
+        [Test]
+        public void CreateMarketListing_BuyType_DoesNotCallOtherServices()
+        {
+            // Act
+            _service.CreateMarketListing(_testProduct, BuyListingType);
+
+            // Assert
             _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
             _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
         }
@@ -45,37 +64,72 @@ namespace MarketMinds.Test.Services
         [Test]
         public void CreateMarketListing_BorrowType_CallsBorrowProductsService()
         {
-            _service.CreateMarketListing(_testProduct, "borrow");
+            // Act
+            _service.CreateMarketListing(_testProduct, BorrowListingType);
 
-            _mockBuyService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
+            // Assert
             _mockBorrowService.Verify(s => s.CreateListing(_testProduct), Times.Once);
+        }
+
+        [Test]
+        public void CreateMarketListing_BorrowType_DoesNotCallOtherServices()
+        {
+            // Act
+            _service.CreateMarketListing(_testProduct, BorrowListingType);
+
+            // Assert
+            _mockBuyService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
             _mockAuctionService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
         }
 
         [Test]
         public void CreateMarketListing_AuctionType_CallsAuctionProductsService()
         {
-            _service.CreateMarketListing(_testProduct, "auction");
+            // Act
+            _service.CreateMarketListing(_testProduct, AuctionListingType);
 
+            // Assert
+            _mockAuctionService.Verify(s => s.CreateListing(_testProduct), Times.Once);
+        }
+
+        [Test]
+        public void CreateMarketListing_AuctionType_DoesNotCallOtherServices()
+        {
+            // Act
+            _service.CreateMarketListing(_testProduct, AuctionListingType);
+
+            // Assert
             _mockBuyService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
             _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
-            _mockAuctionService.Verify(s => s.CreateListing(_testProduct), Times.Once);
         }
 
         [Test]
         public void CreateMarketListing_InvalidType_ThrowsArgumentException()
         {
-            var exception = Assert.Throws<ArgumentException>(() =>
-                _service.CreateMarketListing(_testProduct, "invalid_type"));
+            // Act & Assert
+            ArgumentException thrownException = Assert.Throws<ArgumentException>(() =>
+                _service.CreateMarketListing(_testProduct, InvalidListingType));
 
-            Assert.That(exception.Message, Does.Contain("Invalid listing type"));
+            Assert.That(thrownException, Is.Not.Null);
         }
 
         [Test]
-        public void CreateMarketListing_CaseInsensitive_WorksCorrectly()
+        public void CreateMarketListing_InvalidType_ContainsExpectedErrorMessage()
         {
-            _service.CreateMarketListing(_testProduct, "BUY");
+            // Act & Assert
+            ArgumentException thrownException = Assert.Throws<ArgumentException>(() =>
+                _service.CreateMarketListing(_testProduct, InvalidListingType));
 
+            Assert.That(thrownException.Message, Does.Contain(InvalidListingTypeErrorMessage));
+        }
+
+        [Test]
+        public void CreateMarketListing_CaseInsensitive_CallsCorrectService()
+        {
+            // Act
+            _service.CreateMarketListing(_testProduct, UppercaseBuyListingType);
+
+            // Assert
             _mockBuyService.Verify(s => s.CreateListing(_testProduct), Times.Once);
         }
     }

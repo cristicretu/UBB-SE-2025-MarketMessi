@@ -10,110 +10,233 @@ namespace MarketMinds.Test.Services
     {
         private BorrowSortTypeConverterService _converter;
 
+        // Sort tag constants
+        private const string SellerRatingAscTag = "SellerRatingAsc";
+        private const string SellerRatingDescTag = "SellerRatingDesc";
+        private const string DailyRateAscTag = "DailyRateAsc";
+        private const string DailyRateDescTag = "DailyRateDesc";
+        private const string StartDateAscTag = "StartDateAsc";
+        private const string StartDateDescTag = "StartDateDesc";
+        private const string InvalidTag = "InvalidSortTag";
+        private const string EmptyTag = "";
+
+        // Display title constants
+        private const string SellerRatingTitle = "Seller Rating";
+        private const string SellerRatingField = "SellerRating";
+        private const string DailyRateTitle = "Daily Rate";
+        private const string DailyRateField = "DailyRate";
+        private const string StartDateTitle = "Start Date";
+        private const string StartDateField = "StartDate";
+
         [SetUp]
         public void Setup()
         {
             _converter = new BorrowSortTypeConverterService();
         }
 
+        #region SellerRating Tests
+
         [Test]
-        public void Convert_SellerRatingAsc_ReturnsCorrectSortType()
+        public void Convert_SellerRatingAsc_ReturnsNonNullResult()
         {
-            string sortTag = "SellerRatingAsc";
-
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(SellerRatingAscTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Seller Rating"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("SellerRating"));
+        }
+
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SellerRatingTitle));
+        }
+
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SellerRatingField));
+        }
+
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsAscendingOrder()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
-        public void Convert_SellerRatingDesc_ReturnsCorrectSortType()
+        public void Convert_SellerRatingDesc_ReturnsNonNullResult()
         {
-            string sortTag = "SellerRatingDesc";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(SellerRatingDescTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Seller Rating"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("SellerRating"));
-            Assert.That(result.IsAscending, Is.False);
         }
 
         [Test]
-        public void Convert_DailyRateAsc_ReturnsCorrectSortType()
+        public void Convert_SellerRatingDesc_ReturnsCorrectExternalTitle()
         {
-            string sortTag = "DailyRateAsc";
-            var result = _converter.Convert(sortTag);
+            var result = _converter.Convert(SellerRatingDescTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SellerRatingTitle));
+        }
 
+        [Test]
+        public void Convert_SellerRatingDesc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(SellerRatingDescTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SellerRatingField));
+        }
+
+        [Test]
+        public void Convert_SellerRatingDesc_ReturnsDescendingOrder()
+        {
+            var result = _converter.Convert(SellerRatingDescTag);
+            Assert.That(result.IsAscending, Is.False);
+        }
+
+        #endregion
+
+        #region DailyRate Tests
+
+        [Test]
+        public void Convert_DailyRateAsc_ReturnsNonNullResult()
+        {
+            var result = _converter.Convert(DailyRateAscTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Daily Rate"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("DailyRate"));
+        }
+
+        [Test]
+        public void Convert_DailyRateAsc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(DailyRateAscTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(DailyRateTitle));
+        }
+
+        [Test]
+        public void Convert_DailyRateAsc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(DailyRateAscTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(DailyRateField));
+        }
+
+        [Test]
+        public void Convert_DailyRateAsc_ReturnsAscendingOrder()
+        {
+            var result = _converter.Convert(DailyRateAscTag);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
-        public void Convert_DailyRateDesc_ReturnsCorrectSortType()
+        public void Convert_DailyRateDesc_ReturnsNonNullResult()
         {
-            string sortTag = "DailyRateDesc";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(DailyRateDescTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Daily Rate"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("DailyRate"));
-            Assert.That(result.IsAscending, Is.False);
         }
 
         [Test]
-        public void Convert_StartDateAsc_ReturnsCorrectSortType()
+        public void Convert_DailyRateDesc_ReturnsCorrectExternalTitle()
         {
-            string sortTag = "StartDateAsc";
-            var result = _converter.Convert(sortTag);
+            var result = _converter.Convert(DailyRateDescTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(DailyRateTitle));
+        }
 
+        [Test]
+        public void Convert_DailyRateDesc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(DailyRateDescTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(DailyRateField));
+        }
+
+        [Test]
+        public void Convert_DailyRateDesc_ReturnsDescendingOrder()
+        {
+            var result = _converter.Convert(DailyRateDescTag);
+            Assert.That(result.IsAscending, Is.False);
+        }
+
+        #endregion
+
+        #region StartDate Tests
+
+        [Test]
+        public void Convert_StartDateAsc_ReturnsNonNullResult()
+        {
+            var result = _converter.Convert(StartDateAscTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Start Date"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("StartDate"));
+        }
+
+        [Test]
+        public void Convert_StartDateAsc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(StartDateAscTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(StartDateTitle));
+        }
+
+        [Test]
+        public void Convert_StartDateAsc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(StartDateAscTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(StartDateField));
+        }
+
+        [Test]
+        public void Convert_StartDateAsc_ReturnsAscendingOrder()
+        {
+            var result = _converter.Convert(StartDateAscTag);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
-        public void Convert_StartDateDesc_ReturnsCorrectSortType()
+        public void Convert_StartDateDesc_ReturnsNonNullResult()
         {
-            string sortTag = "StartDateDesc";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(StartDateDescTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Start Date"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("StartDate"));
+        }
+
+        [Test]
+        public void Convert_StartDateDesc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(StartDateDescTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(StartDateTitle));
+        }
+
+        [Test]
+        public void Convert_StartDateDesc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(StartDateDescTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(StartDateField));
+        }
+
+        [Test]
+        public void Convert_StartDateDesc_ReturnsDescendingOrder()
+        {
+            var result = _converter.Convert(StartDateDescTag);
             Assert.That(result.IsAscending, Is.False);
         }
+
+        #endregion
+
+        #region Invalid Input Tests
 
         [Test]
         public void Convert_InvalidSortTag_ReturnsNull()
         {
-            string sortTag = "InvalidSortTag";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(InvalidTag);
             Assert.That(result, Is.Null);
         }
 
         [Test]
         public void Convert_EmptyString_ReturnsNull()
         {
-            string sortTag = "";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(EmptyTag);
             Assert.That(result, Is.Null);
         }
 
         [Test]
         public void Convert_NullString_ReturnsNull()
         {
-            string sortTag = null;
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(null);
             Assert.That(result, Is.Null);
         }
+
+        #endregion
     }
 }

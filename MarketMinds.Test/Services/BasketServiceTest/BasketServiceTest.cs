@@ -11,528 +11,512 @@ namespace MarketMinds.Tests.Services.BasketServiceTest
     [TestFixture]
     public class BasketServiceTest
     {
-        private BasketService basketService;
-        private BasketRepositoryMock basketRepositoryMock;
-        private User testUser;
-        private int testUserId = 1;
-        private int testProductId = 10;
+        // Constants for user details
+        private const int TestUserId = 1;
+        private const string TestUserName = "Test User";
+        private const string TestUserEmail = "test@example.com";
+
+        // Constants for product details
+        private const int TestProductId = 10;
+        private const int InvalidId = 0;
+        private const int NegativeId = -1;
+
+        // Constants for quantities
+        private const int DefaultQuantity = 1;
+        private const int StandardQuantity = 3;
+        private const int UpdatedQuantity = 5;
+        private const int ZeroQuantity = 0;
+        private const int NegativeQuantity = -1;
+        private const int ExcessiveQuantity = BasketService.MaxQuantityPerItem + 5;
+
+        // Constants for basket IDs
+        private const int BasketId = 1;
+        private const int EmptyBasketId = 2;
+
+        // Constants for promo codes
+        private const string ValidPromoCode = "DISCOUNT10";
+        private const string InvalidPromoCode = "INVALID";
+        private const string EmptyCode = "";
+        private const string WhitespaceCode = "   ";
+
+        // Constants for expected values
+        private const int ExpectedSingleItem = 1;
+        private const int ExpectedZeroItems = 0;
+        private const float ExpectedSubtotal = 150f;
+        private const float ExpectedDiscount = 15f;
+        private const float ExpectedTotalWithDiscount = 135f;
+        private const float ExpectedZeroValue = 0f;
+        private const float StandardSubtotal = 100f;
+        private const float StandardDiscount = 10f;
+
+        // Constants for error messages
+        private const string InvalidUserIdMessage = "Invalid user ID";
+        private const string InvalidProductIdMessage = "Invalid product ID";
+        private const string ValidUserRequiredMessage = "Valid user must be provided";
+        private const string InvalidBasketIdMessage = "Invalid basket ID";
+        private const string EmptyPromoCodeMessage = "Promo code cannot be empty";
+        private const string InvalidPromoCodeMessage = "Invalid promo code";
+        private const string NegativeQuantityMessage = "Quantity cannot be negative";
+        private const string UpdateQuantityErrorPrefix = "Could not update quantity:";
+        private const string RemoveProductErrorPrefix = "Could not remove product:";
+        private const string RetrieveBasketErrorMessage = "Failed to retrieve user's basket";
+
+        private BasketService _basketService;
+        private BasketRepositoryMock _basketRepositoryMock;
+        private User _testUser;
 
         [SetUp]
         public void Setup()
         {
-            basketRepositoryMock = new BasketRepositoryMock();
-            basketService = new BasketService(basketRepositoryMock);
-            testUser = new User(testUserId, "Test User", "test@example.com");
+            _basketRepositoryMock = new BasketRepositoryMock();
+            _basketService = new BasketService(_basketRepositoryMock);
+            _testUser = new User(TestUserId, TestUserName, TestUserEmail);
         }
 
         [Test]
         public void TestAddProductToBasket_ValidParameters_AddsProduct()
         {
-            int quantity = 3;
+            // Act
+            _basketService.AddProductToBasket(TestUserId, TestProductId, StandardQuantity);
 
-            basketService.AddProductToBasket(testUserId, testProductId, quantity);
-
-            Assert.That(basketRepositoryMock.GetAddItemCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetAddItemCount(), Is.EqualTo(ExpectedSingleItem));
         }
 
         [Test]
         public void TestAddProductToBasket_QuantityExceedsMax_LimitsQuantity()
         {
-            int quantity = BasketService.MaxQuantityPerItem + 5;
+            // Act
+            _basketService.AddProductToBasket(TestUserId, TestProductId, ExcessiveQuantity);
 
-            basketService.AddProductToBasket(testUserId, testProductId, quantity);
-
-            Assert.That(basketRepositoryMock.GetAddItemCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetAddItemCount(), Is.EqualTo(ExpectedSingleItem));
         }
 
         [Test]
         public void TestAddProductToBasket_InvalidUserId_ThrowsException()
         {
-            int invalidUserId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.AddProductToBasket(InvalidId, TestProductId, DefaultQuantity));
 
-            Exception ex = null;
-            try
-            {
-                basketService.AddProductToBasket(invalidUserId, testProductId, 1);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Invalid user ID"));
-            Assert.That(basketRepositoryMock.GetAddItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidUserIdMessage));
+            Assert.That(_basketRepositoryMock.GetAddItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestAddProductToBasket_InvalidProductId_ThrowsException()
         {
-            int invalidProductId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.AddProductToBasket(TestUserId, InvalidId, DefaultQuantity));
 
-            Exception ex = null;
-            try
-            {
-                basketService.AddProductToBasket(testUserId, invalidProductId, 1);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Invalid product ID"));
-            Assert.That(basketRepositoryMock.GetAddItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidProductIdMessage));
+            Assert.That(_basketRepositoryMock.GetAddItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestGetBasketByUser_ValidUser_ReturnsBasket()
         {
-            var basket = basketService.GetBasketByUser(testUser);
+            // Act
+            var basket = _basketService.GetBasketByUser(_testUser);
 
+            // Assert
             Assert.That(basket, Is.Not.Null);
         }
 
         [Test]
         public void TestGetBasketByUser_NullUser_ThrowsException()
         {
-            Exception ex = null;
-            try
-            {
-                basketService.GetBasketByUser(null);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => _basketService.GetBasketByUser(null));
 
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Valid user must be provided"));
+            Assert.That(ex.Message, Is.EqualTo(ValidUserRequiredMessage));
         }
 
         [Test]
         public void TestRemoveProductFromBasket_ValidParameters_RemovesProduct()
         {
-            basketService.RemoveProductFromBasket(testUserId, testProductId);
+            // Act
+            _basketService.RemoveProductFromBasket(TestUserId, TestProductId);
 
-            Assert.That(basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(ExpectedSingleItem));
         }
 
         [Test]
         public void TestRemoveProductFromBasket_InvalidUserId_ThrowsException()
         {
-            int invalidUserId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.RemoveProductFromBasket(InvalidId, TestProductId));
 
-            Exception ex = null;
-            try
-            {
-                basketService.RemoveProductFromBasket(invalidUserId, testProductId);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Invalid user ID"));
-            Assert.That(basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidUserIdMessage));
+            Assert.That(_basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestUpdateProductQuantity_ValidParameters_UpdatesQuantity()
         {
-            basketService.AddProductToBasket(testUserId, testProductId, 1);
+            // Arrange
+            _basketService.AddProductToBasket(TestUserId, TestProductId, DefaultQuantity);
 
-            int addCount = basketRepositoryMock.GetAddItemCount();
-            Assert.That(addCount, Is.EqualTo(1));
+            int addCount = _basketRepositoryMock.GetAddItemCount();
+            Assert.That(addCount, Is.EqualTo(ExpectedSingleItem));
 
-            int quantity = 5;
-            basketService.UpdateProductQuantity(testUserId, testProductId, quantity);
+            // Act
+            _basketService.UpdateProductQuantity(TestUserId, TestProductId, UpdatedQuantity);
 
-            Assert.That(basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(ExpectedSingleItem));
         }
 
         [Test]
         public void TestUpdateProductQuantity_QuantityExceedsMax_LimitsQuantity()
         {
-            basketService.AddProductToBasket(testUserId, testProductId, 1);
+            // Arrange
+            _basketService.AddProductToBasket(TestUserId, TestProductId, DefaultQuantity);
 
-            int addCount = basketRepositoryMock.GetAddItemCount();
-            Assert.That(addCount, Is.EqualTo(1));
+            int addCount = _basketRepositoryMock.GetAddItemCount();
+            Assert.That(addCount, Is.EqualTo(ExpectedSingleItem));
 
-            int quantity = BasketService.MaxQuantityPerItem + 5;
-            basketService.UpdateProductQuantity(testUserId, testProductId, quantity);
+            // Act
+            _basketService.UpdateProductQuantity(TestUserId, TestProductId, ExcessiveQuantity);
 
-            Assert.That(basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(ExpectedSingleItem));
         }
 
         [Test]
         public void TestUpdateProductQuantity_QuantityZero_RemovesProduct()
         {
-            int quantity = 0;
+            // Act
+            _basketService.UpdateProductQuantity(TestUserId, TestProductId, ZeroQuantity);
 
-            basketService.UpdateProductQuantity(testUserId, testProductId, quantity);
-
-            Assert.That(basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(1));
-            Assert.That(basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(0));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(ExpectedSingleItem));
+            Assert.That(_basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestUpdateProductQuantity_InvalidUserId_ThrowsException()
         {
-            int invalidUserId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.UpdateProductQuantity(InvalidId, TestProductId, DefaultQuantity));
 
-            Exception ex = null;
-            try
-            {
-                basketService.UpdateProductQuantity(invalidUserId, testProductId, 1);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Invalid user ID"));
-            Assert.That(basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidUserIdMessage));
+            Assert.That(_basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestClearBasket_ValidUserId_ClearsBasket()
         {
-            basketService.ClearBasket(testUserId);
+            // Act
+            _basketService.ClearBasket(TestUserId);
 
-            Assert.That(basketRepositoryMock.GetClearBasketCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(_basketRepositoryMock.GetClearBasketCount(), Is.EqualTo(ExpectedSingleItem));
         }
 
         [Test]
         public void TestClearBasket_InvalidUserId_ThrowsException()
         {
-            int invalidUserId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => _basketService.ClearBasket(InvalidId));
 
-            Exception ex = null;
-            try
-            {
-                basketService.ClearBasket(invalidUserId);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Invalid user ID"));
-            Assert.That(basketRepositoryMock.GetClearBasketCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidUserIdMessage));
+            Assert.That(_basketRepositoryMock.GetClearBasketCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestValidateBasketBeforeCheckOut_EmptyBasket_ReturnsFalse()
         {
-            int basketId = 1;
+            // Act
+            bool result = _basketService.ValidateBasketBeforeCheckOut(BasketId);
 
-            bool result = basketService.ValidateBasketBeforeCheckOut(basketId);
-
+            // Assert
             Assert.That(result, Is.False);
         }
 
         [Test]
         public void TestApplyPromoCode_ValidCode_AppliesDiscount()
         {
-            int basketId = 1;
-            string validCode = "DISCOUNT10";
+            // Act
+            _basketService.ApplyPromoCode(BasketId, ValidPromoCode);
+            float discount = _basketService.GetPromoCodeDiscount(ValidPromoCode, StandardSubtotal);
 
-            basketService.ApplyPromoCode(basketId, validCode);
-
-            float discount = basketService.GetPromoCodeDiscount(validCode, 100);
-            Assert.That(discount, Is.EqualTo(10));
+            // Assert
+            Assert.That(discount, Is.EqualTo(StandardDiscount));
         }
 
         [Test]
         public void TestApplyPromoCode_InvalidCode_ThrowsException()
         {
-            int basketId = 1;
-            string invalidCode = "INVALID";
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                _basketService.ApplyPromoCode(BasketId, InvalidPromoCode));
 
-            Exception ex = null;
-            try
-            {
-                basketService.ApplyPromoCode(basketId, invalidCode);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex.Message, Is.EqualTo("Invalid promo code"));
+            Assert.That(ex.Message, Is.EqualTo(InvalidPromoCodeMessage));
         }
 
         [Test]
         public void TestValidateBasketBeforeCheckOut_InvalidBasketId_ThrowsException()
         {
-            int invalidBasketId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.ValidateBasketBeforeCheckOut(InvalidId));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.ValidateBasketBeforeCheckOut(invalidBasketId));
-
-            Assert.That(ex.Message, Is.EqualTo("Invalid basket ID"));
+            Assert.That(ex.Message, Is.EqualTo(InvalidBasketIdMessage));
         }
 
         [Test]
         public void TestValidateBasketBeforeCheckOut_ItemWithZeroQuantity_ReturnsFalse()
         {
-            int basketId = 1;
-            basketRepositoryMock.SetupInvalidItemQuantity(basketId);
+            // Arrange
+            _basketRepositoryMock.SetupInvalidItemQuantity(BasketId);
 
-            bool result = basketService.ValidateBasketBeforeCheckOut(basketId);
+            // Act
+            bool result = _basketService.ValidateBasketBeforeCheckOut(BasketId);
 
+            // Assert
             Assert.That(result, Is.False);
         }
 
         [Test]
         public void TestValidateBasketBeforeCheckOut_ItemWithInvalidPrice_ReturnsFalse()
         {
-            int basketId = 1;
-            basketRepositoryMock.SetupInvalidItemPrice(basketId);
+            // Arrange
+            _basketRepositoryMock.SetupInvalidItemPrice(BasketId);
 
-            bool result = basketService.ValidateBasketBeforeCheckOut(basketId);
+            // Act
+            bool result = _basketService.ValidateBasketBeforeCheckOut(BasketId);
 
+            // Assert
             Assert.That(result, Is.False);
         }
 
         [Test]
         public void TestValidateBasketBeforeCheckOut_ValidBasket_ReturnsTrue()
         {
-            int basketId = 1;
-            basketRepositoryMock.SetupValidBasket(basketId);
+            // Arrange
+            _basketRepositoryMock.SetupValidBasket(BasketId);
 
-            bool result = basketService.ValidateBasketBeforeCheckOut(basketId);
+            // Act
+            bool result = _basketService.ValidateBasketBeforeCheckOut(BasketId);
 
+            // Assert
             Assert.That(result, Is.True);
         }
 
         [Test]
         public void TestApplyPromoCode_InvalidBasketId_ThrowsException()
         {
-            int invalidBasketId = 0;
-            string code = "DISCOUNT10";
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.ApplyPromoCode(InvalidId, ValidPromoCode));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.ApplyPromoCode(invalidBasketId, code));
-
-            Assert.That(ex.Message, Is.EqualTo("Invalid basket ID"));
+            Assert.That(ex.Message, Is.EqualTo(InvalidBasketIdMessage));
         }
 
         [Test]
         public void TestApplyPromoCode_EmptyCode_ThrowsException()
         {
-            int basketId = 1;
-            string emptyCode = "";
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.ApplyPromoCode(BasketId, EmptyCode));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.ApplyPromoCode(basketId, emptyCode));
-
-            Assert.That(ex.Message, Is.EqualTo("Promo code cannot be empty"));
+            Assert.That(ex.Message, Is.EqualTo(EmptyPromoCodeMessage));
         }
 
         [Test]
         public void TestApplyPromoCode_NullCode_ThrowsException()
         {
-            int basketId = 1;
-            string nullCode = null;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.ApplyPromoCode(BasketId, null));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.ApplyPromoCode(basketId, nullCode));
-
-            Assert.That(ex.Message, Is.EqualTo("Promo code cannot be empty"));
+            Assert.That(ex.Message, Is.EqualTo(EmptyPromoCodeMessage));
         }
 
         [Test]
         public void TestApplyPromoCode_WhitespaceCode_ThrowsException()
         {
-            int basketId = 1;
-            string whitespaceCode = "   ";
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.ApplyPromoCode(BasketId, WhitespaceCode));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.ApplyPromoCode(basketId, whitespaceCode));
-
-            Assert.That(ex.Message, Is.EqualTo("Promo code cannot be empty"));
+            Assert.That(ex.Message, Is.EqualTo(EmptyPromoCodeMessage));
         }
 
         [Test]
         public void TestUpdateProductQuantity_InvalidProductId_ThrowsException()
         {
-            int invalidProductId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.UpdateProductQuantity(TestUserId, InvalidId, DefaultQuantity));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.UpdateProductQuantity(testUserId, invalidProductId, 1));
-
-            Assert.That(ex.Message, Is.EqualTo("Invalid product ID"));
-            Assert.That(basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidProductIdMessage));
+            Assert.That(_basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestUpdateProductQuantity_NegativeQuantity_ThrowsException()
         {
-            int negativeQuantity = -1;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.UpdateProductQuantity(TestUserId, TestProductId, NegativeQuantity));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.UpdateProductQuantity(testUserId, testProductId, negativeQuantity));
-
-            Assert.That(ex.Message, Is.EqualTo("Quantity cannot be negative"));
-            Assert.That(basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(NegativeQuantityMessage));
+            Assert.That(_basketRepositoryMock.GetUpdateItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestUpdateProductQuantity_RepositoryThrowsException_ThrowsInvalidOperationException()
         {
-            basketRepositoryMock.SetupUpdateQuantityException();
+            // Arrange
+            _basketRepositoryMock.SetupUpdateQuantityException();
 
-            Exception ex = Assert.Throws<InvalidOperationException>(() => basketService.UpdateProductQuantity(testUserId, testProductId, 1));
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                _basketService.UpdateProductQuantity(TestUserId, TestProductId, DefaultQuantity));
 
-            Assert.That(ex.Message, Does.Contain("Could not update quantity:"));
+            Assert.That(ex.Message, Does.Contain(UpdateQuantityErrorPrefix));
         }
 
         [Test]
         public void TestRemoveProductFromBasket_InvalidProductId_ThrowsException()
         {
-            int invalidProductId = 0;
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() =>
+                _basketService.RemoveProductFromBasket(TestUserId, InvalidId));
 
-            Exception ex = Assert.Throws<ArgumentException>(() => basketService.RemoveProductFromBasket(testUserId, invalidProductId));
-
-            Assert.That(ex.Message, Is.EqualTo("Invalid product ID"));
-            Assert.That(basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(0));
+            Assert.That(ex.Message, Is.EqualTo(InvalidProductIdMessage));
+            Assert.That(_basketRepositoryMock.GetRemoveItemCount(), Is.EqualTo(ExpectedZeroItems));
         }
 
         [Test]
         public void TestRemoveProductFromBasket_RepositoryThrowsException_ThrowsInvalidOperationException()
         {
-            basketRepositoryMock.SetupRemoveItemException();
+            // Arrange
+            _basketRepositoryMock.SetupRemoveItemException();
 
-            Exception ex = Assert.Throws<InvalidOperationException>(() => basketService.RemoveProductFromBasket(testUserId, testProductId));
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                _basketService.RemoveProductFromBasket(TestUserId, TestProductId));
 
-            Assert.That(ex.Message, Does.Contain("Could not remove product:"));
+            Assert.That(ex.Message, Does.Contain(RemoveProductErrorPrefix));
         }
 
         [Test]
         public void TestGetBasketByUser_RepositoryThrowsException_ThrowsApplicationException()
         {
-            basketRepositoryMock.SetupGetBasketException();
+            // Arrange
+            _basketRepositoryMock.SetupGetBasketException();
 
-            Exception ex = Assert.Throws<ApplicationException>(() => basketService.GetBasketByUser(testUser));
+            // Act & Assert
+            var ex = Assert.Throws<ApplicationException>(() => _basketService.GetBasketByUser(_testUser));
 
-            Assert.That(ex.Message, Is.EqualTo("Failed to retrieve user's basket"));
+            Assert.That(ex.Message, Is.EqualTo(RetrieveBasketErrorMessage));
         }
 
         [Test]
         public void TestGetPromoCodeDiscount_EmptyCode_ReturnsZero()
         {
-            string emptyCode = "";
-            float subtotal = 100;
+            // Act
+            float discount = _basketService.GetPromoCodeDiscount(EmptyCode, StandardSubtotal);
 
-            float discount = basketService.GetPromoCodeDiscount(emptyCode, subtotal);
-
-            Assert.That(discount, Is.EqualTo(0));
+            // Assert
+            Assert.That(discount, Is.EqualTo(ExpectedZeroValue));
         }
 
         [Test]
         public void TestGetPromoCodeDiscount_NullCode_ReturnsZero()
         {
-            string nullCode = null;
-            float subtotal = 100;
+            // Act
+            float discount = _basketService.GetPromoCodeDiscount(null, StandardSubtotal);
 
-            float discount = basketService.GetPromoCodeDiscount(nullCode, subtotal);
-
-            Assert.That(discount, Is.EqualTo(0));
+            // Assert
+            Assert.That(discount, Is.EqualTo(ExpectedZeroValue));
         }
 
         [Test]
         public void TestGetPromoCodeDiscount_WhitespaceCode_ReturnsZero()
         {
-            string whitespaceCode = "   ";
-            float subtotal = 100;
+            // Act
+            float discount = _basketService.GetPromoCodeDiscount(WhitespaceCode, StandardSubtotal);
 
-            float discount = basketService.GetPromoCodeDiscount(whitespaceCode, subtotal);
-
-            Assert.That(discount, Is.EqualTo(0));
+            // Assert
+            Assert.That(discount, Is.EqualTo(ExpectedZeroValue));
         }
 
         [Test]
         public void TestCalculateBasketTotals_ValidBasket_ReturnsCorrectTotals()
         {
-            // Setup a basket with products
-            int basketId = 1;
+            // Arrange
+            _basketRepositoryMock.SetupValidBasket(BasketId);
 
-            // Create a mock basket with items (product with price 100 and product with price 50)
-            basketRepositoryMock.SetupValidBasket(basketId);
+            // Act
+            BasketTotals totals = _basketService.CalculateBasketTotals(BasketId, null);
 
-            // Calculate totals without promo code
-            BasketTotals totals = basketService.CalculateBasketTotals(basketId, null);
-
-            // Verify results - expected subtotal is 150 (100 + 50)
+            // Assert
             Assert.That(totals, Is.Not.Null);
-            Assert.That(totals.Subtotal, Is.EqualTo(150));
-            Assert.That(totals.Discount, Is.EqualTo(0));
-            Assert.That(totals.TotalAmount, Is.EqualTo(150));
+            Assert.That(totals.Subtotal, Is.EqualTo(ExpectedSubtotal));
+            Assert.That(totals.Discount, Is.EqualTo(ExpectedZeroValue));
+            Assert.That(totals.TotalAmount, Is.EqualTo(ExpectedSubtotal));
         }
 
         [Test]
         public void TestCalculateBasketTotals_WithValidPromoCode_AppliesDiscount()
         {
-            // Setup a basket with products
-            int basketId = 1;
-            string validPromoCode = "DISCOUNT10";
+            // Arrange
+            _basketRepositoryMock.SetupValidBasket(BasketId);
 
-            // Create a mock basket with items (total value 150)
-            basketRepositoryMock.SetupValidBasket(basketId);
+            // Act
+            BasketTotals totals = _basketService.CalculateBasketTotals(BasketId, ValidPromoCode);
 
-            // Calculate totals with promo code
-            BasketTotals totals = basketService.CalculateBasketTotals(basketId, validPromoCode);
-
-            // Verify results - 10% discount on 150 = 15
+            // Assert
             Assert.That(totals, Is.Not.Null);
-            Assert.That(totals.Subtotal, Is.EqualTo(150));
-            Assert.That(totals.Discount, Is.EqualTo(15));
-            Assert.That(totals.TotalAmount, Is.EqualTo(135));
+            Assert.That(totals.Subtotal, Is.EqualTo(ExpectedSubtotal));
+            Assert.That(totals.Discount, Is.EqualTo(ExpectedDiscount));
+            Assert.That(totals.TotalAmount, Is.EqualTo(ExpectedTotalWithDiscount));
         }
 
         [Test]
         public void TestCalculateBasketTotals_WithInvalidPromoCode_NoDiscount()
         {
-            // Setup a basket with products
-            int basketId = 1;
-            string invalidPromoCode = "INVALID";
+            // Arrange
+            _basketRepositoryMock.SetupValidBasket(BasketId);
 
-            // Create a mock basket with items (total value 150)
-            basketRepositoryMock.SetupValidBasket(basketId);
+            // Act
+            BasketTotals totals = _basketService.CalculateBasketTotals(BasketId, InvalidPromoCode);
 
-            // Calculate totals with invalid promo code
-            BasketTotals totals = basketService.CalculateBasketTotals(basketId, invalidPromoCode);
-
-            // Verify results - no discount applied
+            // Assert
             Assert.That(totals, Is.Not.Null);
-            Assert.That(totals.Subtotal, Is.EqualTo(150));
-            Assert.That(totals.Discount, Is.EqualTo(0));
-            Assert.That(totals.TotalAmount, Is.EqualTo(150));
+            Assert.That(totals.Subtotal, Is.EqualTo(ExpectedSubtotal));
+            Assert.That(totals.Discount, Is.EqualTo(ExpectedZeroValue));
+            Assert.That(totals.TotalAmount, Is.EqualTo(ExpectedSubtotal));
         }
 
         [Test]
         public void TestCalculateBasketTotals_EmptyBasket_ReturnsZeroTotals()
         {
-            // Setup an empty basket
-            int basketId = 2;
+            // Act
+            BasketTotals totals = _basketService.CalculateBasketTotals(EmptyBasketId, null);
 
-            // Calculate totals for empty basket
-            BasketTotals totals = basketService.CalculateBasketTotals(basketId, null);
-
-            // Verify results
+            // Assert
             Assert.That(totals, Is.Not.Null);
-            Assert.That(totals.Subtotal, Is.EqualTo(0));
-            Assert.That(totals.Discount, Is.EqualTo(0));
-            Assert.That(totals.TotalAmount, Is.EqualTo(0));
+            Assert.That(totals.Subtotal, Is.EqualTo(ExpectedZeroValue));
+            Assert.That(totals.Discount, Is.EqualTo(ExpectedZeroValue));
+            Assert.That(totals.TotalAmount, Is.EqualTo(ExpectedZeroValue));
         }
 
         [Test]
         public void TestCalculateBasketTotals_InvalidBasketId_ThrowsException()
         {
-            // Setup an invalid basket ID
-            int invalidBasketId = -1;
-
-            // Attempt to calculate totals with invalid basket ID
-            Assert.Throws<ArgumentException>(() => basketService.CalculateBasketTotals(invalidBasketId, null));
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() =>
+                _basketService.CalculateBasketTotals(NegativeId, null));
         }
     }
 }

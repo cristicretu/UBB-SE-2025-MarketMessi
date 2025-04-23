@@ -10,138 +10,360 @@ namespace MarketMinds.Test.Services.ProductTagService
     [TestFixture]
     public class ProductTagServiceTests
     {
-        private ProductTagRepositoryMock repositoryMock;
-        private IProductTagService service;
+        // Constants to replace magic strings and numbers
+        private const int TagId1 = 1;
+        private const int TagId2 = 2;
+        private const int TagId3 = 3;
+        private const string ElectronicsTagTitle = "Electronics";
+        private const string ClothingTagTitle = "Clothing";
+        private const string BooksTagTitle = "Books";
+        private const string GamingTagTitle = "Gaming";
+        private const string FurnitureTagTitle = "Furniture";
+        private const int ExpectedEmptyCount = 0;
+        private const int ExpectedSingleTagCount = 1;
+        private const int ExpectedThreeTagsCount = 3;
+
+        private ProductTagRepositoryMock _repositoryMock;
+        private IProductTagService _service;
 
         [SetUp]
         public void Setup()
         {
-            repositoryMock = new ProductTagRepositoryMock();
-            service = new MarketMinds.Services.ProductTagService.ProductTagService(repositoryMock);
+            _repositoryMock = new ProductTagRepositoryMock();
+            _service = new MarketMinds.Services.ProductTagService.ProductTagService(_repositoryMock);
         }
 
+        #region GetAllProductTags Tests
+
         [Test]
-        public void GetAllProductTags_ShouldReturnAllTags()
+        public void GetAllProductTags_ReturnsNonNullResult()
         {
             // Arrange
-            repositoryMock.Tags.AddRange(new List<ProductTag>
-            {
-                new ProductTag(1, "Electronics"),
-                new ProductTag(2, "Clothing"),
-                new ProductTag(3, "Books")
-            });
+            AddThreeSampleTags();
 
             // Act
-            var result = service.GetAllProductTags();
+            var result = _service.GetAllProductTags();
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count, Is.EqualTo(3));
-            Assert.That(result[0].DisplayTitle, Is.EqualTo("Electronics"));
-            Assert.That(result[1].DisplayTitle, Is.EqualTo("Clothing"));
-            Assert.That(result[2].DisplayTitle, Is.EqualTo("Books"));
         }
 
         [Test]
-        public void GetAllProductTags_WithEmptyRepository_ShouldReturnEmptyList()
-        {
-            // Act
-            var result = service.GetAllProductTags();
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void CreateProductTag_ShouldReturnCreatedTag()
+        public void GetAllProductTags_ReturnsCorrectNumberOfTags()
         {
             // Arrange
-            string tagTitle = "Gaming";
+            AddThreeSampleTags();
 
             // Act
-            var result = service.CreateProductTag(tagTitle);
+            var result = _service.GetAllProductTags();
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.DisplayTitle, Is.EqualTo(tagTitle));
-            Assert.That(result.Id, Is.EqualTo(1)); // First created tag will have ID 1
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(1));
-            Assert.That(repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(tagTitle));
+            Assert.That(result.Count, Is.EqualTo(ExpectedThreeTagsCount));
         }
 
         [Test]
-        public void CreateProductTag_MultipleTags_ShouldAssignUniqueIds()
+        public void GetAllProductTags_ReturnsCorrectFirstTagTitle()
         {
+            // Arrange
+            AddThreeSampleTags();
+
             // Act
-            var tag1 = service.CreateProductTag("Electronics");
-            var tag2 = service.CreateProductTag("Clothing");
-            var tag3 = service.CreateProductTag("Books");
+            var result = _service.GetAllProductTags();
 
             // Assert
-            Assert.That(tag1.Id, Is.EqualTo(1));
-            Assert.That(tag2.Id, Is.EqualTo(2));
-            Assert.That(tag3.Id, Is.EqualTo(3));
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(3));
+            Assert.That(result[0].DisplayTitle, Is.EqualTo(ElectronicsTagTitle));
+        }
+
+        [Test]
+        public void GetAllProductTags_ReturnsCorrectSecondTagTitle()
+        {
+            // Arrange
+            AddThreeSampleTags();
+
+            // Act
+            var result = _service.GetAllProductTags();
+
+            // Assert
+            Assert.That(result[1].DisplayTitle, Is.EqualTo(ClothingTagTitle));
+        }
+
+        [Test]
+        public void GetAllProductTags_ReturnsCorrectThirdTagTitle()
+        {
+            // Arrange
+            AddThreeSampleTags();
+
+            // Act
+            var result = _service.GetAllProductTags();
+
+            // Assert
+            Assert.That(result[2].DisplayTitle, Is.EqualTo(BooksTagTitle));
+        }
+
+        [Test]
+        public void GetAllProductTags_WithEmptyRepository_ReturnsNonNullResult()
+        {
+            // Act
+            var result = _service.GetAllProductTags();
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+        }
+
+        [Test]
+        public void GetAllProductTags_WithEmptyRepository_ReturnsEmptyList()
+        {
+            // Act
+            var result = _service.GetAllProductTags();
+
+            // Assert
+            Assert.That(result.Count, Is.EqualTo(ExpectedEmptyCount));
+        }
+
+        #endregion
+
+        #region CreateProductTag Tests
+
+        [Test]
+        public void CreateProductTag_ReturnsNonNullResult()
+        {
+            // Act
+            var result = _service.CreateProductTag(GamingTagTitle);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+        }
+
+        [Test]
+        public void CreateProductTag_ReturnsTagWithCorrectTitle()
+        {
+            // Act
+            var result = _service.CreateProductTag(GamingTagTitle);
+
+            // Assert
+            Assert.That(result.DisplayTitle, Is.EqualTo(GamingTagTitle));
+        }
+
+        [Test]
+        public void CreateProductTag_ReturnsTagWithCorrectId()
+        {
+            // Act
+            var result = _service.CreateProductTag(GamingTagTitle);
+
+            // Assert
+            Assert.That(result.Id, Is.EqualTo(TagId1));
+        }
+
+        [Test]
+        public void CreateProductTag_AddsTagToRepository()
+        {
+            // Act
+            _service.CreateProductTag(GamingTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedSingleTagCount));
+        }
+
+        [Test]
+        public void CreateProductTag_AddsTagWithCorrectTitleToRepository()
+        {
+            // Act
+            _service.CreateProductTag(GamingTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(GamingTagTitle));
+        }
+
+        #endregion
+
+        #region CreateProductTag Multiple Tags Tests
+
+        [Test]
+        public void CreateProductTag_MultipleTags_FirstTagHasCorrectId()
+        {
+            // Act
+            var tag1 = _service.CreateProductTag(ElectronicsTagTitle);
+
+            // Assert
+            Assert.That(tag1.Id, Is.EqualTo(TagId1));
+        }
+
+        [Test]
+        public void CreateProductTag_MultipleTags_SecondTagHasCorrectId()
+        {
+            // Act
+            _service.CreateProductTag(ElectronicsTagTitle);
+            var tag2 = _service.CreateProductTag(ClothingTagTitle);
+
+            // Assert
+            Assert.That(tag2.Id, Is.EqualTo(TagId2));
+        }
+
+        [Test]
+        public void CreateProductTag_MultipleTags_ThirdTagHasCorrectId()
+        {
+            // Act
+            _service.CreateProductTag(ElectronicsTagTitle);
+            _service.CreateProductTag(ClothingTagTitle);
+            var tag3 = _service.CreateProductTag(BooksTagTitle);
+
+            // Assert
+            Assert.That(tag3.Id, Is.EqualTo(TagId3));
+        }
+
+        [Test]
+        public void CreateProductTag_MultipleTags_AddsAllTagsToRepository()
+        {
+            // Act
+            _service.CreateProductTag(ElectronicsTagTitle);
+            _service.CreateProductTag(ClothingTagTitle);
+            _service.CreateProductTag(BooksTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedThreeTagsCount));
+        }
+
+        [Test]
+        public void CreateProductTag_MultipleTags_EnsuresUniqueIds()
+        {
+            // Act
+            var tag1 = _service.CreateProductTag(ElectronicsTagTitle);
+            var tag2 = _service.CreateProductTag(ClothingTagTitle);
+
+            // Assert
             Assert.That(tag1.Id, Is.Not.EqualTo(tag2.Id));
-            Assert.That(tag2.Id, Is.Not.EqualTo(tag3.Id));
         }
 
+        #endregion
+
+        #region DeleteProductTag Tests
+
         [Test]
-        public void DeleteProductTag_ExistingTag_ShouldRemoveTagFromRepository()
+        public void DeleteProductTag_ExistingTag_RemovesTagFromRepository()
         {
             // Arrange
-            string tagTitle = "Electronics";
-            repositoryMock.Tags.Add(new ProductTag(1, tagTitle));
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(1));
+            AddSingleTag(TagId1, ElectronicsTagTitle);
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedSingleTagCount),
+                "Precondition: Repository should have one tag before deletion");
 
             // Act
-            service.DeleteProductTag(tagTitle);
+            _service.DeleteProductTag(ElectronicsTagTitle);
 
             // Assert
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(0));
-            Assert.That(repositoryMock.Tags.Any(t => t.DisplayTitle == tagTitle), Is.False);
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedEmptyCount));
         }
 
         [Test]
-        public void DeleteProductTag_NonExistentTag_ShouldNotChangeRepository()
+        public void DeleteProductTag_ExistingTag_RemovesCorrectTag()
         {
             // Arrange
-            string existingTagTitle = "Electronics";
-            string nonExistentTagTitle = "Furniture";
-            repositoryMock.Tags.Add(new ProductTag(1, existingTagTitle));
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(1));
+            AddSingleTag(TagId1, ElectronicsTagTitle);
 
             // Act
-            service.DeleteProductTag(nonExistentTagTitle);
+            _service.DeleteProductTag(ElectronicsTagTitle);
 
             // Assert
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(1));
-            Assert.That(repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(existingTagTitle));
+            Assert.That(_repositoryMock.Tags.Any(t => t.DisplayTitle == ElectronicsTagTitle), Is.False);
         }
 
         [Test]
-        public void DeleteProductTag_WithMultipleTagsWithSameTitle_ShouldRemoveAllMatches()
+        public void DeleteProductTag_NonExistentTag_DoesNotChangeRepositoryCount()
         {
             // Arrange
-            string duplicateTitle = "Electronics";
-            string uniqueTitle = "Books";
+            AddSingleTag(TagId1, ElectronicsTagTitle);
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedSingleTagCount),
+                "Precondition: Repository should have one tag before operation");
 
-            repositoryMock.Tags.AddRange(new List<ProductTag>
+            // Act
+            _service.DeleteProductTag(FurnitureTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedSingleTagCount));
+        }
+
+        [Test]
+        public void DeleteProductTag_NonExistentTag_KeepsExistingTagUnchanged()
+        {
+            // Arrange
+            AddSingleTag(TagId1, ElectronicsTagTitle);
+
+            // Act
+            _service.DeleteProductTag(FurnitureTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(ElectronicsTagTitle));
+        }
+
+        [Test]
+        public void DeleteProductTag_WithMultipleTagsWithSameTitle_RemovesAllMatchingTags()
+        {
+            // Arrange
+            AddTagsWithDuplicateTitle();
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedThreeTagsCount),
+                "Precondition: Repository should have three tags before deletion");
+
+            // Act
+            _service.DeleteProductTag(ElectronicsTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(ExpectedSingleTagCount));
+        }
+
+        [Test]
+        public void DeleteProductTag_WithMultipleTagsWithSameTitle_KeepsNonMatchingTags()
+        {
+            // Arrange
+            AddTagsWithDuplicateTitle();
+
+            // Act
+            _service.DeleteProductTag(ElectronicsTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(BooksTagTitle));
+        }
+
+        [Test]
+        public void DeleteProductTag_WithMultipleTagsWithSameTitle_RemovesAllInstancesOfMatchingTitle()
+        {
+            // Arrange
+            AddTagsWithDuplicateTitle();
+
+            // Act
+            _service.DeleteProductTag(ElectronicsTagTitle);
+
+            // Assert
+            Assert.That(_repositoryMock.Tags.Any(t => t.DisplayTitle == ElectronicsTagTitle), Is.False);
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private void AddThreeSampleTags()
+        {
+            _repositoryMock.Tags.AddRange(new List<ProductTag>
             {
-                new ProductTag(1, duplicateTitle),
-                new ProductTag(2, uniqueTitle),
-                new ProductTag(3, duplicateTitle)
+                new ProductTag(TagId1, ElectronicsTagTitle),
+                new ProductTag(TagId2, ClothingTagTitle),
+                new ProductTag(TagId3, BooksTagTitle)
             });
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(3));
-
-            // Act
-            service.DeleteProductTag(duplicateTitle);
-
-            // Assert
-            Assert.That(repositoryMock.Tags.Count, Is.EqualTo(1));
-            Assert.That(repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(uniqueTitle));
-            Assert.That(repositoryMock.Tags.Any(t => t.DisplayTitle == duplicateTitle), Is.False);
         }
+
+        private void AddSingleTag(int id, string title)
+        {
+            _repositoryMock.Tags.Add(new ProductTag(id, title));
+        }
+
+        private void AddTagsWithDuplicateTitle()
+        {
+            _repositoryMock.Tags.AddRange(new List<ProductTag>
+            {
+                new ProductTag(TagId1, ElectronicsTagTitle),
+                new ProductTag(TagId2, BooksTagTitle),
+                new ProductTag(TagId3, ElectronicsTagTitle)
+            });
+        }
+
+        #endregion
     }
 }

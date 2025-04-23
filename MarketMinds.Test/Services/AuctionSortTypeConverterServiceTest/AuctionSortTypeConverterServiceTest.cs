@@ -10,109 +10,233 @@ namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
     {
         private AuctionSortTypeConverterService _converter;
 
+        // Sort tag constants
+        private const string SellerRatingAscTag = "SellerRatingAsc";
+        private const string SellerRatingDescTag = "SellerRatingDesc";
+        private const string StartingPriceAscTag = "StartingPriceAsc";
+        private const string StartingPriceDescTag = "StartingPriceDesc";
+        private const string CurrentPriceAscTag = "CurrentPriceAsc";
+        private const string CurrentPriceDescTag = "CurrentPriceDesc";
+        private const string InvalidTag = "InvalidSortTag";
+        private const string EmptyTag = "";
+
+        // Display title constants
+        private const string SellerRatingTitle = "Seller Rating";
+        private const string SellerRatingField = "SellerRating";
+        private const string StartingPriceTitle = "Starting Price";
+        private const string StartingPriceField = "StartingPrice";
+        private const string CurrentPriceTitle = "Current Price";
+        private const string CurrentPriceField = "CurrentPrice";
+
         [SetUp]
         public void Setup()
         {
             _converter = new AuctionSortTypeConverterService();
         }
 
-        [Test]
-        public void Convert_SellerRatingAsc_ReturnsCorrectSortType()
-        {
-            string sortTag = "SellerRatingAsc";
-            var result = _converter.Convert(sortTag);
+        #region SellerRating Tests
 
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsNonNullResult()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Seller Rating"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("SellerRating"));
+        }
+
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SellerRatingTitle));
+        }
+
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SellerRatingField));
+        }
+
+        [Test]
+        public void Convert_SellerRatingAsc_ReturnsAscendingOrder()
+        {
+            var result = _converter.Convert(SellerRatingAscTag);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
-        public void Convert_SellerRatingDesc_ReturnsCorrectSortType()
+        public void Convert_SellerRatingDesc_ReturnsNonNullResult()
         {
-            string sortTag = "SellerRatingDesc";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(SellerRatingDescTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Seller Rating"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("SellerRating"));
-            Assert.That(result.IsAscending, Is.False);
         }
 
         [Test]
-        public void Convert_StartingPriceAsc_ReturnsCorrectSortType()
+        public void Convert_SellerRatingDesc_ReturnsCorrectExternalTitle()
         {
-            string sortTag = "StartingPriceAsc";
-            var result = _converter.Convert(sortTag);
+            var result = _converter.Convert(SellerRatingDescTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SellerRatingTitle));
+        }
 
+        [Test]
+        public void Convert_SellerRatingDesc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(SellerRatingDescTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SellerRatingField));
+        }
+
+        [Test]
+        public void Convert_SellerRatingDesc_ReturnsDescendingOrder()
+        {
+            var result = _converter.Convert(SellerRatingDescTag);
+            Assert.That(result.IsAscending, Is.False);
+        }
+
+        #endregion
+
+        #region StartingPrice Tests
+
+        [Test]
+        public void Convert_StartingPriceAsc_ReturnsNonNullResult()
+        {
+            var result = _converter.Convert(StartingPriceAscTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Starting Price"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("StartingPrice"));
+        }
+
+        [Test]
+        public void Convert_StartingPriceAsc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(StartingPriceAscTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(StartingPriceTitle));
+        }
+
+        [Test]
+        public void Convert_StartingPriceAsc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(StartingPriceAscTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(StartingPriceField));
+        }
+
+        [Test]
+        public void Convert_StartingPriceAsc_ReturnsAscendingOrder()
+        {
+            var result = _converter.Convert(StartingPriceAscTag);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
-        public void Convert_StartingPriceDesc_ReturnsCorrectSortType()
+        public void Convert_StartingPriceDesc_ReturnsNonNullResult()
         {
-            string sortTag = "StartingPriceDesc";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(StartingPriceDescTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Starting Price"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("StartingPrice"));
-            Assert.That(result.IsAscending, Is.False);
         }
 
         [Test]
-        public void Convert_CurrentPriceAsc_ReturnsCorrectSortType()
+        public void Convert_StartingPriceDesc_ReturnsCorrectExternalTitle()
         {
-            string sortTag = "CurrentPriceAsc";
-            var result = _converter.Convert(sortTag);
+            var result = _converter.Convert(StartingPriceDescTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(StartingPriceTitle));
+        }
 
+        [Test]
+        public void Convert_StartingPriceDesc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(StartingPriceDescTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(StartingPriceField));
+        }
+
+        [Test]
+        public void Convert_StartingPriceDesc_ReturnsDescendingOrder()
+        {
+            var result = _converter.Convert(StartingPriceDescTag);
+            Assert.That(result.IsAscending, Is.False);
+        }
+
+        #endregion
+
+        #region CurrentPrice Tests
+
+        [Test]
+        public void Convert_CurrentPriceAsc_ReturnsNonNullResult()
+        {
+            var result = _converter.Convert(CurrentPriceAscTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Current Price"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("CurrentPrice"));
+        }
+
+        [Test]
+        public void Convert_CurrentPriceAsc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(CurrentPriceAscTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(CurrentPriceTitle));
+        }
+
+        [Test]
+        public void Convert_CurrentPriceAsc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(CurrentPriceAscTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(CurrentPriceField));
+        }
+
+        [Test]
+        public void Convert_CurrentPriceAsc_ReturnsAscendingOrder()
+        {
+            var result = _converter.Convert(CurrentPriceAscTag);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
-        public void Convert_CurrentPriceDesc_ReturnsCorrectSortType()
+        public void Convert_CurrentPriceDesc_ReturnsNonNullResult()
         {
-            string sortTag = "CurrentPriceDesc";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(CurrentPriceDescTag);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo("Current Price"));
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo("CurrentPrice"));
+        }
+
+        [Test]
+        public void Convert_CurrentPriceDesc_ReturnsCorrectExternalTitle()
+        {
+            var result = _converter.Convert(CurrentPriceDescTag);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(CurrentPriceTitle));
+        }
+
+        [Test]
+        public void Convert_CurrentPriceDesc_ReturnsCorrectInternalField()
+        {
+            var result = _converter.Convert(CurrentPriceDescTag);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(CurrentPriceField));
+        }
+
+        [Test]
+        public void Convert_CurrentPriceDesc_ReturnsDescendingOrder()
+        {
+            var result = _converter.Convert(CurrentPriceDescTag);
             Assert.That(result.IsAscending, Is.False);
         }
+
+        #endregion
+
+        #region Invalid Input Tests
 
         [Test]
         public void Convert_InvalidSortTag_ReturnsNull()
         {
-            string sortTag = "InvalidSortTag";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(InvalidTag);
             Assert.That(result, Is.Null);
         }
 
         [Test]
         public void Convert_EmptyString_ReturnsNull()
         {
-            string sortTag = "";
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(EmptyTag);
             Assert.That(result, Is.Null);
         }
 
         [Test]
         public void Convert_NullString_ReturnsNull()
         {
-            string sortTag = null;
-            var result = _converter.Convert(sortTag);
-
+            var result = _converter.Convert(null);
             Assert.That(result, Is.Null);
         }
+
+        #endregion
     }
 }
