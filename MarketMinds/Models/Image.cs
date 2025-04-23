@@ -25,10 +25,5 @@ namespace DomainLayer.Domain
         {
             this.Url = url;
         }
-
-        // Default constructor for JSON deserialization
-        public Image()
-        {
-        }
     }
 }

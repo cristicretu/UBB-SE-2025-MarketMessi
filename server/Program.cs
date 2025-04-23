@@ -28,6 +28,9 @@ var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trus
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// Register the DataBaseConnection service
+builder.Services.AddScoped<DataBaseConnection>();
+
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
