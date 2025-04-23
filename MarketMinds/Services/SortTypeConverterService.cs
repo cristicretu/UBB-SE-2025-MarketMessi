@@ -17,4 +17,9 @@ namespace MarketMinds.Services
             }
         }
     }
+
+    public Something()
+        {
+
+        }
 }
