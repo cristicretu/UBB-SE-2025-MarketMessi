@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,5 +30,19 @@ namespace server.Models
             this.Images = images;
             this.Price = price;
         }
+    
+        public BuyProduct(int id, string title, string description, User seller, 
+            Condition condition, Category category, float price)
+        {
+            Id = id;
+            Title = title;
+            Description = description;
+            Seller = seller;
+            Condition = condition;
+            Category = category;
+            Price = price;
+            Images = new List<BuyProductImage>();
+            ProductTags = new List<BuyProductProductTag>();
+        }
     }
-}
+} 

@@ -1,27 +1,40 @@
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
 using MarketMinds.Repositories.BasketRepository; // Add namespace for BasketRepository
+using Microsoft.EntityFrameworkCore;
+using server.DataAccessLayer;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = null;
+    
+    // Enable camel casing to match frontend expectations
+    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    
+    // Ignore null values in the output
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
 
-// Register DataBaseConnection (Singleton is usually appropriate if thread-safe)
-// It reads configuration internally now
-builder.Services.AddSingleton<DataBaseConnection>();
 
-// Register AuctionProductsRepository
+builder.Services.AddSingleton<DataBaseConnection>(); 
+
+var InitialCatalog = builder.Configuration["InitialCatalog"];
+var LocalDataSource = builder.Configuration["LocalDataSource"];
+var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
-
-// Register BasketRepository
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -34,18 +47,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Enable CORS
 app.UseCors();
 
-// Comment out HTTPS redirection to avoid issues in development
-// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

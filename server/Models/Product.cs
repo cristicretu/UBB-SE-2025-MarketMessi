@@ -1,5 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 // TODO: Define or import ProductCondition, ProductCategory, User if they are needed by the server
 
@@ -7,15 +8,37 @@ namespace server.Models // Adjusted namespace to server.Models
 {
     public abstract class Product
     {
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public ProductCondition Condition { get; set; }
-        public ProductCategory Category { get; set; }
-        public List<ProductTag> Tags { get; set; }
-        public List<Image> Images { get; set; }
+
+        [Required]
+        [Column("title")]
+        public string Title { get; set; } = string.Empty;
+
+        [Column("description")]
+        public string Description { get; set; } = string.Empty;
+        
+        // Foreign keys
+        [Column("seller_id")]
+        public int SellerId { get; set; }
+
+        [Column("condition_id")]
+        public int ConditionId { get; set; }
+
+        [Column("category_id")]
+        public int CategoryId { get; set; }
+        
+        // Navigation properties
+        [ForeignKey("SellerId")]
         public User Seller { get; set; }
 
+        [ForeignKey("ConditionId")]
+        public Condition Condition { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public Category Category { get; set; }
+      
         // Default constructor for JSON serialization/deserialization
         protected Product()
         {
