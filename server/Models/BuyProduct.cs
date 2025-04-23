@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,19 +9,29 @@ namespace server.Models
     public class BuyProduct : Product
     {
         public float Price { get; set; }
-        public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
-            List<ProductTag> productTags, List<Image> images, float price)
+        
+        // Navigation properties
+        public ICollection<BuyProductImage> Images { get; set; }
+        public ICollection<BuyProductProductTag> ProductTags { get; set; }
+
+        public BuyProduct()
         {
-            this.Id = id;
-            this.Title = title;
-            this.Description = description;
-            this.Seller = seller;
-            this.Condition = productCondition;
-            this.Category = productCategory;
-            this.Tags = productTags;
-            this.Seller = seller;
-            this.Images = images;
-            this.Price = price;
+            Images = new List<BuyProductImage>();
+            ProductTags = new List<BuyProductProductTag>();
+        }
+
+        public BuyProduct(int id, string title, string description, User seller, 
+            Condition condition, Category category, float price)
+        {
+            Id = id;
+            Title = title;
+            Description = description;
+            Seller = seller;
+            Condition = condition;
+            Category = category;
+            Price = price;
+            Images = new List<BuyProductImage>();
+            ProductTags = new List<BuyProductProductTag>();
         }
     }
-}
+} 

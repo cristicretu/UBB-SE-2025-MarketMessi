@@ -6,105 +6,46 @@ using System.Data;
 using System.Linq;
 using server.Models;
 using System.Threading.Tasks;
+using server.DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {
     public class AuctionProductsRepository : IAuctionProductsRepository
     {
         private readonly DataBaseConnection _connection; 
+        private readonly ApplicationDbContext _context;
         private const int BASE_ID = 0;
         private const int BASE_PRICE = 0;
 
         
-        public AuctionProductsRepository(DataBaseConnection connection)
+        public AuctionProductsRepository(DataBaseConnection connection, ApplicationDbContext context)
         {
             _connection = connection;
+            _context = context;
         }
 
         public List<AuctionProduct> GetProducts()
         {
-            List<AuctionProduct> auctions = new List<AuctionProduct>();
-            DataTable productsTable = new DataTable();
-            SqlConnection sqlConn = _connection.GetConnection(); 
-
-            string mainQuery = @"
-            SELECT 
-                ap.id, ap.title, ap.description, ap.seller_id, u.username, u.email,
-                ap.condition_id, pc.title AS conditionTitle, pc.description AS conditionDescription,
-                ap.category_id, cat.title AS categoryTitle, cat.description AS categoryDescription,
-                ap.start_datetime, ap.end_datetime, ap.starting_price, ap.current_price
-            FROM AuctionProducts ap
-            JOIN Users u ON ap.seller_id = u.id
-            JOIN ProductConditions pc ON ap.condition_id = pc.id
-            JOIN ProductCategories cat ON ap.category_id = cat.id";
-
             try
             {
-                _connection.OpenConnection(); 
+                // Use Entity Framework to get all auction products with related data
+                var products = _context.AuctionProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Bids)
+                        .ThenInclude(b => b.Bidder)
+                    .Include(p => p.Images)
+                    .ToList();
 
-                
-                using (SqlCommand cmd = new SqlCommand(mainQuery, sqlConn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    productsTable.Load(reader);
-                } 
-
-                
-                foreach (DataRow row in productsTable.Rows)
-                {
-                    int id = (int)row["id"];
-                    string title = (string)row["title"];
-                    string description = (string)row["description"];
-
-                    int sellerId = (int)row["seller_id"];
-                    string username = (string)row["username"];
-                    string email = (string)row["email"];
-                    User seller = new User(sellerId, username, email);
-
-                    int conditionId = (int)row["condition_id"];
-                    string conditionTitle = (string)row["conditionTitle"];
-                    string conditionDescription = (string)row["conditionDescription"];
-                    ProductCondition condition = new ProductCondition(conditionId, conditionTitle, conditionDescription);
-
-                    int categoryId = (int)row["category_id"];
-                    string categoryTitle = (string)row["categoryTitle"];
-                    string categoryDescription = (string)row["categoryDescription"];
-                    ProductCategory category = new ProductCategory(categoryId, categoryTitle, categoryDescription);
-
-                    DateTime start = (DateTime)row["start_datetime"];
-                    DateTime end = (DateTime)row["end_datetime"];
-                    
-                    float startingPrice = Convert.ToSingle(row["starting_price"]); 
-                    
-                    float currentPrice = row["current_price"] == DBNull.Value ? startingPrice : Convert.ToSingle(row["current_price"]);
-
-
-                    
-                    List<ProductTag> tags = GetProductTags(id, sqlConn);
-                    List<Image> images = GetImages(id, sqlConn);
-
-                    AuctionProduct auction = new AuctionProduct(
-                        id, title, description, seller, condition, category,
-                        tags, images, start, end, startingPrice)
-                        {
-                            
-                             CurrentPrice = currentPrice 
-                        }; 
-
-                    auctions.Add(auction);
-                }
+                return products;
             }
             catch (Exception ex)
             {
-                
-                Console.WriteLine($"Error in GetProducts: {ex.Message}");
-                throw; 
+                Console.WriteLine($"Error in GetProducts using EF: {ex.Message}");
+                throw;
             }
-            finally
-            {
-                _connection.CloseConnection(); 
-            }
-            return auctions;
         }
 
         
@@ -157,14 +98,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         }
 
 
-        public void DeleteProduct(Product product)
+        public void DeleteProduct(AuctionProduct product)
         {
-             
-            if (!(product is AuctionProduct auction)) 
-            {
-                 throw new ArgumentException("Product must be of type AuctionProduct for deletion.", nameof(product));
-            }
-
             string deleteProductTagsQuery = "DELETE FROM AuctionProductProductTags WHERE product_id = @Id";
             string deleteProductImagesQuery = "DELETE FROM AuctionProductsImages WHERE product_id = @Id";
             string deleteProductQuery = "DELETE FROM AuctionProducts WHERE id = @Id";
@@ -178,21 +113,21 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 {
                     using (SqlCommand cmdTags = new SqlCommand(deleteProductTagsQuery, sqlConn, transaction))
                     {
-                         cmdTags.Parameters.AddWithValue("@Id", auction.Id);
+                         cmdTags.Parameters.AddWithValue("@Id", product.Id);
                          cmdTags.ExecuteNonQuery();
                     }
                      using (SqlCommand cmdImages = new SqlCommand(deleteProductImagesQuery, sqlConn, transaction))
                     {
-                         cmdImages.Parameters.AddWithValue("@Id", auction.Id);
+                         cmdImages.Parameters.AddWithValue("@Id", product.Id);
                          cmdImages.ExecuteNonQuery();
                     }
                     using (SqlCommand cmdProduct = new SqlCommand(deleteProductQuery, sqlConn, transaction))
                     {
-                        cmdProduct.Parameters.AddWithValue("@Id", auction.Id);
+                        cmdProduct.Parameters.AddWithValue("@Id", product.Id);
                         int rowsAffected = cmdProduct.ExecuteNonQuery();
                         if (rowsAffected == 0) {
                              transaction.Rollback(); 
-                             throw new KeyNotFoundException($"AuctionProduct with ID {auction.Id} not found for deletion.");
+                             throw new KeyNotFoundException($"AuctionProduct with ID {product.Id} not found for deletion.");
                         }
                     }
                     transaction.Commit();
@@ -210,13 +145,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         }
 
 
-        public void AddProduct(Product product)
+        public void AddProduct(AuctionProduct product)
         {
-            if (!(product is AuctionProduct auction))
-            {
-                 throw new ArgumentException("Product must be of type AuctionProduct for adding.", nameof(product));
-            }
-
             string insertProductQuery = @"
             INSERT INTO AuctionProducts 
             (title, description, seller_id, condition_id, category_id, start_datetime, end_datetime, starting_price, current_price)
@@ -240,55 +170,45 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 _connection.OpenConnection();
                 using (SqlTransaction transaction = sqlConn.BeginTransaction())
                 {
-                    
                     using (SqlCommand cmdProduct = new SqlCommand(insertProductQuery, sqlConn, transaction))
                     {
-                        cmdProduct.Parameters.AddWithValue("@Title", auction.Title);
-                        cmdProduct.Parameters.AddWithValue("@Description", auction.Description);
-                        cmdProduct.Parameters.AddWithValue("@SellerId", auction.Seller.Id);
-                        cmdProduct.Parameters.AddWithValue("@ConditionId", auction.Condition.Id);
-                        cmdProduct.Parameters.AddWithValue("@CategoryId", auction.Category.Id);
-                        cmdProduct.Parameters.AddWithValue("@StartDateTime", auction.StartAuctionDate);
-                        cmdProduct.Parameters.AddWithValue("@EndDateTime", auction.EndAuctionDate);
-                        cmdProduct.Parameters.AddWithValue("@StartingPrice", auction.StartingPrice);
-                        
-                        cmdProduct.Parameters.AddWithValue("@CurrentPrice", auction.StartingPrice); 
+                        cmdProduct.Parameters.AddWithValue("@Title", product.Title);
+                        cmdProduct.Parameters.AddWithValue("@Description", product.Description ?? (object)DBNull.Value);
+                        cmdProduct.Parameters.AddWithValue("@SellerId", product.SellerId);
+                        cmdProduct.Parameters.AddWithValue("@ConditionId", product.ConditionId ?? (object)DBNull.Value);
+                        cmdProduct.Parameters.AddWithValue("@CategoryId", product.CategoryId ?? (object)DBNull.Value);
+                        cmdProduct.Parameters.AddWithValue("@StartDateTime", product.StartTime);
+                        cmdProduct.Parameters.AddWithValue("@EndDateTime", product.EndTime);
+                        cmdProduct.Parameters.AddWithValue("@StartingPrice", product.StartPrice);
+                        cmdProduct.Parameters.AddWithValue("@CurrentPrice", product.StartPrice);
 
                         object result = cmdProduct.ExecuteScalar(); 
-                         if (result == null || result == DBNull.Value) {
-                             transaction.Rollback();
-                             throw new Exception("Failed to insert auction product and retrieve new ID.");
-                         }
+                        if (result == null || result == DBNull.Value) {
+                            transaction.Rollback();
+                            throw new Exception("Failed to insert auction product and retrieve new ID.");
+                        }
                         newProductId = Convert.ToInt32(result);
-                        auction.Id = newProductId; 
+                        product.Id = newProductId; 
                     }
 
-                    
-                    foreach (var tag in auction.Tags)
+                    // Handle image references
+                    if (product.Images != null)
                     {
-                        using (SqlCommand cmdTag = new SqlCommand(insertTagQuery, sqlConn, transaction))
+                        foreach (var image in product.Images)
                         {
-                            cmdTag.Parameters.AddWithValue("@ProductId", newProductId);
-                            
-                            cmdTag.Parameters.AddWithValue("@TagId", tag.Id); 
-                            cmdTag.ExecuteNonQuery();
+                            using (SqlCommand cmdImage = new SqlCommand(insertImageQuery, sqlConn, transaction))
+                            {
+                                cmdImage.Parameters.AddWithValue("@ProductId", newProductId);
+                                cmdImage.Parameters.AddWithValue("@Url", image.Url);
+                                cmdImage.ExecuteNonQuery();
+                            }
                         }
                     }
 
-                    
-                    foreach (var image in auction.Images)
-                    {
-                        using (SqlCommand cmdImage = new SqlCommand(insertImageQuery, sqlConn, transaction))
-                        {
-                            cmdImage.Parameters.AddWithValue("@ProductId", newProductId);
-                            cmdImage.Parameters.AddWithValue("@Url", image.Url);
-                            cmdImage.ExecuteNonQuery();
-                        }
-                    }
                     transaction.Commit();
                 }
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddProduct: {ex.Message}");
                 throw;
@@ -300,37 +220,26 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         }
 
 
-        public void UpdateProduct(Product product)
+        public void UpdateProduct(AuctionProduct product)
         {
-             if (!(product is AuctionProduct auction))
-            {
-                 throw new ArgumentException("Product must be of type AuctionProduct for update.", nameof(product));
-            }
-
-             
-             
             string query = "UPDATE AuctionProducts SET current_price = @CurrentPrice WHERE Id = @Id"; 
-            
-
             SqlConnection sqlConn = _connection.GetConnection();
-             try
+            
+            try
             {
                 _connection.OpenConnection();
-                 using (SqlCommand cmd = new SqlCommand(query, sqlConn))
+                using (SqlCommand cmd = new SqlCommand(query, sqlConn))
                 {
-                    
-                    cmd.Parameters.AddWithValue("@CurrentPrice", auction.CurrentPrice); 
-                    cmd.Parameters.AddWithValue("@Id", auction.Id);
+                    cmd.Parameters.AddWithValue("@CurrentPrice", product.CurrentPrice); 
+                    cmd.Parameters.AddWithValue("@Id", product.Id);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
-                     if (rowsAffected == 0) {
-                         throw new KeyNotFoundException($"AuctionProduct with ID {auction.Id} not found for update.");
-                     }
+                    if (rowsAffected == 0) {
+                        throw new KeyNotFoundException($"AuctionProduct with ID {product.Id} not found for update.");
+                    }
                 }
-                 
-                 
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error in UpdateProduct: {ex.Message}");
                 throw;
@@ -344,91 +253,35 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public AuctionProduct GetProductByID(int id)
         {
-            AuctionProduct? auction = null;
-            SqlConnection sqlConn = _connection.GetConnection();
-
-            string query = @"
-            SELECT 
-                ap.id, ap.title, ap.description, ap.seller_id, u.username, u.email,
-                ap.condition_id, pc.title AS conditionTitle, pc.description AS conditionDescription,
-                ap.category_id, cat.title AS categoryTitle, cat.description AS categoryDescription,
-                ap.start_datetime, ap.end_datetime, ap.starting_price, ap.current_price
-            FROM AuctionProducts ap
-            JOIN Users u ON ap.seller_id = u.id
-            JOIN ProductConditions pc ON ap.condition_id = pc.id
-            JOIN ProductCategories cat ON ap.category_id = cat.id
-            WHERE ap.id = @APid";
-            
             try
             {
-                 _connection.OpenConnection();
-                 DataRow? productRow = null;
-                 DataTable dt = new DataTable();
+                // Use Entity Framework to get the auction product by ID with related data
+                var product = _context.AuctionProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Bids)
+                        .ThenInclude(b => b.Bidder)
+                    .Include(p => p.Images)
+                    .FirstOrDefault(p => p.Id == id);
 
-                 using (SqlCommand cmd = new SqlCommand(query, sqlConn))
+                if (product == null)
                 {
-                    cmd.Parameters.AddWithValue("@APid", id);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                         dt.Load(reader);
-                         if (dt.Rows.Count > 0) {
-                              productRow = dt.Rows[0];
-                         }
-                    }
+                    throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.");
                 }
 
-                if (productRow != null)
-                {
-                    int productId = (int)productRow["id"]; 
-                    string title = (string)productRow["title"];
-                    string description = (string)productRow["description"];
-
-                    int sellerId = (int)productRow["seller_id"];
-                    string username = (string)productRow["username"];
-                    string email = (string)productRow["email"];
-                    User seller = new User(sellerId, username, email);
-
-                    int conditionId = (int)productRow["condition_id"];
-                    string conditionTitle = (string)productRow["conditionTitle"];
-                    string conditionDescription = (string)productRow["conditionDescription"];
-                    ProductCondition condition = new ProductCondition(conditionId, conditionTitle, conditionDescription);
-
-                    int categoryId = (int)productRow["category_id"];
-                    string categoryTitle = (string)productRow["categoryTitle"];
-                    string categoryDescription = (string)productRow["categoryDescription"];
-                    ProductCategory category = new ProductCategory(categoryId, categoryTitle, categoryDescription);
-
-                    DateTime start = (DateTime)productRow["start_datetime"];
-                    DateTime end = (DateTime)productRow["end_datetime"];
-                    float startingPrice = Convert.ToSingle(productRow["starting_price"]);
-                    float currentPrice = productRow["current_price"] == DBNull.Value ? startingPrice : Convert.ToSingle(productRow["current_price"]);
-
-                    
-                    List<ProductTag> tags = GetProductTags(productId, sqlConn);
-                    List<Image> images = GetImages(productId, sqlConn);
-
-                    auction = new AuctionProduct(
-                        productId, title, description, seller, condition, category,
-                        tags, images, start, end, startingPrice)
-                        {
-                             CurrentPrice = currentPrice 
-                        };
-                }
+                return product;
+            }
+            catch (KeyNotFoundException)
+            {
+                // Rethrow KeyNotFoundException to be handled by the controller
+                throw;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetProductByID: {ex.Message}");
+                Console.WriteLine($"Error in GetProductByID using EF: {ex.Message}");
                 throw;
             }
-             finally
-            {
-                _connection.CloseConnection();
-            }
-
-             if (auction == null) {
-                  throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.");
-             }
-            return auction;
         }
          
         
