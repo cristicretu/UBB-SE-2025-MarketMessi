@@ -2,52 +2,97 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
-using MarketMinds.Repositories.ReviewRepository;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.ReviewService
 {
     public class ReviewsService : IReviewsService
     {
-        public IReviewRepository Repository;
+        private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
 
-        public ReviewsService(IReviewRepository repository)
+        public ReviewsService(IConfiguration configuration)
         {
-            Repository = repository;
+            httpClient = new HttpClient();
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
         public ObservableCollection<Review> GetReviewsBySeller(User seller)
         {
-            ObservableCollection<Review> reviews = Repository.GetAllReviewsBySeller(seller);
-            // add to Review date and sort by dates
-            // reviews.Sort()
-            return reviews;
+            var reviews = httpClient.GetFromJsonAsync<ObservableCollection<Review>>($"review/seller/{seller.Id}").Result;
+            return reviews ?? new ObservableCollection<Review>();
         }
 
         public ObservableCollection<Review> GetReviewsByBuyer(User buyer)
         {
-            ObservableCollection<Review> reviews = Repository.GetAllReviewsByBuyer(buyer);
-            // same here
-            return reviews;
+            var reviews = httpClient.GetFromJsonAsync<ObservableCollection<Review>>($"review/buyer/{buyer.Id}").Result;
+            return reviews ?? new ObservableCollection<Review>();
         }
 
         public void AddReview(string description, List<Image> images, float rating, User seller, User buyer)
         {
-            Repository.CreateReview(new Review(-1, description, images, rating, seller.Id, buyer.Id));
+            var review = new Review(
+                -1, // ID will be assigned by the API
+                description,
+                images,
+                rating,
+                seller.Id,
+                buyer.Id);
+
+            var response = httpClient.PostAsJsonAsync("review", review).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         public void EditReview(string description, List<Image> images, float rating, int sellerid, int buyerid, string newDescription, float newRating)
         {
-            // change in uml aswell
-            Repository.EditReview(new Review(-1, description, images, rating, sellerid, buyerid), newRating, newDescription);
+            // Create a review object with the updated values
+            var updatedReview = new Review(
+                -1, // The API will find the review based on other fields
+                description,
+                images,
+                rating,
+                sellerid,
+                buyerid);
+
+            // Update with new values
+            updatedReview.Description = newDescription;
+            updatedReview.Rating = newRating;
+
+            var response = httpClient.PutAsJsonAsync("review", updatedReview).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         public void DeleteReview(string description, List<Image> images, float rating, int sellerid, int buyerid)
         {
-            Repository.DeleteReview(new Review(-1, description, images, rating, sellerid, buyerid));
+            // Create a review object to delete
+            var reviewToDelete = new Review(
+                -1, // The API will find the review based on other fields
+                description,
+                images,
+                rating,
+                sellerid,
+                buyerid);
+
+            // Using HttpRequestMessage for DELETE with body
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(httpClient.BaseAddress + "review"),
+                Content = JsonContent.Create(reviewToDelete)
+            };
+
+            var response = httpClient.SendAsync(request).Result;
+            response.EnsureSuccessStatusCode();
         }
     }
 }
