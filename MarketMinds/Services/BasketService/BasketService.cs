@@ -70,7 +70,6 @@ namespace MarketMinds.Services.BasketService
 
             try
             {
-
                 string fullUrl = $"{apiBaseUrl}api/basket/user/{user.Id}";
 
                 var response = httpClient.GetAsync(fullUrl).Result;
