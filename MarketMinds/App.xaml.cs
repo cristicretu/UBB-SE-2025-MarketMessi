@@ -30,6 +30,7 @@ using MarketMinds.Repositories.ChatRepository;
 using MarketMinds.Services.DreamTeam.ChatService;
 using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
+using MarketMinds.Services.ImagineUploadService;
 
 namespace MarketMinds
 {
@@ -66,6 +67,7 @@ namespace MarketMinds
         public static ChatBotService ChatBotService;
         public static ChatService ChatService;
         public static MainMarketplaceService MainMarketplaceService;
+        public static IImageUploadService ImageUploadService;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }

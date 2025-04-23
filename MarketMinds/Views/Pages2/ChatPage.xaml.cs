@@ -1,24 +1,26 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.ObjectModel;
+using DomainLayer.Domain;
+using MarketMinds;
+using MarketMinds.Helpers.Selectors;
+using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.ViewModels;
+using Marketplace_SE.Data;
+using Marketplace_SE.Utilities;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Marketplace_SE.Data;
-using DomainLayer.Domain;
-using Marketplace_SE.Utilities;
-using MarketMinds.ViewModels;
-using MarketMinds;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.IdentityModel.Tokens;
-using MarketMinds.Helpers.Selectors;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Marketplace_SE
@@ -29,6 +31,7 @@ namespace Marketplace_SE
     public sealed partial class ChatPage : Page
     {
         private ChatViewModel chatViewModel;
+        private IImageUploadService imageUploadService;
 
         private User me;
         private User target;
@@ -45,6 +48,7 @@ namespace Marketplace_SE
             this.InitializeComponent();
 
             chatViewModel = App.ChatViewModel;
+            imageUploadService = App.ImageUploadService;
 
             ChatListView.ItemsSource = displayedMessages;
         }
@@ -60,7 +64,7 @@ namespace Marketplace_SE
 
             if (me == null || target == null)
             {
-                ShowErrorAndNavigateBack("User setup error", "Could not determine users for chat.");
+                ShowErrorDialog("User setup error", "Could not determine users for chat.");
                 return;
             }
 
@@ -83,7 +87,7 @@ namespace Marketplace_SE
             }
             catch (Exception ex)
             {
-                ShowErrorAndNavigateBack("Chat initialization error", ex.Message);
+                ShowErrorDialog("Chat initialization error", ex.Message);
             }
             finally
             {
@@ -257,7 +261,7 @@ namespace Marketplace_SE
 
             if (!success)
             {
-                ShowErrorAndNavigateBack("Message error", "Failed to send message.");
+                ShowErrorDialog("Message error", "Failed to send message.");
                 return;
             }
 
@@ -272,59 +276,62 @@ namespace Marketplace_SE
             {
                 return;
             }
-            var currentElement = sender as UIElement;
-            if (currentElement == null)
+
+            Window currentWindow = GetCurrentWindow();
+            if (currentWindow == null)
             {
                 return;
             }
 
-            var picker = new Windows.Storage.Pickers.FileOpenPicker { SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary };
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".png");
+            AttachButton.IsEnabled = false;
 
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(currentElement.XamlRoot);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, windowHandle);
-
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
+            try
             {
-                AttachButton.IsEnabled = false;
-                byte[] bytes = null;
-                try
-                {
-                    var buffer = await Windows.Storage.FileIO.ReadBufferAsync(file);
-                    bytes = buffer.ToArray();
-                }
-                catch (Exception ex)
-                {
-                    AttachButton.IsEnabled = true;
-                    return;
-                }
-                if (bytes != null)
-                {
-                    long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    string hexContent = DataEncoder.HexEncode(bytes);
+                string hexImageData = await imageUploadService.UploadImage(currentWindow);
 
-                    var message = new Message
+                if (!string.IsNullOrEmpty(hexImageData))
+                {
+                    byte[] bytes = null;
+                    try
                     {
-                        ConversationId = chatViewModel.GetConversation().Id,
-                        Content = hexContent,
-                        ContentType = "image",
-                        Creator = me.Id,
-                        Timestamp = pseudoTimestamp
-                    };
-
-                    AddMessageToDisplay(message);
-                    ScrollChatToBottom();
-
-                    bool success = chatViewModel.SendImageMessage(bytes);
-                    if (!success)
+                        bytes = DataEncoder.HexDecode(hexImageData);
+                    }
+                    catch (Exception ex)
                     {
-                        ShowErrorAndNavigateBack("Image error", "Failed to send image.");
+                        AttachButton.IsEnabled = true;
                         return;
                     }
+
+                if (bytes != null && bytes.Length > 0)
+                    {
+                        long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                        Message message = new Message
+                        {
+                            ConversationId = chatViewModel.GetConversation().Id,
+                            Content = DataEncoder.HexEncode(bytes),
+                            ContentType = "image",
+                            Creator = me.Id,
+                            Timestamp = pseudoTimestamp
+                        };
+                        AddMessageToDisplay(message);
+                        ScrollChatToBottom();
+
+                        bool success = chatViewModel.SendImageMessage(bytes);
+
+                        if (!success)
+                        {
+                            return;
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog("Image upload error", "Failed to upload image.");
+            }
+            finally
+            {
                 AttachButton.IsEnabled = true;
             }
         }
@@ -356,7 +363,7 @@ namespace Marketplace_SE
                 }
                 catch (Exception ex)
                 {
-                    ShowErrorAndNavigateBack("Export error", "Failed to export chat history.");
+                    ShowErrorDialog("Export error", "Failed to export chat history.");
                     return;
                 }
             }
@@ -375,24 +382,28 @@ namespace Marketplace_SE
             }
         }
 
-        private void ShowErrorAndNavigateBack(string title, string message)
+        private async void ShowErrorDialog(string title, string message)
         {
-            StopUpdateTimer();
-            var dialog = new ContentDialog { Title = title, Content = message, CloseButtonText = "OK", XamlRoot = this.Content.XamlRoot };
-            dialog.Closed += (s, args) =>
+            ContentDialog dialog = new ContentDialog
             {
-                if (Frame.CanGoBack)
-                {
-                    Frame.GoBack();
-                }
-                else
-                {
-                    Frame.Navigate(typeof(MainMarketplacePage));
-                }
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
             };
-            dialog.ShowAsync();
+            await dialog.ShowAsync();
         }
 
+        private Window GetCurrentWindow()
+        {
+            var currentWindow = Window.Current;
+            if (currentWindow == null)
+            {
+                ShowErrorDialog("Window error", "Could not retrieve the current window.");
+                return null;
+            }
+            return currentWindow;
+        }
         private void ShowLoadingIndicator(bool show)
         {
             LoadingIndicator.IsActive = show;
