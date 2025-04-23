@@ -135,7 +135,7 @@ namespace MarketMinds
             TagService = new ProductTagService(ProductTagRepository);
             ConditionService = new ProductConditionService(ProductConditionRepository);
             ReviewsService = new ReviewsService(Configuration);
-            BasketService = new BasketService(BasketRepository);
+            BasketService = new BasketService(Configuration);
 
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);

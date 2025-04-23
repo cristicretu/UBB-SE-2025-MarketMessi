@@ -173,7 +173,7 @@ namespace ViewModelLayer.ViewModel
 
         public bool CanCheckout()
         {
-            return basketService.ValidateBasketBeforeCheckOut(basket.Id);
+            return basket != null && basketService.ValidateBasketBeforeCheckOut(basket.Id);
         }
 
         public void Checkout()
