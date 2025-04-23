@@ -139,25 +139,26 @@ namespace MarketMinds.Repositories.BasketRepository
                         int sellerId = reader.IsDBNull(12) ? -1 : reader.GetInt32(12);
                         string sellerUsername = reader.IsDBNull(13) ? string.Empty : reader.GetString(13);
                         string sellerEmail = reader.IsDBNull(14) ? string.Empty : reader.GetString(14);
+                        string sellerPassword = string.Empty; // Assuming password is not needed here
 
                         // Create condition and category objects
-                        ProductCondition? condition = conditionId > MINIMUMID ?
-                            new ProductCondition(conditionId, conditionTitle, conditionDesc) : null;
+                        Condition? condition = conditionId > MINIMUMID ?
+                            new Condition(conditionTitle) : null;
 
-                        ProductCategory? category = categoryId > MINIMUMID ?
-                            new ProductCategory(categoryId, categoryTitle, categoryDesc) : null;
+                        Category? category = categoryId > MINIMUMID ?
+                            new Category(categoryTitle) : null;
 
                         // Create the seller object
                         User? seller = sellerId > MINIMUMID ?
-                            new User(sellerId, sellerUsername, sellerEmail) : null;
+                            new User(sellerUsername, sellerEmail, sellerPassword) : null;
                         // Create the product with basic information
                         BuyProduct product = new BuyProduct(
                             productId,                   // Id
                             productTitle ?? string.Empty,          // Title
                             description ?? string.Empty,           // Description
-                            seller ?? new User(MINIMUMID, string.Empty, string.Empty),  // Seller with default values if null
-                            condition ?? new ProductCondition(MINIMUMID, string.Empty, string.Empty),  // Default condition if null
-                            category ?? new ProductCategory(MINIMUMID, string.Empty, string.Empty),    // Default category if null
+                            seller ?? new User(string.Empty, string.Empty, string.Empty),  // Seller with default values if null
+                            condition ?? new Condition(string.Empty),  // Default condition if null
+                            category ?? new Category(string.Empty),    // Default category if null
                             new List<ProductTag>(),      // Tags
                             new List<Image>(),           // Images
                             (float)price);               // Price

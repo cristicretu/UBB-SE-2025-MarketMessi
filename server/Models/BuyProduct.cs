@@ -10,14 +10,17 @@ namespace server.Models
     public class BuyProduct : Product
     {
         public float Price { get; set; }
+        public List<ProductTag> Tags { get; set; }
+        public List<Image> Images { get; set; }
 
-        // Default constructor for JSON serialization/deserialization
         public BuyProduct() : base()
         {
             Price = 0;
+            Tags = new List<ProductTag>();
+            Images = new List<Image>();
         }
 
-        public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
+        public BuyProduct(int id, string title, string description, User seller, Condition productCondition, Category productCategory,
             List<ProductTag> productTags, List<Image> images, float price)
         {
             this.Id = id;
@@ -30,8 +33,8 @@ namespace server.Models
             this.Images = images;
             this.Price = price;
         }
-    
-        public BuyProduct(int id, string title, string description, User seller, 
+
+        public BuyProduct(int id, string title, string description, User seller,
             Condition condition, Category category, float price)
         {
             Id = id;
@@ -41,8 +44,8 @@ namespace server.Models
             Condition = condition;
             Category = category;
             Price = price;
-            Images = new List<BuyProductImage>();
-            ProductTags = new List<BuyProductProductTag>();
+            Images = new List<Image>();
+            Tags = new List<ProductTag>();
         }
     }
 } 

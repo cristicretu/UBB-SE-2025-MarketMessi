@@ -47,8 +47,6 @@ namespace server.Models // Adjusted namespace to server.Models
             Description = string.Empty;
             Condition = null;
             Category = null;
-            Tags = new List<ProductTag>();
-            Images = new List<Image>();
             Seller = null;
         }
     }
