@@ -47,7 +47,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 newProductId = Convert.ToInt32(result);
             }
 
-            foreach (var tag in buy.Tags)
+            foreach (var tag in buy.ProductTags)
             {
                 string insertTagQuery = @"
             INSERT INTO BuyProductProductTags (product_id, tag_id)
@@ -136,28 +136,42 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 int sellerId = (int)row["seller_id"];
                 string username = (string)row["username"];
                 string email = (string)row["email"];
-                User seller = new User(sellerId, username, email);
+                User seller = new User { Id = sellerId, Username = username, Email = email };
 
                 int conditionId = (int)row["condition_id"];
                 string conditionTitle = (string)row["conditionTitle"];
                 string conditionDescription = (string)row["conditionDescription"];
-                ProductCondition condition = new ProductCondition(conditionId, conditionTitle, conditionDescription);
+                Condition condition = new Condition(conditionTitle.ToString());
+                condition.Id = conditionId;
 
                 int categoryId = (int)row["category_id"];
                 string categoryTitle = (string)row["categoryTitle"];
                 string categoryDescription = (string)row["categoryDescription"];
-                ProductCategory category = new ProductCategory(categoryId, categoryTitle, categoryDescription);
+                Category category = new Category(categoryTitle, categoryDescription);
+                category.Id = categoryId;
 
                 double priceDouble = (double)row["price"];
                 float price = (float)priceDouble;
 
-                // Fetch tags and images in separate queries
-                List<ProductTag> tags = GetProductTags(id);
-                List<Image> images = GetProductImages(id);
-
+                // Create the BuyProduct with the main properties
                 BuyProduct buy = new BuyProduct(
                     id, title, description, seller, condition,
-                    category, tags, images, price);
+                    category, price);
+
+                // Fetch tags and images in separate queries
+                List<ProductTag> tags = GetProductTags(id);
+                List<BuyProductImage> images = GetProductImages(id);
+
+                // Add tags and images to the BuyProduct
+                foreach (var tag in tags)
+                {
+                    buy.ProductTags.Add(new BuyProductProductTag { Product = buy, Tag = tag });
+                }
+                
+                foreach (var image in images)
+                {
+                    buy.Images.Add(image);
+                }
 
                 buys.Add(buy);
             }
@@ -194,9 +208,9 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             return tags;
         }
 
-        private List<Image> GetProductImages(int productId)
+        private List<BuyProductImage> GetProductImages(int productId)
         {
-            var images = new List<Image>();
+            var images = new List<BuyProductImage>();
 
             string query = @"
         SELECT url
@@ -212,7 +226,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     while (reader.Read())
                     {
                         string url = reader.GetString(reader.GetOrdinal("url"));
-                        images.Add(new Image(url));
+                        images.Add(new BuyProductImage { Url = url });
                     }
                 }
             }
@@ -260,25 +274,25 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                         int sellerId = reader.GetInt32(reader.GetOrdinal("seller_id"));
                         string username = reader.GetString(reader.GetOrdinal("username"));
                         string email = reader.GetString(reader.GetOrdinal("email"));
-                        User seller = new User(sellerId, username, email);
+                        User seller = new User { Id = sellerId, Username = username, Email = email };
 
                         int conditionId = reader.GetInt32(reader.GetOrdinal("condition_id"));
                         string conditionTitle = reader.GetString(reader.GetOrdinal("conditionTitle"));
                         string conditionDescription = reader.GetString(reader.GetOrdinal("conditionDescription"));
-                        ProductCondition condition = new ProductCondition(conditionId, conditionTitle, conditionDescription);
+                        Condition condition = new Condition(conditionTitle.ToString());
+                        condition.Id = conditionId;
 
                         int categoryId = reader.GetInt32(reader.GetOrdinal("category_id"));
                         string categoryTitle = reader.GetString(reader.GetOrdinal("categoryTitle"));
                         string categoryDescription = reader.GetString(reader.GetOrdinal("categoryDescription"));
-                        ProductCategory category = new ProductCategory(categoryId, categoryTitle, categoryDescription);
+                        Category category = new Category(categoryTitle, categoryDescription);
+                        category.Id = categoryId;
 
                         float price = (float)reader.GetDouble(reader.GetOrdinal("price"));
 
                         reader.Close();
 
-                        List<ProductTag> tags = GetProductTags(id);
-                        List<Image> images = GetProductImages(id);
-
+                        // Create the BuyProduct with the main properties
                         buy = new BuyProduct(
                             id,
                             title,
@@ -286,9 +300,22 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                             seller,
                             condition,
                             category,
-                            tags,
-                            images,
                             price);
+
+                        // Fetch tags and images in separate queries
+                        List<ProductTag> tags = GetProductTags(id);
+                        List<BuyProductImage> images = GetProductImages(id);
+
+                        // Add tags and images to the BuyProduct
+                        foreach (var tag in tags)
+                        {
+                            buy.ProductTags.Add(new BuyProductProductTag { Product = buy, Tag = tag });
+                        }
+                        
+                        foreach (var image in images)
+                        {
+                            buy.Images.Add(image);
+                        }
                     }
                 }
             }

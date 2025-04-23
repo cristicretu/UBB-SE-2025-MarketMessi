@@ -17,6 +17,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     
     // Ignore null values in the output
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    
+    // Add converter for handling abstract Product class and derived types
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 // compatibility with old API without EF, need to remove this when EF is fully implemented

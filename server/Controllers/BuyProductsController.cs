@@ -62,7 +62,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType(typeof(Product), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult CreateProduct([FromBody] Product product)
+        public IActionResult CreateProduct([FromBody] BuyProduct product)
         {
             if (product == null || !ModelState.IsValid)
             {
@@ -95,7 +95,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateProduct(int id, [FromBody] Product product)
+        public IActionResult UpdateProduct(int id, [FromBody] BuyProduct product)
         {
             if (product == null || id != product.Id || !ModelState.IsValid)
             {
