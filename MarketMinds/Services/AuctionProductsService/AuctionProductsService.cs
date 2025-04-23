@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
+using MarketMinds.Repositories;
 
 namespace MarketMinds.Services.AuctionProductsService
 {
@@ -27,6 +28,10 @@ namespace MarketMinds.Services.AuctionProductsService
                 apiBaseUrl += "/";
             }
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+        }
+
+        public AuctionProductsService(IProductsRepository repository) : base(repository)
+        {
         }
 
         public void CreateListing(Product product)
