@@ -91,17 +91,14 @@ namespace MarketMinds.Controllers
             }
             try
             {
+                // Set ID to 0 to ensure Entity Framework knows it's a new entity
+                review.Id = 0;
+
                 // Create the review first to get an ID
                 _reviewRepository.CreateReview(review);
 
-                // After the review has an ID, sync the images
-                if (review.Id > 0 && review.Images != null && review.Images.Count > 0)
-                {
-                    review.SyncImagesBeforeSave();
-                    // The repository will save the images
-                }
-
-                return Ok(review);
+                // Return the created review with its new ID
+                return CreatedAtAction(nameof(GetReviewsByBuyer), new { buyerId = review.BuyerId }, review);
             }
             catch (Exception ex)
             {

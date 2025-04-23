@@ -63,27 +63,37 @@ namespace MarketMinds.Repositories.ReviewRepository
             // Store the original Images collection
             var originalImages = new List<Image>(review.Images);
 
+            // Create a new review object without setting the ID - let the database generate it
+            var newReview = new Review
+            {
+                Description = review.Description ?? string.Empty,
+                Rating = review.Rating,
+                SellerId = review.SellerId,
+                BuyerId = review.BuyerId
+            };
+
             // Add the review to the context
-            _context.Reviews.Add(review);
+            _context.Reviews.Add(newReview);
             _context.SaveChanges();
 
             // Now that we have an ID, we can sync the images
             // We need to restore the Images collection first since it might have been cleared by EF
-            review.Images = originalImages;
-
-            // Create ReviewImages from the original Images
-            if (review.Images != null && review.Images.Count > 0)
+            if (originalImages != null && originalImages.Count > 0)
             {
-                foreach (var image in review.Images)
+                foreach (var image in originalImages)
                 {
-                    var reviewImage = ReviewImage.FromImage(image, review.Id);
+                    var reviewImage = ReviewImage.FromImage(image, newReview.Id);
                     _context.ReviewImages.Add(reviewImage);
                 }
                 _context.SaveChanges();
             }
 
+            // Update the original review object with the generated ID
+            review.Id = newReview.Id;
+
             // Load the review images into the Images collection
-            review.LoadGenericImages();
+            newReview.LoadGenericImages();
+            review.Images = new List<Image>(newReview.Images);
         }
 
         public void EditReview(Review review, double rating, string description)

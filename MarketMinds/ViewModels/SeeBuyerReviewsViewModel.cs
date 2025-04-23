@@ -17,7 +17,7 @@ namespace BusinessLogicLayer.ViewModel
         public User User { get; set; }
         public ReviewsService ReviewsService { get; set; }
         public ObservableCollection<Review> Reviews { get; set; }
-        public float Rating { get; set; }
+        public double Rating { get; set; }
         public bool IsReviewsEmpty { get; set; }
         public int ReviewCount { get; set; }
         private readonly ReviewCalculationService reviewCalculationService;

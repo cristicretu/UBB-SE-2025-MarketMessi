@@ -19,7 +19,7 @@ namespace ViewModelLayer.ViewModel
         public User Buyer { get; set; }
         public string Description { get; set; }
         public List<Image> Images { get; set; }
-        public float Rating { get; set; }
+        public double Rating { get; set; }
         public string StatusMessage { get; set; }
         private readonly ReviewCreationService reviewCreationService;
         private readonly ImageUploadService imageUploadService;

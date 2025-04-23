@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +18,7 @@ namespace MarketMinds.Services.ReviewService
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
+        private readonly JsonSerializerOptions jsonOptions;
 
         public ReviewsService(IConfiguration configuration)
         {
@@ -25,31 +29,87 @@ namespace MarketMinds.Services.ReviewService
                 apiBaseUrl += "/";
             }
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+
+            // Configure JSON options for proper deserialization
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                ReferenceHandler = ReferenceHandler.Preserve // Enable reference handling
+            };
         }
 
         public ObservableCollection<Review> GetReviewsBySeller(User seller)
         {
-            var reviews = httpClient.GetFromJsonAsync<ObservableCollection<Review>>($"review/seller/{seller.Id}").Result;
-            return reviews ?? new ObservableCollection<Review>();
+            try
+            {
+                // Get the JSON response as a string first
+                var response = httpClient.GetAsync($"review/seller/{seller.Id}").Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ObservableCollection<Review>();
+                }
+
+                var jsonString = response.Content.ReadAsStringAsync().Result;
+
+                // Then deserialize using System.Text.Json which handles the reference format
+                var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
+
+                // Convert to ObservableCollection
+                return reviews != null
+                    ? new ObservableCollection<Review>(reviews)
+                    : new ObservableCollection<Review>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving seller reviews: {ex.Message}");
+                return new ObservableCollection<Review>();
+            }
         }
 
         public ObservableCollection<Review> GetReviewsByBuyer(User buyer)
         {
-            var reviews = httpClient.GetFromJsonAsync<ObservableCollection<Review>>($"review/buyer/{buyer.Id}").Result;
-            return reviews ?? new ObservableCollection<Review>();
+            try
+            {
+                // Get the JSON response as a string first
+                var response = httpClient.GetAsync($"review/buyer/{buyer.Id}").Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ObservableCollection<Review>();
+                }
+
+                var jsonString = response.Content.ReadAsStringAsync().Result;
+
+                // Then deserialize using System.Text.Json which handles the reference format
+                var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
+
+                // Convert to ObservableCollection
+                return reviews != null
+                    ? new ObservableCollection<Review>(reviews)
+                    : new ObservableCollection<Review>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving buyer reviews: {ex.Message}");
+                return new ObservableCollection<Review>();
+            }
         }
 
         public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
-            var review = new Review(
-                -1, // ID will be assigned by the API
-                description,
-                images,
-                rating,
-                seller.Id,
-                buyer.Id);
+            // Create the review object without an ID
+            var reviewDto = new
+            {
+                Description = description,
+                Images = images,
+                Rating = rating,
+                SellerId = seller.Id,
+                BuyerId = buyer.Id
+            };
 
-            var response = httpClient.PostAsJsonAsync("review", review).Result;
+            var response = httpClient.PostAsJsonAsync("review", reviewDto, jsonOptions).Result;
             response.EnsureSuccessStatusCode();
         }
 
@@ -68,7 +128,7 @@ namespace MarketMinds.Services.ReviewService
             updatedReview.Description = newDescription;
             updatedReview.Rating = newRating;
 
-            var response = httpClient.PutAsJsonAsync("review", updatedReview).Result;
+            var response = httpClient.PutAsJsonAsync("review", updatedReview, jsonOptions).Result;
             response.EnsureSuccessStatusCode();
         }
 
@@ -88,7 +148,7 @@ namespace MarketMinds.Services.ReviewService
             {
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(httpClient.BaseAddress + "review"),
-                Content = JsonContent.Create(reviewToDelete)
+                Content = JsonContent.Create(reviewToDelete, options: jsonOptions)
             };
 
             var response = httpClient.SendAsync(request).Result;
