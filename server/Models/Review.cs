@@ -5,30 +5,24 @@ namespace server.Models
 {
     public class Review
     {
+        // The review doesn't take into account the product for which the review has been made,
+        // it can be mentioned in the description, and images
         public int Id { get; set; }
-        public int ReviewerId { get; set; }
-        public int SellerId { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public List<Image> Images { get; set; }
         public float Rating { get; set; }
-        
-        // Navigation properties
-        public User Reviewer { get; set; }
-        public User Seller { get; set; }
-        public ICollection<ReviewPicture> Pictures { get; set; }
-        
-        public Review() 
+        public int SellerId { get; set; }
+        public int BuyerId { get; set; }
+
+        // public int productId { get; set; }
+        public Review(int id, string description, List<Image> images, float rating, int sellerId, int buyerId)
         {
-            Pictures = new List<ReviewPicture>();
-        }
-        
-        public Review(int id, int reviewerId, int sellerId, string description, float rating)
-        {
-            Id = id;
-            ReviewerId = reviewerId;
-            SellerId = sellerId;
-            Description = description;
-            Rating = rating;
-            Pictures = new List<ReviewPicture>();
+            this.Id = id;
+            this.Description = description;
+            this.Images = images;
+            this.Rating = rating;
+            this.SellerId = sellerId;
+            this.BuyerId = buyerId;
         }
     }
 } 
