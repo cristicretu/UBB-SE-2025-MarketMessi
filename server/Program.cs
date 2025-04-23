@@ -1,5 +1,6 @@
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
+using MarketMinds.Repositories.BasketRepository; // Add namespace for BasketRepository
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
@@ -18,7 +19,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// compatibility with old API without EF, need to remove this when EF is fully implemented
+
 builder.Services.AddSingleton<DataBaseConnection>(); 
 
 var InitialCatalog = builder.Configuration["InitialCatalog"];
@@ -28,7 +29,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
+builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 
+// Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

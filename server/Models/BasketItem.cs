@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using server.Models;
 
-namespace DomainLayer.Domain
+namespace server.Models
 {
     // Represents an item in the shopping basket with its associated product, quantity, and price
     public class BasketItem
@@ -26,7 +27,7 @@ namespace DomainLayer.Domain
             this.Product = product;
             this.Quantity = quantity;
 
-            // Set the price based on the product
+            // Set the price directly from the BuyProduct
             this.Price = product.Price;
             this.HasValidPrice = true;
         }

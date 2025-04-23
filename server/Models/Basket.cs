@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using server.Models;
 
-namespace DomainLayer.Domain
+namespace server.Models
 {
     // Represents a shopping basket which contains basket items
     public class Basket
