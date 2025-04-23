@@ -35,7 +35,7 @@ namespace MarketMinds.Repositories.ReviewRepository
         /// <param name="review">The review to be edited.</param>
         /// <param name="rating">The new rating for the review.</param>
         /// <param name="description">The new description for the review.</param>
-        void EditReview(Review review, float rating, string description);
+        void EditReview(Review review, double rating, string description);
 
         /// <summary>
         /// Deletes a review.

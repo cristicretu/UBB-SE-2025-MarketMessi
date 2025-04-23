@@ -39,7 +39,7 @@ namespace MarketMinds.Services.ReviewService
             return reviews ?? new ObservableCollection<Review>();
         }
 
-        public void AddReview(string description, List<Image> images, float rating, User seller, User buyer)
+        public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
             var review = new Review(
                 -1, // ID will be assigned by the API
@@ -53,7 +53,7 @@ namespace MarketMinds.Services.ReviewService
             response.EnsureSuccessStatusCode();
         }
 
-        public void EditReview(string description, List<Image> images, float rating, int sellerid, int buyerid, string newDescription, float newRating)
+        public void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating)
         {
             // Create a review object with the updated values
             var updatedReview = new Review(
@@ -72,7 +72,7 @@ namespace MarketMinds.Services.ReviewService
             response.EnsureSuccessStatusCode();
         }
 
-        public void DeleteReview(string description, List<Image> images, float rating, int sellerid, int buyerid)
+        public void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid)
         {
             // Create a review object to delete
             var reviewToDelete = new Review(

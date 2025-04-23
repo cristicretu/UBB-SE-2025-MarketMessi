@@ -29,6 +29,13 @@ namespace MarketMinds.Controllers
             {
                 var buyer = new User { Id = buyerId };
                 var reviews = _reviewRepository.GetAllReviewsByBuyer(buyer);
+
+                // Convert ReviewImages to generic Images for each review
+                foreach (var review in reviews)
+                {
+                    review.LoadGenericImages();
+                }
+
                 return Ok(reviews);
             }
             catch (KeyNotFoundException knfex)
@@ -52,6 +59,13 @@ namespace MarketMinds.Controllers
             {
                 var seller = new User { Id = sellerId };
                 var reviews = _reviewRepository.GetAllReviewsBySeller(seller);
+
+                // Convert ReviewImages to generic Images for each review
+                foreach (var review in reviews)
+                {
+                    review.LoadGenericImages();
+                }
+
                 return Ok(reviews);
             }
             catch (KeyNotFoundException knfex)
@@ -77,7 +91,16 @@ namespace MarketMinds.Controllers
             }
             try
             {
+                // Create the review first to get an ID
                 _reviewRepository.CreateReview(review);
+
+                // After the review has an ID, sync the images
+                if (review.Id > 0 && review.Images != null && review.Images.Count > 0)
+                {
+                    review.SyncImagesBeforeSave();
+                    // The repository will save the images
+                }
+
                 return Ok(review);
             }
             catch (Exception ex)
@@ -101,6 +124,9 @@ namespace MarketMinds.Controllers
 
             try
             {
+                // Sync images with ReviewImages for DB storage
+                review.SyncImagesBeforeSave();
+
                 _reviewRepository.EditReview(review, review.Rating, review.Description);
                 return Ok(review);
             }
@@ -139,7 +165,6 @@ namespace MarketMinds.Controllers
                 Console.WriteLine($"Error deleting review: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
-
         }
     }
 }

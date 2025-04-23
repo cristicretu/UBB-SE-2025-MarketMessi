@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = null;
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
 
     // Enable camel casing to match frontend expectations
     options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -30,6 +30,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 
+// Use ApplicationDbContext for ReviewRepository
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
