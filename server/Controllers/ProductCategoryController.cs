@@ -12,11 +12,11 @@ namespace MarketMinds.Controllers
     [Route("api/[controller]")]
     public class ProductCategoryController : ControllerBase
     {
-        private readonly IProductCategoryRepository _productCategoryRepository;
+        private readonly IProductCategoryRepository productCategoryRepository;
 
         public ProductCategoryController(IProductCategoryRepository productCategoryRepository)
         {
-            _productCategoryRepository = productCategoryRepository;
+            this.productCategoryRepository = productCategoryRepository;
         }
 
         [HttpGet]
@@ -26,12 +26,12 @@ namespace MarketMinds.Controllers
         {
             try
             {
-                var categories = _productCategoryRepository.GetAllProductCategories();
-                return Ok(categories);
+                var allCategories = productCategoryRepository.GetAllProductCategories();
+                return Ok(allCategories);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting all product categories: {ex}");
+                Console.WriteLine($"Error getting all product categories: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -49,7 +49,7 @@ namespace MarketMinds.Controllers
 
             try
             {
-                var newCategory = _productCategoryRepository.CreateProductCategory(
+                var newCategory = productCategoryRepository.CreateProductCategory(
                     request.DisplayTitle,
                     request.Description
                 );
@@ -60,13 +60,13 @@ namespace MarketMinds.Controllers
                     newCategory
                 );
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error creating product category: {ex}");
+                Console.WriteLine($"Error creating product category: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the category.");
             }
         }
@@ -85,25 +85,24 @@ namespace MarketMinds.Controllers
 
             try
             {
-                _productCategoryRepository.DeleteProductCategory(title);
+                productCategoryRepository.DeleteProductCategory(title);
                 return NoContent();
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error deleting product category '{title}': {ex}");
+                Console.WriteLine($"Error deleting product category '{title}': {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the category.");
             }
         }
     }
 
-    // Request model for creating product categories
     public class ProductCategoryRequest
     {
-        public string DisplayTitle { get; set; }
-        public string Description { get; set; }
+        public string DisplayTitle { get; set; } = null!;
+        public string? Description { get; set; }
     }
 }

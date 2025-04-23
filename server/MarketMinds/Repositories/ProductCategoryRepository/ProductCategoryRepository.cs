@@ -1,85 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
+using server.DataAccessLayer;
 using server.Models;
-using Microsoft.Data.SqlClient;
 
 namespace MarketMinds.Repositories.ProductCategoryRepository
 {
     public class ProductCategoryRepository : IProductCategoryRepository
     {
-        private const int DEFAULTID = -1;
-        private DataBaseConnection connection;
+        private readonly ApplicationDbContext databaseContext;
 
-        public ProductCategoryRepository(DataBaseConnection connection)
+        public ProductCategoryRepository(ApplicationDbContext context)
         {
-            this.connection = connection;
+            databaseContext = context;
         }
 
         public List<Category> GetAllProductCategories()
         {
-            // Returns all the product categories
-            // output: all the product categories
-            List<Category> productCategories = new List<Category>();
-            string query = "SELECT * FROM ProductCategories";
-            connection.OpenConnection();
-            using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
+            try
             {
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        productCategories.Add(new Category(
-                            reader.GetString(1),
-                            reader.GetString(2))
-                        {
-                            Id = reader.GetInt32(0)
-                        });
-                    }
-                }
+                var allCategories = databaseContext.ProductCategories.ToList();
+                return allCategories;
             }
-            connection.CloseConnection();
-            return productCategories;
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error in GetAllProductCategories using EF: {exception.Message}");
+                throw;
+            }
         }
 
-        public Category CreateProductCategory(string displayTitle, string description)
+        public Category CreateProductCategory(string displayTitle, string? description)
         {
-            // Creates a new product category
-            // input: displayTitle, description
-            // output: the created product tag
-            int newId = DEFAULTID;
-
-            string cmd = "INSERT INTO ProductCategories (title, description) VALUES (@displayTitle, @description); SELECT CAST(SCOPE_IDENTITY() as int);";
-            connection.OpenConnection();
-
-            using (SqlCommand command = new SqlCommand(cmd, connection.GetConnection()))
+            try
             {
-                command.Parameters.AddWithValue("@displayTitle", displayTitle);
-                command.Parameters.AddWithValue("@description", description);
-                newId = (int)command.ExecuteScalar();
+                var categoryToCreate = new Category(displayTitle, description);
+
+                databaseContext.ProductCategories.Add(categoryToCreate);
+                databaseContext.SaveChanges();
+
+                return categoryToCreate;
             }
-            connection.CloseConnection();
-
-            return new Category(displayTitle, description)
+            catch (Exception exception)
             {
-                Id = newId
-            };
+                Console.WriteLine($"Error in CreateProductCategory using EF: {exception.Message}");
+                throw;
+            }
         }
 
         public void DeleteProductCategory(string displayTitle)
         {
-            // Deletes a product category
-            // input: displayTitle
-            // output: none
-            string cmd = "DELETE FROM ProductCategories WHERE title = @displayTitle";
-            connection.OpenConnection();
-            using (SqlCommand command = new SqlCommand(cmd, connection.GetConnection()))
+            try
             {
-                command.Parameters.AddWithValue("@displayTitle", displayTitle);
-                command.ExecuteNonQuery();
+                var categoryToDelete = databaseContext.ProductCategories.FirstOrDefault(category => category.Name == displayTitle);
+                
+                if (categoryToDelete == null)
+                {
+                    throw new KeyNotFoundException($"Category with title '{displayTitle}' not found.");
+                }
+                
+                databaseContext.ProductCategories.Remove(categoryToDelete);
+                databaseContext.SaveChanges();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error in DeleteProductCategory using EF: {exception.Message}");
+                throw;
             }
         }
     }

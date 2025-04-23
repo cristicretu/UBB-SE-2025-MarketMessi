@@ -20,7 +20,7 @@ namespace MarketMinds.Repositories.ProductCategoryRepository
         /// <param name="displayTitle">The display title of the product category.</param>
         /// <param name="description">The description of the product category.</param>
         /// <returns>The created product category.</returns>
-        Category CreateProductCategory(string displayTitle, string description);
+        Category CreateProductCategory(string displayTitle, string? description);
 
         /// <summary>
         /// Deletes a product category by its display title.

@@ -12,10 +12,10 @@ namespace server.Models
         public int Id { get; set; }
 
         [Column("title")]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [Column("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         // Navigation properties
         public ICollection<AuctionProduct> Products { get; set; }
@@ -25,7 +25,7 @@ namespace server.Models
             Products = new List<AuctionProduct>();
         }
 
-        public Category(string name, string description = null)
+        public Category(string name, string? description = null)
         {
             Name = name;
             Description = description;
