@@ -23,6 +23,13 @@ using MarketMinds.Services.ProductConditionService;
 using MarketMinds.Services.ReviewService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
+using MarketMinds.ViewModels;
+using MarketMinds.Services.DreamTeam.ChatBotService;
+using MarketMinds.Repositories.ChatBotRepository;
+using MarketMinds.Repositories.ChatRepository;
+using MarketMinds.Services.DreamTeam.ChatService;
+using MarketMinds.Repositories.MainMarketplaceRepository;
+using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 
 namespace MarketMinds
 {
@@ -42,6 +49,9 @@ namespace MarketMinds
         public static BuyProductsRepository BuyProductsRepository;
         public static ReviewRepository ReviewRepository;
         public static BasketRepository BasketRepository;
+        public static ChatBotRepository ChatBotRepository;
+        public static ChatRepository ChatRepository;
+        public static MainMarketplaceRepository MainMarketplaceRepository;
 
         // Service declarations
         public static ProductService ProductService;
@@ -53,6 +63,9 @@ namespace MarketMinds
         public static ProductConditionService ConditionService;
         public static ReviewsService ReviewsService;
         public static BasketService BasketService;
+        public static ChatBotService ChatBotService;
+        public static ChatService ChatService;
+        public static MainMarketplaceService MainMarketplaceService;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -69,7 +82,9 @@ namespace MarketMinds
         public static SeeSellerReviewsViewModel SeeSellerReviewsViewModel { get; private set; }
         public static BasketViewModel BasketViewModel { get; private set; }
         public static CompareProductsViewModel CompareProductsViewModel { get; private set; }
-
+        public static ChatBotViewModel ChatBotViewModel { get; private set; }
+        public static ChatViewModel ChatViewModel { get; private set; }
+        public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
         public static User CurrentUser { get; set; }
         public static User TestingUser { get; set; }
 
@@ -121,6 +136,7 @@ namespace MarketMinds
             BuyProductsRepository = new BuyProductsRepository(DatabaseConnection);
             ReviewRepository = new ReviewRepository(DatabaseConnection);
             BasketRepository = new BasketRepository(DatabaseConnection);
+            ChatBotRepository = new ChatBotRepository(DatabaseConnection);
 
             // Instantiate services
             ProductService = new ProductService(BorrowProductsRepository);
@@ -132,6 +148,7 @@ namespace MarketMinds
             ConditionService = new ProductConditionService(ProductConditionRepository);
             ReviewsService = new ReviewsService(ReviewRepository);
             BasketService = new BasketService(BasketRepository);
+            ChatBotService = new ChatBotService(ChatBotRepository);
 
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
@@ -148,6 +165,7 @@ namespace MarketMinds
             SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
             BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
             CompareProductsViewModel = new CompareProductsViewModel();
+            ChatBotViewModel = new ChatBotViewModel(ChatBotService);
         }
 
         private Window mainWindow;

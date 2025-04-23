@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace_SE.Objects
+namespace DomainLayer.Domain
 {
     public class Conversation
     {
-        public int id;
-        public int user1;
-        public int user2;
+        public int Id;
+        public int UserId1;
+        public int UserId2;
     }
 }

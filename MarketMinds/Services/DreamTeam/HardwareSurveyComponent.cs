@@ -1,22 +1,22 @@
 ﻿// HardwareSurveyComponent.cs
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Windowing;
-using Windows.Graphics.Display;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System.Profile;
 using Windows.Devices.Enumeration;
 using Windows.Networking.Connectivity;
-using System.Diagnostics;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Windowing;
+using Windows.Graphics.Display;
 
 namespace Marketplace_SE.HardwareSurvey
 {
     /// <summary>
-    /// Implements the Hardware Survey component that collects anonymous hardware information 
+    /// Implements the Hardware Survey component that collects anonymous hardware information
     /// from users at random times with explicit permission.
     /// </summary>
     public sealed partial class HardwareSurveyComponent : UserControl
@@ -30,18 +30,18 @@ namespace Marketplace_SE.HardwareSurvey
         private const double SURVEY_RANDOM_THRESHOLD = 0.3; // 30% chance to show survey when eligible
 
         // Random number generator for determining when to show the survey
-        private readonly Random _random = new Random();
+        private readonly Random random = new Random();
 
         // UI Elements
-        private ContentDialog _surveyDialog;
-        private ProgressBar _progressBar;
-        private TextBlock _statusTextBlock;
+        private ContentDialog surveyDialog;
+        private ProgressBar progressBar;
+        private TextBlock statusTextBlock;
 
         // Database service dependency (should be injected in a production app)
-        private readonly IHardwareSurveyDatabaseService _surveyService;
+        private readonly IHardwareSurveyDatabaseService surveyService;
 
         // Logger service (should be injected in a production app)
-        private readonly ILoggerService _logger;
+        private readonly ILoggerService logger;
 
         #endregion
 
@@ -54,8 +54,8 @@ namespace Marketplace_SE.HardwareSurvey
         /// <param name="logger">Service for logging errors and events</param>
         public HardwareSurveyComponent(IHardwareSurveyDatabaseService surveyService, ILoggerService logger)
         {
-            _surveyService = surveyService ?? throw new ArgumentNullException(nameof(surveyService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            surveyService = surveyService ?? throw new ArgumentNullException(nameof(surveyService));
+            logger = logger ?? throw new ArgumentNullException(nameof(logger));
             InitializeComponent();
         }
 
@@ -106,28 +106,28 @@ namespace Marketplace_SE.HardwareSurvey
             contentGrid.Children.Add(descriptionTextBlock);
 
             // Progress bar (initially hidden)
-            _progressBar = new ProgressBar
+            progressBar = new ProgressBar
             {
                 Minimum = 0,
                 Maximum = 100,
                 Value = 0,
                 Visibility = Visibility.Collapsed
             };
-            Grid.SetRow(_progressBar, 1);
-            contentGrid.Children.Add(_progressBar);
+            Grid.SetRow(progressBar, 1);
+            contentGrid.Children.Add(progressBar);
 
             // Status text (initially hidden)
-            _statusTextBlock = new TextBlock
+            statusTextBlock = new TextBlock
             {
                 Text = "Collecting hardware information...",
                 TextWrapping = TextWrapping.Wrap,
                 Visibility = Visibility.Collapsed
             };
-            Grid.SetRow(_statusTextBlock, 2);
-            contentGrid.Children.Add(_statusTextBlock);
+            Grid.SetRow(statusTextBlock, 2);
+            contentGrid.Children.Add(statusTextBlock);
 
             // Create the dialog
-            _surveyDialog = new ContentDialog
+            surveyDialog = new ContentDialog
             {
                 Title = "Hardware Survey",
                 Content = contentGrid,
@@ -137,8 +137,8 @@ namespace Marketplace_SE.HardwareSurvey
                 XamlRoot = this.XamlRoot
             };
 
-            _surveyDialog.PrimaryButtonClick += SurveyDialog_PrimaryButtonClick;
-            _surveyDialog.CloseButtonClick += SurveyDialog_CloseButtonClick;
+            surveyDialog.PrimaryButtonClick += SurveyDialog_PrimaryButtonClick;
+            surveyDialog.CloseButtonClick += SurveyDialog_CloseButtonClick;
         }
 
         #endregion
@@ -206,7 +206,9 @@ namespace Marketplace_SE.HardwareSurvey
 
                 // If we've shown the survey less than MIN_DAYS_BETWEEN_SURVEYS ago, don't show
                 if ((DateTime.Now - lastSurvey).TotalDays < MIN_DAYS_BETWEEN_SURVEYS)
-                    return false;
+                    {
+                     return false;
+                    }
             }
 
             return true;
@@ -220,7 +222,9 @@ namespace Marketplace_SE.HardwareSurvey
         {
             // If the user hasn't given consent, we shouldn't collect data
             if (!GetUserConsent())
-                return false;
+                {
+                    return false;
+                }
 
             // Check if enough time has passed since the last collection
             return HasEnoughTimePassed();
@@ -270,18 +274,18 @@ namespace Marketplace_SE.HardwareSurvey
             try
             {
                 // Reset the dialog state
-                _progressBar.Value = 0;
-                _progressBar.Visibility = Visibility.Collapsed;
-                _statusTextBlock.Visibility = Visibility.Collapsed;
+                progressBar.Value = 0;
+                progressBar.Visibility = Visibility.Collapsed;
+                statusTextBlock.Visibility = Visibility.Collapsed;
 
                 // Show the dialog
-                await _surveyDialog.ShowAsync();
+                await surveyDialog.ShowAsync();
                 return true;
             }
             catch (Exception ex)
             {
                 // Log the error but don't crash the app
-                _logger.LogError($"Error showing hardware survey dialog: {ex.Message}");
+                logger.LogError($"Error showing hardware survey dialog: {ex.Message}");
                 return false;
             }
         }
@@ -297,10 +301,10 @@ namespace Marketplace_SE.HardwareSurvey
                 var stopwatch = Stopwatch.StartNew();
 
                 // Show progress UI if the dialog is visible
-                if (_progressBar != null && _progressBar.Visibility == Visibility.Visible)
+                if (progressBar != null && progressBar.Visibility == Visibility.Visible)
                 {
-                    _progressBar.IsIndeterminate = true;
-                    _statusTextBlock.Text = "Collecting hardware information...";
+                    progressBar.IsIndeterminate = true;
+                    statusTextBlock.Text = "Collecting hardware information...";
                 }
 
                 // Collect hardware data
@@ -308,28 +312,28 @@ namespace Marketplace_SE.HardwareSurvey
 
                 // Simulate progress - in reality, the data collection happens quickly
                 // but we want to show some progress to the user
-                if (_progressBar != null && _progressBar.Visibility == Visibility.Visible)
+                if (progressBar != null && progressBar.Visibility == Visibility.Visible)
                 {
                     // Update progress to 50%
-                    _progressBar.IsIndeterminate = false;
-                    _progressBar.Value = 50;
-                    _statusTextBlock.Text = "Processing information...";
+                    progressBar.IsIndeterminate = false;
+                    progressBar.Value = 50;
+                    statusTextBlock.Text = "Processing information...";
 
                     // Add a small delay for visual feedback
                     await Task.Delay(500);
                 }
 
                 // Save to database
-                await _surveyService.SaveHardwareDataAsync(hardwareData);
+                await surveyService.SaveHardwareDataAsync(hardwareData);
 
                 // Update the last survey timestamp
                 UpdateLastSurveyTimestamp();
 
                 // Complete progress
-                if (_progressBar != null && _progressBar.Visibility == Visibility.Visible)
+                if (progressBar != null && progressBar.Visibility == Visibility.Visible)
                 {
-                    _progressBar.Value = 100;
-                    _statusTextBlock.Text = "Complete! Thank you for your help.";
+                    progressBar.Value = 100;
+                    statusTextBlock.Text = "Complete! Thank you for your help.";
 
                     // Add a small delay for visual feedback
                     await Task.Delay(500);
@@ -337,16 +341,16 @@ namespace Marketplace_SE.HardwareSurvey
 
                 // Log the time taken
                 stopwatch.Stop();
-                _logger.LogInfo($"Hardware survey completed in {stopwatch.ElapsedMilliseconds}ms");
+                logger.LogInfo($"Hardware survey completed in {stopwatch.ElapsedMilliseconds}ms");
             }
             catch (Exception ex)
             {
                 // Log the error but don't crash the app
-                _logger.LogError($"Error collecting hardware data: {ex.Message}");
+                logger.LogError($"Error collecting hardware data: {ex.Message}");
 
-                if (_statusTextBlock != null && _statusTextBlock.Visibility == Visibility.Visible)
+                if (statusTextBlock != null && statusTextBlock.Visibility == Visibility.Visible)
                 {
-                    _statusTextBlock.Text = "Unable to collect hardware information at this time.";
+                    statusTextBlock.Text = "Unable to collect hardware information at this time.";
                 }
             }
         }
@@ -419,9 +423,9 @@ namespace Marketplace_SE.HardwareSurvey
                 };
 
                 // Store references to UI elements
-                _progressBar = progressBar;
-                _statusTextBlock = statusTextBlock;
-                _surveyDialog = surveyDialog;
+                progressBar = progressBar;
+                statusTextBlock = statusTextBlock;
+                surveyDialog = surveyDialog;
 
                 // Add event handlers
                 surveyDialog.PrimaryButtonClick += SurveyDialog_PrimaryButtonClick;
@@ -433,7 +437,7 @@ namespace Marketplace_SE.HardwareSurvey
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error showing hardware survey dialog: {ex.Message}");
+                logger.LogError($"Error showing hardware survey dialog: {ex.Message}");
                 return false;
             }
         }
@@ -468,7 +472,7 @@ namespace Marketplace_SE.HardwareSurvey
             catch (Exception ex)
             {
                 // Log the error but continue with default values
-                _logger.LogError($"Error during hardware data collection: {ex.Message}");
+                logger.LogError($"Error during hardware data collection: {ex.Message}");
 
                 // Fill in any missing values with fallbacks
                 hardwareData.DeviceType = hardwareData.DeviceType ?? "Desktop";
@@ -718,7 +722,7 @@ namespace Marketplace_SE.HardwareSurvey
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting screen resolution: {ex.Message}");
+                logger.LogError($"Error getting screen resolution: {ex.Message}");
             }
 
             // Fallback approach - since this is just for survey purposes,
@@ -872,12 +876,12 @@ namespace Marketplace_SE.HardwareSurvey
                 SetUserConsent(true);
 
                 // Show progress UI
-                _progressBar.Visibility = Visibility.Visible;
-                _statusTextBlock.Visibility = Visibility.Visible;
+                progressBar.Visibility = Visibility.Visible;
+                statusTextBlock.Visibility = Visibility.Visible;
 
                 // Disable buttons while collecting data
-                _surveyDialog.IsPrimaryButtonEnabled = false;
-                _surveyDialog.IsSecondaryButtonEnabled = false;
+                surveyDialog.IsPrimaryButtonEnabled = false;
+                surveyDialog.IsSecondaryButtonEnabled = false;
 
                 // Collect and submit hardware data
                 await CollectAndSubmitHardwareDataAsync();

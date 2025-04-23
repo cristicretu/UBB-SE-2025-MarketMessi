@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace_SE.Objects
+namespace DomainLayer.Domain;
+
+public class UserNotSoldOrder : UserOrder
 {
-    public class UserNotSoldOrder : UserOrder
-    {
-        private int buyerId = -1;
-    }
+    private int buyerId = -1;
 }

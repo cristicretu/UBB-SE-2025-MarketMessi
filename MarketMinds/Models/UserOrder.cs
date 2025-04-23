@@ -4,17 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace_SE.Objects
+namespace DomainLayer.Domain;
+
+public class UserOrder
 {
-    public class UserOrder
-    {
-        public int id;
-        public string name;
-        public string description;
-        public float cost;
-        public ulong created;
-        public int sellerId;
-        public int buyerId;
-        public string orderStatus;
-    }
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public float Cost { get; set; }
+    public ulong Created { get; set; }
+    public int SellerId { get; set; }
+    public int BuyerId { get; set; }
+    public string OrderStatus { get; set; } = string.Empty;
 }
