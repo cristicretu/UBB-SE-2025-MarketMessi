@@ -131,7 +131,7 @@ namespace MarketMinds
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
             AuctionProductsService = new AuctionProductsService(Configuration);
-            CategoryService = new ProductCategoryService(ProductCategoryRepository);
+            CategoryService = new ProductCategoryService(Configuration);
             TagService = new ProductTagService(ProductTagRepository);
             ConditionService = new ProductConditionService(ProductConditionRepository);
             ReviewsService = new ReviewsService(ReviewRepository);
