@@ -3,7 +3,7 @@ using System;
 namespace server.Models
 {
     /// <summary>
-    /// Legacy Image class for backward compatibility with existing repository code
+    /// Generic Image class used across multiple parts of the application
     /// </summary>
     public class Image
     {
@@ -15,7 +15,7 @@ namespace server.Models
             this.Url = url;
         }
 
-        // Default constructor for potential framework needs
+        // Default constructor for Entity Framework
         public Image() { }
     }
-} 
+}

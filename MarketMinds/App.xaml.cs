@@ -134,7 +134,7 @@ namespace MarketMinds
             CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(ProductTagRepository);
             ConditionService = new ProductConditionService(ProductConditionRepository);
-            ReviewsService = new ReviewsService(ReviewRepository);
+            ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(Configuration);
 
             // Instantiate view models
