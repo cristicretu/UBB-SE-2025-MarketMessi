@@ -2,6 +2,7 @@ using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository; // Add namespace for repository
 using MarketMinds.Repositories.ProductCategoryRepository; // Add namespace for ProductCategoryRepository
 using MarketMinds.Repositories.ProductConditionRepository; // Add namespace for ProductConditionRepository
+using MarketMinds.Repositories.ProductTagRepository; // Add namespace for ProductTagRepository
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
@@ -32,6 +33,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
 builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
+builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
