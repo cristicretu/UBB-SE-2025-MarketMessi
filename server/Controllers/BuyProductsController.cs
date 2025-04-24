@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
 using server.Models;
 using MarketMinds.Repositories.BuyProductsRepository;
+using server.Models.DTOs;
+using server.Models.DTOs.Mappers;
 using System.Collections.Generic;
 using System;
 using System.Net;
@@ -20,32 +22,34 @@ namespace MarketMinds.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(List<Product>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<BuyProductDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetProducts()
+        public IActionResult GetBuyProducts()
         {
             try
             {
                 var products = _buyProductsRepository.GetProducts();
-                return Ok(products);
+                var dtos = BuyProductMapper.ToDTOList(products);
+                return Ok(dtos);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting all products: {ex}");
+                Console.WriteLine($"Error getting all buy products: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Product), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BuyProductDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetProductById(int id)
+        public IActionResult GetBuyProductById(int id)
         {
             try
             {
                 var product = _buyProductsRepository.GetProductByID(id);
-                return Ok(product);
+                var dto = BuyProductMapper.ToDTO(product);
+                return Ok(dto);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -53,16 +57,16 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting product by ID {id}: {ex}");
+                Console.WriteLine($"Error getting buy product by ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Product), (int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(BuyProductDTO), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult CreateProduct([FromBody] BuyProduct product)
+        public IActionResult CreateBuyProduct([FromBody] BuyProduct product)
         {
             if (product == null || !ModelState.IsValid)
             {
@@ -77,7 +81,8 @@ namespace MarketMinds.Controllers
             try
             {
                 _buyProductsRepository.AddProduct(product);
-                return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+                var dto = BuyProductMapper.ToDTO(product);
+                return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, dto);
             }
             catch (ArgumentException aex)
             {
@@ -85,7 +90,7 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating product: {ex}");
+                Console.WriteLine($"Error creating buy product: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
             }
         }
@@ -95,7 +100,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateProduct(int id, [FromBody] BuyProduct product)
+        public IActionResult UpdateBuyProduct(int id, [FromBody] BuyProduct product)
         {
             if (product == null || id != product.Id || !ModelState.IsValid)
             {
@@ -117,7 +122,7 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating product ID {id}: {ex}");
+                Console.WriteLine($"Error updating buy product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
         }
@@ -127,7 +132,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteProduct(int id)
+        public IActionResult DeleteBuyProduct(int id)
         {
             try
             {
@@ -145,7 +150,7 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting product ID {id}: {ex}");
+                Console.WriteLine($"Error deleting buy product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
         }

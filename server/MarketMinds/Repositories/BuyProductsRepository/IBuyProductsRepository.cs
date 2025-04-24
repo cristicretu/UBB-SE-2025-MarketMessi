@@ -12,31 +12,31 @@ namespace MarketMinds.Repositories.BuyProductsRepository
         /// Adds a new buy product to the repository.
         /// </summary>
         /// <param name="product">The product to add.</param>
-        void AddProduct(Product product);
+        void AddProduct(BuyProduct product);
 
         /// <summary>
         /// Deletes a buy product from the repository.
         /// </summary>
         /// <param name="product">The product to delete.</param>
-        void DeleteProduct(Product product);
+        void DeleteProduct(BuyProduct product);
 
         /// <summary>
         /// Retrieves all buy products from the repository.
         /// </summary>
         /// <returns>A list of all buy products.</returns>
-        List<Product> GetProducts();
+        List<BuyProduct> GetProducts();
 
         /// <summary>
         /// Retrieves a buy product by its ID.
         /// </summary>
         /// <param name="productId">The ID of the product.</param>
         /// <returns>The product with the given ID.</returns>
-        Product GetProductByID(int productId);
+        BuyProduct GetProductByID(int productId);
 
         /// <summary>
         /// Updates an existing buy product in the repository.
         /// </summary>
         /// <param name="product">The product with updated information.</param>
-        void UpdateProduct(Product product);
+        void UpdateProduct(BuyProduct product);
     }
 }

@@ -76,7 +76,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AuctionProduct>> AuctionProductsAllAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AuctionProductDTO>> AuctionProductsAllAsync()
         {
             return AuctionProductsAllAsync(System.Threading.CancellationToken.None);
         }
@@ -84,7 +84,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AuctionProduct>> AuctionProductsAllAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AuctionProductDTO>> AuctionProductsAllAsync(System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -125,7 +125,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<AuctionProduct>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<AuctionProductDTO>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -160,7 +160,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<AuctionProduct> AuctionProductsPOSTAsync(AuctionProduct? body)
+        public virtual System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsPOSTAsync(AuctionProduct? body)
         {
             return AuctionProductsPOSTAsync(body, System.Threading.CancellationToken.None);
         }
@@ -168,7 +168,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<AuctionProduct> AuctionProductsPOSTAsync(AuctionProduct? body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsPOSTAsync(AuctionProduct? body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -213,7 +213,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProduct>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProductDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -258,7 +258,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<AuctionProduct> AuctionProductsGETAsync(int id)
+        public virtual System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsGETAsync(int id)
         {
             return AuctionProductsGETAsync(id, System.Threading.CancellationToken.None);
         }
@@ -266,7 +266,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<AuctionProduct> AuctionProductsGETAsync(int id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsGETAsync(int id, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -311,7 +311,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProduct>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProductDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -554,7 +554,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Product>> BuyProductsAllAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<BuyProductDTO>> BuyProductsAllAsync()
         {
             return BuyProductsAllAsync(System.Threading.CancellationToken.None);
         }
@@ -562,7 +562,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Product>> BuyProductsAllAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<BuyProductDTO>> BuyProductsAllAsync(System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -603,7 +603,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Product>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<BuyProductDTO>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -638,7 +638,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Product> BuyProductsPOSTAsync(Product? body)
+        public virtual System.Threading.Tasks.Task<BuyProductDTO> BuyProductsPOSTAsync(BuyProduct? body)
         {
             return BuyProductsPOSTAsync(body, System.Threading.CancellationToken.None);
         }
@@ -646,7 +646,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Product> BuyProductsPOSTAsync(Product? body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<BuyProductDTO> BuyProductsPOSTAsync(BuyProduct? body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -691,7 +691,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Product>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<BuyProductDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -736,7 +736,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<Product> BuyProductsGETAsync(int id)
+        public virtual System.Threading.Tasks.Task<BuyProductDTO> BuyProductsGETAsync(int id)
         {
             return BuyProductsGETAsync(id, System.Threading.CancellationToken.None);
         }
@@ -744,7 +744,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<Product> BuyProductsGETAsync(int id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<BuyProductDTO> BuyProductsGETAsync(int id, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -789,7 +789,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<Product>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<BuyProductDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -834,7 +834,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task BuyProductsPUTAsync(int id, Product? body)
+        public virtual System.Threading.Tasks.Task BuyProductsPUTAsync(int id, BuyProduct? body)
         {
             return BuyProductsPUTAsync(id, body, System.Threading.CancellationToken.None);
         }
@@ -842,7 +842,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task BuyProductsPUTAsync(int id, Product? body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task BuyProductsPUTAsync(int id, BuyProduct? body, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -1312,20 +1312,56 @@ namespace MarketMinds.Services.ApiService
         [System.Text.Json.Serialization.JsonPropertyName("description")]
         public string? Description { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("condition")]
-        public ProductCondition Condition { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("sellerId")]
+        public int SellerId { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("category")]
-        public ProductCategory Category { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("conditionId")]
+        public int? ConditionId { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("tags")]
-        public System.Collections.Generic.ICollection<ProductTag>? Tags { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("categoryId")]
+        public int? CategoryId { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("images")]
-        public System.Collections.Generic.ICollection<Image>? Images { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("startTime")]
+        public System.DateTimeOffset StartTime { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("endTime")]
+        public System.DateTimeOffset EndTime { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("startPrice")]
+        public double StartPrice { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("currentPrice")]
+        public double CurrentPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("seller")]
         public User Seller { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public Condition Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public Category Category { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bids")]
+        public System.Collections.Generic.ICollection<Bid>? Bids { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<ProductImage>? Images { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AuctionProductDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string? Title { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("startAuctionDate")]
         public System.DateTimeOffset StartAuctionDate { get; set; } = default!;
@@ -1334,13 +1370,28 @@ namespace MarketMinds.Services.ApiService
         public System.DateTimeOffset EndAuctionDate { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("startingPrice")]
-        public float StartingPrice { get; set; } = default!;
+        public double StartingPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("currentPrice")]
-        public float CurrentPrice { get; set; } = default!;
+        public double CurrentPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("bidHistory")]
-        public System.Collections.Generic.ICollection<Bid>? BidHistory { get; set; } = default!;
+        public System.Collections.Generic.ICollection<BidDTO>? BidHistory { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public ConditionDTO Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public CategoryDTO Category { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("tags")]
+        public System.Collections.Generic.ICollection<ProductTagDTO>? Tags { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<ImageDTO>? Images { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("seller")]
+        public UserDTO Seller { get; set; } = default!;
 
     }
 
@@ -1348,19 +1399,226 @@ namespace MarketMinds.Services.ApiService
     public partial class Bid
     {
 
-        [System.Text.Json.Serialization.JsonPropertyName("bidder")]
-        public User Bidder { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bidderId")]
+        public int BidderId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productId")]
+        public int ProductId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("price")]
-        public float Price { get; set; } = default!;
+        public double Price { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("timestamp")]
         public System.DateTimeOffset Timestamp { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public AuctionProduct Product { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bidder")]
+        public User Bidder { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Image
+    public partial class BidDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double Price { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("timestamp")]
+        public System.DateTimeOffset Timestamp { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bidder")]
+        public UserDTO Bidder { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BuyProduct
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string? Title { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("sellerId")]
+        public int SellerId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("conditionId")]
+        public int? ConditionId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("categoryId")]
+        public int? CategoryId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double Price { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("seller")]
+        public User Seller { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public Condition Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public Category Category { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<BuyProductImage>? Images { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productTags")]
+        public System.Collections.Generic.ICollection<BuyProductProductTag>? ProductTags { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BuyProductDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string? Title { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double Price { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public ConditionDTO Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public CategoryDTO Category { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("tags")]
+        public System.Collections.Generic.ICollection<ProductTagDTO>? Tags { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<ImageDTO>? Images { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("seller")]
+        public UserDTO Seller { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BuyProductImage
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("url")]
+        public string? Url { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productId")]
+        public int ProductId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public BuyProduct Product { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BuyProductProductTag
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productId")]
+        public int ProductId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("tagId")]
+        public int TagId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public BuyProduct Product { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("tag")]
+        public ProductTag Tag { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Category
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("products")]
+        public System.Collections.Generic.ICollection<AuctionProduct>? Products { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CategoryDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
+        public string? DisplayTitle { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Condition
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("products")]
+        public System.Collections.Generic.ICollection<AuctionProduct>? Products { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ConditionDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
+        public string? DisplayTitle { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ImageDTO
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("url")]
@@ -1399,67 +1657,42 @@ namespace MarketMinds.Services.ApiService
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Product
+    public partial class ProductImage
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productId")]
+        public int ProductId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("url")]
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Url { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public AuctionProduct Product { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ProductTag
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("title")]
-        public string? Title { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("description")]
-        public string? Description { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("condition")]
-        public ProductCondition Condition { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("category")]
-        public ProductCategory Category { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("tags")]
-        public System.Collections.Generic.ICollection<ProductTag>? Tags { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("images")]
-        public System.Collections.Generic.ICollection<Image>? Images { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("seller")]
-        public User Seller { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ProductCategory
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public int Id { get; set; } = default!;
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Title { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
         public string? DisplayTitle { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("description")]
-        public string? Description { get; set; } = default!;
-
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ProductCondition
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public int Id { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
-        public string? DisplayTitle { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("description")]
-        public string? Description { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ProductTag
+    public partial class ProductTagDTO
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1483,17 +1716,50 @@ namespace MarketMinds.Services.ApiService
         [System.Text.Json.Serialization.JsonPropertyName("email")]
         public string? Email { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("passwordHash")]
+        public string? PasswordHash { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("userType")]
         public int UserType { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("balance")]
-        public float Balance { get; set; } = default!;
+        public double Balance { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("rating")]
-        public float Rating { get; set; } = default!;
+        public double Rating { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("sellingItems")]
+        public System.Collections.Generic.ICollection<AuctionProduct>? SellingItems { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bids")]
+        public System.Collections.Generic.ICollection<Bid>? Bids { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UserDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("username")]
+        public string? Username { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("email")]
+        public string? Email { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("userType")]
+        public int UserType { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("balance")]
+        public double Balance { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("rating")]
+        public double Rating { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("password")]
-        public float Password { get; set; } = default!;
+        public int Password { get; set; } = default!;
 
     }
 

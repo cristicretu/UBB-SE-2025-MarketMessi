@@ -31,8 +31,8 @@ namespace server.Models.DTOs.Mappers
                 } : null,
                 Tags = entity.ProductTags?.Select(pt => new ProductTagDTO
                 {
-                    Id = pt.ProductTag.Id,
-                    DisplayTitle = pt.ProductTag.Name
+                    Id = pt.Tag.Id,
+                    DisplayTitle = pt.Tag.Title
                 }).ToList() ?? new List<ProductTagDTO>(),
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
