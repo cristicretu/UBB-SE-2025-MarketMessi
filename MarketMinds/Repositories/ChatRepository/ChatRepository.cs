@@ -139,7 +139,7 @@ public class ChatRepository : IChatRepository
     public bool AddMessage(Message message)
     {
         string addMessageQuery = @"
-        INSERT INTO Messages (ConversationId, Creator, Timestamp, ContentType, Content) 
+        INSERT INTO Messages (conversationId, creator, timestamp, contentType, content) 
         VALUES (@ConversationId, @Creator, @Timestamp, @ContentType, @Content)";
 
         int rowsAffected = 0;

@@ -25,16 +25,13 @@ using Microsoft.UI.Xaml.Navigation;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Marketplace_SE
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class ChatPage : Page
     {
         private ChatViewModel chatViewModel;
         private IImageUploadService imageUploadService;
 
-        private User me;
-        private User target;
+        private User currentUser;
+        private User targetUser;
 
         private DispatcherTimer updateTimer;
         private List<string> chatHistory = new();
@@ -62,7 +59,7 @@ namespace Marketplace_SE
             int hardcoded_template = eventArgs.Parameter is int template ? template : 0;
             SetupHardcodedUsers(hardcoded_template);
 
-            if (me == null || target == null)
+            if (currentUser == null || targetUser == null)
             {
                 ShowErrorDialog("User setup error", "Could not determine users for chat.");
                 return;
@@ -70,13 +67,13 @@ namespace Marketplace_SE
 
             SetupTemplateSelector();
 
-            TargetUserTextBlock.Text = $"Chatting with {target.Username}";
+            TargetUserTextBlock.Text = $"Chatting with {targetUser.Username}";
 
             isInitializing = true;
 
             try
             {
-                chatViewModel.InitializeChat(me, target);
+                chatViewModel.InitializeChat(currentUser, targetUser);
 
                 // Load initial messages
                 LoadInitialChatHistory();
@@ -105,7 +102,7 @@ namespace Marketplace_SE
         {
             var selector = new ChatMessageTemplateSelector
             {
-                MyUserId = me.Id,
+                MyUserId = currentUser.Id,
                 MyImageMessageTemplate = this.Resources["MyImageMessageTemplate"] as DataTemplate,
                 MyTextMessageTemplate = this.Resources["MyTextMessageTemplate"] as DataTemplate,
                 TargetImageMessageTemplate = this.Resources["TargetImageMessageTemplate"] as DataTemplate,
@@ -119,25 +116,25 @@ namespace Marketplace_SE
             switch (template)
             {
                 case 0:
-                    me = new User(0, "test1", string.Empty);
-                    target = new User(1, "test2", string.Empty);
+                    currentUser = new User(0, "test1", string.Empty);
+                    targetUser = new User(1, "test2", string.Empty);
                     break;
                 case 1:
-                    me = new User(1, "test2", string.Empty);
-                    target = new User(0, "test1", string.Empty);
+                    currentUser = new User(1, "test2", string.Empty);
+                    targetUser = new User(0, "test1", string.Empty);
                     break;
                 case 2:
-                    me = new User(2, "test3", string.Empty);
-                    target = new User(3, "test4", string.Empty);
+                    currentUser = new User(2, "test3", string.Empty);
+                    targetUser = new User(3, "test4", string.Empty);
                     break;
                 case 3: // Admin case
-                    me = new User(3, "test4", string.Empty); // Assuming ID 3 is admin
-                    target = new User(2, "test3", string.Empty);
+                    currentUser = new User(3, "test4", string.Empty); // Assuming ID 3 is admin
+                    targetUser = new User(2, "test3", string.Empty);
                     break;
                 default:
                     // Handle invalid template?
-                    me = null;
-                    target = null;
+                    currentUser = null;
+                    targetUser = null;
                     break;
             }
         }
@@ -214,7 +211,7 @@ namespace Marketplace_SE
             displayedMessages.Add(message);
 
             string timeString = DateTimeOffset.FromUnixTimeMilliseconds(message.Timestamp).ToString("[HH:mm]");
-            bool isMe = message.Creator == me.Id;
+            bool isMe = message.Creator == currentUser.Id;
             string prefix = isMe ? "[You]" : "[Peer]";
             string contentForExport = message.ContentType == "text" ? message.Content : "<image>";
 
@@ -247,7 +244,7 @@ namespace Marketplace_SE
                 ConversationId = chatViewModel.GetConversation().Id,
                 Content = textToSend,
                 ContentType = "text",
-                Creator = me.Id,
+                Creator = currentUser.Id,
                 Timestamp = pseudoTimestamp
             };
             AddMessageToDisplay(message);
@@ -311,7 +308,7 @@ namespace Marketplace_SE
                             ConversationId = chatViewModel.GetConversation().Id,
                             Content = DataEncoder.HexEncode(bytes),
                             ContentType = "image",
-                            Creator = me.Id,
+                            Creator = currentUser.Id,
                             Timestamp = pseudoTimestamp
                         };
                         AddMessageToDisplay(message);
@@ -347,7 +344,7 @@ namespace Marketplace_SE
             var savePicker = new Windows.Storage.Pickers.FileSavePicker
             {
                 SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = $"{me.Username}_{target.Username}_chat_history.txt"
+                SuggestedFileName = $"{currentUser.Username}_{targetUser.Username}_chat_history.txt"
             };
             savePicker.FileTypeChoices.Add("Text File", new List<string> { ".txt" });
 

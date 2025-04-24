@@ -41,7 +41,6 @@ namespace Marketplace_SE
 
         private void OnButtonClickChatBotKill(object sender, RoutedEventArgs eventArgs)
         {
-            // Exit the page
             if (this.Frame.CanGoBack)
             {
                 this.Frame.GoBack();

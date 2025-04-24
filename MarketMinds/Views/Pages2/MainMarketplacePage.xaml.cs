@@ -7,15 +7,13 @@ using Microsoft.UI.Xaml.Navigation;
 using DomainLayer.Domain;
 using Marketplace_SE.Utilities; // For Notification, FrameNavigation
 using MarketMinds.ViewModels; // For MarketplaceViewModel
-using MarketMinds; // For App access (ViewModel, User)
+using MarketMinds;
+using System.Threading.Tasks; // For App access (ViewModel, User)
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info
 namespace Marketplace_SE
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainMarketplacePage : Page
     {
         private readonly MainMarketplaceViewModel mainMarketplaceViewModel;
@@ -104,17 +102,17 @@ namespace Marketplace_SE
             }
         }
 
-        private void OnButtonClickOpenAccount(object sender, RoutedEventArgs e)
+        private void OpenAccountButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(AccountPage));
         }
 
-        private void OnButtonClickOpenHelp(object sender, RoutedEventArgs e)
+        private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(GetHelpPage));
         }
 
-        private void ShowNotification(string title, string message)
+        private async Task ShowNotification(string title, string message)
         {
             Notification notification = new Notification(title, message);
             var window = notification.GetWindow();
@@ -132,7 +130,7 @@ namespace Marketplace_SE
                     CloseButtonText = "OK",
                     XamlRoot = this.XamlRoot
                 };
-                _ = dialog.ShowAsync();
+                await dialog.ShowAsync();
             }
         }
     }

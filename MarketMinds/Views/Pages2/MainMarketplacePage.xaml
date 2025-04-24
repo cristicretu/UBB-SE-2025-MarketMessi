@@ -101,13 +101,13 @@
                 <Border BorderBrush="{ThemeResource SystemAccentColor}" BorderThickness="1" CornerRadius="8" Padding="20" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
                         <TextBlock Text="Account" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Margin="0,0,0,15"/>
-                        <Button Content="Open Account" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Padding="15,10" Click="OnButtonClickOpenAccount" x:Name="ButtonOpenAccount"/>
+                        <Button Content="Open Account" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Padding="15,10" Click="OpenAccountButton_Click" x:Name="ButtonOpenAccount"/>
                     </StackPanel>
                 </Border>
                 <Border BorderBrush="{ThemeResource SystemAccentColorLight2}" BorderThickness="1" CornerRadius="8" Padding="20" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
                         <TextBlock Text="Support" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Margin="0,0,0,15"/>
-                        <Button Content="Open Help" HorizontalAlignment="Stretch" Padding="15,10" Click="OnButtonClickOpenHelp" x:Name="ButtonOpenHelp"/>
+                        <Button Content="Open Help" HorizontalAlignment="Stretch" Padding="15,10" Click="OpenHelpButton_Clisk" x:Name="ButtonOpenHelp"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
