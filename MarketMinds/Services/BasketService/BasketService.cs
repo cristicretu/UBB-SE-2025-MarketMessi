@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -83,28 +82,20 @@ namespace MarketMinds.Services.BasketService
 
         public Basket GetBasketByUser(User user)
         {
-            Debug.WriteLine($"[Service] GetBasketByUser called for user ID: {user?.Id}");
-
             if (user == null || user.Id <= NOUSER)
             {
-                Debug.WriteLine("[Service] ERROR: Invalid user provided");
                 throw new ArgumentException("Valid user must be provided");
             }
 
             try
             {
                 string fullUrl = $"{apiBaseUrl}api/basket/user/{user.Id}";
-                Debug.WriteLine($"[Service] Making API request to: {fullUrl}");
 
                 var response = httpClient.GetAsync(fullUrl).Result;
-                Debug.WriteLine($"[Service] Response status: {response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
                 // Use the custom JSON converter to properly deserialize the response
                 var responseContent = response.Content.ReadAsStringAsync().Result;
-
-                // Log the raw JSON for debugging
-                Debug.WriteLine($"[Service] Raw JSON response: {responseContent}");
 
                 try
                 {
@@ -129,54 +120,21 @@ namespace MarketMinds.Services.BasketService
                         basket.Items = new List<BasketItem>();
                     }
 
-                    Debug.WriteLine($"[Service] Basket deserialized, ID: {basket.Id}, Items count: {basket.Items?.Count ?? 0}");
-
-                    // Validate product references
-                    if (basket.Items != null)
-                    {
-                        int nullProducts = basket.Items.Count(i => i.Product == null);
-                        if (nullProducts > 0)
-                        {
-                            Debug.WriteLine($"[Service] WARNING: {nullProducts} items have null Product references after deserialization!");
-                        }
-
-                        // Check first item
-                        if (basket.Items.Count > 0)
-                        {
-                            var firstItem = basket.Items[0];
-                            Debug.WriteLine($"[Service] First item: ID={firstItem.Id}, ProductID={firstItem.ProductId}, Product null? {firstItem.Product == null}");
-                        }
-                    }
-
                     return basket;
                 }
                 catch (JsonException ex)
                 {
-                    Debug.WriteLine($"[Service] JSON Deserialization Error: {ex.Message}");
-                    Debug.WriteLine($"[Service] Stack Trace: {ex.StackTrace}");
-
                     // Try to fallback to a simpler deserialization
                     var fallbackBasket = new Basket { Id = user.Id, Items = new List<BasketItem>() };
-                    Debug.WriteLine($"[Service] Using fallback empty basket after deserialization failure");
                     return fallbackBasket;
                 }
             }
             catch (HttpRequestException ex)
             {
-                Debug.WriteLine($"[Service] ERROR: HttpRequestException - {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Debug.WriteLine($"[Service] Inner exception: {ex.InnerException.Message}");
-                }
                 throw new ApplicationException($"Failed to retrieve user's basket: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Service] ERROR: General exception - {ex.GetType().Name} - {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Debug.WriteLine($"[Service] Inner exception: {ex.InnerException.Message}");
-                }
                 throw new ApplicationException("Failed to retrieve user's basket", ex);
             }
         }
@@ -310,15 +268,13 @@ namespace MarketMinds.Services.BasketService
                 response.EnsureSuccessStatusCode();
 
                 var responseContent = response.Content.ReadAsStringAsync().Result;
-                Debug.WriteLine($"[Service] ValidateBasketBeforeCheckOut response: {responseContent}");
 
                 try
                 {
                     return JsonSerializer.Deserialize<bool>(responseContent, jsonOptions);
                 }
-                catch (JsonException ex)
+                catch (JsonException)
                 {
-                    Debug.WriteLine($"[Service] JSON Error in ValidateBasketBeforeCheckOut: {ex.Message}");
                     // Try a simple parsing approach as fallback
                     responseContent = responseContent.Trim().ToLower();
                     if (responseContent == "true")
@@ -331,12 +287,10 @@ namespace MarketMinds.Services.BasketService
             }
             catch (HttpRequestException ex)
             {
-                Debug.WriteLine($"[Service] HTTP Error in ValidateBasketBeforeCheckOut: {ex.Message}");
                 throw new InvalidOperationException($"Could not validate basket: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Service] General Error in ValidateBasketBeforeCheckOut: {ex.Message}");
                 throw new InvalidOperationException($"Could not validate basket: {ex.Message}", ex);
             }
         }
@@ -428,28 +382,24 @@ namespace MarketMinds.Services.BasketService
                 response.EnsureSuccessStatusCode();
 
                 var responseContent = response.Content.ReadAsStringAsync().Result;
-                Debug.WriteLine($"[Service] CalculateBasketTotals response: {responseContent}");
 
                 try
                 {
                     var totals = JsonSerializer.Deserialize<BasketTotals>(responseContent, jsonOptions);
                     return totals;
                 }
-                catch (JsonException ex)
+                catch (JsonException)
                 {
-                    Debug.WriteLine($"[Service] JSON Error in CalculateBasketTotals: {ex.Message}");
                     // Create a default totals object
                     return new BasketTotals();
                 }
             }
             catch (HttpRequestException ex)
             {
-                Debug.WriteLine($"[Service] HTTP Error in CalculateBasketTotals: {ex.Message}");
                 throw new InvalidOperationException($"Could not calculate basket totals: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Service] General Error in CalculateBasketTotals: {ex.Message}");
                 throw new InvalidOperationException($"Could not calculate basket totals: {ex.Message}", ex);
             }
         }

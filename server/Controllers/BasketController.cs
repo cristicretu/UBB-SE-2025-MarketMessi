@@ -5,7 +5,6 @@ using System;
 using System.Net;
 using MarketMinds.Repositories.BasketRepository;
 using server.DataAccessLayer;
-using System.Diagnostics;
 using System.Linq;
 using server.Models.DTOs;
 using server.Models.DTOs.Mappers;
@@ -47,18 +46,14 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketByUserId(int userId)
         {
-            Debug.WriteLine($"[Controller] GetBasketByUserId called with userId: {userId}");
-
             if (userId <= NOUSER)
             {
-                Debug.WriteLine("[Controller] Invalid user ID");
                 return BadRequest("Invalid user ID");
             }
 
             try
             {
                 var basket = _basketRepository.GetBasketByUserId(userId);
-                Debug.WriteLine($"[Controller] Retrieved basket with ID: {basket.Id}, items count: {basket.Items?.Count ?? 0}");
 
                 // Ensure all basket items have ProductId set
                 if (basket.Items != null)
@@ -69,7 +64,6 @@ namespace MarketMinds.Controllers
                         {
                             // If ProductId is not set, set it from the Product object
                             item.ProductId = item.Product.Id;
-                            Debug.WriteLine($"[Controller] Set ProductId={item.ProductId} for item {item.Id}");
                         }
                     }
                 }
@@ -81,7 +75,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Controller] ERROR: {ex.GetType().Name} - {ex.Message}");
                 Console.WriteLine($"Error getting basket for user ID {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
@@ -93,18 +86,14 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketItems(int basketId)
         {
-            Debug.WriteLine($"[Controller] GetBasketItems called with basketId: {basketId}");
-
             if (basketId <= NOBASKET)
             {
-                Debug.WriteLine("[Controller] Invalid basket ID");
                 return BadRequest("Invalid basket ID");
             }
 
             try
             {
                 var items = _basketRepository.GetBasketItems(basketId);
-                Debug.WriteLine($"[Controller] Retrieved {items.Count} items, returning to client");
 
                 // Ensure each item has ProductId set
                 foreach (var item in items)
@@ -113,7 +102,6 @@ namespace MarketMinds.Controllers
                     {
                         // If ProductId is not set, set it from the Product object
                         item.ProductId = item.Product.Id;
-                        Debug.WriteLine($"[Controller] Set ProductId={item.ProductId} for item {item.Id}");
                     }
                 }
 
@@ -124,7 +112,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Controller] ERROR in GetBasketItems: {ex.GetType().Name} - {ex.Message}");
                 Console.WriteLine($"Error getting items for basket ID {basketId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
