@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DomainLayer.Domain;
 using MarketMinds.Services.BasketService;
+using System.Diagnostics;
 
 namespace ViewModelLayer.ViewModel
 {
@@ -15,9 +16,9 @@ namespace ViewModelLayer.ViewModel
         private Basket basket;
 
         public List<BasketItem> BasketItems { get; private set; }
-        public float Subtotal { get; private set; }
-        public float Discount { get; private set; }
-        public float TotalAmount { get; private set; }
+        public double Subtotal { get; private set; }
+        public double Discount { get; private set; }
+        public double TotalAmount { get; private set; }
         public string PromoCode { get; set; }
         public string ErrorMessage { get; set; }
 
@@ -32,16 +33,49 @@ namespace ViewModelLayer.ViewModel
 
         public void LoadBasket()
         {
+            Debug.WriteLine("[ViewModel] LoadBasket called");
             try
             {
                 basket = basketService.GetBasketByUser(currentUser);
-                BasketItems = basket.GetItems();
+                Debug.WriteLine($"[ViewModel] Basket retrieved, ID: {basket.Id}");
+
+                BasketItems = basket.Items;
+                Debug.WriteLine($"[ViewModel] Number of items in basket: {BasketItems.Count}");
+
+                // Check if any products are null
+                int nullProductCount = BasketItems.Count(item => item.Product == null);
+                if (nullProductCount > 0)
+                {
+                    Debug.WriteLine($"[ViewModel] WARNING: {nullProductCount} items have null Product references!");
+                }
+
+                // Dump first item details if available
+                if (BasketItems.Count > 0)
+                {
+                    var firstItem = BasketItems[0];
+                    Debug.WriteLine($"[ViewModel] First item: ID={firstItem.Id}, ProductID={firstItem.ProductId}, Quantity={firstItem.Quantity}");
+                    if (firstItem.Product != null)
+                    {
+                        Debug.WriteLine($"[ViewModel] First item's product: {firstItem.Product.Title}, Price: {firstItem.Product.Price}");
+                        Debug.WriteLine($"[ViewModel] Image count: {firstItem.Product.Images?.Count ?? 0}, Tags count: {firstItem.Product.Tags?.Count ?? 0}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("[ViewModel] First item's product is NULL!");
+                    }
+                }
 
                 // Use service to calculate totals instead of local method
                 UpdateTotals();
+                Debug.WriteLine($"[ViewModel] Totals updated - Subtotal: {Subtotal}, Discount: {Discount}, Total: {TotalAmount}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[ViewModel] ERROR in LoadBasket: {ex.GetType().Name} - {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[ViewModel] Inner exception: {ex.InnerException.Message}");
+                }
                 ErrorMessage = $"Failed to load basket: {ex.Message}";
             }
         }

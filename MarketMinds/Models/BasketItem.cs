@@ -11,10 +11,13 @@ namespace DomainLayer.Domain
     {
         public int Id { get; set; }
         public BuyProduct Product { get; set; }
+
+        // Add missing properties to match server model
+        public int ProductId { get; set; }
+        public int BasketId { get; set; }
+
         public int Quantity { get; set; }
         public double Price { get; set; }
-
-        public bool HasValidPrice { get; private set; }
 
         public string FormattedPrice => $"${Price:F2}";
 
@@ -24,11 +27,11 @@ namespace DomainLayer.Domain
         {
             this.Id = id;
             this.Product = product;
+            this.ProductId = product.Id; // Set ProductId from the product
             this.Quantity = quantity;
 
             // Set the price based on the product
             this.Price = product.Price;
-            this.HasValidPrice = true;
         }
 
         // Default constructor for serialization
@@ -36,15 +39,16 @@ namespace DomainLayer.Domain
         {
             this.Id = 0;
             this.Product = null;
+            this.ProductId = 0;
+            this.BasketId = 0;
             this.Quantity = 0;
             this.Price = DEFAULT_PRICE;
-            this.HasValidPrice = false;
         }
 
-        public float GetPrice()
+        public double GetPrice()
         {
             // Calculates the total price for this basket item (unit price × quantity)
-            return (float)(Price * Quantity);
+            return Price * Quantity;
         }
     }
 }

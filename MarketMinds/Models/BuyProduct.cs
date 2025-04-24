@@ -8,7 +8,7 @@ namespace DomainLayer.Domain
 {
     public class BuyProduct : Product
     {
-        public float Price { get; set; }
+        public double Price { get; set; }
 
         // Default constructor for JSON deserialization
         public BuyProduct() : base()
@@ -17,7 +17,7 @@ namespace DomainLayer.Domain
         }
 
         public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
-            List<ProductTag> productTags, List<Image> images, float price)
+            List<ProductTag> productTags, List<Image> images, double price)
         {
             this.Id = id;
             this.Title = title;

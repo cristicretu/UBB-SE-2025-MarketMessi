@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System;
 using System.Net;
 using MarketMinds.Repositories.BasketRepository;
+using server.DataAccessLayer;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MarketMinds.Controllers
 {
@@ -16,8 +20,9 @@ namespace MarketMinds.Controllers
         private const int NOUSER = 0;
         private const int NOBASKET = 0;
         private const int NOITEM = 0;
-        private const int NODISCOUNT = 0;
+        private const double NODISCOUNT = 0;
         private const int MaxQuantityPerItem = 10;
+        private const double SMALLEST_VALID_PRICE = 0;
 
         public BasketController(IBasketRepository basketRepository)
         {
@@ -31,18 +36,38 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketByUserId(int userId)
         {
+            Debug.WriteLine($"[Controller] GetBasketByUserId called with userId: {userId}");
+
             if (userId <= NOUSER)
             {
+                Debug.WriteLine("[Controller] Invalid user ID");
                 return BadRequest("Invalid user ID");
             }
 
             try
             {
                 var basket = _basketRepository.GetBasketByUserId(userId);
+                Debug.WriteLine($"[Controller] Retrieved basket with ID: {basket.Id}, items count: {basket.Items?.Count ?? 0}");
+
+                // Ensure all basket items have ProductId set
+                if (basket.Items != null)
+                {
+                    foreach (var item in basket.Items)
+                    {
+                        if (item.Product != null && item.ProductId == 0)
+                        {
+                            // If ProductId is not set, set it from the Product object
+                            item.ProductId = item.Product.Id;
+                            Debug.WriteLine($"[Controller] Set ProductId={item.ProductId} for item {item.Id}");
+                        }
+                    }
+                }
+
                 return Ok(basket);
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[Controller] ERROR: {ex.GetType().Name} - {ex.Message}");
                 Console.WriteLine($"Error getting basket for user ID {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
@@ -54,18 +79,35 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketItems(int basketId)
         {
+            Debug.WriteLine($"[Controller] GetBasketItems called with basketId: {basketId}");
+
             if (basketId <= NOBASKET)
             {
+                Debug.WriteLine("[Controller] Invalid basket ID");
                 return BadRequest("Invalid basket ID");
             }
 
             try
             {
                 var items = _basketRepository.GetBasketItems(basketId);
+                Debug.WriteLine($"[Controller] Retrieved {items.Count} items, returning to client");
+
+                // Ensure each item has ProductId set
+                foreach (var item in items)
+                {
+                    if (item.Product != null && item.ProductId == 0)
+                    {
+                        // If ProductId is not set, set it from the Product object
+                        item.ProductId = item.Product.Id;
+                        Debug.WriteLine($"[Controller] Set ProductId={item.ProductId} for item {item.Id}");
+                    }
+                }
+
                 return Ok(items);
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[Controller] ERROR in GetBasketItems: {ex.GetType().Name} - {ex.Message}");
                 Console.WriteLine($"Error getting items for basket ID {basketId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
@@ -332,15 +374,15 @@ namespace MarketMinds.Controllers
                 string normalizedCode = code.ToUpper().Trim();
 
                 // Dictionary of valid promo codes
-                Dictionary<string, float> validCodes = new Dictionary<string, float>
+                Dictionary<string, double> validCodes = new Dictionary<string, double>
                 {
-                    { "DISCOUNT10", 0.10f },  // 10% discount
-                    { "WELCOME20", 0.20f },
-                    { "FLASH30", 0.30f },     // 30% discount
+                    { "DISCOUNT10", 0.10 },  // 10% discount
+                    { "WELCOME20", 0.20 },
+                    { "FLASH30", 0.30 },     // 30% discount
                 };
 
                 // Check if the code exists in the valid codes
-                if (validCodes.TryGetValue(normalizedCode, out float discountRate))
+                if (validCodes.TryGetValue(normalizedCode, out double discountRate))
                 {
                     return Ok(new { DiscountRate = discountRate });
                 }
@@ -368,14 +410,14 @@ namespace MarketMinds.Controllers
             try
             {
                 List<BasketItem> items = _basketRepository.GetBasketItems(basketId);
-                float subtotal = 0;
+                double subtotal = 0;
 
                 foreach (var item in items)
                 {
                     subtotal += item.GetPrice();
                 }
 
-                float discount = NODISCOUNT;
+                double discount = NODISCOUNT;
 
                 if (!string.IsNullOrEmpty(promoCode))
                 {
@@ -383,21 +425,21 @@ namespace MarketMinds.Controllers
                     string normalizedCode = promoCode.ToUpper().Trim();
 
                     // Dictionary of valid promo codes
-                    Dictionary<string, float> validCodes = new Dictionary<string, float>
+                    Dictionary<string, double> validCodes = new Dictionary<string, double>
                     {
-                        { "DISCOUNT10", 0.10f },  // 10% discount
-                        { "WELCOME20", 0.20f },
-                        { "FLASH30", 0.30f },     // 30% discount
+                        { "DISCOUNT10", 0.10 },  // 10% discount
+                        { "WELCOME20", 0.20 },
+                        { "FLASH30", 0.30 },     // 30% discount
                     };
 
                     // Check if the code exists in the valid codes
-                    if (validCodes.TryGetValue(normalizedCode, out float discountRate))
+                    if (validCodes.TryGetValue(normalizedCode, out double discountRate))
                     {
                         discount = subtotal * discountRate;
                     }
                 }
 
-                float totalAmount = subtotal - discount;
+                double totalAmount = subtotal - discount;
 
                 var basketTotals = new BasketTotals
                 {
@@ -445,8 +487,7 @@ namespace MarketMinds.Controllers
                         return Ok(false);
                     }
 
-                    // Check if product is of valid type
-                    if (!item.HasValidPrice)
+                    if (item.Price <= SMALLEST_VALID_PRICE)
                     {
                         return Ok(false);
                     }
@@ -464,9 +505,9 @@ namespace MarketMinds.Controllers
         // Helper class to return the basket total values
         public class BasketTotals
         {
-            public float Subtotal { get; set; }
-            public float Discount { get; set; }
-            public float TotalAmount { get; set; }
+            public double Subtotal { get; set; }
+            public double Discount { get; set; }
+            public double TotalAmount { get; set; }
         }
     }
 }

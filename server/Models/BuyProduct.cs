@@ -4,13 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using server.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models
 {
+    [Table("BuyProducts")]
     public class BuyProduct : Product
     {
-        public float Price { get; set; }
+        [Column("price")]
+        public double Price { get; set; }
+
+        [NotMapped]
         public List<ProductTag> Tags { get; set; }
+
+        [NotMapped]
         public List<Image> Images { get; set; }
 
         public BuyProduct() : base()
@@ -21,7 +29,7 @@ namespace server.Models
         }
 
         public BuyProduct(int id, string title, string description, User seller, Condition productCondition, Category productCategory,
-            List<ProductTag> productTags, List<Image> images, float price)
+            List<ProductTag> productTags, List<Image> images, double price)
         {
             this.Id = id;
             this.Title = title;
@@ -29,13 +37,13 @@ namespace server.Models
             this.Seller = seller;
             this.Condition = productCondition;
             this.Category = productCategory;
-            this.Tags = productTags;
-            this.Images = images;
+            this.Tags = productTags ?? new List<ProductTag>();
+            this.Images = images ?? new List<Image>();
             this.Price = price;
         }
 
         public BuyProduct(int id, string title, string description, User seller,
-            Condition condition, Category category, float price)
+            Condition condition, Category category, double price)
         {
             Id = id;
             Title = title;
@@ -48,4 +56,4 @@ namespace server.Models
             Tags = new List<ProductTag>();
         }
     }
-} 
+}

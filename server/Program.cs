@@ -20,17 +20,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// compatibility with old API without EF, need to remove this when EF is fully implemented
-
+// EntityFramework database connection setup
 var InitialCatalog = builder.Configuration["InitialCatalog"];
 var LocalDataSource = builder.Configuration["LocalDataSource"];
 var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Register the DataBaseConnection service
-builder.Services.AddScoped<DataBaseConnection>();
-
+// Register repositories
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
@@ -57,7 +54,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-
 
 app.UseAuthorization();
 

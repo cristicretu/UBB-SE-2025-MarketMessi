@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using server.Models;
+using System.Data.Common;
 
 namespace MarketMinds.Repositories.BasketRepository
 {
@@ -41,7 +42,7 @@ namespace MarketMinds.Repositories.BasketRepository
         void AddItemToBasket(int basketId, int productId, int quantity);
 
         /// <summary>
-        /// Updates the quantity of an item in the basket by product ID.
+        /// Updates the quantity of an item in the basket.
         /// </summary>
         /// <param name="basketId">The ID of the basket.</param>
         /// <param name="productId">The ID of the product to update.</param>
@@ -49,9 +50,9 @@ namespace MarketMinds.Repositories.BasketRepository
         void UpdateItemQuantityByProductId(int basketId, int productId, int quantity);
 
         /// <summary>
-        /// Clears all items from the basket.
+        /// Removes all items from a basket.
         /// </summary>
-        /// <param name="basketId">The ID of the basket.</param>
+        /// <param name="basketId">The ID of the basket to clear.</param>
         void ClearBasket(int basketId);
     }
 }

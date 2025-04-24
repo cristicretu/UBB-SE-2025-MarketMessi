@@ -36,6 +36,10 @@ namespace server.DataAccessLayer
         public DbSet<BorrowProductImage> BorrowProductImages { get; set; }
         public DbSet<BorrowProductProductTag> BorrowProductProductTags { get; set; }
 
+        // Basket 
+        public DbSet<Basket> Baskets { get; set; }
+        public DbSet<BasketItem> BasketItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -57,6 +61,16 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<ReviewImage>().HasKey(rp => rp.Id);
 
             // Product metadata
+            modelBuilder.Entity<ProductTag>().ToTable("ProductTags");
+            modelBuilder.Entity<ProductTag>().HasKey(pt => pt.Id);
+            modelBuilder.Entity<ProductTag>().Property(pt => pt.Title).IsRequired().HasColumnName("title");
+            modelBuilder.Entity<ProductTag>().HasIndex(pt => pt.Title).IsUnique();
+
+            // Explicitly ignore any potential relationship properties 
+            modelBuilder.Entity<ProductTag>().Ignore("BuyProductId");
+            modelBuilder.Entity<ProductTag>().Ignore("BuyProductId1");
+            modelBuilder.Entity<ProductTag>().Ignore("BuyProducts");
+
             modelBuilder.Entity<Condition>().ToTable("ProductConditions");
             modelBuilder.Entity<Condition>().HasKey(pc => pc.Id);
             modelBuilder.Entity<Condition>().HasIndex(pc => pc.Name).IsUnique();
@@ -64,10 +78,6 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<Category>().ToTable("ProductCategories");
             modelBuilder.Entity<Category>().HasKey(pc => pc.Id);
             modelBuilder.Entity<Category>().HasIndex(pc => pc.Name).IsUnique();
-
-            modelBuilder.Entity<ProductTag>().ToTable("ProductTags");
-            modelBuilder.Entity<ProductTag>().HasKey(pt => pt.Id);
-            modelBuilder.Entity<ProductTag>().HasIndex(pt => pt.Title).IsUnique();
 
             // Auction products
             modelBuilder.Entity<AuctionProduct>().ToTable("AuctionProducts");
@@ -86,11 +96,31 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
             modelBuilder.Entity<BuyProduct>().HasKey(bp => bp.Id);
 
+            // Explicitly specify that Tags and Images are not mapped
+            modelBuilder.Entity<BuyProduct>()
+                .Ignore(bp => bp.Tags);
+            modelBuilder.Entity<BuyProduct>()
+                .Ignore(bp => bp.Images);
+
             modelBuilder.Entity<BuyProductImage>().ToTable("BuyProductImages");
             modelBuilder.Entity<BuyProductImage>().HasKey(i => i.Id);
 
+            // Configure junction table
             modelBuilder.Entity<BuyProductProductTag>().ToTable("BuyProductProductTags");
             modelBuilder.Entity<BuyProductProductTag>().HasKey(pt => pt.Id);
+
+            // Explicitly configure correct foreign key relationships
+            modelBuilder.Entity<BuyProductProductTag>()
+                .HasOne<BuyProduct>()
+                .WithMany()
+                .HasForeignKey(pt => pt.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BuyProductProductTag>()
+                .HasOne<ProductTag>()
+                .WithMany()
+                .HasForeignKey(pt => pt.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Borrow products
             modelBuilder.Entity<BorrowProduct>().ToTable("BorrowProducts");
@@ -101,6 +131,21 @@ namespace server.DataAccessLayer
 
             modelBuilder.Entity<BorrowProductProductTag>().ToTable("BorrowProductProductTags");
             modelBuilder.Entity<BorrowProductProductTag>().HasKey(pt => pt.Id);
+
+            // Basket
+            modelBuilder.Entity<Basket>().ToTable("Baskets");
+            modelBuilder.Entity<Basket>().HasKey(b => b.Id);
+
+            // Explicitly ignore the Items collection
+            modelBuilder.Entity<Basket>()
+                .Ignore(b => b.Items);
+
+            modelBuilder.Entity<BasketItem>().ToTable("BasketItemsBuyProducts");
+            modelBuilder.Entity<BasketItem>().HasKey(bi => bi.Id);
+            modelBuilder.Entity<BasketItem>()
+                .HasOne<BuyProduct>()
+                .WithMany()
+                .HasForeignKey(bi => bi.ProductId);
         }
     }
 }
