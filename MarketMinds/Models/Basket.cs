@@ -10,11 +10,13 @@ namespace DomainLayer.Domain
     public class Basket
     {
         public int Id { get; set; }
+        public int BuyerId { get; set; }
         public List<BasketItem> Items { get; set; }
 
         public Basket(int id)
         {
             this.Id = id;
+            this.BuyerId = 0;
             this.Items = new List<BasketItem>();
         }
 
@@ -22,6 +24,7 @@ namespace DomainLayer.Domain
         public Basket()
         {
             this.Id = 0;
+            this.BuyerId = 0;
             this.Items = new List<BasketItem>();
         }
 
