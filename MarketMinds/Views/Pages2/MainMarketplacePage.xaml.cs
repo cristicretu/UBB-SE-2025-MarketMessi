@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,6 @@ using DomainLayer.Domain;
 using Marketplace_SE.Utilities; // For Notification, FrameNavigation
 using MarketMinds.ViewModels; // For MarketplaceViewModel
 using MarketMinds;
-using System.Threading.Tasks; // For App access (ViewModel, User)
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info
@@ -73,32 +73,11 @@ namespace Marketplace_SE
         {
             if (sender is FrameworkElement element && element.Tag is UserNotSoldOrder selectedOrder)
             {
-                int chatTemplateParameter = -1;
-                if (selectedOrder.SellerId == 1 && me.Id == 0)
-                {
-                    chatTemplateParameter = 0;
-                }
-                else if (selectedOrder.SellerId == 0 && me.Id == 1)
-                {
-                    chatTemplateParameter = 1;
-                }
-                else if (selectedOrder.SellerId == 3 && me.Id == 2)
-                {
-                    chatTemplateParameter = 2;
-                }
-                else if (selectedOrder.SellerId == 2 && me.Id == 3)
-                {
-                    chatTemplateParameter = 3;
-                }
-
-                if (chatTemplateParameter != -1)
-                {
-                    Frame.Navigate(typeof(ChatPage), chatTemplateParameter);
-                }
-                else
-                {
-                    ShowNotification("Error", "Failed to navigate to chat.");
-                }
+                Frame.Navigate(typeof(ChatPage), selectedOrder);
+            }
+            else
+            {
+                ShowNotification("Error", "Failed to navigate to chat.");
             }
         }
 
