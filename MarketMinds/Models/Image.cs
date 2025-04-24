@@ -10,6 +10,12 @@ namespace DomainLayer.Domain
     {
         public string Url { get; set; } = string.Empty;
 
+        // Default constructor for JSON deserialization
+        public Image()
+        {
+            Url = string.Empty;
+        }
+
         public Image(string url)
         {
             this.Url = url;

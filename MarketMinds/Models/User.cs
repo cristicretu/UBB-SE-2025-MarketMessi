@@ -18,6 +18,18 @@ namespace DomainLayer.Domain
 
         private const float MAX_BALANCE = 999999;
 
+        // Default constructor for JSON deserialization
+        public User()
+        {
+            Id = 0;
+            Username = string.Empty;
+            Email = string.Empty;
+            UserType = 0;
+            Balance = 0;
+            Rating = 0;
+            Password = 0;
+        }
+
         public User(int id, string username, string email)
         {
             this.Id = id;
