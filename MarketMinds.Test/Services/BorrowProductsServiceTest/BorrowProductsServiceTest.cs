@@ -11,6 +11,18 @@ namespace MarketMinds.Tests.Services.BorrowProductsServiceTest
     [TestFixture]
     public class BorrowProductsServiceTest
     {
+        // Constants to replace magic numbers
+        private const int TEST_SELLER_ID = 1;
+        private const int TEST_BORROW_PRODUCT_ID = 1;
+        private const int TEST_INVALID_PRODUCT_ID = 2;
+        private const int NON_EXISTENT_PRODUCT_ID = 999;
+        private const float DAILY_RATE_AMOUNT = 20.0f;
+        private const float STARTING_PRICE_AMOUNT = 100.0f;
+        private const int EXPECTED_SINGLE_COUNT = 1;
+        private const int EXPECTED_ZERO_COUNT = 0;
+        private const int TIME_SPAN_DAYS_LONG = 7;
+        private const int TIME_SPAN_DAYS_MEDIUM = 5;
+
         private BorrowProductsService borrowProductsService;
         private BorrowProductsRepositoryMock borrowProductsRepositoryMock;
         private User testSeller;
@@ -23,21 +35,20 @@ namespace MarketMinds.Tests.Services.BorrowProductsServiceTest
             borrowProductsRepositoryMock = new BorrowProductsRepositoryMock();
             borrowProductsService = new BorrowProductsService(borrowProductsRepositoryMock);
 
-            testSeller = new User(1, "Test Seller", "seller@test.com");
+            testSeller = new User(TEST_SELLER_ID, "Test Seller", "seller@test.com");
 
             var testCondition = new ProductCondition(1, "New", "Brand new item");
             var testCategory = new ProductCategory(1, "Electronics", "Electronic devices");
             var testTags = new List<ProductTag>();
             var testImages = new List<Image>();
 
-            DateTime timeLimit = DateTime.Now.AddDays(7);
+            DateTime timeLimit = DateTime.Now.AddDays(TIME_SPAN_DAYS_LONG);
             DateTime startDate = DateTime.Now;
-            DateTime endDate = DateTime.Now.AddDays(5);
-            float dailyRate = 20.0f;
+            DateTime endDate = DateTime.Now.AddDays(TIME_SPAN_DAYS_MEDIUM);
             bool isBorrowed = false;
 
             testBorrowProduct = new BorrowProduct(
-                1,
+                TEST_BORROW_PRODUCT_ID,
                 "Test Borrow Product",
                 "Test Description",
                 testSeller,
@@ -48,12 +59,12 @@ namespace MarketMinds.Tests.Services.BorrowProductsServiceTest
                 timeLimit,
                 startDate,
                 endDate,
-                dailyRate,
+                DAILY_RATE_AMOUNT,
                 isBorrowed);
 
             // Create an invalid product type for testing type validation
             testInvalidProduct = new AuctionProduct(
-                2,
+                TEST_INVALID_PRODUCT_ID,
                 "Test Auction Product",
                 "Test Description",
                 testSeller,
@@ -62,75 +73,153 @@ namespace MarketMinds.Tests.Services.BorrowProductsServiceTest
                 testTags,
                 testImages,
                 DateTime.Now,
-                DateTime.Now.AddDays(7),
-                100.0f);
+                DateTime.Now.AddDays(TIME_SPAN_DAYS_LONG),
+                STARTING_PRICE_AMOUNT);
         }
 
         [Test]
         public void TestCreateListing_ValidProduct_AddsProduct()
         {
+            // Act
             borrowProductsService.CreateListing(testBorrowProduct);
 
-            Assert.That(borrowProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(borrowProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
-        public void TestCreateListing_InvalidProductType_ThrowsException()
+        public void TestCreateListing_InvalidProductType_ThrowsInvalidCastException()
         {
-            Exception ex = null;
+            // Arrange & Act & Assert
+            InvalidCastException castException = Assert.Throws<InvalidCastException>(() =>
+                borrowProductsService.CreateListing(testInvalidProduct));
+
+            Assert.That(castException, Is.Not.Null);
+        }
+
+        [Test]
+        public void TestCreateListing_InvalidProductType_DoesNotAddToRepository()
+        {
+            // Arrange & Act
             try
             {
                 borrowProductsService.CreateListing(testInvalidProduct);
             }
-            catch (Exception e)
+            catch
             {
-                ex = e;
+                // Expected exception, ignore
             }
 
-            Assert.That(ex, Is.Not.Null);
-            Assert.That(ex, Is.InstanceOf<InvalidCastException>());
-            Assert.That(borrowProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(0));
+            // Assert
+            Assert.That(borrowProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(EXPECTED_ZERO_COUNT));
         }
 
         [Test]
         public void TestDeleteListing_ValidProduct_DeletesProduct()
         {
+            // Act
             borrowProductsService.DeleteListing(testBorrowProduct);
 
-            Assert.That(borrowProductsRepositoryMock.GetDeleteListingCount(), Is.EqualTo(1));
+            // Assert
+            Assert.That(borrowProductsRepositoryMock.GetDeleteListingCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
-        public void TestGetProducts_ReturnsProductsList()
+        public void TestGetProducts_ReturnsNonNullProductsList()
         {
+            // Arrange
             borrowProductsRepositoryMock.AddProduct(testBorrowProduct);
 
+            // Act
             var products = borrowProductsService.GetProducts();
 
+            // Assert
             Assert.That(products, Is.Not.Null);
-            Assert.That(products.Count, Is.EqualTo(1));
-            Assert.That(borrowProductsRepositoryMock.GetGetProductsCount(), Is.EqualTo(1));
         }
 
         [Test]
-        public void TestGetProductById_ValidId_ReturnsProduct()
+        public void TestGetProducts_ReturnsCorrectNumberOfProducts()
         {
+            // Arrange
             borrowProductsRepositoryMock.AddProduct(testBorrowProduct);
 
+            // Act
+            var products = borrowProductsService.GetProducts();
+
+            // Assert
+            Assert.That(products.Count, Is.EqualTo(EXPECTED_SINGLE_COUNT));
+        }
+
+        [Test]
+        public void TestGetProducts_CallsRepositoryCorrectly()
+        {
+            // Arrange
+            borrowProductsRepositoryMock.AddProduct(testBorrowProduct);
+
+            // Act
+            borrowProductsService.GetProducts();
+
+            // Assert
+            Assert.That(borrowProductsRepositoryMock.GetGetProductsCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
+        }
+
+        [Test]
+        public void TestGetProductById_ValidId_ReturnsNonNullProduct()
+        {
+            // Arrange
+            borrowProductsRepositoryMock.AddProduct(testBorrowProduct);
+
+            // Act
             var product = borrowProductsService.GetProductById(testBorrowProduct.Id);
 
+            // Assert
             Assert.That(product, Is.Not.Null);
+        }
+
+        [Test]
+        public void TestGetProductById_ValidId_ReturnsProductWithCorrectId()
+        {
+            // Arrange
+            borrowProductsRepositoryMock.AddProduct(testBorrowProduct);
+
+            // Act
+            var product = borrowProductsService.GetProductById(testBorrowProduct.Id);
+
+            // Assert
             Assert.That(product.Id, Is.EqualTo(testBorrowProduct.Id));
-            Assert.That(borrowProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void TestGetProductById_ValidId_CallsRepositoryCorrectly()
+        {
+            // Arrange
+            borrowProductsRepositoryMock.AddProduct(testBorrowProduct);
+
+            // Act
+            borrowProductsService.GetProductById(testBorrowProduct.Id);
+
+            // Assert
+            Assert.That(borrowProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
         public void TestGetProductById_InvalidId_ReturnsNull()
         {
-            var product = borrowProductsService.GetProductById(999);
+            // Act
+            var product = borrowProductsService.GetProductById(NON_EXISTENT_PRODUCT_ID);
 
+            // Assert
             Assert.That(product, Is.Null);
-            Assert.That(borrowProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void TestGetProductById_InvalidId_CallsRepositoryCorrectly()
+        {
+            // Act
+            borrowProductsService.GetProductById(NON_EXISTENT_PRODUCT_ID);
+
+            // Assert
+            Assert.That(borrowProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
     }
 }
