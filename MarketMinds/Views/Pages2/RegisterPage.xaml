@@ -9,15 +9,31 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Content="Return to login" 
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center" 
-            Width="200" 
-            Height="50" 
-            Click="OnButtonClickReturn"
-            x:Name="ButtonReturn"/>
-        </StackPanel>
-    </Grid>
+	<Grid VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+		<StackPanel Spacing="15" Width="320">
+			<TextBlock Text="Sign Up" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+			<TextBox x:Name="UsernameTextBox" PlaceholderText="Username"/>
+
+
+			<TextBox x:Name="EmailTextBox" PlaceholderText="Email"/>
+
+			<PasswordBox x:Name="PasswordBoxWithRevealMode" PlaceholderText="Password" PasswordChanged="PasswordBoxWithRevealMode_PasswordChanged"/>
+
+			<PasswordBox x:Name="ConfirmPasswordBox" PlaceholderText="Confirm Password"/>
+			<TextBlock x:Name="PasswordStrengthTextBlock" Foreground="Blue" FontSize="12"/>
+			<CheckBox x:Name="RevealModeCheckBox" Content="Show Password" Checked="RevealModeCheckbox_Changed" Unchecked="RevealModeCheckbox_Changed"/>
+
+			<Button Content="Create Account" Click="OnCreateUserClick" Padding="10" FontSize="16" Background="#0078D4" Foreground="White" BorderThickness="0" CornerRadius="5"/>
+
+			<Button Content="Already have an account? Login"
+                    Click="NavigateToLoginPage"
+                    HorizontalAlignment="Center"
+                    Foreground="#0078D4"
+                    BorderThickness="0"
+                    FontSize="14"/>
+			<TextBlock x:Name="ConfirmPasswordValidationTextBlock" Foreground="Red" FontSize="12"/>
+			<TextBlock x:Name="UsernameValidationTextBlock" Foreground="Red" FontSize="12"/>
+		</StackPanel>
+	</Grid>
 </Page>
