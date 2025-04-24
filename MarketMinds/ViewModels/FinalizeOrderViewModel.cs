@@ -27,12 +27,12 @@ namespace Marketplace_SE.ViewModels
 
                 // Simulate rating logic
                 loggerService.LogInfo("Showing rating dialog...");
-                System.Threading.Thread.Sleep(500); // Simulate synchronous operation
+                await Task.Delay(500); // Simulate asynchronous operation
                 loggerService.LogInfo("Rating dialog completed.");
 
                 // Simulate hardware survey logic
                 loggerService.LogInfo("Showing hardware survey dialog...");
-                System.Threading.Thread.Sleep(500); // Simulate synchronous operation
+                await Task.Delay(500); // Simulate asynchronous operation
                 loggerService.LogInfo("Hardware survey dialog completed.");
 
                 loggerService.LogInfo("Order finalized successfully.");
