@@ -9,7 +9,7 @@ namespace Marketplace_SE.Services
 
         public HardwareSurveyService(IHardwareSurveyRepository hardwareSurveyRepository)
         {
-            hardwareSurveyRepository = hardwareSurveyRepository;
+            this.hardwareSurveyRepository = hardwareSurveyRepository;
         }
 
         public void SaveHardwareData(HardwareData hardwareData)
