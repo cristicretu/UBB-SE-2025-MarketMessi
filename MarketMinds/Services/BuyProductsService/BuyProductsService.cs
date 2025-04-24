@@ -40,6 +40,11 @@ namespace MarketMinds.Services.BuyProductsService
                 throw new ArgumentException("Product must be a BuyProduct.", nameof(product));
             }
             var response = httpClient.PostAsJsonAsync("buyproducts", buyProduct).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = response.Content.ReadAsStringAsync().Result;
+                throw new HttpRequestException($"Failed to create listing. Status: {response.StatusCode}, Error: {errorContent}");
+            }
             response.EnsureSuccessStatusCode();
         }
 
