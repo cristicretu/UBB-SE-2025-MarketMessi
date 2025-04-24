@@ -6,6 +6,7 @@ using Marketplace_SE.Services;
 
 namespace Marketplace_SE.ViewModels
 {
+    // added this for new branch
     public class HelpTicketViewModel : INotifyPropertyChanged
     {
         private readonly IHelpTicketService service;
@@ -63,6 +64,11 @@ namespace Marketplace_SE.ViewModels
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public bool ValidateUser(string userId)
+        {
+           return service.ValidateUser(UserID);
         }
     }
 }
