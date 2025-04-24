@@ -6,6 +6,7 @@ using Marketplace_SE.Repositories;
 
 namespace Marketplace_SE.Services
 {
+    // added this for new branch
     public class HelpTicketService : IHelpTicketService
     {
         private readonly IHelpTicketRepository repository;

@@ -8,6 +8,7 @@ using Marketplace_SE.Repositories;
 
 namespace MarketMinds.Repositories.HelpTicketRepository
 {
+    // added this for new branch
     public class HelpTicketRepository : IHelpTicketRepository
     {
         private readonly DataBaseConnection connection;

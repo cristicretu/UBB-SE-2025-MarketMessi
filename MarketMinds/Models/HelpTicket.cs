@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MarketMinds.Models
 {
+    // added this for new branch
     public class HelpTicket
     {
         public string TicketID { get; set; }

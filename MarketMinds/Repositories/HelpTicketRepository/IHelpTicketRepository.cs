@@ -3,6 +3,7 @@ using MarketMinds.Models;
 
 namespace Marketplace_SE.Repositories
 {
+    // added this for new branch
     public interface IHelpTicketRepository
     {
         bool DoesUserIDExist(string userID);

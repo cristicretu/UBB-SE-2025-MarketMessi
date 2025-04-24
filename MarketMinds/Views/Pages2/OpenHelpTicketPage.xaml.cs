@@ -8,6 +8,7 @@ using MarketMinds;
 
 namespace Marketplace_SE.Views.Pages2
 {
+    // added this for new branch
     public sealed partial class OpenHelpTicketPage : Page
     {
         public HelpTicketViewModel ViewModel { get; }

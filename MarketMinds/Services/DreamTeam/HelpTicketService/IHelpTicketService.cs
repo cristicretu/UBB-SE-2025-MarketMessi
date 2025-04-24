@@ -3,6 +3,7 @@ using MarketMinds.Models;
 
 namespace Marketplace_SE.Services
 {
+    // added this for new branch
     public interface IHelpTicketService
     {
         bool ValidateUser(string userID);

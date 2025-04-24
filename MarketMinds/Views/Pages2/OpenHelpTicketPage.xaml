@@ -8,6 +8,8 @@
        mc:Ignorable="d"
        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+    <!--added this for new branch -->
+    
     <Grid>
         <StackPanel>
             <TextBlock Text="Open a help ticket:" HorizontalAlignment="Center" VerticalAlignment="Center" />
