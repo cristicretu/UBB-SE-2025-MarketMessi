@@ -34,6 +34,11 @@ namespace DomainLayer.Domain
         [JsonIgnore] // Ignore this property during serialization/deserialization
         public ICollection<object> ReviewImages { get; set; } = new List<object>();
 
+        // New properties for usernames
+        public string BuyerUsername { get; set; } = string.Empty;
+
+        public string SellerUsername { get; set; } = string.Empty;
+
         // public int productId { get; set; }
         public Review(int id, string description, List<Image> images, double rating, int sellerId, int buyerId)
         {
@@ -43,6 +48,8 @@ namespace DomainLayer.Domain
             this.Rating = rating;
             this.SellerId = sellerId;
             this.BuyerId = buyerId;
+            this.BuyerUsername = string.Empty;
+            this.SellerUsername = string.Empty;
         }
 
         // Default constructor for JSON deserialization

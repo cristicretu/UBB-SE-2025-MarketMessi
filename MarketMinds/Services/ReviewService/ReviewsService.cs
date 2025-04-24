@@ -56,6 +56,26 @@ namespace MarketMinds.Services.ReviewService
                 // Then deserialize using System.Text.Json which handles the reference format
                 var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
 
+                // Update username properties for display
+                if (reviews != null)
+                {
+                    foreach (var review in reviews)
+                    {
+                        // We know the seller username from the input parameter
+                        review.SellerUsername = seller.Username;
+
+                        // For buyer username, we'll need to display the ID as a fallback
+                        // In a real implementation, you would fetch the buyer's username from a user service
+                        review.BuyerUsername = $"User #{review.BuyerId}";
+
+                        // Try to find test users that match the buyer ID
+                        if (App.CurrentUser.Id == review.BuyerId)
+                            review.BuyerUsername = App.CurrentUser.Username;
+                        else if (App.TestingUser.Id == review.BuyerId)
+                            review.BuyerUsername = App.TestingUser.Username;
+                    }
+                }
+
                 // Convert to ObservableCollection
                 return reviews != null
                     ? new ObservableCollection<Review>(reviews)
@@ -84,6 +104,26 @@ namespace MarketMinds.Services.ReviewService
 
                 // Then deserialize using System.Text.Json which handles the reference format
                 var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
+
+                // Update username properties for display
+                if (reviews != null)
+                {
+                    foreach (var review in reviews)
+                    {
+                        // We know the buyer username from the input parameter
+                        review.BuyerUsername = buyer.Username;
+
+                        // For seller username, we'll need to display the ID as a fallback
+                        // In a real implementation, you would fetch the seller's username from a user service
+                        review.SellerUsername = $"User #{review.SellerId}";
+
+                        // Try to find test users that match the seller ID
+                        if (App.CurrentUser.Id == review.SellerId)
+                            review.SellerUsername = App.CurrentUser.Username;
+                        else if (App.TestingUser.Id == review.SellerId)
+                            review.SellerUsername = App.TestingUser.Username;
+                    }
+                }
 
                 // Convert to ObservableCollection
                 return reviews != null
