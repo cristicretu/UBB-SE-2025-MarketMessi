@@ -65,20 +65,37 @@ namespace MarketMinds.Services.AuctionProductsService
 
         public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
         {
-            ValidateBid(auction, bidder, bidAmount);
-
-            bidder.Balance -= bidAmount;
-
-            RefundPreviousBidder(auction);
-
-            var bid = new Bid(bidder, bidAmount, DateTime.Now);
-            auction.AddBid(bid);
-            auction.CurrentPrice = bidAmount;
-
-            ExtendAuctionTime(auction);
-
-            var response = httpClient.PutAsJsonAsync($"auctionproducts/{auction.Id}", auction).Result;
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                ValidateBid(auction, bidder, bidAmount);
+                var bidToSend = new
+                {
+                    ProductId = auction.Id,
+                    BidderId = bidder.Id,
+                    Amount = bidAmount,
+                    Timestamp = DateTime.Now
+                };
+                var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"API Error when placing bid: {response.StatusCode} - {errorContent}");
+                    response.EnsureSuccessStatusCode();
+                    return;
+                }
+                bidder.Balance -= bidAmount;
+                RefundPreviousBidder(auction);
+                var bid = new Bid(bidder, bidAmount, DateTime.Now);
+                auction.AddBid(bid);
+                auction.CurrentPrice = bidAmount;
+                ExtendAuctionTime(auction);
+                Console.WriteLine($"Bid of ${bidAmount} successfully placed on auction {auction.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error placing bid: {ex.Message}");
+                throw;
+            }
         }
 
         public void ConcludeAuction(AuctionProduct auction)

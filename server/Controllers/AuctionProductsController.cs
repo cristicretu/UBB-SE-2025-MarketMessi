@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer; 
-using server.Models; 
+using server.Models;
 using MarketMinds.Repositories.AuctionProductsRepository; 
 using server.Models.DTOs;
 using server.Models.DTOs.Mappers;
@@ -216,5 +216,58 @@ namespace MarketMinds.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
         }
+
+        [HttpPost("{id}/bids")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult PlaceBid(int id, [FromBody] BidDTO bidDTO)
+        {
+            if (bidDTO == null || id != bidDTO.ProductId)
+            {
+                return BadRequest("Invalid bid data or ID mismatch.");
+            }
+
+            try 
+            {
+                var product = _auctionProductsRepository.GetProductByID(id);
+                
+                // Create the bid
+                var bid = new Bid
+                {
+                    BidderId = bidDTO.BidderId,
+                    ProductId = id,
+                    Price = bidDTO.Amount,
+                    Timestamp = bidDTO.Timestamp
+                };
+                
+                // Add bid to product and update current price
+                product.Bids.Add(bid);
+                product.CurrentPrice = bidDTO.Amount;
+                
+                _auctionProductsRepository.UpdateProduct(product);
+                
+                return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
+            }
+            catch (KeyNotFoundException knfex)
+            {
+                return NotFound(knfex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error placing bid on auction product ID {id}: {ex}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while placing the bid.");
+            }
+        }
+    }
+
+    // DTO for incoming bid data
+    public class BidDTO
+    {
+        public int ProductId { get; set; }
+        public int BidderId { get; set; }
+        public float Amount { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 } 
