@@ -14,11 +14,11 @@ namespace MarketMinds.Test.Services.ProductViewNavigationService
     public class ProductViewNavigationServiceTest
     {
         // Constants to replace magic values
-        private const int SellerId = 1;
-        private const string SellerUsername = "TestSeller";
-        private const string SellerEmail = "test@example.com";
-        private const string ArgumentNameProduct = "product";
-        private const string ArgumentNameSeller = "seller";
+        private const int SELLER_ID = 1;
+        private const string SELLER_USERNAME = "TestSeller";
+        private const string SELLER_EMAIL = "test@example.com";
+        private const string ARGUMENT_NAME_PRODUCT = "product";
+        private const string ARGUMENT_NAME_SELLER = "seller";
 
         private MarketMinds.Services.ProductViewNavigationService _navigationService;
         private User _seller;
@@ -28,7 +28,7 @@ namespace MarketMinds.Test.Services.ProductViewNavigationService
         public void Setup()
         {
             _navigationService = new MarketMinds.Services.ProductViewNavigationService();
-            _seller = new User(SellerId, SellerUsername, SellerEmail);
+            _seller = new User(SELLER_ID, SELLER_USERNAME, SELLER_EMAIL);
 
             // Initialize a test product if needed for non-null tests
             _testProduct = CreateTestProduct();
@@ -55,7 +55,7 @@ namespace MarketMinds.Test.Services.ProductViewNavigationService
                 _navigationService.CreateProductDetailView(null));
 
             // Assert
-            Assert.That(exception.ParamName, Is.EqualTo(ArgumentNameProduct));
+            Assert.That(exception.ParamName, Is.EqualTo(ARGUMENT_NAME_PRODUCT));
         }
 
         #endregion
@@ -81,7 +81,7 @@ namespace MarketMinds.Test.Services.ProductViewNavigationService
                 _navigationService.CreateSellerReviewsView(null));
 
             // Assert
-            Assert.That(exception.ParamName, Is.EqualTo(ArgumentNameSeller));
+            Assert.That(exception.ParamName, Is.EqualTo(ARGUMENT_NAME_SELLER));
         }
 
         #endregion

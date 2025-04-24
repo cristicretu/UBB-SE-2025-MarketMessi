@@ -8,13 +8,13 @@ namespace MarketMinds.Test.Services
     public class SortTypeConverterServiceTest
     {
         // Constants for sort tags
-        private const string PriceAscTag = "PriceAsc";
-        private const string PriceDescTag = "PriceDesc";
-        private const string InvalidSortTag = "InvalidSortTag";
-        private const string EmptyTag = "";
+        private const string PRICE_ASCENDING_TAG = "PriceAsc";
+        private const string PRICE_DESCENDING_TAG = "PriceDesc";
+        private const string INVALID_SORTING_TAG = "InvalidSortTag";
+        private const string EMPTY_TAG = "";
 
         // Constants for field titles
-        private const string PriceFieldTitle = "Price";
+        private const string PRICE_FIELD_TITLE = "Price";
 
         private SortTypeConverterService _converter;
 
@@ -28,7 +28,7 @@ namespace MarketMinds.Test.Services
         public void Convert_PriceAsc_ReturnsNonNullResult()
         {
             // Arrange
-            string sortTag = PriceAscTag;
+            string sortTag = PRICE_ASCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
@@ -41,33 +41,33 @@ namespace MarketMinds.Test.Services
         public void Convert_PriceAsc_ReturnsCorrectExternalTitle()
         {
             // Arrange
-            string sortTag = PriceAscTag;
+            string sortTag = PRICE_ASCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
 
             // Assert
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(PriceFieldTitle));
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(PRICE_FIELD_TITLE));
         }
 
         [Test]
         public void Convert_PriceAsc_ReturnsCorrectInternalTitle()
         {
             // Arrange
-            string sortTag = PriceAscTag;
+            string sortTag = PRICE_ASCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
 
             // Assert
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(PriceFieldTitle));
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(PRICE_FIELD_TITLE));
         }
 
         [Test]
         public void Convert_PriceAsc_ReturnsAscendingOrder()
         {
             // Arrange
-            string sortTag = PriceAscTag;
+            string sortTag = PRICE_ASCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
@@ -80,7 +80,7 @@ namespace MarketMinds.Test.Services
         public void Convert_PriceDesc_ReturnsNonNullResult()
         {
             // Arrange
-            string sortTag = PriceDescTag;
+            string sortTag = PRICE_DESCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
@@ -93,33 +93,33 @@ namespace MarketMinds.Test.Services
         public void Convert_PriceDesc_ReturnsCorrectExternalTitle()
         {
             // Arrange
-            string sortTag = PriceDescTag;
+            string sortTag = PRICE_DESCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
 
             // Assert
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(PriceFieldTitle));
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(PRICE_FIELD_TITLE));
         }
 
         [Test]
         public void Convert_PriceDesc_ReturnsCorrectInternalTitle()
         {
             // Arrange
-            string sortTag = PriceDescTag;
+            string sortTag = PRICE_DESCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
 
             // Assert
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(PriceFieldTitle));
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(PRICE_FIELD_TITLE));
         }
 
         [Test]
         public void Convert_PriceDesc_ReturnsDescendingOrder()
         {
             // Arrange
-            string sortTag = PriceDescTag;
+            string sortTag = PRICE_DESCENDING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
@@ -132,7 +132,7 @@ namespace MarketMinds.Test.Services
         public void Convert_InvalidSortTag_ReturnsNull()
         {
             // Arrange
-            string sortTag = InvalidSortTag;
+            string sortTag = INVALID_SORTING_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);
@@ -145,7 +145,7 @@ namespace MarketMinds.Test.Services
         public void Convert_EmptyString_ReturnsNull()
         {
             // Arrange
-            string sortTag = EmptyTag;
+            string sortTag = EMPTY_TAG;
 
             // Act
             var result = _converter.Convert(sortTag);

@@ -11,22 +11,22 @@ namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
         private AuctionSortTypeConverterService _converter;
 
         // Sort tag constants
-        private const string SellerRatingAscTag = "SellerRatingAsc";
-        private const string SellerRatingDescTag = "SellerRatingDesc";
-        private const string StartingPriceAscTag = "StartingPriceAsc";
-        private const string StartingPriceDescTag = "StartingPriceDesc";
-        private const string CurrentPriceAscTag = "CurrentPriceAsc";
-        private const string CurrentPriceDescTag = "CurrentPriceDesc";
-        private const string InvalidTag = "InvalidSortTag";
-        private const string EmptyTag = "";
+        private const string SELLER_RATING_ASC_TAG = "SellerRatingAsc";
+        private const string SELLER_RATING_DESC_TAG = "SellerRatingDesc";
+        private const string STARTING_PRICE_ASC_TAG = "StartingPriceAsc";
+        private const string STARTING_PRICE_DESC_TAG = "StartingPriceDesc";
+        private const string CURRENT_PRICE_ASC_TAG = "CurrentPriceAsc";
+        private const string CURRENT_PRICE_DESC_TAG = "CurrentPriceDesc";
+        private const string INVALID_TAG = "InvalidSortTag";
+        private const string EMPTY_TAG = "";
 
         // Display title constants
-        private const string SellerRatingTitle = "Seller Rating";
-        private const string SellerRatingField = "SellerRating";
-        private const string StartingPriceTitle = "Starting Price";
-        private const string StartingPriceField = "StartingPrice";
-        private const string CurrentPriceTitle = "Current Price";
-        private const string CurrentPriceField = "CurrentPrice";
+        private const string SELLER_RATING_TITLE = "Seller Rating";
+        private const string SELLER_RATING_FIELD = "SellerRating";
+        private const string STARTING_PRICE_TITLE = "Starting Price";
+        private const string STARTING_PRICE_FIELD = "StartingPrice";
+        private const string CURRENT_PRICE_TITLE = "Current Price";
+        private const string CURRENT_PRICE_FIELD = "CurrentPrice";
 
         [SetUp]
         public void Setup()
@@ -39,56 +39,56 @@ namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
         [Test]
         public void Convert_SellerRatingAsc_ReturnsNonNullResult()
         {
-            var result = _converter.Convert(SellerRatingAscTag);
+            var result = _converter.Convert(SELLER_RATING_ASC_TAG);
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
         public void Convert_SellerRatingAsc_ReturnsCorrectExternalTitle()
         {
-            var result = _converter.Convert(SellerRatingAscTag);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SellerRatingTitle));
+            var result = _converter.Convert(SELLER_RATING_ASC_TAG);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SELLER_RATING_TITLE));
         }
 
         [Test]
         public void Convert_SellerRatingAsc_ReturnsCorrectInternalField()
         {
-            var result = _converter.Convert(SellerRatingAscTag);
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SellerRatingField));
+            var result = _converter.Convert(SELLER_RATING_ASC_TAG);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SELLER_RATING_FIELD));
         }
 
         [Test]
         public void Convert_SellerRatingAsc_ReturnsAscendingOrder()
         {
-            var result = _converter.Convert(SellerRatingAscTag);
+            var result = _converter.Convert(SELLER_RATING_ASC_TAG);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
         public void Convert_SellerRatingDesc_ReturnsNonNullResult()
         {
-            var result = _converter.Convert(SellerRatingDescTag);
+            var result = _converter.Convert(SELLER_RATING_DESC_TAG);
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
         public void Convert_SellerRatingDesc_ReturnsCorrectExternalTitle()
         {
-            var result = _converter.Convert(SellerRatingDescTag);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SellerRatingTitle));
+            var result = _converter.Convert(SELLER_RATING_DESC_TAG);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(SELLER_RATING_TITLE));
         }
 
         [Test]
         public void Convert_SellerRatingDesc_ReturnsCorrectInternalField()
         {
-            var result = _converter.Convert(SellerRatingDescTag);
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SellerRatingField));
+            var result = _converter.Convert(SELLER_RATING_DESC_TAG);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(SELLER_RATING_FIELD));
         }
 
         [Test]
         public void Convert_SellerRatingDesc_ReturnsDescendingOrder()
         {
-            var result = _converter.Convert(SellerRatingDescTag);
+            var result = _converter.Convert(SELLER_RATING_DESC_TAG);
             Assert.That(result.IsAscending, Is.False);
         }
 
@@ -99,56 +99,56 @@ namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
         [Test]
         public void Convert_StartingPriceAsc_ReturnsNonNullResult()
         {
-            var result = _converter.Convert(StartingPriceAscTag);
+            var result = _converter.Convert(STARTING_PRICE_ASC_TAG);
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
         public void Convert_StartingPriceAsc_ReturnsCorrectExternalTitle()
         {
-            var result = _converter.Convert(StartingPriceAscTag);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(StartingPriceTitle));
+            var result = _converter.Convert(STARTING_PRICE_ASC_TAG);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(STARTING_PRICE_TITLE));
         }
 
         [Test]
         public void Convert_StartingPriceAsc_ReturnsCorrectInternalField()
         {
-            var result = _converter.Convert(StartingPriceAscTag);
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(StartingPriceField));
+            var result = _converter.Convert(STARTING_PRICE_ASC_TAG);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(STARTING_PRICE_FIELD));
         }
 
         [Test]
         public void Convert_StartingPriceAsc_ReturnsAscendingOrder()
         {
-            var result = _converter.Convert(StartingPriceAscTag);
+            var result = _converter.Convert(STARTING_PRICE_ASC_TAG);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
         public void Convert_StartingPriceDesc_ReturnsNonNullResult()
         {
-            var result = _converter.Convert(StartingPriceDescTag);
+            var result = _converter.Convert(STARTING_PRICE_DESC_TAG);
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
         public void Convert_StartingPriceDesc_ReturnsCorrectExternalTitle()
         {
-            var result = _converter.Convert(StartingPriceDescTag);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(StartingPriceTitle));
+            var result = _converter.Convert(STARTING_PRICE_DESC_TAG);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(STARTING_PRICE_TITLE));
         }
 
         [Test]
         public void Convert_StartingPriceDesc_ReturnsCorrectInternalField()
         {
-            var result = _converter.Convert(StartingPriceDescTag);
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(StartingPriceField));
+            var result = _converter.Convert(STARTING_PRICE_DESC_TAG);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(STARTING_PRICE_FIELD));
         }
 
         [Test]
         public void Convert_StartingPriceDesc_ReturnsDescendingOrder()
         {
-            var result = _converter.Convert(StartingPriceDescTag);
+            var result = _converter.Convert(STARTING_PRICE_DESC_TAG);
             Assert.That(result.IsAscending, Is.False);
         }
 
@@ -159,56 +159,56 @@ namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
         [Test]
         public void Convert_CurrentPriceAsc_ReturnsNonNullResult()
         {
-            var result = _converter.Convert(CurrentPriceAscTag);
+            var result = _converter.Convert(CURRENT_PRICE_ASC_TAG);
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
         public void Convert_CurrentPriceAsc_ReturnsCorrectExternalTitle()
         {
-            var result = _converter.Convert(CurrentPriceAscTag);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(CurrentPriceTitle));
+            var result = _converter.Convert(CURRENT_PRICE_ASC_TAG);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(CURRENT_PRICE_TITLE));
         }
 
         [Test]
         public void Convert_CurrentPriceAsc_ReturnsCorrectInternalField()
         {
-            var result = _converter.Convert(CurrentPriceAscTag);
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(CurrentPriceField));
+            var result = _converter.Convert(CURRENT_PRICE_ASC_TAG);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(CURRENT_PRICE_FIELD));
         }
 
         [Test]
         public void Convert_CurrentPriceAsc_ReturnsAscendingOrder()
         {
-            var result = _converter.Convert(CurrentPriceAscTag);
+            var result = _converter.Convert(CURRENT_PRICE_ASC_TAG);
             Assert.That(result.IsAscending, Is.True);
         }
 
         [Test]
         public void Convert_CurrentPriceDesc_ReturnsNonNullResult()
         {
-            var result = _converter.Convert(CurrentPriceDescTag);
+            var result = _converter.Convert(CURRENT_PRICE_DESC_TAG);
             Assert.That(result, Is.Not.Null);
         }
 
         [Test]
         public void Convert_CurrentPriceDesc_ReturnsCorrectExternalTitle()
         {
-            var result = _converter.Convert(CurrentPriceDescTag);
-            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(CurrentPriceTitle));
+            var result = _converter.Convert(CURRENT_PRICE_DESC_TAG);
+            Assert.That(result.ExternalAttributeFieldTitle, Is.EqualTo(CURRENT_PRICE_TITLE));
         }
 
         [Test]
         public void Convert_CurrentPriceDesc_ReturnsCorrectInternalField()
         {
-            var result = _converter.Convert(CurrentPriceDescTag);
-            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(CurrentPriceField));
+            var result = _converter.Convert(CURRENT_PRICE_DESC_TAG);
+            Assert.That(result.InternalAttributeFieldTitle, Is.EqualTo(CURRENT_PRICE_FIELD));
         }
 
         [Test]
         public void Convert_CurrentPriceDesc_ReturnsDescendingOrder()
         {
-            var result = _converter.Convert(CurrentPriceDescTag);
+            var result = _converter.Convert(CURRENT_PRICE_DESC_TAG);
             Assert.That(result.IsAscending, Is.False);
         }
 
@@ -219,14 +219,14 @@ namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
         [Test]
         public void Convert_InvalidSortTag_ReturnsNull()
         {
-            var result = _converter.Convert(InvalidTag);
+            var result = _converter.Convert(INVALID_TAG);
             Assert.That(result, Is.Null);
         }
 
         [Test]
         public void Convert_EmptyString_ReturnsNull()
         {
-            var result = _converter.Convert(EmptyTag);
+            var result = _converter.Convert(EMPTY_TAG);
             Assert.That(result, Is.Null);
         }
 

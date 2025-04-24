@@ -14,12 +14,12 @@ namespace MarketMinds.Test.Services
     public class ListingCreationServiceTest
     {
         // Constants for listing types
-        private const string BuyListingType = "buy";
-        private const string BorrowListingType = "borrow";
-        private const string AuctionListingType = "auction";
-        private const string InvalidListingType = "invalid_type";
-        private const string UppercaseBuyListingType = "BUY";
-        private const string InvalidListingTypeErrorMessage = "Invalid listing type";
+        private const string BUY_LISTING_TYPE = "buy";
+        private const string BORROW_LISTING_TYPE = "borrow";
+        private const string AUCTION_LISTING_TYPE = "auction";
+        private const string INVALID_LISTING_TYPE = "invalid_type";
+        private const string UPPERCASE_BUY_LISTING_TYPE = "BUY";
+        private const string INVALID_LISTING_TYPE_ERROR = "Invalid listing type";
 
         private Mock<IBuyProductsService> _mockBuyService;
         private Mock<IBorrowProductsService> _mockBorrowService;
@@ -44,7 +44,7 @@ namespace MarketMinds.Test.Services
         public void CreateMarketListing_BuyType_CallsBuyProductsService()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, BuyListingType);
+            _service.CreateMarketListing(_testProduct, BUY_LISTING_TYPE);
 
             // Assert
             _mockBuyService.Verify(s => s.CreateListing(_testProduct), Times.Once);
@@ -54,7 +54,7 @@ namespace MarketMinds.Test.Services
         public void CreateMarketListing_BuyType_DoesNotCallOtherServices()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, BuyListingType);
+            _service.CreateMarketListing(_testProduct, BUY_LISTING_TYPE);
 
             // Assert
             _mockBorrowService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
@@ -65,7 +65,7 @@ namespace MarketMinds.Test.Services
         public void CreateMarketListing_BorrowType_CallsBorrowProductsService()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, BorrowListingType);
+            _service.CreateMarketListing(_testProduct, BORROW_LISTING_TYPE);
 
             // Assert
             _mockBorrowService.Verify(s => s.CreateListing(_testProduct), Times.Once);
@@ -75,7 +75,7 @@ namespace MarketMinds.Test.Services
         public void CreateMarketListing_BorrowType_DoesNotCallOtherServices()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, BorrowListingType);
+            _service.CreateMarketListing(_testProduct, BORROW_LISTING_TYPE);
 
             // Assert
             _mockBuyService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
@@ -86,7 +86,7 @@ namespace MarketMinds.Test.Services
         public void CreateMarketListing_AuctionType_CallsAuctionProductsService()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, AuctionListingType);
+            _service.CreateMarketListing(_testProduct, AUCTION_LISTING_TYPE);
 
             // Assert
             _mockAuctionService.Verify(s => s.CreateListing(_testProduct), Times.Once);
@@ -96,7 +96,7 @@ namespace MarketMinds.Test.Services
         public void CreateMarketListing_AuctionType_DoesNotCallOtherServices()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, AuctionListingType);
+            _service.CreateMarketListing(_testProduct, AUCTION_LISTING_TYPE);
 
             // Assert
             _mockBuyService.Verify(s => s.CreateListing(It.IsAny<Product>()), Times.Never);
@@ -108,7 +108,7 @@ namespace MarketMinds.Test.Services
         {
             // Act & Assert
             ArgumentException thrownException = Assert.Throws<ArgumentException>(() =>
-                _service.CreateMarketListing(_testProduct, InvalidListingType));
+                _service.CreateMarketListing(_testProduct, INVALID_LISTING_TYPE));
 
             Assert.That(thrownException, Is.Not.Null);
         }
@@ -118,16 +118,16 @@ namespace MarketMinds.Test.Services
         {
             // Act & Assert
             ArgumentException thrownException = Assert.Throws<ArgumentException>(() =>
-                _service.CreateMarketListing(_testProduct, InvalidListingType));
+                _service.CreateMarketListing(_testProduct, INVALID_LISTING_TYPE));
 
-            Assert.That(thrownException.Message, Does.Contain(InvalidListingTypeErrorMessage));
+            Assert.That(thrownException.Message, Does.Contain(INVALID_LISTING_TYPE_ERROR));
         }
 
         [Test]
         public void CreateMarketListing_CaseInsensitive_CallsCorrectService()
         {
             // Act
-            _service.CreateMarketListing(_testProduct, UppercaseBuyListingType);
+            _service.CreateMarketListing(_testProduct, UPPERCASE_BUY_LISTING_TYPE);
 
             // Assert
             _mockBuyService.Verify(s => s.CreateListing(_testProduct), Times.Once);

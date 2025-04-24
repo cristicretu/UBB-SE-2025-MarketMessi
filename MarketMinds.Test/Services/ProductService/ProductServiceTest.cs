@@ -10,92 +10,92 @@ namespace MarketMinds.Test.Services.ProductTagService
     internal class ProductServiceTests
     {
         // Constants to replace magic strings and numbers
-        private const int ProductId1 = 1;
-        private const int ProductId2 = 2;
-        private const int ProductId3 = 3;
-        private const int ProductId4 = 4;
-        private const int CategoryId1 = 1;
-        private const int CategoryId2 = 2;
-        private const int ConditionId1 = 1;
-        private const int ConditionId2 = 2;
-        private const int TagId1 = 1;
-        private const int TagId2 = 2;
+        private const int PRODUCT_ID1 = 1;
+        private const int PRODUCT_ID2 = 2;
+        private const int PRODUCT_ID3 = 3;
+        private const int PRODUCT_ID4 = 4;
+        private const int CATEGORY_ID1 = 1;
+        private const int CATEGORY_ID2 = 2;
+        private const int CONDITION_ID1 = 1;
+        private const int CONDITION_ID2 = 2;
+        private const int TAG_ID1 = 1;
+        private const int TAG_ID2 = 2;
 
         // Product titles
-        private const string ProductTitleLaptop = "Laptop";
-        private const string ProductTitleSmartphone = "Smartphone";
-        private const string ProductTitleTablet = "Tablet";
-        private const string ProductTitleHeadphones = "Headphones";
-        private const string ProductTitleKeyboard = "Keyboard";
-        private const string ProductTitleProduct1 = "Product1";
-        private const string ProductTitleProduct2 = "Product2";
-        private const string ProductTitleProduct3 = "Product3";
-        private const string ProductTitleProductA = "Product A";
-        private const string ProductTitleProductB = "Product B";
-        private const string ProductTitleProductC = "Product C";
-        private const string ProductTitleGamingComputer = "Gaming Computer";
-        private const string ProductTitleWirelessMouse = "Wireless Mouse";
-        private const string ProductTitleWiredKeyboard = "Wired Keyboard";
-        private const string ProductTitleUsedLaptop = "Used Laptop";
-        private const string ProductTitleOfficeKeyboard = "Office Keyboard";
-        private const string ProductTitleOfficeChair = "Office Chair";
-        private const string ProductTitleGamingMouse = "Gaming Mouse";
-        private const string ProductTitleGamingLaptop = "Gaming Laptop";
-        private const string ProductTitleBusinessDesktop = "Business Desktop";
-        private const string ProductTitleGraphicTablet = "Graphic Tablet";
-        private const string ProductTitleInitialName = "Initial Name";
-        private const string ProductTitleUpdatedName = "Updated Name";
-        private const string ProductTitleLaptopComputer = "LAPTOP Computer";
-        private const string ProductTitleDesktopComputer = "Desktop computer";
-        private const string ProductTitleProduct1WithCategory2 = "Product 1";
-        private const string ProductTitleProduct2WithCategory1 = "Product 2";
-        private const string ProductTitleProduct3WithCategory1 = "Product 3";
+        private const string PRODUCT_TITLE_LAPTOP = "Laptop";
+        private const string PRODUCT_TITLE_SMARTPHONE = "Smartphone";
+        private const string PRODUCT_TITLE_TABLET = "Tablet";
+        private const string PRODUCT_TITLE_HEADPHONES = "Headphones";
+        private const string PRODUCT_TITLE_KEYBOARD = "Keyboard";
+        private const string PRODUCT_TITLE_PRODUCT1 = "Product1";
+        private const string PRODUCT_TITLE_PRODUCT2 = "Product2";
+        private const string PRODUCT_TITLE_PRODUCT3 = "Product3";
+        private const string PRODUCT_TITLE_PRODUCT_A = "Product A";
+        private const string PRODUCT_TITLE_PRODUCT_B = "Product B";
+        private const string PRODUCT_TITLE_PRODUCT_C = "Product C";
+        private const string PRODUCT_TITLE_GAMING_COMPUTER = "Gaming Computer";
+        private const string PRODUCT_TITLE_WIRELESS_MOUSE = "Wireless Mouse";
+        private const string PRODUCT_TITLE_WIRED_KEYBOARD = "Wired Keyboard";
+        private const string PRODUCT_TITLE_USED_LAPTOP = "Used Laptop";
+        private const string PRODUCT_TITLE_OFFICE_KEYBOARD = "Office Keyboard";
+        private const string PRODUCT_TITLE_OFFICE_CHAIR = "Office Chair";
+        private const string PRODUCT_TITLE_GAMING_MOUSE = "Gaming Mouse";
+        private const string PRODUCT_TITLE_GAMING_LAPTOP = "Gaming Laptop";
+        private const string PRODUCT_TITLE_BUSINESS_DESKTOP = "Business Desktop";
+        private const string PRODUCT_TITLE_GRAPHIC_TABLET = "Graphic Tablet";
+        private const string PRODUCT_TITLE_INITIAL_NAME = "Initial Name";
+        private const string PRODUCT_TITLE_UPDATED_NAME = "Updated Name";
+        private const string PRODUCT_TITLE_LAPTOP_COMPUTER = "LAPTOP Computer";
+        private const string PRODUCT_TITLE_DESKTOP_COMPUTER = "Desktop computer";
+        private const string PRODUCT_TITLE_PRODUCT_1_WITH_CATEGORY_2 = "Product 1";
+        private const string PRODUCT_TITLE_PRODUCT_2_WITH_CATEGORY_1 = "Product 2";
+        private const string PRODUCT_TITLE_PRODUCT_3_WITH_CATEGORY_1 = "Product 3";
 
         // Category titles
-        private const string CategoryElectronicsTitle = "Electronics";
-        private const string CategoryElectronicsDesc = "Electronic devices";
-        private const string CategoryClothingTitle = "Clothing";
-        private const string CategoryClothingDesc = "Apparel";
-        private const string CategoryDefaultTitle = "Default Category";
-        private const string CategoryDefaultDesc = "Default category description";
-        private const string CategoryACategoryTitle = "A Category";
-        private const string CategoryACategoryDesc = "First category";
-        private const string CategoryBCategoryTitle = "B Category";
-        private const string CategoryBCategoryDesc = "Second category";
+        private const string CATEGORY_ELECTRONICS_TITLE = "Electronics";
+        private const string CATEGORY_ELECTRONICS_DESCRIPTION = "Electronic devices";
+        private const string CATEGORY_CLOTHING_TITLE = "Clothing";
+        private const string CATEGORY_CLOTHING_DESCRIPTION = "Apparel";
+        private const string CATEGORY_DEFAULT_TITLE = "Default Category";
+        private const string CATEGORY_DEFAULT_DESCRIPTION = "Default category description";
+        private const string CATEGORY_A_CATEGORY_TITLE = "A Category";
+        private const string CATEGORY_A_DESCRIPTION = "First category";
+        private const string CATEGORY_B_TITLE = "B Category";
+        private const string CATEGORY_B_DESCRIPTION = "Second category";
 
         // Condition titles
-        private const string ConditionNewTitle = "New";
-        private const string ConditionNewDesc = "Brand new";
-        private const string ConditionUsedTitle = "Used";
-        private const string ConditionUsedDesc = "Used item";
-        private const string ConditionDefaultTitle = "New";
-        private const string ConditionDefaultDesc = "Unused product in original packaging";
+        private const string CONDITION_NEW_TITLE = "New";
+        private const string CONDITION_NEW_DESCRIPTION = "Brand new";
+        private const string CONDITION_USER_TITLE = "Used";
+        private const string CONDITION_USED_ITEM = "Used item";
+        private const string CONDITION_DEFAULT_TITLE = "New";
+        private const string CONDITION_DEFAULT_DESCRIPTION = "Unused product in original packaging";
 
         // Tag titles
-        private const string TagWirelessTitle = "Wireless";
-        private const string TagBluetoothTitle = "Bluetooth";
-        private const string TagOfficeTitle = "Office";
-        private const string TagGamingTitle = "Gaming";
+        private const string TAG_WIRELESS_TITLE = "Wireless";
+        private const string TAG_BLUETOOTH_TITLE = "Bluetooth";
+        private const string TAG_OFFICE_TITLE = "Office";
+        private const string TAG_GAMING_TITLE = "Gaming";
 
         // Search queries
-        private const string SearchQueryComputer = "computer";
-        private const string SearchQueryWireless = "wireless";
-        private const string SearchQueryTop = "top";
+        private const string SEARCH_QUERY_COMPUTER = "computer";
+        private const string SEARCH_QUERY_WIRELESS = "wireless";
+        private const string SEARCH_QUERY_TOP = "top";
 
         // Sort field names
-        private const string SortFieldIdExternalName = "Id";
-        private const string SortFieldIdInternalName = "Id";
-        private const string SortFieldTitleExternalName = "Title";
-        private const string SortFieldTitleInternalName = "Title";
-        private const string SortFieldCategoryExternalName = "CategoryName";
-        private const string SortFieldCategoryInternalName = "Category.DisplayTitle";
+        private const string SORT_FIELD_ID_EXTERNAL_NAME = "Id";
+        private const string SORT_FIELD_ID_INTERNAL_NAME = "Id";
+        private const string SORT_FIELD_TITLE_EXTERNAL_NAME = "Title";
+        private const string SORT_FIELD_TITLE_INTERNAL_NAME = "Title";
+        private const string SORT_FIELD_CATEGORY_EXTERNAL_NAME = "CategoryName";
+        private const string SORT_FIELD_CATEGORY_SERVICE = "Category.DisplayTitle";
 
         // Common test values
-        private const string DefaultProductDescription = "Test product description";
-        private const int ExpectedItemCount0 = 0;
-        private const int ExpectedItemCount1 = 1;
-        private const int ExpectedItemCount2 = 2;
-        private const int ExpectedItemCount3 = 3;
+        private const string DEFAULT_PRODUCT_DESCRIPTION = "Test product description";
+        private const int EXPECTED_ITEM_COUNT0 = 0;
+        private const int EXPECTED_ITEM_COUNT1 = 1;
+        private const int EXPECTED_ITEM_COUNT2 = 2;
+        private const int EXPECTED_ITEM_COUNT3 = 3;
 
         private class TestProduct : Product
         {
@@ -119,9 +119,9 @@ namespace MarketMinds.Test.Services.ProductTagService
             {
                 Id = id,
                 Title = title,
-                Description = DefaultProductDescription,
-                Category = category ?? new ProductCategory(CategoryId1, CategoryDefaultTitle, CategoryDefaultDesc),
-                Condition = condition ?? new ProductCondition(ConditionId1, ConditionDefaultTitle, ConditionDefaultDesc),
+                Description = DEFAULT_PRODUCT_DESCRIPTION,
+                Category = category ?? new ProductCategory(CATEGORY_ID1, CATEGORY_DEFAULT_TITLE, CATEGORY_DEFAULT_DESCRIPTION),
+                Condition = condition ?? new ProductCondition(CONDITION_ID1, CONDITION_DEFAULT_TITLE, CONDITION_DEFAULT_DESCRIPTION),
                 Tags = new List<ProductTag>(),
                 Images = new List<Image>()
             };
@@ -143,7 +143,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var result = productService.GetProducts();
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var result = productService.GetProducts();
 
             // Assert
-            Assert.That(result.Any(p => p.Id == ProductId1 && p.Title == ProductTitleLaptop), Is.True);
+            Assert.That(result.Any(p => p.Id == PRODUCT_ID1 && p.Title == PRODUCT_TITLE_LAPTOP), Is.True);
         }
 
         [Test]
@@ -173,7 +173,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var result = productService.GetProducts();
 
             // Assert
-            Assert.That(result.Any(p => p.Id == ProductId2 && p.Title == ProductTitleSmartphone), Is.True);
+            Assert.That(result.Any(p => p.Id == PRODUCT_ID2 && p.Title == PRODUCT_TITLE_SMARTPHONE), Is.True);
         }
 
         [Test]
@@ -188,14 +188,14 @@ namespace MarketMinds.Test.Services.ProductTagService
             var result = productService.GetProducts();
 
             // Assert
-            Assert.That(result.Any(p => p.Id == ProductId3 && p.Title == ProductTitleTablet), Is.True);
+            Assert.That(result.Any(p => p.Id == PRODUCT_ID3 && p.Title == PRODUCT_TITLE_TABLET), Is.True);
         }
 
         private void AddThreeSampleProducts(ProductRepositoryMock mockRepository)
         {
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleLaptop);
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleSmartphone);
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleTablet);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_LAPTOP);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_SMARTPHONE);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_TABLET);
 
             mockRepository.AddProduct(product1);
             mockRepository.AddProduct(product2);
@@ -215,7 +215,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             AddTwoSampleProducts(mockRepository);
 
             // Act
-            var result = productService.GetProductById(ProductId2);
+            var result = productService.GetProductById(PRODUCT_ID2);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -230,10 +230,10 @@ namespace MarketMinds.Test.Services.ProductTagService
             AddTwoSampleProducts(mockRepository);
 
             // Act
-            var result = productService.GetProductById(ProductId2);
+            var result = productService.GetProductById(PRODUCT_ID2);
 
             // Assert
-            Assert.That(result.Id, Is.EqualTo(ProductId2));
+            Assert.That(result.Id, Is.EqualTo(PRODUCT_ID2));
         }
 
         [Test]
@@ -245,16 +245,16 @@ namespace MarketMinds.Test.Services.ProductTagService
             AddTwoSampleProducts(mockRepository);
 
             // Act
-            var result = productService.GetProductById(ProductId2);
+            var result = productService.GetProductById(PRODUCT_ID2);
 
             // Assert
-            Assert.That(result.Title, Is.EqualTo(ProductTitleSmartphone));
+            Assert.That(result.Title, Is.EqualTo(PRODUCT_TITLE_SMARTPHONE));
         }
 
         private void AddTwoSampleProducts(ProductRepositoryMock mockRepository)
         {
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleLaptop);
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleSmartphone);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_LAPTOP);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_SMARTPHONE);
 
             mockRepository.AddProduct(product1);
             mockRepository.AddProduct(product2);
@@ -270,13 +270,13 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var mockRepository = CreateMockRepository();
             var productService = CreateProductService(mockRepository);
-            var product = CreateSampleProduct(ProductId1, ProductTitleHeadphones);
+            var product = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_HEADPHONES);
 
             // Act
             productService.AddProduct(product);
 
             // Assert
-            Assert.That(mockRepository.Products.Count, Is.EqualTo(ExpectedItemCount1));
+            Assert.That(mockRepository.Products.Count, Is.EqualTo(EXPECTED_ITEM_COUNT1));
         }
 
         [Test]
@@ -285,13 +285,13 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var mockRepository = CreateMockRepository();
             var productService = CreateProductService(mockRepository);
-            var product = CreateSampleProduct(ProductId1, ProductTitleHeadphones);
+            var product = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_HEADPHONES);
 
             // Act
             productService.AddProduct(product);
 
             // Assert
-            Assert.That(mockRepository.Products[0].Id, Is.EqualTo(ProductId1));
+            Assert.That(mockRepository.Products[0].Id, Is.EqualTo(PRODUCT_ID1));
         }
 
         [Test]
@@ -300,13 +300,13 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var mockRepository = CreateMockRepository();
             var productService = CreateProductService(mockRepository);
-            var product = CreateSampleProduct(ProductId1, ProductTitleHeadphones);
+            var product = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_HEADPHONES);
 
             // Act
             productService.AddProduct(product);
 
             // Assert
-            Assert.That(mockRepository.Products[0].Title, Is.EqualTo(ProductTitleHeadphones));
+            Assert.That(mockRepository.Products[0].Title, Is.EqualTo(PRODUCT_TITLE_HEADPHONES));
         }
 
         #endregion
@@ -319,17 +319,17 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var mockRepository = CreateMockRepository();
             var productService = CreateProductService(mockRepository);
-            var product = CreateSampleProduct(ProductId1, ProductTitleKeyboard);
+            var product = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_KEYBOARD);
 
             mockRepository.AddProduct(product);
-            Assert.That(mockRepository.Products.Count, Is.EqualTo(ExpectedItemCount1),
+            Assert.That(mockRepository.Products.Count, Is.EqualTo(EXPECTED_ITEM_COUNT1),
                 "Precondition: Repository should have one product before deletion");
 
             // Act
             productService.DeleteProduct(product);
 
             // Assert
-            Assert.That(mockRepository.Products.Count, Is.EqualTo(ExpectedItemCount0));
+            Assert.That(mockRepository.Products.Count, Is.EqualTo(EXPECTED_ITEM_COUNT0));
         }
 
         #endregion
@@ -343,17 +343,17 @@ namespace MarketMinds.Test.Services.ProductTagService
             var mockRepository = CreateMockRepository();
             var productService = CreateProductService(mockRepository);
 
-            var productToUpdate = CreateSampleProduct(ProductId1, ProductTitleInitialName);
+            var productToUpdate = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_INITIAL_NAME);
             mockRepository.AddProduct(productToUpdate);
-            productToUpdate.Title = ProductTitleUpdatedName;
+            productToUpdate.Title = PRODUCT_TITLE_UPDATED_NAME;
 
             // Act
             productService.UpdateProduct(productToUpdate);
 
             // Assert
-            var updatedProduct = mockRepository.Products.FirstOrDefault(p => p.Id == ProductId1);
+            var updatedProduct = mockRepository.Products.FirstOrDefault(p => p.Id == PRODUCT_ID1);
             Assert.That(updatedProduct, Is.Not.Null);
-            Assert.That(updatedProduct.Title, Is.EqualTo(ProductTitleUpdatedName));
+            Assert.That(updatedProduct.Title, Is.EqualTo(PRODUCT_TITLE_UPDATED_NAME));
         }
 
         [Test]
@@ -363,15 +363,15 @@ namespace MarketMinds.Test.Services.ProductTagService
             var mockRepository = CreateMockRepository();
             var productService = CreateProductService(mockRepository);
 
-            var productToUpdate = CreateSampleProduct(ProductId1, ProductTitleInitialName);
+            var productToUpdate = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_INITIAL_NAME);
             mockRepository.AddProduct(productToUpdate);
-            productToUpdate.Title = ProductTitleUpdatedName;
+            productToUpdate.Title = PRODUCT_TITLE_UPDATED_NAME;
 
             // Act
             productService.UpdateProduct(productToUpdate);
 
             // Assert
-            Assert.That(mockRepository.Products.Count, Is.EqualTo(ExpectedItemCount1));
+            Assert.That(mockRepository.Products.Count, Is.EqualTo(EXPECTED_ITEM_COUNT1));
         }
 
         #endregion
@@ -389,7 +389,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                 products, null, null, null, null, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount0));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT0));
         }
 
         [Test]
@@ -409,8 +409,8 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetSortedFilteredProducts_WithMultipleConditions_ReturnsCorrectNumberOfProducts()
         {
             // Arrange
-            var condition1 = new ProductCondition(ConditionId1, ConditionNewTitle, ConditionNewDesc);
-            var condition2 = new ProductCondition(ConditionId2, ConditionUsedTitle, ConditionUsedDesc);
+            var condition1 = new ProductCondition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
+            var condition2 = new ProductCondition(CONDITION_ID2, CONDITION_USER_TITLE, CONDITION_USED_ITEM);
             var products = CreateProductsWithDifferentConditions(condition1, condition2);
             var selectedConditions = new List<ProductCondition> { condition1, condition2 };
 
@@ -419,15 +419,15 @@ namespace MarketMinds.Test.Services.ProductTagService
                 products, selectedConditions, null, null, null, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
         }
 
         private List<Product> CreateProductsWithDifferentConditions(
             ProductCondition condition1, ProductCondition condition2)
         {
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleProduct1, condition: condition1);
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleProduct2, condition: condition2);
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleProduct3, condition: condition1);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT1, condition: condition1);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT2, condition: condition2);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_PRODUCT3, condition: condition1);
 
             return new List<Product> { product1, product2, product3 };
         }
@@ -440,8 +440,8 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetSortedFilteredProducts_WithMultipleCategories_ReturnsCorrectNumberOfProducts()
         {
             // Arrange
-            var category1 = new ProductCategory(CategoryId1, CategoryElectronicsTitle, CategoryElectronicsDesc);
-            var category2 = new ProductCategory(CategoryId2, CategoryClothingTitle, CategoryClothingDesc);
+            var category1 = new ProductCategory(CATEGORY_ID1, CATEGORY_ELECTRONICS_TITLE, CATEGORY_ELECTRONICS_DESCRIPTION);
+            var category2 = new ProductCategory(CATEGORY_ID2, CATEGORY_CLOTHING_TITLE, CATEGORY_CLOTHING_DESCRIPTION);
             var products = CreateProductsWithDifferentCategories(category1, category2);
             var selectedCategories = new List<ProductCategory> { category1, category2 };
 
@@ -450,15 +450,15 @@ namespace MarketMinds.Test.Services.ProductTagService
                 products, null, selectedCategories, null, null, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
         }
 
         private List<Product> CreateProductsWithDifferentCategories(
             ProductCategory category1, ProductCategory category2)
         {
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleProduct1, category: category1);
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleProduct2, category: category2);
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleProduct3, category: category1);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT1, category: category1);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT2, category: category2);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_PRODUCT3, category: category1);
 
             return new List<Product> { product1, product2, product3 };
         }
@@ -471,8 +471,8 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetSortedFilteredProducts_WithMultipleTags_ReturnsCorrectNumberOfProducts()
         {
             // Arrange
-            var tag1 = new ProductTag(TagId1, TagWirelessTitle);
-            var tag2 = new ProductTag(TagId2, TagBluetoothTitle);
+            var tag1 = new ProductTag(TAG_ID1, TAG_WIRELESS_TITLE);
+            var tag2 = new ProductTag(TAG_ID2, TAG_BLUETOOTH_TITLE);
             var products = CreateProductsWithDifferentTags(tag1, tag2);
             var selectedTags = new List<ProductTag> { tag1, tag2 };
 
@@ -481,18 +481,18 @@ namespace MarketMinds.Test.Services.ProductTagService
                 products, null, null, selectedTags, null, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
         }
 
         private List<Product> CreateProductsWithDifferentTags(ProductTag tag1, ProductTag tag2)
         {
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleProduct1);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT1);
             product1.Tags.Add(tag1);
 
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleProduct2);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT2);
             product2.Tags.Add(tag2);
 
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleProduct3);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_PRODUCT3);
             product3.Tags.Add(tag1);
             product3.Tags.Add(tag2);
 
@@ -511,10 +511,10 @@ namespace MarketMinds.Test.Services.ProductTagService
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
-                products, null, null, null, null, SearchQueryComputer);
+                products, null, null, null, null, SEARCH_QUERY_COMPUTER);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount2));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT2));
         }
 
         [Test]
@@ -525,10 +525,10 @@ namespace MarketMinds.Test.Services.ProductTagService
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
-                products, null, null, null, null, SearchQueryComputer);
+                products, null, null, null, null, SEARCH_QUERY_COMPUTER);
 
             // Assert
-            Assert.That(result.All(p => p.Title.ToLower().Contains(SearchQueryComputer)), Is.True);
+            Assert.That(result.All(p => p.Title.ToLower().Contains(SEARCH_QUERY_COMPUTER)), Is.True);
         }
 
         [Test]
@@ -537,17 +537,17 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var products = new List<Product>
             {
-                CreateSampleProduct(ProductId1, ProductTitleGamingLaptop),
-                CreateSampleProduct(ProductId2, ProductTitleBusinessDesktop),
-                CreateSampleProduct(ProductId3, ProductTitleGraphicTablet)
+                CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_GAMING_LAPTOP),
+                CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_BUSINESS_DESKTOP),
+                CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_GRAPHIC_TABLET)
             };
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
-                products, null, null, null, null, SearchQueryTop);
+                products, null, null, null, null, SEARCH_QUERY_TOP);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount2));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT2));
         }
 
         [Test]
@@ -556,26 +556,26 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var products = new List<Product>
             {
-                CreateSampleProduct(ProductId1, ProductTitleGamingLaptop),
-                CreateSampleProduct(ProductId2, ProductTitleBusinessDesktop),
-                CreateSampleProduct(ProductId3, ProductTitleGraphicTablet)
+                CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_GAMING_LAPTOP),
+                CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_BUSINESS_DESKTOP),
+                CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_GRAPHIC_TABLET)
             };
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
-                products, null, null, null, null, SearchQueryTop);
+                products, null, null, null, null, SEARCH_QUERY_TOP);
 
             // Assert
-            Assert.That(result.All(p => p.Title.ToLower().Contains(SearchQueryTop)), Is.True);
+            Assert.That(result.All(p => p.Title.ToLower().Contains(SEARCH_QUERY_TOP)), Is.True);
         }
 
         private List<Product> CreateProductsForTextSearch()
         {
             return new List<Product>
             {
-                CreateSampleProduct(ProductId1, ProductTitleLaptopComputer),
-                CreateSampleProduct(ProductId2, ProductTitleDesktopComputer),
-                CreateSampleProduct(ProductId3, ProductTitleTablet)
+                CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_LAPTOP_COMPUTER),
+                CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_DESKTOP_COMPUTER),
+                CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_TABLET)
             };
         }
 
@@ -596,11 +596,11 @@ namespace MarketMinds.Test.Services.ProductTagService
                 new List<ProductCategory> { category },
                 new List<ProductTag> { tag },
                 null,
-                SearchQueryWireless
+                SEARCH_QUERY_WIRELESS
             );
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount1));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT1));
         }
 
         [Test]
@@ -616,29 +616,29 @@ namespace MarketMinds.Test.Services.ProductTagService
                 new List<ProductCategory> { category },
                 new List<ProductTag> { tag },
                 null,
-                SearchQueryWireless
+                SEARCH_QUERY_WIRELESS
             );
 
             // Assert
-            Assert.That(result[0].Title, Is.EqualTo(ProductTitleWirelessMouse));
+            Assert.That(result[0].Title, Is.EqualTo(PRODUCT_TITLE_WIRELESS_MOUSE));
         }
 
         private (ProductCategory, ProductCondition, ProductTag, List<Product>) SetupAllFilterTypesTest()
         {
-            var category = new ProductCategory(CategoryId1, CategoryElectronicsTitle, CategoryElectronicsDesc);
-            var condition = new ProductCondition(ConditionId1, ConditionNewTitle, ConditionNewDesc);
-            var tag = new ProductTag(TagId1, TagWirelessTitle);
+            var category = new ProductCategory(CATEGORY_ID1, CATEGORY_ELECTRONICS_TITLE, CATEGORY_ELECTRONICS_DESCRIPTION);
+            var condition = new ProductCondition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
+            var tag = new ProductTag(TAG_ID1, TAG_WIRELESS_TITLE);
 
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleGamingComputer, category, condition);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_GAMING_COMPUTER, category, condition);
             product1.Tags.Add(tag);
 
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleWirelessMouse, category, condition);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_WIRELESS_MOUSE, category, condition);
             product2.Tags.Add(tag);
 
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleWiredKeyboard, category, condition);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_WIRED_KEYBOARD, category, condition);
 
-            var product4 = CreateSampleProduct(ProductId4, ProductTitleUsedLaptop, category,
-                new ProductCondition(ConditionId2, ConditionUsedTitle, ConditionUsedDesc));
+            var product4 = CreateSampleProduct(PRODUCT_ID4, PRODUCT_TITLE_USED_LAPTOP, category,
+                new ProductCondition(CONDITION_ID2, CONDITION_USER_TITLE, CONDITION_USED_ITEM));
             product4.Tags.Add(tag);
 
             var products = new List<Product> { product1, product2, product3, product4 };
@@ -650,7 +650,7 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetSortedFilteredProducts_WithFilteringAndNullSort_FiltersCorrectly()
         {
             // Arrange
-            var condition = new ProductCondition(ConditionId1, ConditionNewTitle, ConditionNewDesc);
+            var condition = new ProductCondition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
             var products = CreateProductsForFilteringTest(condition);
             var selectedConditions = new List<ProductCondition> { condition };
 
@@ -659,14 +659,14 @@ namespace MarketMinds.Test.Services.ProductTagService
                 products, selectedConditions, null, null, null, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount2));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT2));
         }
 
         [Test]
         public void GetSortedFilteredProducts_WithFilteringAndNullSort_ReturnsProductsWithMatchingCondition()
         {
             // Arrange
-            var condition = new ProductCondition(ConditionId1, ConditionNewTitle, ConditionNewDesc);
+            var condition = new ProductCondition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
             var products = CreateProductsForFilteringTest(condition);
             var selectedConditions = new List<ProductCondition> { condition };
 
@@ -680,10 +680,10 @@ namespace MarketMinds.Test.Services.ProductTagService
 
         private List<Product> CreateProductsForFilteringTest(ProductCondition condition)
         {
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleProductA, condition: condition);
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleProductB,
-                condition: new ProductCondition(ConditionId2, ConditionUsedTitle, ConditionUsedDesc));
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleProductC, condition: condition);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT_A, condition: condition);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT_B,
+                condition: new ProductCondition(CONDITION_ID2, CONDITION_USER_TITLE, CONDITION_USED_ITEM));
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_PRODUCT_C, condition: condition);
 
             return new List<Product> { product1, product2, product3 };
         }
@@ -698,17 +698,17 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var products = CreateProductListForSorting();
             var sortCondition = new ProductSortType(
-                SortFieldIdExternalName, SortFieldIdInternalName, true);
+                SORT_FIELD_ID_EXTERNAL_NAME, SORT_FIELD_ID_INTERNAL_NAME, true);
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, sortCondition, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
-            Assert.That(result[0].Id, Is.EqualTo(ProductId1));
-            Assert.That(result[1].Id, Is.EqualTo(ProductId2));
-            Assert.That(result[2].Id, Is.EqualTo(ProductId3));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
+            Assert.That(result[0].Id, Is.EqualTo(PRODUCT_ID1));
+            Assert.That(result[1].Id, Is.EqualTo(PRODUCT_ID2));
+            Assert.That(result[2].Id, Is.EqualTo(PRODUCT_ID3));
         }
 
         [Test]
@@ -717,26 +717,26 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var products = CreateProductListForSorting();
             var sortCondition = new ProductSortType(
-                SortFieldIdExternalName, SortFieldIdInternalName, false);
+                SORT_FIELD_ID_EXTERNAL_NAME, SORT_FIELD_ID_INTERNAL_NAME, false);
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, sortCondition, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
-            Assert.That(result[0].Id, Is.EqualTo(ProductId3));
-            Assert.That(result[1].Id, Is.EqualTo(ProductId2));
-            Assert.That(result[2].Id, Is.EqualTo(ProductId1));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
+            Assert.That(result[0].Id, Is.EqualTo(PRODUCT_ID3));
+            Assert.That(result[1].Id, Is.EqualTo(PRODUCT_ID2));
+            Assert.That(result[2].Id, Is.EqualTo(PRODUCT_ID1));
         }
 
         private List<Product> CreateProductListForSorting()
         {
             return new List<Product>
             {
-                CreateSampleProduct(ProductId1, ProductTitleProductA),
-                CreateSampleProduct(ProductId2, ProductTitleProductB),
-                CreateSampleProduct(ProductId3, ProductTitleProductC)
+                CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT_A),
+                CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT_B),
+                CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_PRODUCT_C)
             };
         }
 
@@ -746,31 +746,31 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var products = SetupSortingAndFilteringTest(out var tag1, out var selectedTags);
             var sortCondition = new ProductSortType(
-                SortFieldTitleExternalName, SortFieldTitleInternalName, true);
+                SORT_FIELD_TITLE_EXTERNAL_NAME, SORT_FIELD_TITLE_INTERNAL_NAME, true);
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, selectedTags, sortCondition, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount2));
-            Assert.That(result[0].Title, Is.EqualTo(ProductTitleOfficeChair));
-            Assert.That(result[1].Title, Is.EqualTo(ProductTitleOfficeKeyboard));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT2));
+            Assert.That(result[0].Title, Is.EqualTo(PRODUCT_TITLE_OFFICE_CHAIR));
+            Assert.That(result[1].Title, Is.EqualTo(PRODUCT_TITLE_OFFICE_KEYBOARD));
         }
 
         private List<Product> SetupSortingAndFilteringTest(
             out ProductTag tag1, out List<ProductTag> selectedTags)
         {
-            tag1 = new ProductTag(TagId1, TagOfficeTitle);
-            var tag2 = new ProductTag(TagId2, TagGamingTitle);
+            tag1 = new ProductTag(TAG_ID1, TAG_OFFICE_TITLE);
+            var tag2 = new ProductTag(TAG_ID2, TAG_GAMING_TITLE);
 
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleOfficeKeyboard);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_OFFICE_KEYBOARD);
             product1.Tags.Add(tag1);
 
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleOfficeChair);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_OFFICE_CHAIR);
             product2.Tags.Add(tag1);
 
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleGamingMouse);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_GAMING_MOUSE);
             product3.Tags.Add(tag2);
 
             selectedTags = new List<ProductTag> { tag1 };
@@ -782,23 +782,23 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetSortedFilteredProducts_WithComplexSorting_HandlesComplexProperties()
         {
             // Arrange
-            var category1 = new ProductCategory(CategoryId1, CategoryACategoryTitle, CategoryACategoryDesc);
-            var category2 = new ProductCategory(CategoryId2, CategoryBCategoryTitle, CategoryBCategoryDesc);
+            var category1 = new ProductCategory(CATEGORY_ID1, CATEGORY_A_CATEGORY_TITLE, CATEGORY_A_DESCRIPTION);
+            var category2 = new ProductCategory(CATEGORY_ID2, CATEGORY_B_TITLE, CATEGORY_B_DESCRIPTION);
 
-            var product1 = CreateSampleProduct(ProductId1, ProductTitleProduct1WithCategory2, category2);
-            var product2 = CreateSampleProduct(ProductId2, ProductTitleProduct2WithCategory1, category1);
-            var product3 = CreateSampleProduct(ProductId3, ProductTitleProduct3WithCategory1, category1);
+            var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT_1_WITH_CATEGORY_2, category2);
+            var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT_2_WITH_CATEGORY_1, category1);
+            var product3 = CreateSampleProduct(PRODUCT_ID3, PRODUCT_TITLE_PRODUCT_3_WITH_CATEGORY_1, category1);
 
             var products = new List<Product> { product1, product2, product3 };
             var sortCondition = new ProductSortType(
-                SortFieldCategoryExternalName, SortFieldCategoryInternalName, true);
+                SORT_FIELD_CATEGORY_EXTERNAL_NAME, SORT_FIELD_CATEGORY_SERVICE, true);
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, sortCondition, null);
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedItemCount3));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_ITEM_COUNT3));
         }
 
         #endregion

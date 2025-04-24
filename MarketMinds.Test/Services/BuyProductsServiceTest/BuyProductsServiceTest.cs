@@ -12,15 +12,15 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
     public class BuyProductsServiceTest
     {
         // Constants to replace magic numbers
-        private const int TestSellerId = 1;
-        private const int TestBuyProductId = 1;
-        private const int TestInvalidProductId = 2;
-        private const int NonExistentProductId = 999;
-        private const float TestProductPrice = 99.99f;
-        private const float TestInvalidProductPrice = 100.0f;
-        private const int ExpectedSingleCount = 1;
-        private const int ExpectedZeroCount = 0;
-        private const int AuctionDaysLength = 7;
+        private const int TEST_SELLER_ID = 1;
+        private const int TEST_BUY_PRODUCT_ID = 1;
+        private const int TEST_INVALID_PRODUCT_ID = 2;
+        private const int NON_EXISTENT_PRODUCT_ID = 999;
+        private const float TEST_PRODUCT_PRICE = 99.99f;
+        private const float TEST_INVALID_PRODUCT_PRICE = 100.0f;
+        private const int EXPECTED_SINGLE_COUNT = 1;
+        private const int EXPECTED_ZERO_COUNT = 0;
+        private const int AUCTION_DAYS_LENGTH = 7;
 
         private BuyProductsService buyProductsService;
         private BuyProductsRepositoryMock buyProductsRepositoryMock;
@@ -34,7 +34,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             buyProductsRepositoryMock = new BuyProductsRepositoryMock();
             buyProductsService = new BuyProductsService(buyProductsRepositoryMock);
 
-            testSeller = new User(TestSellerId, "Test Seller", "seller@test.com");
+            testSeller = new User(TEST_SELLER_ID, "Test Seller", "seller@test.com");
 
             var testCondition = new ProductCondition(1, "New", "Brand new item");
             var testCategory = new ProductCategory(1, "Electronics", "Electronic devices");
@@ -42,7 +42,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             var testImages = new List<Image>();
 
             testBuyProduct = new BuyProduct(
-                TestBuyProductId,
+                TEST_BUY_PRODUCT_ID,
                 "Test Buy Product",
                 "Test Description",
                 testSeller,
@@ -50,11 +50,11 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
                 testCategory,
                 testTags,
                 testImages,
-                TestProductPrice);
+                TEST_PRODUCT_PRICE);
 
             // Create an invalid product type for testing type validation
             testInvalidProduct = new AuctionProduct(
-                TestInvalidProductId,
+                TEST_INVALID_PRODUCT_ID,
                 "Test Auction Product",
                 "Test Description",
                 testSeller,
@@ -63,8 +63,8 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
                 testTags,
                 testImages,
                 DateTime.Now,
-                DateTime.Now.AddDays(AuctionDaysLength),
-                TestInvalidProductPrice);
+                DateTime.Now.AddDays(AUCTION_DAYS_LENGTH),
+                TEST_INVALID_PRODUCT_PRICE);
         }
 
         [Test]
@@ -74,7 +74,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             buyProductsService.CreateListing(testBuyProduct);
 
             // Assert
-            Assert.That(buyProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(ExpectedSingleCount));
+            Assert.That(buyProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             }
 
             // Assert
-            Assert.That(buyProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(ExpectedZeroCount));
+            Assert.That(buyProductsRepositoryMock.GetCreateListingCount(), Is.EqualTo(EXPECTED_ZERO_COUNT));
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             buyProductsService.DeleteListing(testBuyProduct);
 
             // Assert
-            Assert.That(buyProductsRepositoryMock.GetDeleteListingCount(), Is.EqualTo(ExpectedSingleCount));
+            Assert.That(buyProductsRepositoryMock.GetDeleteListingCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
@@ -137,7 +137,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             var products = buyProductsService.GetProducts();
 
             // Assert
-            Assert.That(products.Count, Is.EqualTo(ExpectedSingleCount));
+            Assert.That(products.Count, Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
@@ -150,7 +150,7 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             buyProductsService.GetProducts();
 
             // Assert
-            Assert.That(buyProductsRepositoryMock.GetGetProductsCount(), Is.EqualTo(ExpectedSingleCount));
+            Assert.That(buyProductsRepositoryMock.GetGetProductsCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
@@ -189,14 +189,14 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
             buyProductsService.GetProductById(testBuyProduct.Id);
 
             // Assert
-            Assert.That(buyProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(ExpectedSingleCount));
+            Assert.That(buyProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
 
         [Test]
         public void TestGetProductById_InvalidId_ReturnsNull()
         {
             // Act
-            var product = buyProductsService.GetProductById(NonExistentProductId);
+            var product = buyProductsService.GetProductById(NON_EXISTENT_PRODUCT_ID);
 
             // Assert
             Assert.That(product, Is.Null);
@@ -206,10 +206,10 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
         public void TestGetProductById_InvalidId_CallsRepositoryMethod()
         {
             // Act
-            buyProductsService.GetProductById(NonExistentProductId);
+            buyProductsService.GetProductById(NON_EXISTENT_PRODUCT_ID);
 
             // Assert
-            Assert.That(buyProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(ExpectedSingleCount));
+            Assert.That(buyProductsRepositoryMock.GetGetProductByIdCount(), Is.EqualTo(EXPECTED_SINGLE_COUNT));
         }
     }
 }

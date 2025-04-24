@@ -10,48 +10,48 @@ namespace MarketMinds.Test.Services
     public class ReviewCalculationServiceTest
     {
         // Constants for review properties
-        private const int ReviewId1 = 1;
-        private const int ReviewId2 = 2;
-        private const int ReviewId3 = 3;
+        private const int REVIEW_ID_1 = 1;
+        private const int REVIEW_ID_2 = 2;
+        private const int REVIEW_ID_3 = 3;
 
         // Constants for seller IDs
-        private const int SellerId1 = 101;
-        private const int SellerId2 = 102;
-        private const int SellerId3 = 103;
+        private const int SELLER_ID_1 = 101;
+        private const int SELLER_ID_2 = 102;
+        private const int SELLER_ID_3 = 103;
 
         // Constants for buyer ID
-        private const int BuyerId = 1000;
+        private const int BUYER_ID = 1000;
 
         // Constants for review texts
-        private const string GoodProductText = "Good product";
-        private const string ExcellentText = "Excellent";
-        private const string AverageText = "Average";
-        private const string PoorText = "Poor";
-        private const string BadText = "Bad";
-        private const string TerribleText = "Terrible";
-        private const string AwfulText = "Awful";
-        private const string VeryBadText = "Very Bad";
-        private const string HorribleText = "Horrible";
-        private const string FirstReviewText = "First review";
-        private const string SecondReviewText = "Second review";
-        private const string ThirdReviewText = "Third review";
+        private const string GOOD_PRODUCT_TEXT = "Good product";
+        private const string EXCELLENT_TEXT = "Excellent";
+        private const string AVERAGE_TEXT = "Average";
+        private const string POOR_TEXT = "Poor";
+        private const string BAD_TEXT = "Bad";
+        private const string TERRIBLE_TEXT = "Terrible";
+        private const string AWFUL_TEXT = "Awful";
+        private const string VERY_BAD_TEXT = "Very Bad";
+        private const string HORRIBLE_TEXT = "Horrible";
+        private const string FIRST_REVIEW_TEXT = "First review";
+        private const string SECOND_REVIEW_TEXT = "Second review";
+        private const string THIRD_REVIEW_TEXT = "Third review";
 
         // Constants for ratings
-        private const float FourStarRating = 4.0f;
-        private const float FiveStarRating = 5.0f;
-        private const float ThreeStarRating = 3.0f;
-        private const float ZeroStarRating = 0.0f;
-        private const float NegativeOneStarRating = -1.0f;
-        private const float NegativeTwoStarRating = -2.0f;
-        private const float NegativeThreeStarRating = -3.0f;
+        private const float FOUR_STAR_RATING = 4.0f;
+        private const float FIVE_STAR_RATING = 5.0f;
+        private const float THREE_STAR_RATING = 3.0f;
+        private const float ZERO_STAR_RATING = 0.0f;
+        private const float NEGATIVE_ONE_STAR_RATING = -1.0f;
+        private const float NEGATIVE_TWO_STAR_RATING = -2.0f;
+        private const float NEGATIVE_THREE_STAR_RATING = -3.0f;
 
         // Constants for expected results
-        private const float ExpectedAverageFourStars = 4.0f;
-        private const float ExpectedAverageZero = 0.0f;
-        private const float ExpectedAverageNegativeTwo = -2.0f;
-        private const int ExpectedCountZero = 0;
-        private const int ExpectedCountThree = 3;
-        private const int ExpectedCountTwo = 2;
+        private const float EXPECTED_AVERAGE_FOUR_STARS = 4.0f;
+        private const float EXPECTED_AVERAGE_ZERO = 0.0f;
+        private const float EXPECTED_AVERAGE_NEGATIVE_TWO = -2.0f;
+        private const int EXPECTED_COUNT_ZERO = 0;
+        private const int EXPECTED_COUNT_THREE = 3;
+        private const int EXPECTED_COUNT_TWO = 2;
 
         private ReviewCalculationService _service;
 
@@ -63,7 +63,7 @@ namespace MarketMinds.Test.Services
 
         private Review CreateReview(int id, string text, List<Image> images, float rating, int authorId)
         {
-            return new Review(id, text, images, rating, authorId, BuyerId);
+            return new Review(id, text, images, rating, authorId, BUYER_ID);
         }
 
         [Test]
@@ -72,16 +72,16 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>
             {
-                CreateReview(ReviewId1, GoodProductText, new List<Image>(), FourStarRating, SellerId1),
-                CreateReview(ReviewId2, ExcellentText, new List<Image>(), FiveStarRating, SellerId2),
-                CreateReview(ReviewId3, AverageText, new List<Image>(), ThreeStarRating, SellerId3)
+                CreateReview(REVIEW_ID_1, GOOD_PRODUCT_TEXT, new List<Image>(), FOUR_STAR_RATING, SELLER_ID_1),
+                CreateReview(REVIEW_ID_2, EXCELLENT_TEXT, new List<Image>(), FIVE_STAR_RATING, SELLER_ID_2),
+                CreateReview(REVIEW_ID_3, AVERAGE_TEXT, new List<Image>(), THREE_STAR_RATING, SELLER_ID_3)
             };
 
             // Act
             float result = _service.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedAverageFourStars));
+            Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_FOUR_STARS));
         }
 
         [Test]
@@ -94,7 +94,7 @@ namespace MarketMinds.Test.Services
             float result = _service.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedAverageZero));
+            Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_ZERO));
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace MarketMinds.Test.Services
             float result = _service.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedAverageZero));
+            Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_ZERO));
         }
 
         [Test]
@@ -116,16 +116,16 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>
             {
-                CreateReview(ReviewId1, PoorText, new List<Image>(), ZeroStarRating, SellerId1),
-                CreateReview(ReviewId2, BadText, new List<Image>(), ZeroStarRating, SellerId2),
-                CreateReview(ReviewId3, TerribleText, new List<Image>(), ZeroStarRating, SellerId3)
+                CreateReview(REVIEW_ID_1, POOR_TEXT, new List<Image>(), ZERO_STAR_RATING, SELLER_ID_1),
+                CreateReview(REVIEW_ID_2, BAD_TEXT, new List<Image>(), ZERO_STAR_RATING, SELLER_ID_2),
+                CreateReview(REVIEW_ID_3, TERRIBLE_TEXT, new List<Image>(), ZERO_STAR_RATING, SELLER_ID_3)
             };
 
             // Act
             float result = _service.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedAverageZero));
+            Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_ZERO));
         }
 
         [Test]
@@ -134,16 +134,16 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>
             {
-                CreateReview(ReviewId1, AwfulText, new List<Image>(), NegativeOneStarRating, SellerId1),
-                CreateReview(ReviewId2, VeryBadText, new List<Image>(), NegativeTwoStarRating, SellerId2),
-                CreateReview(ReviewId3, HorribleText, new List<Image>(), NegativeThreeStarRating, SellerId3)
+                CreateReview(REVIEW_ID_1, AWFUL_TEXT, new List<Image>(), NEGATIVE_ONE_STAR_RATING, SELLER_ID_1),
+                CreateReview(REVIEW_ID_2, VERY_BAD_TEXT, new List<Image>(), NEGATIVE_TWO_STAR_RATING, SELLER_ID_2),
+                CreateReview(REVIEW_ID_3, HORRIBLE_TEXT, new List<Image>(), NEGATIVE_THREE_STAR_RATING, SELLER_ID_3)
             };
 
             // Act
             float result = _service.CalculateAverageRating(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedAverageNegativeTwo));
+            Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_NEGATIVE_TWO));
         }
 
         [Test]
@@ -152,16 +152,16 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>
             {
-                CreateReview(ReviewId1, FirstReviewText, new List<Image>(), FourStarRating, SellerId1),
-                CreateReview(ReviewId2, SecondReviewText, new List<Image>(), FiveStarRating, SellerId2),
-                CreateReview(ReviewId3, ThirdReviewText, new List<Image>(), ThreeStarRating, SellerId3)
+                CreateReview(REVIEW_ID_1, FIRST_REVIEW_TEXT, new List<Image>(), FOUR_STAR_RATING, SELLER_ID_1),
+                CreateReview(REVIEW_ID_2, SECOND_REVIEW_TEXT, new List<Image>(), FIVE_STAR_RATING, SELLER_ID_2),
+                CreateReview(REVIEW_ID_3, THIRD_REVIEW_TEXT, new List<Image>(), THREE_STAR_RATING, SELLER_ID_3)
             };
 
             // Act
             int result = _service.GetReviewCount(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedCountThree));
+            Assert.That(result, Is.EqualTo(EXPECTED_COUNT_THREE));
         }
 
         [Test]
@@ -174,7 +174,7 @@ namespace MarketMinds.Test.Services
             int result = _service.GetReviewCount(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedCountZero));
+            Assert.That(result, Is.EqualTo(EXPECTED_COUNT_ZERO));
         }
 
         [Test]
@@ -187,7 +187,7 @@ namespace MarketMinds.Test.Services
             int result = _service.GetReviewCount(reviews);
 
             // Assert
-            Assert.That(result, Is.EqualTo(ExpectedCountZero));
+            Assert.That(result, Is.EqualTo(EXPECTED_COUNT_ZERO));
         }
 
         [Test]
@@ -196,8 +196,8 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>
             {
-                CreateReview(ReviewId1, FirstReviewText, new List<Image>(), FourStarRating, SellerId1),
-                CreateReview(ReviewId2, SecondReviewText, new List<Image>(), FiveStarRating, SellerId2)
+                CreateReview(REVIEW_ID_1, FIRST_REVIEW_TEXT, new List<Image>(), FOUR_STAR_RATING, SELLER_ID_1),
+                CreateReview(REVIEW_ID_2, SECOND_REVIEW_TEXT, new List<Image>(), FIVE_STAR_RATING, SELLER_ID_2)
             };
 
             // Act

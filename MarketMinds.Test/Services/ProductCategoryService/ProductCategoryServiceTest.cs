@@ -8,19 +8,19 @@ namespace MarketMinds.Test.Services.ProductCategoryService
     public class ProductCategoryServiceTests
     {
         // Constants to replace magic strings and numbers
-        private const int FirstCategoryId = 1;
-        private const int SecondCategoryId = 2;
-        private const string ElectronicsTitle = "Electronics";
-        private const string ElectronicsDescription = "Electronic devices";
-        private const string ClothingTitle = "Clothing";
-        private const string ClothingDescription = "Apparel items";
-        private const string TestCategoryTitle = "Test Category";
-        private const string TestCategoryDescription = "Test Description";
-        private const string CategoryToDeleteTitle = "Category to Delete";
-        private const string CategoryToDeleteDescription = "Description";
-        private const int ExpectedSingleItem = 1;
-        private const int ExpectedTwoItems = 2;
-        private const int ExpectedZeroItems = 0;
+        private const int FIRST_CATEGORY_ID = 1;
+        private const int SECOND_CATEGORY_ID = 2;
+        private const string ELECTRONICS_TITLE = "Electronics";
+        private const string ELECTRONICS_DESCRIPTION = "Electronic devices";
+        private const string CLOTHING_TITLE = "Clothing";
+        private const string CLOTHING_DESCRIPTION = "Apparel items";
+        private const string TEST_CATEGORY_TITLE = "Test Category";
+        private const string TEST_CATEGORY_DESCRIPTION = "Test Description";
+        private const string CATEGORY_TO_DELETE_TITLE = "Category to Delete";
+        private const string CATEGORY_TO_DELETE_DESCRIPTION = "Description";
+        private const int EXPECTED_SINGLE_ITEM = 1;
+        private const int EXPECTED_TWO_ITEMS = 2;
+        private const int EXPECTED_ZERO_ITEMS = 0;
 
         private ProductCategoryRepositoryMock _mockRepository;
         private IProductCategoryService _service;
@@ -44,7 +44,7 @@ namespace MarketMinds.Test.Services.ProductCategoryService
             var result = _service.GetAllProductCategories();
 
             // Assert
-            Assert.That(result.Count, Is.EqualTo(ExpectedTwoItems));
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_TWO_ITEMS));
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace MarketMinds.Test.Services.ProductCategoryService
             var result = _service.GetAllProductCategories();
 
             // Assert
-            Assert.That(result[0].DisplayTitle, Is.EqualTo(ElectronicsTitle));
+            Assert.That(result[0].DisplayTitle, Is.EqualTo(ELECTRONICS_TITLE));
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace MarketMinds.Test.Services.ProductCategoryService
             var result = _service.GetAllProductCategories();
 
             // Assert
-            Assert.That(result[1].DisplayTitle, Is.EqualTo(ClothingTitle));
+            Assert.That(result[1].DisplayTitle, Is.EqualTo(CLOTHING_TITLE));
         }
 
         #endregion
@@ -81,40 +81,40 @@ namespace MarketMinds.Test.Services.ProductCategoryService
         public void CreateProductCategory_ReturnsNewCategoryWithCorrectTitle()
         {
             // Act
-            var result = _service.CreateProductCategory(TestCategoryTitle, TestCategoryDescription);
+            var result = _service.CreateProductCategory(TEST_CATEGORY_TITLE, TEST_CATEGORY_DESCRIPTION);
 
             // Assert
-            Assert.That(result.DisplayTitle, Is.EqualTo(TestCategoryTitle));
+            Assert.That(result.DisplayTitle, Is.EqualTo(TEST_CATEGORY_TITLE));
         }
 
         [Test]
         public void CreateProductCategory_ReturnsNewCategoryWithCorrectDescription()
         {
             // Act
-            var result = _service.CreateProductCategory(TestCategoryTitle, TestCategoryDescription);
+            var result = _service.CreateProductCategory(TEST_CATEGORY_TITLE, TEST_CATEGORY_DESCRIPTION);
 
             // Assert
-            Assert.That(result.Description, Is.EqualTo(TestCategoryDescription));
+            Assert.That(result.Description, Is.EqualTo(TEST_CATEGORY_DESCRIPTION));
         }
 
         [Test]
         public void CreateProductCategory_ReturnsNewCategoryWithCorrectId()
         {
             // Act
-            var result = _service.CreateProductCategory(TestCategoryTitle, TestCategoryDescription);
+            var result = _service.CreateProductCategory(TEST_CATEGORY_TITLE, TEST_CATEGORY_DESCRIPTION);
 
             // Assert
-            Assert.That(result.Id, Is.EqualTo(FirstCategoryId));
+            Assert.That(result.Id, Is.EqualTo(FIRST_CATEGORY_ID));
         }
 
         [Test]
         public void CreateProductCategory_AddsNewCategoryToRepository()
         {
             // Act
-            _service.CreateProductCategory(TestCategoryTitle, TestCategoryDescription);
+            _service.CreateProductCategory(TEST_CATEGORY_TITLE, TEST_CATEGORY_DESCRIPTION);
 
             // Assert
-            Assert.That(_mockRepository.Categories.Count, Is.EqualTo(ExpectedSingleItem));
+            Assert.That(_mockRepository.Categories.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
         }
 
         #endregion
@@ -126,14 +126,14 @@ namespace MarketMinds.Test.Services.ProductCategoryService
         {
             // Arrange
             AddCategoryToDelete();
-            Assert.That(_mockRepository.Categories.Count, Is.EqualTo(ExpectedSingleItem),
+            Assert.That(_mockRepository.Categories.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM),
                 "Precondition: Repository should have exactly one category before deletion");
 
             // Act
-            _service.DeleteProductCategory(CategoryToDeleteTitle);
+            _service.DeleteProductCategory(CATEGORY_TO_DELETE_TITLE);
 
             // Assert
-            Assert.That(_mockRepository.Categories.Count, Is.EqualTo(ExpectedZeroItems));
+            Assert.That(_mockRepository.Categories.Count, Is.EqualTo(EXPECTED_ZERO_ITEMS));
         }
 
         #endregion
@@ -142,13 +142,13 @@ namespace MarketMinds.Test.Services.ProductCategoryService
 
         private void AddTestCategories()
         {
-            _mockRepository.Categories.Add(new ProductCategory(FirstCategoryId, ElectronicsTitle, ElectronicsDescription));
-            _mockRepository.Categories.Add(new ProductCategory(SecondCategoryId, ClothingTitle, ClothingDescription));
+            _mockRepository.Categories.Add(new ProductCategory(FIRST_CATEGORY_ID, ELECTRONICS_TITLE, ELECTRONICS_DESCRIPTION));
+            _mockRepository.Categories.Add(new ProductCategory(SECOND_CATEGORY_ID, CLOTHING_TITLE, CLOTHING_DESCRIPTION));
         }
 
         private void AddCategoryToDelete()
         {
-            _mockRepository.Categories.Add(new ProductCategory(FirstCategoryId, CategoryToDeleteTitle, CategoryToDeleteDescription));
+            _mockRepository.Categories.Add(new ProductCategory(FIRST_CATEGORY_ID, CATEGORY_TO_DELETE_TITLE, CATEGORY_TO_DELETE_DESCRIPTION));
         }
 
         #endregion

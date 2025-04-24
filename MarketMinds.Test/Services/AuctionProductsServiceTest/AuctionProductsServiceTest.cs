@@ -19,22 +19,22 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
         private AuctionProductsRepositoryMock auctionProductsRepositoryMock;
 
         // Constants to replace magic numbers
-        private const int SellerId = 1;
-        private const int BidderId = 2;
-        private const int FirstBidderId = 3;
-        private const float DefaultBidderBalance = 1000f;
-        private const float InitialBidAmount = 200f;
-        private const float LowBidAmount = 150f;
-        private const float InsufficientBalanceAmount = 50f;
-        private const float StartingPrice = 100f;
-        private const float SecondBidAmount = 200f;
-        private const float FirstBidAmount = 150f;
-        private const float FirstBidderBalance = 500f;
-        private const int ExpectedSingleUpdate = 1;
-        private const int ExpectedNoUpdate = 0;
-        private const int ExpectedDoubleUpdate = 2;
-        private const int ExpectedSingleItem = 1;
-        private const int BidNearEndTimeMinutes = 3;
+        private const int SELLER_ID = 1;
+        private const int BIDDER_ID = 2;
+        private const int FIRST_BIDDER_ID = 3;
+        private const float DEFAULT_BIDDER_BALANCE = 1000f;
+        private const float INITIAL_BID_AMOUNT = 200f;
+        private const float LOW_BID_AMOUNT = 150f;
+        private const float INSUFFICIENT_BALANCE_AMOUNT = 50f;
+        private const float STARTING_PRICE = 100f;
+        private const float SECOND_BID_AMOUNT = 200f;
+        private const float FIRST_BID_AMOUNT = 150f;
+        private const float FIRST_BIDDER__AMOUNT = 500f;
+        private const int EXPECTED_SINGLE_UPDATE = 1;
+        private const int EXPECTED_NO_UPDATE = 0;
+        private const int EXPECTED_DOUBLE_UPDATE = 2;
+        private const int EXPECTED_SINGLE_ITEM = 1;
+        private const int BID_NEAR_END_TIME_MINUTES = 3;
 
         User testSeller;
         User testBidder;
@@ -49,9 +49,9 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             auctionProductsRepositoryMock = new AuctionProductsRepositoryMock();
             auctionProductsService = new AuctionProductsService(auctionProductsRepositoryMock);
 
-            testSeller = new User(SellerId, "test seller", "seller@test.com");
-            testBidder = new User(BidderId, "test bidder", "bidder@test.com");
-            testBidder.Balance = DefaultBidderBalance;
+            testSeller = new User(SELLER_ID, "test seller", "seller@test.com");
+            testBidder = new User(BIDDER_ID, "test bidder", "bidder@test.com");
+            testBidder.Balance = DEFAULT_BIDDER_BALANCE;
             testProductCondition = new ProductCondition(1, "Test", "Test");
             testProductCategory = new ProductCategory(1, "test", "test");
             testProductTags = new List<ProductTag>();
@@ -67,14 +67,14 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
                 new List<Image>(),
                 DateTime.Now.AddDays(-1),
                 DateTime.Now.AddDays(1),
-                StartingPrice);
+                STARTING_PRICE);
         }
 
         [Test]
         public void TestPlaceBid_ValidBid_UpdatesAuctionPrice()
         {
             // Arrange
-            float bidAmount = InitialBidAmount;
+            float bidAmount = INITIAL_BID_AMOUNT;
 
             // Act
             auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
@@ -88,8 +88,8 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
         public void TestPlaceBid_ValidBid_UpdatesBidderBalance()
         {
             // Arrange
-            float bidAmount = InitialBidAmount;
-            float expectedBalance = DefaultBidderBalance - bidAmount;
+            float bidAmount = INITIAL_BID_AMOUNT;
+            float expectedBalance = DEFAULT_BIDDER_BALANCE - bidAmount;
 
             // Act
             auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
@@ -102,13 +102,13 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
         public void TestPlaceBid_ValidBid_AddsToBidHistory()
         {
             // Arrange
-            float bidAmount = InitialBidAmount;
+            float bidAmount = INITIAL_BID_AMOUNT;
 
             // Act
             auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
 
             // Assert
-            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(ExpectedSingleItem));
+            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
             Assert.That(testAuction.BidHistory[0].Bidder, Is.EqualTo(testBidder));
         }
 
@@ -116,13 +116,13 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
         public void TestPlaceBid_ValidBid_UpdatesRepository()
         {
             // Arrange
-            float bidAmount = InitialBidAmount;
+            float bidAmount = INITIAL_BID_AMOUNT;
 
             // Act
             auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(ExpectedSingleUpdate));
+            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_SINGLE_UPDATE));
         }
 
         [Test]
@@ -143,19 +143,19 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             PlaceInitialBid();
             ResetRepositoryAndService();
             // Act
-           auctionProductsService.PlaceBid(testAuction, testBidder, LowBidAmount);
+           auctionProductsService.PlaceBid(testAuction, testBidder, LOW_BID_AMOUNT);
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(ExpectedNoUpdate));
+            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_NO_UPDATE));
         }
 
         [Test]
         public void TestPlaceBid_InsufficientBalance_ThrowsException()
         {
             // Arrange
-            testBidder.Balance = InsufficientBalanceAmount;
+            testBidder.Balance = INSUFFICIENT_BALANCE_AMOUNT;
 
             // Act & Assert
-            Exception ex = AssertThrowsWhenPlacingBid(InitialBidAmount);
+            Exception ex = AssertThrowsWhenPlacingBid(INITIAL_BID_AMOUNT);
             Assert.That(ex.Message, Is.EqualTo("Insufficient balance"));
         }
 
@@ -163,12 +163,12 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
         public void TestPlaceBid_InsufficientBalance_DoesNotUpdateRepository()
         {
             // Arrange
-            testBidder.Balance = InsufficientBalanceAmount;
+            testBidder.Balance = INSUFFICIENT_BALANCE_AMOUNT;
 
             // Act
             try
             {
-                auctionProductsService.PlaceBid(testAuction, testBidder, InitialBidAmount);
+                auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
             }
             catch
             {
@@ -176,7 +176,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             }
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(ExpectedNoUpdate));
+            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_NO_UPDATE));
         }
 
         [Test]
@@ -186,7 +186,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             SetAuctionAsEnded();
 
             // Act & Assert
-            Exception ex = AssertThrowsWhenPlacingBid(InitialBidAmount);
+            Exception ex = AssertThrowsWhenPlacingBid(INITIAL_BID_AMOUNT);
             Assert.That(ex.Message, Is.EqualTo("Auction already ended"));
         }
 
@@ -199,7 +199,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             // Act
             try
             {
-                auctionProductsService.PlaceBid(testAuction, testBidder, InitialBidAmount);
+                auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
             }
             catch
             {
@@ -207,7 +207,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             }
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(ExpectedNoUpdate));
+            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_NO_UPDATE));
         }
 
         [Test]
@@ -221,7 +221,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             PlaceSecondBid();
 
             // Assert
-            Assert.That(firstBidder.Balance, Is.EqualTo(FirstBidderBalance)); // Should be fully refunded
+            Assert.That(firstBidder.Balance, Is.EqualTo(FIRST_BIDDER__AMOUNT)); // Should be fully refunded
         }
 
         [Test]
@@ -235,9 +235,9 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             PlaceSecondBid();
 
             // Assert
-            Assert.That(testBidder.Balance, Is.EqualTo(DefaultBidderBalance - SecondBidAmount));
-            Assert.That(testAuction.CurrentPrice, Is.EqualTo(SecondBidAmount));
-            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(ExpectedDoubleUpdate));
+            Assert.That(testBidder.Balance, Is.EqualTo(DEFAULT_BIDDER_BALANCE - SECOND_BID_AMOUNT));
+            Assert.That(testAuction.CurrentPrice, Is.EqualTo(SECOND_BID_AMOUNT));
+            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(EXPECTED_DOUBLE_UPDATE));
         }
 
         [Test]
@@ -251,7 +251,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             PlaceSecondBid();
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(ExpectedDoubleUpdate));
+            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_DOUBLE_UPDATE));
         }
 
         [Test]
@@ -262,7 +262,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             DateTime originalEndTime = testAuction.EndAuctionDate;
 
             // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, InitialBidAmount);
+            auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
 
             // Assert
             Assert.That(testAuction.EndAuctionDate, Is.GreaterThan(originalEndTime));
@@ -275,10 +275,10 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             SetAuctionCloseToEnding();
 
             // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, InitialBidAmount);
+            auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(ExpectedSingleUpdate));
+            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_SINGLE_UPDATE));
         }
 
         [Test]
@@ -288,7 +288,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             auctionProductsService.ConcludeAuction(testAuction);
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetDeleteCount(), Is.EqualTo(ExpectedSingleItem));
+            Assert.That(auctionProductsRepositoryMock.GetDeleteCount(), Is.EqualTo(EXPECTED_SINGLE_ITEM));
         }
 
         [Test]
@@ -298,7 +298,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             auctionProductsService.CreateListing(testAuction);
 
             // Assert
-            Assert.That(auctionProductsRepositoryMock.GetProducts().Count, Is.EqualTo(ExpectedSingleItem));
+            Assert.That(auctionProductsRepositoryMock.GetProducts().Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
         }
 
         [Test]
@@ -314,7 +314,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
         #region Helper Methods
         private void PlaceInitialBid()
         {
-            auctionProductsService.PlaceBid(testAuction, testBidder, InitialBidAmount);
+            auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
         }
 
         private void ResetRepositoryAndService()
@@ -328,7 +328,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             Exception ex = null;
             try
             {
-                auctionProductsService.PlaceBid(testAuction, testBidder, LowBidAmount);
+                auctionProductsService.PlaceBid(testAuction, testBidder, LOW_BID_AMOUNT);
             }
             catch (Exception e)
             {
@@ -363,24 +363,24 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
 
         private User CreateFirstBidder()
         {
-            User firstBidder = new User(FirstBidderId, "first bidder", "first@test.com");
-            firstBidder.Balance = FirstBidderBalance;
+            User firstBidder = new User(FIRST_BIDDER_ID, "first bidder", "first@test.com");
+            firstBidder.Balance = FIRST_BIDDER__AMOUNT;
             return firstBidder;
         }
 
         private void PlaceFirstBid(User firstBidder)
         {
-            auctionProductsService.PlaceBid(testAuction, firstBidder, FirstBidAmount);
+            auctionProductsService.PlaceBid(testAuction, firstBidder, FIRST_BID_AMOUNT);
         }
 
         private void PlaceSecondBid()
         {
-            auctionProductsService.PlaceBid(testAuction, testBidder, SecondBidAmount);
+            auctionProductsService.PlaceBid(testAuction, testBidder, SECOND_BID_AMOUNT);
         }
 
         private void SetAuctionCloseToEnding()
         {
-            testAuction.EndAuctionDate = DateTime.Now.AddMinutes(BidNearEndTimeMinutes);
+            testAuction.EndAuctionDate = DateTime.Now.AddMinutes(BID_NEAR_END_TIME_MINUTES);
         }
         #endregion
     }

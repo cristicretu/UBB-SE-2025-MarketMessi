@@ -12,42 +12,45 @@ namespace MarketMinds.Test.Services
     public class ListingFormValidationServiceTest
     {
         // Constants to replace magic strings and values
-        private const int CategoryId = 1;
-        private const string CategoryTitle = "Electronics";
-        private const string CategoryDescription = "Electronic devices";
-        private const int ConditionId = 1;
-        private const string ConditionTitle = "New";
-        private const string ConditionDescription = "Brand new item";
-        private const string Tag1 = "tag1";
-        private const string Tag2 = "tag2";
-        private const string ValidTitle = "Test Product";
-        private const string ValidDescription = "This is a test product description";
-        private const string EmptyString = "";
-        private const string WhitespaceTitle = "   ";
-        private const string InvalidPriceText = "not a price";
-        private const string NegativePriceText = "-50.00";
-        private const string ValidPriceText = "99.99";
-        private const string ValidDailyRateText = "25.50";
-        private const string ValidStartingPriceText = "50.00";
-        private const string TitleErrorMessage = "Title cannot be empty.";
-        private const string CategoryErrorMessage = "Please select a category.";
-        private const string DescriptionErrorMessage = "Description cannot be empty.";
-        private const string TagsErrorMessage = "Please add at least one tag.";
-        private const string ConditionErrorMessage = "Please select a condition.";
-        private const string TitleField = "Title";
-        private const string CategoryField = "Category";
-        private const string DescriptionField = "Description";
-        private const string TagsField = "Tags";
-        private const string ConditionField = "Condition";
-        private const float ValidPrice = 99.99f;
-        private const float NegativePrice = -50.0f;
-        private const float ZeroPrice = 0f;
-        private const float ValidDailyRate = 25.5f;
-        private const float ValidStartingPrice = 50.0f;
-        private const int FutureDaysNormal = 30;
-        private const int FutureDaysShort = 7;
-        private const int PastDaysLong = -30;
-        private const int PastDaysShort = -7;
+        private const int CATEGORY_ID = 1;
+        private const string CATEGORY_TITLE = "Electronics";
+        private const string CATEGORY_DESCRIPTION = "Electronic devices";
+        private const int CONDITION_ID = 1;
+        private const string CONDITION_TITLE = "New";
+        private const string CONDITION_DESCRIPTION = "Brand new item";
+        private const string TAG1 = "tag1";
+        private const string TAG2 = "tag2";
+        private const string VALID_TITLE = "Test Product";
+        private const string VALID_DESCRIPTION = "This is a test product description";
+
+        private const string EMPTY_STRING = "";
+        private const string WHITESPACE_TITLE = "   ";
+        private const string INVALID_PRICE_TEXT = "not a price";
+        private const string NEGATIVE_PRICE_TEXT = "-50.00";
+        private const string VALID_PRICE_TEXT = "99.99";
+
+        private const string VALID_DAILY_RATE_PRICE = "25.50";
+        private const string VALID_STARTING_TIME_PRICE = "50.00";
+        private const string TITLE_ERROR_MESSAGE = "Title cannot be empty.";
+        private const string CATEGORY_ERROR_MESSAGE = "Please select a category.";
+        private const string DESCRIPTION_ERROR_MESSAGE = "Description cannot be empty.";
+        private const string TAGS_ERROR_MESSAGE = "Please add at least one tag.";
+        private const string CONDITION_ERROR_MESSAGE = "Please select a condition.";
+        private const string TITLE_FIELD = "Title";
+        private const string CATEGORY_FIELD = "Category";
+        private const string DESCRIPTION_FIELD = "Description";
+        private const string TAGS_FIELD = "Tags";
+
+        private const string CONDITION_FIELD = "Condition";
+        private const float VALID_PRICE = 99.99f;
+        private const float NEGATIVE_PRICE = -50.0f;
+        private const float ZERO_PRICE = 0f;
+        private const float VALID_DAILY_RATE = 25.5f;
+        private const float VALID_STARTING_PRICE = 50.0f;
+        private const int FUTURE_DAYS_NORMAL = 30;
+        private const int FUTURE_DAYS_SHORT = 7;
+        private const int PAST_DAY_LONG = -30;
+        private const int PAST_DAYS_SORT = -7;
 
         private ListingFormValidationService _validationService;
         private ProductCategory _validCategory;
@@ -58,9 +61,9 @@ namespace MarketMinds.Test.Services
         public void Setup()
         {
             _validationService = new ListingFormValidationService();
-            _validCategory = new ProductCategory(CategoryId, CategoryTitle, CategoryDescription);
-            _validCondition = new ProductCondition(ConditionId, ConditionTitle, ConditionDescription);
-            _validTags = new ObservableCollection<string> { Tag1, Tag2 };
+            _validCategory = new ProductCategory(CATEGORY_ID, CATEGORY_TITLE, CATEGORY_DESCRIPTION);
+            _validCondition = new ProductCondition(CONDITION_ID, CONDITION_TITLE, CONDITION_DESCRIPTION);
+            _validTags = new ObservableCollection<string> { TAG1, TAG2 };
         }
 
         #region ValidateCommonFields - Success Cases
@@ -70,7 +73,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, _validTags, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -82,7 +85,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, _validTags, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -94,7 +97,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, _validTags, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -110,7 +113,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                EmptyString, _validCategory, ValidDescription, _validTags, _validCondition,
+                EMPTY_STRING, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -122,11 +125,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                EmptyString, _validCategory, ValidDescription, _validTags, _validCondition,
+                EMPTY_STRING, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(TitleErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(TITLE_ERROR_MESSAGE));
         }
 
         [Test]
@@ -134,11 +137,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                EmptyString, _validCategory, ValidDescription, _validTags, _validCondition,
+                EMPTY_STRING, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(TitleField));
+            Assert.That(errorField, Is.EqualTo(TITLE_FIELD));
         }
 
         [Test]
@@ -146,7 +149,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                WhitespaceTitle, _validCategory, ValidDescription, _validTags, _validCondition,
+                WHITESPACE_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -158,11 +161,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                WhitespaceTitle, _validCategory, ValidDescription, _validTags, _validCondition,
+                WHITESPACE_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(TitleErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(TITLE_ERROR_MESSAGE));
         }
 
         [Test]
@@ -170,11 +173,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                WhitespaceTitle, _validCategory, ValidDescription, _validTags, _validCondition,
+                WHITESPACE_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(TitleField));
+            Assert.That(errorField, Is.EqualTo(TITLE_FIELD));
         }
 
         #endregion
@@ -186,7 +189,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                ValidTitle, null, ValidDescription, _validTags, _validCondition,
+                VALID_TITLE, null, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -198,11 +201,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, null, ValidDescription, _validTags, _validCondition,
+                VALID_TITLE, null, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(CategoryErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(CATEGORY_ERROR_MESSAGE));
         }
 
         [Test]
@@ -210,11 +213,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, null, ValidDescription, _validTags, _validCondition,
+                VALID_TITLE, null, VALID_DESCRIPTION, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(CategoryField));
+            Assert.That(errorField, Is.EqualTo(CATEGORY_FIELD));
         }
 
         #endregion
@@ -226,7 +229,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, EmptyString, _validTags, _validCondition,
+                VALID_TITLE, _validCategory, EMPTY_STRING, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -238,11 +241,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, EmptyString, _validTags, _validCondition,
+                VALID_TITLE, _validCategory, EMPTY_STRING, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(DescriptionErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(DESCRIPTION_ERROR_MESSAGE));
         }
 
         [Test]
@@ -250,11 +253,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, EmptyString, _validTags, _validCondition,
+                VALID_TITLE, _validCategory, EMPTY_STRING, _validTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(DescriptionField));
+            Assert.That(errorField, Is.EqualTo(DESCRIPTION_FIELD));
         }
 
         #endregion
@@ -266,7 +269,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, null, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, null, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -278,11 +281,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, null, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, null, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(TagsErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(TAGS_ERROR_MESSAGE));
         }
 
         [Test]
@@ -290,11 +293,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, null, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, null, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(TagsField));
+            Assert.That(errorField, Is.EqualTo(TAGS_FIELD));
         }
 
         [Test]
@@ -305,7 +308,7 @@ namespace MarketMinds.Test.Services
 
             // Act
             bool result = _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, emptyTags, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, emptyTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -320,11 +323,11 @@ namespace MarketMinds.Test.Services
 
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, emptyTags, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, emptyTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(TagsErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(TAGS_ERROR_MESSAGE));
         }
 
         [Test]
@@ -335,11 +338,11 @@ namespace MarketMinds.Test.Services
 
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, emptyTags, _validCondition,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, emptyTags, _validCondition,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(TagsField));
+            Assert.That(errorField, Is.EqualTo(TAGS_FIELD));
         }
 
         #endregion
@@ -351,7 +354,7 @@ namespace MarketMinds.Test.Services
         {
             // Act
             bool result = _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, _validTags, null,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, null,
                 out string errorMessage, out string errorField);
 
             // Assert
@@ -363,11 +366,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, _validTags, null,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, null,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorMessage, Is.EqualTo(ConditionErrorMessage));
+            Assert.That(errorMessage, Is.EqualTo(CONDITION_ERROR_MESSAGE));
         }
 
         [Test]
@@ -375,11 +378,11 @@ namespace MarketMinds.Test.Services
         {
             // Act
             _validationService.ValidateCommonFields(
-                ValidTitle, _validCategory, ValidDescription, _validTags, null,
+                VALID_TITLE, _validCategory, VALID_DESCRIPTION, _validTags, null,
                 out string errorMessage, out string errorField);
 
             // Assert
-            Assert.That(errorField, Is.EqualTo(ConditionField));
+            Assert.That(errorField, Is.EqualTo(CONDITION_FIELD));
         }
 
         #endregion
@@ -390,7 +393,7 @@ namespace MarketMinds.Test.Services
         public void ValidateBuyProductFields_WithValidPrice_ReturnsTrue()
         {
             // Act
-            bool result = _validationService.ValidateBuyProductFields(ValidPriceText, out float price);
+            bool result = _validationService.ValidateBuyProductFields(VALID_PRICE_TEXT, out float price);
 
             // Assert
             Assert.That(result, Is.True);
@@ -400,17 +403,17 @@ namespace MarketMinds.Test.Services
         public void ValidateBuyProductFields_WithValidPrice_SetsCorrectPrice()
         {
             // Act
-            _validationService.ValidateBuyProductFields(ValidPriceText, out float price);
+            _validationService.ValidateBuyProductFields(VALID_PRICE_TEXT, out float price);
 
             // Assert
-            Assert.That(price, Is.EqualTo(ValidPrice));
+            Assert.That(price, Is.EqualTo(VALID_PRICE));
         }
 
         [Test]
         public void ValidateBuyProductFields_WithInvalidPrice_ReturnsFalse()
         {
             // Act
-            bool result = _validationService.ValidateBuyProductFields(InvalidPriceText, out float price);
+            bool result = _validationService.ValidateBuyProductFields(INVALID_PRICE_TEXT, out float price);
 
             // Assert
             Assert.That(result, Is.False);
@@ -420,10 +423,10 @@ namespace MarketMinds.Test.Services
         public void ValidateBuyProductFields_WithInvalidPrice_SetsZeroPrice()
         {
             // Act
-            _validationService.ValidateBuyProductFields(InvalidPriceText, out float price);
+            _validationService.ValidateBuyProductFields(INVALID_PRICE_TEXT, out float price);
 
             // Assert
-            Assert.That(price, Is.EqualTo(ZeroPrice));
+            Assert.That(price, Is.EqualTo(ZERO_PRICE));
         }
 
         [Test]
@@ -431,7 +434,7 @@ namespace MarketMinds.Test.Services
         {
             // This test identifies a potential issue in the validation logic
             // Act
-            bool result = _validationService.ValidateBuyProductFields(NegativePriceText, out float price);
+            bool result = _validationService.ValidateBuyProductFields(NEGATIVE_PRICE_TEXT, out float price);
 
             // Assert
             Assert.That(result, Is.True);
@@ -441,10 +444,10 @@ namespace MarketMinds.Test.Services
         public void ValidateBuyProductFields_WithNegativePrice_SetsNegativePrice()
         {
             // Act
-            _validationService.ValidateBuyProductFields(NegativePriceText, out float price);
+            _validationService.ValidateBuyProductFields(NEGATIVE_PRICE_TEXT, out float price);
 
             // Assert
-            Assert.That(price, Is.EqualTo(NegativePrice));
+            Assert.That(price, Is.EqualTo(NEGATIVE_PRICE));
         }
 
         #endregion
@@ -455,10 +458,10 @@ namespace MarketMinds.Test.Services
         public void ValidateBorrowProductFields_WithValidInputs_ReturnsTrue()
         {
             // Arrange
-            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FutureDaysNormal);
+            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FUTURE_DAYS_NORMAL);
 
             // Act
-            bool result = _validationService.ValidateBorrowProductFields(ValidDailyRateText, timeLimit, out float dailyRate);
+            bool result = _validationService.ValidateBorrowProductFields(VALID_DAILY_RATE_PRICE, timeLimit, out float dailyRate);
 
             // Assert
             Assert.That(result, Is.True);
@@ -468,23 +471,23 @@ namespace MarketMinds.Test.Services
         public void ValidateBorrowProductFields_WithValidInputs_SetsCorrectDailyRate()
         {
             // Arrange
-            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FutureDaysNormal);
+            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FUTURE_DAYS_NORMAL);
 
             // Act
-            _validationService.ValidateBorrowProductFields(ValidDailyRateText, timeLimit, out float dailyRate);
+            _validationService.ValidateBorrowProductFields(VALID_DAILY_RATE_PRICE, timeLimit, out float dailyRate);
 
             // Assert
-            Assert.That(dailyRate, Is.EqualTo(ValidDailyRate));
+            Assert.That(dailyRate, Is.EqualTo(VALID_DAILY_RATE));
         }
 
         [Test]
         public void ValidateBorrowProductFields_WithInvalidDailyRate_ReturnsFalse()
         {
             // Arrange
-            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FutureDaysNormal);
+            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FUTURE_DAYS_NORMAL);
 
             // Act
-            bool result = _validationService.ValidateBorrowProductFields(InvalidPriceText, timeLimit, out float dailyRate);
+            bool result = _validationService.ValidateBorrowProductFields(INVALID_PRICE_TEXT, timeLimit, out float dailyRate);
 
             // Assert
             Assert.That(result, Is.False);
@@ -494,23 +497,23 @@ namespace MarketMinds.Test.Services
         public void ValidateBorrowProductFields_WithInvalidDailyRate_SetsZeroDailyRate()
         {
             // Arrange
-            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FutureDaysNormal);
+            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(FUTURE_DAYS_NORMAL);
 
             // Act
-            _validationService.ValidateBorrowProductFields(InvalidPriceText, timeLimit, out float dailyRate);
+            _validationService.ValidateBorrowProductFields(INVALID_PRICE_TEXT, timeLimit, out float dailyRate);
 
             // Assert
-            Assert.That(dailyRate, Is.EqualTo(ZeroPrice));
+            Assert.That(dailyRate, Is.EqualTo(ZERO_PRICE));
         }
 
         [Test]
         public void ValidateBorrowProductFields_WithPastTimeLimit_ReturnsFalse()
         {
             // Arrange
-            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(PastDaysLong);
+            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(PAST_DAY_LONG);
 
             // Act
-            bool result = _validationService.ValidateBorrowProductFields(ValidDailyRateText, timeLimit, out float dailyRate);
+            bool result = _validationService.ValidateBorrowProductFields(VALID_DAILY_RATE_PRICE, timeLimit, out float dailyRate);
 
             // Assert
             Assert.That(result, Is.False);
@@ -520,20 +523,20 @@ namespace MarketMinds.Test.Services
         public void ValidateBorrowProductFields_WithPastTimeLimit_SetsCorrectDailyRate()
         {
             // Arrange
-            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(PastDaysLong);
+            DateTimeOffset timeLimit = DateTimeOffset.Now.AddDays(PAST_DAY_LONG);
 
             // Act
-            _validationService.ValidateBorrowProductFields(ValidDailyRateText, timeLimit, out float dailyRate);
+            _validationService.ValidateBorrowProductFields(VALID_DAILY_RATE_PRICE, timeLimit, out float dailyRate);
 
             // Assert
-            Assert.That(dailyRate, Is.EqualTo(ValidDailyRate));
+            Assert.That(dailyRate, Is.EqualTo(VALID_DAILY_RATE));
         }
 
         [Test]
         public void ValidateBorrowProductFields_WithNullTimeLimit_ReturnsFalse()
         {
             // Act
-            bool result = _validationService.ValidateBorrowProductFields(ValidDailyRateText, null, out float dailyRate);
+            bool result = _validationService.ValidateBorrowProductFields(VALID_DAILY_RATE_PRICE, null, out float dailyRate);
 
             // Assert
             Assert.That(result, Is.False);
@@ -543,10 +546,10 @@ namespace MarketMinds.Test.Services
         public void ValidateBorrowProductFields_WithNullTimeLimit_SetsCorrectDailyRate()
         {
             // Act
-            _validationService.ValidateBorrowProductFields(ValidDailyRateText, null, out float dailyRate);
+            _validationService.ValidateBorrowProductFields(VALID_DAILY_RATE_PRICE, null, out float dailyRate);
 
             // Assert
-            Assert.That(dailyRate, Is.EqualTo(ValidDailyRate));
+            Assert.That(dailyRate, Is.EqualTo(VALID_DAILY_RATE));
         }
 
         #endregion
@@ -557,10 +560,10 @@ namespace MarketMinds.Test.Services
         public void ValidateAuctionProductFields_WithValidInputs_ReturnsTrue()
         {
             // Arrange
-            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FutureDaysShort);
+            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FUTURE_DAYS_SHORT);
 
             // Act
-            bool result = _validationService.ValidateAuctionProductFields(ValidStartingPriceText, endAuctionDate, out float startingPrice);
+            bool result = _validationService.ValidateAuctionProductFields(VALID_STARTING_TIME_PRICE, endAuctionDate, out float startingPrice);
 
             // Assert
             Assert.That(result, Is.True);
@@ -570,23 +573,23 @@ namespace MarketMinds.Test.Services
         public void ValidateAuctionProductFields_WithValidInputs_SetsCorrectStartingPrice()
         {
             // Arrange
-            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FutureDaysShort);
+            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FUTURE_DAYS_SHORT);
 
             // Act
-            _validationService.ValidateAuctionProductFields(ValidStartingPriceText, endAuctionDate, out float startingPrice);
+            _validationService.ValidateAuctionProductFields(VALID_STARTING_TIME_PRICE, endAuctionDate, out float startingPrice);
 
             // Assert
-            Assert.That(startingPrice, Is.EqualTo(ValidStartingPrice));
+            Assert.That(startingPrice, Is.EqualTo(VALID_STARTING_PRICE));
         }
 
         [Test]
         public void ValidateAuctionProductFields_WithInvalidStartingPrice_ReturnsFalse()
         {
             // Arrange
-            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FutureDaysShort);
+            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FUTURE_DAYS_SHORT);
 
             // Act
-            bool result = _validationService.ValidateAuctionProductFields(InvalidPriceText, endAuctionDate, out float startingPrice);
+            bool result = _validationService.ValidateAuctionProductFields(INVALID_PRICE_TEXT, endAuctionDate, out float startingPrice);
 
             // Assert
             Assert.That(result, Is.False);
@@ -596,23 +599,23 @@ namespace MarketMinds.Test.Services
         public void ValidateAuctionProductFields_WithInvalidStartingPrice_SetsZeroStartingPrice()
         {
             // Arrange
-            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FutureDaysShort);
+            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(FUTURE_DAYS_SHORT);
 
             // Act
-            _validationService.ValidateAuctionProductFields(InvalidPriceText, endAuctionDate, out float startingPrice);
+            _validationService.ValidateAuctionProductFields(INVALID_PRICE_TEXT, endAuctionDate, out float startingPrice);
 
             // Assert
-            Assert.That(startingPrice, Is.EqualTo(ZeroPrice));
+            Assert.That(startingPrice, Is.EqualTo(ZERO_PRICE));
         }
 
         [Test]
         public void ValidateAuctionProductFields_WithPastEndDate_ReturnsFalse()
         {
             // Arrange
-            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(PastDaysShort);
+            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(PAST_DAYS_SORT);
 
             // Act
-            bool result = _validationService.ValidateAuctionProductFields(ValidStartingPriceText, endAuctionDate, out float startingPrice);
+            bool result = _validationService.ValidateAuctionProductFields(VALID_STARTING_TIME_PRICE, endAuctionDate, out float startingPrice);
 
             // Assert
             Assert.That(result, Is.False);
@@ -622,13 +625,13 @@ namespace MarketMinds.Test.Services
         public void ValidateAuctionProductFields_WithPastEndDate_SetsCorrectStartingPrice()
         {
             // Arrange
-            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(PastDaysShort);
+            DateTimeOffset endAuctionDate = DateTimeOffset.Now.AddDays(PAST_DAYS_SORT);
 
             // Act
-            _validationService.ValidateAuctionProductFields(ValidStartingPriceText, endAuctionDate, out float startingPrice);
+            _validationService.ValidateAuctionProductFields(VALID_STARTING_TIME_PRICE, endAuctionDate, out float startingPrice);
 
             // Assert
-            Assert.That(startingPrice, Is.EqualTo(ValidStartingPrice));
+            Assert.That(startingPrice, Is.EqualTo(VALID_STARTING_PRICE));
         }
 
         #endregion
