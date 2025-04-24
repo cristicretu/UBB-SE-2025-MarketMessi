@@ -68,7 +68,7 @@ namespace Marketplace_SE.ViewModels
 
         public bool ValidateUser(string userId)
         {
-           return service.ValidateUser(UserID);
+           return service.ValidateUser(userId);
         }
     }
 }
