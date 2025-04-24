@@ -59,7 +59,7 @@ namespace MarketMinds.Services.ProductConditionService
             {
                 throw new InvalidOperationException("Failed to parse the server response.");
             }
-            
+
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
