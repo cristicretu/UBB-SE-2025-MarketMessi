@@ -1,18 +1,47 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models
 {
-    public class BuyProduct : Product
+    [Table("BuyProducts")]
+    public class BuyProduct
     {
-        public float Price { get; set; }
-        
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Column("title")]
+        public string Title { get; set; }
+
+        [Column("description")]
+        public string? Description { get; set; }
+
+        [Column("seller_id")]
+        public int SellerId { get; set; }
+
+        [Column("condition_id")]
+        public int? ConditionId { get; set; }
+
+        [Column("category_id")]
+        public int? CategoryId { get; set; }
+
+        [Column("price")]
+        public double Price { get; set; }
+
         // Navigation properties
-        public ICollection<BuyProductImage> Images { get; set; }
-        public ICollection<BuyProductProductTag> ProductTags { get; set; }
+        [ForeignKey("SellerId")]
+        public User Seller { get; set; } = null!;
+
+        [ForeignKey("ConditionId")]
+        public Condition? Condition { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
+
+        public ICollection<BuyProductImage> Images { get; set; } = new List<BuyProductImage>();
+        public ICollection<BuyProductProductTag> ProductTags { get; set; } = new List<BuyProductProductTag>();
 
         public BuyProduct()
         {
@@ -20,18 +49,17 @@ namespace server.Models
             ProductTags = new List<BuyProductProductTag>();
         }
 
-        public BuyProduct(int id, string title, string description, User seller, 
-            Condition condition, Category category, float price)
+        public BuyProduct(string title, string? description, int sellerId, int? conditionId,
+            int? categoryId, double price)
         {
-            Id = id;
             Title = title;
             Description = description;
-            Seller = seller;
-            Condition = condition;
-            Category = category;
+            SellerId = sellerId;
+            ConditionId = conditionId;
+            CategoryId = categoryId;
             Price = price;
             Images = new List<BuyProductImage>();
             ProductTags = new List<BuyProductProductTag>();
         }
     }
-} 
+}
