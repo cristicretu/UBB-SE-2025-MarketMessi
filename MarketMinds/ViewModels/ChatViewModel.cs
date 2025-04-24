@@ -1,10 +1,10 @@
-﻿using DomainLayer.Domain;
-using MarketMinds.Services.DreamTeam.ChatService;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DomainLayer.Domain;
+using MarketMinds.Services.DreamTeam.ChatService;
 
 namespace MarketMinds.ViewModels;
 
@@ -46,5 +46,4 @@ public class ChatViewModel
     {
         return chatService.GetConversation();
     }
-
 }

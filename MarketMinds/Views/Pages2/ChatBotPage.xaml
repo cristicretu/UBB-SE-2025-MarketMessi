@@ -20,7 +20,7 @@
         <!-- Chat Interface -->
         <RichEditBox
             x:Name="ChatBotChatInterface"
-            IsReadOnly="True"
+            IsReadOnly="False"
             IsHitTestVisible="False"
             FontSize="18"
             HorizontalAlignment="Stretch"

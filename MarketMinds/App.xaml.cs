@@ -139,6 +139,8 @@ namespace MarketMinds
             ReviewRepository = new ReviewRepository(DatabaseConnection);
             BasketRepository = new BasketRepository(DatabaseConnection);
             ChatBotRepository = new ChatBotRepository(DatabaseConnection);
+            ChatRepository = new ChatRepository(DatabaseConnection);
+            MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
 
             // Instantiate services
             ProductService = new ProductService(BorrowProductsRepository);
@@ -151,6 +153,8 @@ namespace MarketMinds
             ReviewsService = new ReviewsService(ReviewRepository);
             BasketService = new BasketService(BasketRepository);
             ChatBotService = new ChatBotService(ChatBotRepository);
+            ChatService = new ChatService(ChatRepository);
+            MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
 
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
@@ -168,6 +172,9 @@ namespace MarketMinds
             BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
+            ChatViewModel = new ChatViewModel(ChatService);
+            MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+
         }
 
         private Window mainWindow;

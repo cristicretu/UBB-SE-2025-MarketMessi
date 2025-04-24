@@ -56,13 +56,20 @@ namespace Marketplace_SE
             displayedMessages.Clear();
             chatHistory.Clear();
 
-            int hardcoded_template = eventArgs.Parameter is int template ? template : 0;
-            SetupHardcodedUsers(hardcoded_template);
-
-            if (currentUser == null || targetUser == null)
+            if (eventArgs.Parameter is UserNotSoldOrder selectedOrder)
             {
-                ShowErrorDialog("User setup error", "Could not determine users for chat.");
-                return;
+                currentUser = App.CurrentUser;
+                targetUser = new User(selectedOrder.SellerId, "Seller", string.Empty);
+            }
+            else if (eventArgs.Parameter is User user)
+            {
+                currentUser = App.CurrentUser;
+                targetUser = user;
+            }
+            else
+            {
+                currentUser = App.CurrentUser;
+                targetUser = App.TestingUser;
             }
 
             SetupTemplateSelector();
@@ -181,10 +188,6 @@ namespace Marketplace_SE
                             addedNew = true;
                         }
                     }
-                    if (addedNew)
-                    {
-                        ScrollChatToBottom();
-                    }
                 }
             }
             catch (Exception ex)
@@ -203,7 +206,6 @@ namespace Marketplace_SE
                     AddMessageToDisplay(message);
                 }
             }
-            ScrollChatToBottom();
         }
 
         private void AddMessageToDisplay(Message message)
@@ -216,15 +218,6 @@ namespace Marketplace_SE
             string contentForExport = message.ContentType == "text" ? message.Content : "<image>";
 
             chatHistory.Add($"{timeString} {prefix}: {contentForExport}");
-        }
-
-        private void ScrollChatToBottom()
-        {
-            if (displayedMessages.Count > 0)
-            {
-                var lastItem = displayedMessages.Last();
-                ChatListView.ScrollIntoView(displayedMessages[displayedMessages.Count - 1]);
-            }
         }
 
         // --- Event Handlers ---
@@ -248,7 +241,6 @@ namespace Marketplace_SE
                 Timestamp = pseudoTimestamp
             };
             AddMessageToDisplay(message);
-            ScrollChatToBottom();
             MessageBox.Text = string.Empty;
 
             MessageBox.IsEnabled = false;
@@ -312,7 +304,6 @@ namespace Marketplace_SE
                             Timestamp = pseudoTimestamp
                         };
                         AddMessageToDisplay(message);
-                        ScrollChatToBottom();
 
                         bool success = chatViewModel.SendImageMessage(bytes);
 
@@ -333,7 +324,7 @@ namespace Marketplace_SE
             }
         }
 
-        private async Task ExportButton_Click(object sender, RoutedEventArgs e)
+        private async void ExportButton_Click(object sender, RoutedEventArgs e)
         {
             var currentElement = sender as UIElement;
             if (currentElement == null)

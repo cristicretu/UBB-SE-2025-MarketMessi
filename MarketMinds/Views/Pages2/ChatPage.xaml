@@ -15,9 +15,11 @@
     <Page.Resources>
         <!-- Converter for Hex Image Strings -->
         <converters:HexToBitmapImageConverter x:Key="HexImageConverter"/>
+        <!-- Converter for Width Percentage -->
+        <converters:WidthPercentageConverter x:Key="WidthPercentageConverter"/>
 
         <!-- DataTemplate for MY Text Messages -->
-        <DataTemplate x:Key="MyTextTemplate" x:DataType="domain:Message">
+        <DataTemplate x:Key="MyTextMessageTemplate" x:DataType="domain:Message">
             <Border Background="LightGreen" CornerRadius="6"
                     Margin="40,4,0,4" Padding="8"
                     HorizontalAlignment="Right" MaxWidth="{Binding ActualWidth, ElementName=ChatListView, Converter={StaticResource WidthPercentageConverter}, ConverterParameter=0.7}">
@@ -28,7 +30,7 @@
         </DataTemplate>
 
         <!-- DataTemplate for TARGET's Text Messages -->
-        <DataTemplate x:Key="TargetTextTemplate" x:DataType="domain:Message">
+        <DataTemplate x:Key="TargetTextMessageTemplate" x:DataType="domain:Message">
             <Border Background="LightGray" CornerRadius="6"
                     Margin="0,4,40,4" Padding="8"
                     HorizontalAlignment="Left" MaxWidth="{Binding ActualWidth, ElementName=ChatListView, Converter={StaticResource WidthPercentageConverter}, ConverterParameter=0.7}">
@@ -38,7 +40,7 @@
         </DataTemplate>
 
         <!-- DataTemplate for MY Image Messages -->
-        <DataTemplate x:Key="MyImageTemplate" x:DataType="domain:Message">
+        <DataTemplate x:Key="MyImageMessageTemplate" x:DataType="domain:Message">
             <Border Background="LightGreen" CornerRadius="6"
                     Margin="40,4,0,4" Padding="4"
                     HorizontalAlignment="Right">
@@ -49,7 +51,7 @@
         </DataTemplate>
 
         <!-- DataTemplate for TARGET's Image Messages -->
-        <DataTemplate x:Key="TargetImageTemplate" x:DataType="domain:Message">
+        <DataTemplate x:Key="TargetImageMessageTemplate" x:DataType="domain:Message">
             <Border Background="LightGray" CornerRadius="6"
                     Margin="0,4,40,4" Padding="4"
                     HorizontalAlignment="Left">
@@ -58,10 +60,6 @@
                 <!-- Optional: Add timestamp overlay here -->
             </Border>
         </DataTemplate>
-
-        <!-- The Template Selector (instance created in code-behind) -->
-        <!-- You could declare it here, but setting properties like MyUserId is easier from C# -->
-        <!-- <selectors:ChatMessageTemplateSelector x:Key="ChatMessageSelector" ... /> -->
 
 
     </Page.Resources>
@@ -113,8 +111,8 @@
         <!-- Bottom controls -->
         <StackPanel Grid.Row="2" Orientation="Vertical" Spacing="8" Margin="0,10,0,0">
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBox x:Name="MessageBox" PlaceholderText="Type a message..." MinWidth="200" HorizontalAlignment="Stretch" KeyDown="MessageBox_KeyDown"/>
-                <Button x:Name="SendButton" Content="Send" Click="SendButton_Click" Width="80"/>
+                <TextBox x:Name="MessageBox" PlaceholderText="Type a message..." MinWidth="200" HorizontalAlignment="Stretch"/>
+                <Button x:Name="SendButton" Content="Send" Click="SendButton_Click" Width="80" Background="MediumPurple"/>
                 <Button x:Name="AttachButton" Content="📎" Click="AttachButton_Click" Width="40" ToolTipService.ToolTip="Attach Image"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">

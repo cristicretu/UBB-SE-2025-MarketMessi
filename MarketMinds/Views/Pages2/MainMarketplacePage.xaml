@@ -107,7 +107,7 @@
                 <Border BorderBrush="{ThemeResource SystemAccentColorLight2}" BorderThickness="1" CornerRadius="8" Padding="20" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
                         <TextBlock Text="Support" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Margin="0,0,0,15"/>
-                        <Button Content="Open Help" HorizontalAlignment="Stretch" Padding="15,10" Click="OpenHelpButton_Clisk" x:Name="ButtonOpenHelp"/>
+                        <Button Content="Open Help" HorizontalAlignment="Stretch" Padding="15,10" Click="OpenHelpButton_Click" x:Name="ButtonOpenHelp"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

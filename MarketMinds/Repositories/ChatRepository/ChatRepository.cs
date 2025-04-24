@@ -26,7 +26,7 @@ public class ChatRepository : IChatRepository
         string getConversationQuery = @"
         SELECT id, user1, user2 
         FROM Conversations
-        WHERE (UserId1 = @UserId1 AND UserId2 = @UserId2) OR (UserId1 = @UserId2 AND UserId2 = @UserId1)";
+        WHERE (user1 = @UserId1 AND user2 = @UserId2) OR (user1 = @UserId2 AND user2 = @UserId1)";
 
         try
         {
@@ -61,9 +61,8 @@ public class ChatRepository : IChatRepository
     {
         Conversation newConversation = null;
         string createConversationQuery = @"
-        INSERT INTO Conversations (UserId1, UserId2) 
-        VALUES (@UserId1, @UserId2);
-        SELECT SCOPE_IDENTITY();";
+        INSERT INTO Conversations (user1, user2) 
+        VALUES (@UserId1, @UserId2)";
         try
         {
             dbConnection.OpenConnection();

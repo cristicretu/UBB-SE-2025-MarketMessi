@@ -21,7 +21,7 @@ public class ChatMessageTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
     {
-        if (item is Message message && MyUserId != -1)
+        if (item is Message message && MyUserId != -1 && !string.IsNullOrEmpty(message.ContentType))
         {
             bool isMine = message.Creator == MyUserId;
 

@@ -46,6 +46,5 @@ namespace MarketMinds.Converters
         {
             throw new NotImplementedException();
         }
-
     }
 }
