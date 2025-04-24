@@ -11,7 +11,7 @@ namespace Marketplace_SE.Data
         public static Database Databases { get; set; }
         private SqlConnection connection;
         private string connectionString;
-        internal static object databasee;
+        internal static object Databasee;
 
         public Database(string connectionString)
         {

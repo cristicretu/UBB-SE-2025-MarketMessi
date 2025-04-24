@@ -53,8 +53,8 @@ namespace Marketplace_SE
         {
             // Open database connection
             // Read Database.cs for guide
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -65,7 +65,7 @@ namespace Marketplace_SE
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                     if (hardcoded_template == 0 || hardcoded_template == 1 || hardcoded_template == 2)
                     {
                         Frame.Navigate(typeof(MainMarketplacePage));
@@ -117,7 +117,7 @@ namespace Marketplace_SE
             this.InitializeComponent();
 
             //Database actions
-            var data = Database.databasee.Get("SELECT * FROM dbo.Conversations WHERE ((user1=@MyID AND user2=@TargetID) OR (user2=@MyID AND user1=@TargetID))",
+            var data = Database.Databasee.Get("SELECT * FROM dbo.Conversations WHERE ((user1=@MyID AND user2=@TargetID) OR (user2=@MyID AND user1=@TargetID))",
             new string[]
             {
                 "@MyID",
@@ -128,13 +128,13 @@ namespace Marketplace_SE
                 target.Id
             });
 
-            List<Conversation> conversationList = Database.databasee.ConvertToObject<Conversation>(data);
+            List<Conversation> conversationList = Database.Databasee.ConvertToObject<Conversation>(data);
 
             if (conversationList.Count == 0)
             {
                 //Create conversation
 
-                int affected = Database.databasee.Execute("INSERT INTO Conversations (user1, user2) VALUES (@MyID, @TargetID)",
+                int affected = Database.Databasee.Execute("INSERT INTO Conversations (user1, user2) VALUES (@MyID, @TargetID)",
                     new string[]
                     {
                         "@MyID",
@@ -147,7 +147,7 @@ namespace Marketplace_SE
                 );
 
                 //Get again
-                data = Database.databasee.Get("SELECT * FROM Conversations WHERE ((user1=@MyID AND user2=@TargetID) OR (user2=@MyID AND user1=@TargetID))",
+                data = Database.Databasee.Get("SELECT * FROM Conversations WHERE ((user1=@MyID AND user2=@TargetID) OR (user2=@MyID AND user1=@TargetID))",
                 new string[]
                 {
                     "@MyID",
@@ -157,13 +157,13 @@ namespace Marketplace_SE
                     me.Id,
                     target.Id
                 });
-                conversationList = Database.databasee.ConvertToObject<Conversation>(data);
+                conversationList = Database.Databasee.ConvertToObject<Conversation>(data);
             }
 
             conversation = conversationList[0];
 
             // Load chat history from conv 0
-            data = Database.databasee.Get("SELECT * FROM dbo.Messages WHERE conversationId=@ConvID",
+            data = Database.Databasee.Get("SELECT * FROM dbo.Messages WHERE conversationId=@ConvID",
             new string[]
             {
                 "@ConvID",
@@ -172,7 +172,7 @@ namespace Marketplace_SE
                 conversation.id
             });
 
-            List<Message> messages = Database.databasee.ConvertToObject<Message>(data);
+            List<Message> messages = Database.Databasee.ConvertToObject<Message>(data);
             //Sort messages timestamp
             messages.Sort((a, b) =>
             {
@@ -227,7 +227,7 @@ namespace Marketplace_SE
             {
                 // Update conversation with new messages
 
-                var data = Database.databasee.Get("SELECT * FROM dbo.Messages WHERE conversationId=@ConvID AND creator!=@MyID AND timestamp>@LastMessageTimestamp",
+                var data = Database.Databasee.Get("SELECT * FROM dbo.Messages WHERE conversationId=@ConvID AND creator!=@MyID AND timestamp>@LastMessageTimestamp",
                 new string[]
                 {
                     "@ConvID",
@@ -241,7 +241,7 @@ namespace Marketplace_SE
 
                 });
 
-                List<Message> messages = Database.databasee.ConvertToObject<Message>(data);
+                List<Message> messages = Database.Databasee.ConvertToObject<Message>(data);
                 messages.Sort((a, b) =>
                 {
                     return (int)(a.timestamp - b.timestamp);
@@ -318,7 +318,7 @@ namespace Marketplace_SE
                     contentType = "bytes";
             }
 
-            int affected = Database.databasee.Execute("INSERT INTO Messages (conversationId, creator,timestamp,contentType,content) VALUES (@ConvID, @MyID,@Timestamp,@ContentType,@Content)",
+            int affected = Database.Databasee.Execute("INSERT INTO Messages (conversationId, creator,timestamp,contentType,content) VALUES (@ConvID, @MyID,@Timestamp,@ContentType,@Content)",
                     new string[]
                     {
                         "@ConvID",
@@ -351,7 +351,7 @@ namespace Marketplace_SE
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             StopUpdateLoop();
-            Database.databasee.Close();
+            Database.Databasee.Close();
             if(this.me.Id == 0 || this.me.Id == 1 || this.me.Id == 2)
             {
                 Frame.Navigate(typeof(MainMarketplacePage));

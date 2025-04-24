@@ -37,8 +37,8 @@ namespace Marketplace_SE
             this.me = new User("test", "");
             this.me.SetId(0);
 
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -46,14 +46,14 @@ namespace Marketplace_SE
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                     Frame.Navigate(typeof(MainMarketplacePage));
                 };
                 notification.GetWindow().Activate();
                 return;
             }
 
-            var data = Database.databasee.Get("SELECT * FROM Orders WHERE buyerId=-1", new string[]
+            var data = Database.Databasee.Get("SELECT * FROM Orders WHERE buyerId=-1", new string[]
             {
                 "@MyId"
             }, new object[]
@@ -61,7 +61,7 @@ namespace Marketplace_SE
                 this.me.Id
             });
 
-            List<UserNotSoldOrder> orders = Database.databasee.ConvertToObject<UserNotSoldOrder>(data);
+            List<UserNotSoldOrder> orders = Database.Databasee.ConvertToObject<UserNotSoldOrder>(data);
 
             this.InitializeComponent();
 

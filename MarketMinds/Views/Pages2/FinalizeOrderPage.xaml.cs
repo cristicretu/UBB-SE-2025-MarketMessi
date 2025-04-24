@@ -34,13 +34,13 @@ namespace Marketplace_SE
             this.InitializeComponent();
 
             // Initialize database connection if not already initialized
-            if (Database.databasee == null)
+            if (Database.Databasee == null)
             {
                 try
                 {
                     // Create database connection 
-                    Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-                    bool connected = Database.databasee.Connect();
+                    Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+                    bool connected = Database.Databasee.Connect();
 
                     if (connected)
                     {
@@ -70,7 +70,7 @@ namespace Marketplace_SE
             // Register for page loading event to ensure XamlRoot is set
             Loaded += FinalizeOrderPage_Loaded;
 
-            Database.databasee.Close();
+            Database.Databasee.Close();
         }
 
         private void FinalizeOrderPage_Loaded(object sender, RoutedEventArgs e)
@@ -135,7 +135,7 @@ namespace Marketplace_SE
             {
                 try
                 {
-                    if (Database.databasee != null)
+                    if (Database.Databasee != null)
                     {
                         // Prepare the SQL query
                         string query = @"
@@ -153,13 +153,13 @@ namespace Marketplace_SE
                             ratingData.AppVersion
                         };
 
-                        Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-                        bool connected = Database.databasee.Connect();
+                        Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+                        bool connected = Database.Databasee.Connect();
 
                         // Execute the query
-                        int result = Database.databasee.Execute(query, args, values);
+                        int result = Database.Databasee.Execute(query, args, values);
 
-                        Database.databasee.Close();
+                        Database.Databasee.Close();
                     }
                 }
                 catch (Exception ex)
@@ -176,7 +176,7 @@ namespace Marketplace_SE
             {
                 try
                 {
-                    if (Database.databasee != null)
+                    if (Database.Databasee != null)
                     {
                         // Prepare the SQL query
                         string query = @"
@@ -218,11 +218,11 @@ namespace Marketplace_SE
                             hardwareData.AppVersion
                         };
 
-                        Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-                        bool connected = Database.databasee.Connect();
+                        Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+                        bool connected = Database.Databasee.Connect();
 
                         // Execute the query
-                        int result = Database.databasee.Execute(query, args, values);
+                        int result = Database.Databasee.Execute(query, args, values);
 
                         // Print data to console for demonstration
                         System.Diagnostics.Debug.WriteLine("========== HARDWARE SURVEY DATA SAVED TO DATABASE ==========");
@@ -234,7 +234,7 @@ namespace Marketplace_SE
                         System.Diagnostics.Debug.WriteLine($"GPU: {hardwareData.GPUInformation}");
                         System.Diagnostics.Debug.WriteLine($"Connection: {hardwareData.ConnectionType}");
 
-                        Database.databasee.Close();
+                        Database.Databasee.Close();
                     }
                 }
                 catch (Exception ex)

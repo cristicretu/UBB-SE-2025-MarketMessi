@@ -21,8 +21,8 @@ namespace Marketplace_SE.Service
         public static int PushNewHelpTicketToDB(string userID, string userName, string description, string closed)
         {
 
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -33,13 +33,13 @@ namespace Marketplace_SE.Service
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                 };
                 notification.GetWindow().Activate();
                 return (int)BackendUserGetHelpStatusCodes.PushNewHelpTicketToDBFailure;
             }
 
-            Database.databasee.Execute("INSERT INTO dbo.UserGetHelpTickets (UserID, UserName, DateAndTime, Descript, Closed) VALUES (@UID, @UN, @DAT, @D, @C)",
+            Database.Databasee.Execute("INSERT INTO dbo.UserGetHelpTickets (UserID, UserName, DateAndTime, Descript, Closed) VALUES (@UID, @UN, @DAT, @D, @C)",
                     new string[]
                     {
                         "@UID",
@@ -57,7 +57,7 @@ namespace Marketplace_SE.Service
                     }
                 );
 
-            Database.databasee.Close();
+            Database.Databasee.Close();
 
             return (int)BackendUserGetHelpStatusCodes.PushNewHelpTicketToDBSuccess;
         }
@@ -71,8 +71,8 @@ namespace Marketplace_SE.Service
         {
             List<HelpTicket> returnList = new List<HelpTicket>();
 
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -84,7 +84,7 @@ namespace Marketplace_SE.Service
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                 };
                 notification.GetWindow().Activate();
                 return returnList;
@@ -94,7 +94,7 @@ namespace Marketplace_SE.Service
 
             foreach (string each in TicketIDs)
             {
-                var data = Database.databasee.Get("SELECT * FROM dbo.UserGetHelpTickets WHERE (TicketID=@TID)",
+                var data = Database.Databasee.Get("SELECT * FROM dbo.UserGetHelpTickets WHERE (TicketID=@TID)",
                     new string[]
                     {
                     "@TID"
@@ -103,7 +103,7 @@ namespace Marketplace_SE.Service
                     int.Parse(each)
                     });
 
-                List<HelpTicketFromDB> temp = Database.databasee.ConvertToObject<HelpTicketFromDB>(data);
+                List<HelpTicketFromDB> temp = Database.Databasee.ConvertToObject<HelpTicketFromDB>(data);
                 ticketsList.Add(temp[0]);
             }
 
@@ -112,7 +112,7 @@ namespace Marketplace_SE.Service
                 returnList.Add(HelpTicket.FromHelpTicketFromDB(each));
             }
 
-            Database.databasee.Close();
+            Database.Databasee.Close();
 
             return returnList;
         }
@@ -121,8 +121,8 @@ namespace Marketplace_SE.Service
         {
             List<string> returnList = new List<string>();
 
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -133,13 +133,13 @@ namespace Marketplace_SE.Service
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                 };
                 notification.GetWindow().Activate();
                 return new List<string>();
             }
 
-            var data = Database.databasee.Get("SELECT * FROM dbo.UserGetHelpTickets WHERE (UserID=@UID)",
+            var data = Database.Databasee.Get("SELECT * FROM dbo.UserGetHelpTickets WHERE (UserID=@UID)",
                 new string[]
                 {
                     "@UID"
@@ -148,9 +148,9 @@ namespace Marketplace_SE.Service
                     UserID
                 });
 
-            List<HelpTicketFromDB> ticketsList = Database.databasee.ConvertToObject<HelpTicketFromDB>(data);
+            List<HelpTicketFromDB> ticketsList = Database.Databasee.ConvertToObject<HelpTicketFromDB>(data);
 
-            Database.databasee.Close();
+            Database.Databasee.Close();
 
             foreach (HelpTicketFromDB each in ticketsList)
             {
@@ -162,8 +162,8 @@ namespace Marketplace_SE.Service
 
         public static bool DoesTicketIDExist(int RequestedTicketID)
         {
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -171,13 +171,13 @@ namespace Marketplace_SE.Service
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                 };
                 notification.GetWindow().Activate();
                 return false;
             }
 
-            var data = Database.databasee.Get("SELECT * FROM dbo.UserGetHelpTickets WHERE (TicketID=@TID)",
+            var data = Database.Databasee.Get("SELECT * FROM dbo.UserGetHelpTickets WHERE (TicketID=@TID)",
                 new string[]
                 {
                     "@TID"
@@ -186,9 +186,9 @@ namespace Marketplace_SE.Service
                     RequestedTicketID
                 });
 
-            List<HelpTicketFromDB> ticketsList = Database.databasee.ConvertToObject<HelpTicketFromDB>(data);
+            List<HelpTicketFromDB> ticketsList = Database.Databasee.ConvertToObject<HelpTicketFromDB>(data);
 
-            Database.databasee.Close();
+            Database.Databasee.Close();
             if (ticketsList.Count > 0)
             {
                 return true;
@@ -199,8 +199,8 @@ namespace Marketplace_SE.Service
 
         public static int UpdateHelpTicketDescriptionInDB(string TicketID, string NewDescription)
         {
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -210,13 +210,13 @@ namespace Marketplace_SE.Service
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                 };
                 notification.GetWindow().Activate();
                 return (int)BackendUserGetHelpStatusCodes.UpdateHelpTicketInDBFailure;
             }
 
-            Database.databasee.Execute("UPDATE dbo.UserGetHelpTickets SET Descript=@D WHERE TicketID=@TID",
+            Database.Databasee.Execute("UPDATE dbo.UserGetHelpTickets SET Descript=@D WHERE TicketID=@TID",
                     new string[]
                     {
                         "@TID",
@@ -228,15 +228,15 @@ namespace Marketplace_SE.Service
                     }
                 );
 
-            object value = Database.databasee.Close();
+            object value = Database.Databasee.Close();
 
             return (int)BackendUserGetHelpStatusCodes.UpdateHelpTicketInDBSuccess;
         }
 
         public static int CloseHelpTicketInDB(string TicketID)
         {
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
+            Database.Databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
+            bool status = Database.Databasee.Connect();
 
             if (!status)
             {
@@ -247,13 +247,13 @@ namespace Marketplace_SE.Service
                 notification.OkButton.Click += (s, e) =>
                 {
                     notification.GetWindow().Close();
-                    Database.databasee.Close();
+                    Database.Databasee.Close();
                 };
                 notification.GetWindow().Activate();
                 return (int)BackendUserGetHelpStatusCodes.ClosedHelpTicketInDBFailure;
             }
 
-            Database.databasee.Execute("UPDATE dbo.UserGetHelpTickets SET Closed=@C WHERE TicketID=@TID",
+            Database.Databasee.Execute("UPDATE dbo.UserGetHelpTickets SET Closed=@C WHERE TicketID=@TID",
                     new string[]
                     {
                         "@TID",
@@ -265,7 +265,7 @@ namespace Marketplace_SE.Service
                     }
                 );
 
-            object value = Database.databasee.Close();
+            object value = Database.Databasee.Close();
 
             return (int)BackendUserGetHelpStatusCodes.ClosedHelpTicketInDBSuccess;
         }
