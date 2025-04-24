@@ -7,7 +7,9 @@ using server.Models.DTOs.Mappers;
 
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using System.Net;
+using System.Text.Json;
 
 namespace MarketMinds.Controllers
 {
@@ -74,28 +76,70 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
-            
-             if (product == null || !ModelState.IsValid)
+
+            var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
+            product.Images = new List<ProductImage>(); 
+
+            // Validate the main product (without images for now)
+            if (product == null || !ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                // Manually remove image validation errors if they occurred before clearing
+                ModelState.Remove("Images"); 
+                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) {
+                    // Remove potential errors like "Images[0].Product" if they exist
+                    var imageKeys = ModelState.Keys.Where(k => k.StartsWith("Images[")).ToList();
+                    foreach(var key in imageKeys) {
+                        ModelState.Remove(key);
+                    }
+                }
+                
+                // Re-check if model state is valid after potentially removing image errors
+                if (!ModelState.IsValid) {
+                    Console.WriteLine($"Model State is Invalid (after image handling): {System.Text.Json.JsonSerializer.Serialize(ModelState)}");
+                    return BadRequest(ModelState);
+                }
             }
 
-             
-             if (product.Id != 0) {
-                 
-                 return BadRequest("Product ID should not be provided when creating a new product.");
-             }
+            if (product.Id != 0) {
+                return BadRequest("Product ID should not be provided when creating a new product.");
+            }
 
             try
             {
-                _auctionProductsRepository.AddProduct(product);
+                // Add the product (without images linked yet)
+                _auctionProductsRepository.AddProduct(product); 
+                // Now 'product' has its Id assigned by the database
+
+                // Link and add images if any were provided
+                if (incomingImages.Any())
+                {
+                    
+                    foreach (var img in incomingImages)
+                    {
+                        img.ProductId = product.Id; // Set the foreign key
+                        // Assuming ProductImage doesn't have other required fields from client
+                        // Add the now-linked image back to the product's collection
+                        product.Images.Add(img);
+                    }
+                    
+                    // Update the product to save the linked images
+                    _auctionProductsRepository.UpdateProduct(product);
+                    
+                    // Verify images were saved by retrieving the product again
+                    try {
+                        var savedProduct = _auctionProductsRepository.GetProductByID(product.Id);
+                        Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
+                    } catch(Exception ex) {
+                        Console.WriteLine($"Error verifying images: {ex.Message}");
+                    }
+                }
+
                 var dto = AuctionProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, dto);
             }
-             catch (ArgumentException aex)
+            catch (ArgumentException aex)
             {
-                 
-                 return BadRequest(aex.Message);
+                return BadRequest(aex.Message);
             }
             catch (Exception ex)
             {

@@ -222,21 +222,52 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
         public void UpdateProduct(AuctionProduct product)
         {
-            string query = "UPDATE AuctionProducts SET current_price = @CurrentPrice WHERE Id = @Id"; 
+            string updateProductQuery = "UPDATE AuctionProducts SET current_price = @CurrentPrice WHERE Id = @Id";
+            string insertImageQuery = @"
+            INSERT INTO AuctionProductsImages (product_id, url)
+            VALUES (@ProductId, @Url)";
+            
             SqlConnection sqlConn = _connection.GetConnection();
             
             try
             {
                 _connection.OpenConnection();
-                using (SqlCommand cmd = new SqlCommand(query, sqlConn))
+                using (SqlTransaction transaction = sqlConn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@CurrentPrice", product.CurrentPrice); 
-                    cmd.Parameters.AddWithValue("@Id", product.Id);
+                    using (SqlCommand cmd = new SqlCommand(updateProductQuery, sqlConn, transaction))
+                    {
+                        cmd.Parameters.AddWithValue("@CurrentPrice", product.CurrentPrice); 
+                        cmd.Parameters.AddWithValue("@Id", product.Id);
 
-                    int rowsAffected = cmd.ExecuteNonQuery();
-                    if (rowsAffected == 0) {
-                        throw new KeyNotFoundException($"AuctionProduct with ID {product.Id} not found for update.");
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected == 0) {
+                            transaction.Rollback();
+                            throw new KeyNotFoundException($"AuctionProduct with ID {product.Id} not found for update.");
+                        }
                     }
+
+                    // Then handle any images that need to be added
+                    if (product.Images != null && product.Images.Any())
+                    {
+                        Console.WriteLine($"Updating product {product.Id} with {product.Images.Count} images");
+                        
+                        foreach (var image in product.Images)
+                        {
+                            // If the image doesn't have an ID, it's new and needs to be inserted
+                            if (image.Id == 0)
+                            {
+                                Console.WriteLine($"Adding new image with URL: {image.Url} to product ID: {product.Id}");
+                                using (SqlCommand cmdImage = new SqlCommand(insertImageQuery, sqlConn, transaction))
+                                {
+                                    cmdImage.Parameters.AddWithValue("@ProductId", product.Id);
+                                    cmdImage.Parameters.AddWithValue("@Url", image.Url);
+                                    cmdImage.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+
+                    transaction.Commit();
                 }
             }
             catch (Exception ex)

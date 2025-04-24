@@ -76,7 +76,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Product>> AuctionProductsAllAsync()
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AuctionProductDTO>> AuctionProductsAllAsync()
         {
             return AuctionProductsAllAsync(System.Threading.CancellationToken.None);
         }
@@ -84,7 +84,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Product>> AuctionProductsAllAsync(System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<AuctionProductDTO>> AuctionProductsAllAsync(System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -125,7 +125,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Product>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<AuctionProductDTO>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -160,7 +160,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<AuctionProduct> AuctionProductsPOSTAsync(AuctionProduct? body)
+        public virtual System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsPOSTAsync(AuctionProduct? body)
         {
             return AuctionProductsPOSTAsync(body, System.Threading.CancellationToken.None);
         }
@@ -168,7 +168,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Created</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<AuctionProduct> AuctionProductsPOSTAsync(AuctionProduct? body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsPOSTAsync(AuctionProduct? body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -213,7 +213,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 201)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProduct>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProductDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -258,7 +258,7 @@ namespace MarketMinds.Services.ApiService
 
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<AuctionProduct> AuctionProductsGETAsync(int id)
+        public virtual System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsGETAsync(int id)
         {
             return AuctionProductsGETAsync(id, System.Threading.CancellationToken.None);
         }
@@ -266,7 +266,7 @@ namespace MarketMinds.Services.ApiService
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<AuctionProduct> AuctionProductsGETAsync(int id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<AuctionProductDTO> AuctionProductsGETAsync(int id, System.Threading.CancellationToken cancellationToken)
         {
             if (id == null)
                 throw new System.ArgumentNullException("id");
@@ -311,7 +311,7 @@ namespace MarketMinds.Services.ApiService
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProduct>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<AuctionProductDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -525,6 +525,1124 @@ namespace MarketMinds.Services.ApiService
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<Basket> UserAsync(int userId)
+        {
+            return UserAsync(userId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<Basket> UserAsync(int userId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<Basket>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<BasketItem>> ItemsAsync(int basketId)
+        {
+            return ItemsAsync(basketId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<BasketItem>> ItemsAsync(int basketId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (basketId == null)
+                throw new System.ArgumentNullException("basketId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/{basketId}/items"
+                    urlBuilder_.Append("api/Basket/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(basketId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/items");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<BasketItem>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task ProductPOSTAsync(int userId, int productId, int? body)
+        {
+            return ProductPOSTAsync(userId, productId, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task ProductPOSTAsync(int userId, int productId, int? body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (productId == null)
+                throw new System.ArgumentNullException("productId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}/product/{productId}"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/product/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(productId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task ProductPUTAsync(int userId, int productId, int? body)
+        {
+            return ProductPUTAsync(userId, productId, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task ProductPUTAsync(int userId, int productId, int? body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (productId == null)
+                throw new System.ArgumentNullException("productId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("PUT");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}/product/{productId}"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/product/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(productId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task ProductDELETEAsync(int userId, int productId)
+        {
+            return ProductDELETEAsync(userId, productId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task ProductDELETEAsync(int userId, int productId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (productId == null)
+                throw new System.ArgumentNullException("productId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}/product/{productId}"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/product/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(productId, System.Globalization.CultureInfo.InvariantCulture)));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task IncreaseAsync(int userId, int productId)
+        {
+            return IncreaseAsync(userId, productId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task IncreaseAsync(int userId, int productId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (productId == null)
+                throw new System.ArgumentNullException("productId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("PUT");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}/product/{productId}/increase"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/product/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(productId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/increase");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task DecreaseAsync(int userId, int productId)
+        {
+            return DecreaseAsync(userId, productId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task DecreaseAsync(int userId, int productId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            if (productId == null)
+                throw new System.ArgumentNullException("productId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
+                    request_.Method = new System.Net.Http.HttpMethod("PUT");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}/product/{productId}/decrease"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/product/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(productId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/decrease");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task ClearAsync(int userId)
+        {
+            return ClearAsync(userId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task ClearAsync(int userId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (userId == null)
+                throw new System.ArgumentNullException("userId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/user/{userId}/clear"
+                    urlBuilder_.Append("api/Basket/user/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/clear");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task PromocodeAsync(int basketId, string? body)
+        {
+            return PromocodeAsync(basketId, body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task PromocodeAsync(int basketId, string? body, System.Threading.CancellationToken cancellationToken)
+        {
+            if (basketId == null)
+                throw new System.ArgumentNullException("basketId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/{basketId}/promocode"
+                    urlBuilder_.Append("api/Basket/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(basketId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/promocode");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<BasketTotals> TotalsAsync(int basketId, string? promoCode)
+        {
+            return TotalsAsync(basketId, promoCode, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<BasketTotals> TotalsAsync(int basketId, string? promoCode, System.Threading.CancellationToken cancellationToken)
+        {
+            if (basketId == null)
+                throw new System.ArgumentNullException("basketId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/{basketId}/totals"
+                    urlBuilder_.Append("api/Basket/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(basketId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/totals");
+                    urlBuilder_.Append('?');
+                    if (promoCode != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("promoCode")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(promoCode, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<BasketTotals>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("Server Error", status_, responseText_, headers_, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<bool> ValidateAsync(int basketId)
+        {
+            return ValidateAsync(basketId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Success</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<bool> ValidateAsync(int basketId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (basketId == null)
+                throw new System.ArgumentNullException("basketId");
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("text/plain"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                    if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
+                    // Operation Path: "api/Basket/{basketId}/validate"
+                    urlBuilder_.Append("api/Basket/");
+                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(basketId, System.Globalization.CultureInfo.InvariantCulture)));
+                    urlBuilder_.Append("/validate");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<bool>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
                         }
                         else
                         if (status_ == 500)
@@ -824,20 +1942,56 @@ namespace MarketMinds.Services.ApiService
         [System.Text.Json.Serialization.JsonPropertyName("description")]
         public string? Description { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("condition")]
-        public ProductCondition Condition { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("sellerId")]
+        public int SellerId { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("category")]
-        public ProductCategory Category { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("conditionId")]
+        public int? ConditionId { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("tags")]
-        public System.Collections.Generic.ICollection<ProductTag>? Tags { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("categoryId")]
+        public int? CategoryId { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("images")]
-        public System.Collections.Generic.ICollection<Image>? Images { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("startTime")]
+        public System.DateTimeOffset StartTime { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("endTime")]
+        public System.DateTimeOffset EndTime { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("startPrice")]
+        public double StartPrice { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("currentPrice")]
+        public double CurrentPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("seller")]
         public User Seller { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public Condition Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public Category Category { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bids")]
+        public System.Collections.Generic.ICollection<Bid>? Bids { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<ProductImage>? Images { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class AuctionProductDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        public string? Title { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("startAuctionDate")]
         public System.DateTimeOffset StartAuctionDate { get; set; } = default!;
@@ -846,13 +2000,79 @@ namespace MarketMinds.Services.ApiService
         public System.DateTimeOffset EndAuctionDate { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("startingPrice")]
-        public float StartingPrice { get; set; } = default!;
+        public double StartingPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("currentPrice")]
-        public float CurrentPrice { get; set; } = default!;
+        public double CurrentPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("bidHistory")]
-        public System.Collections.Generic.ICollection<Bid>? BidHistory { get; set; } = default!;
+        public System.Collections.Generic.ICollection<BidDTO>? BidHistory { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public ConditionDTO Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public CategoryDTO Category { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("tags")]
+        public System.Collections.Generic.ICollection<ProductTagDTO>? Tags { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<ImageDTO>? Images { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("seller")]
+        public UserDTO Seller { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Basket
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("items")]
+        public System.Collections.Generic.ICollection<BasketItem>? Items { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BasketItem
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public BuyProduct Product { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("quantity")]
+        public int Quantity { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double Price { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("hasValidPrice")]
+        public bool HasValidPrice { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("formattedPrice")]
+        public string? FormattedPrice { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BasketTotals
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("subtotal")]
+        public float Subtotal { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("discount")]
+        public float Discount { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("totalAmount")]
+        public float TotalAmount { get; set; } = default!;
 
     }
 
@@ -860,19 +2080,167 @@ namespace MarketMinds.Services.ApiService
     public partial class Bid
     {
 
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bidderId")]
+        public int BidderId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productId")]
+        public int ProductId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double Price { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("timestamp")]
+        public System.DateTimeOffset Timestamp { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public AuctionProduct Product { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("bidder")]
         public User Bidder { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BidDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double Price { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("timestamp")]
+        public System.DateTimeOffset Timestamp { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bidder")]
+        public UserDTO Bidder { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BuyProduct
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("title")]
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Title { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("sellerId")]
+        public int SellerId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("conditionId")]
+        public int ConditionId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("categoryId")]
+        public int CategoryId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("seller")]
+        public User Seller { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("condition")]
+        public Condition Condition { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public Category Category { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("price")]
         public float Price { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("timestamp")]
-        public System.DateTimeOffset Timestamp { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("tags")]
+        public System.Collections.Generic.ICollection<ProductTag>? Tags { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("images")]
+        public System.Collections.Generic.ICollection<Image>? Images { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Category
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("products")]
+        public System.Collections.Generic.ICollection<AuctionProduct>? Products { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class CategoryDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
+        public string? DisplayTitle { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Condition
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("products")]
+        public System.Collections.Generic.ICollection<AuctionProduct>? Products { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ConditionDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
+        public string? DisplayTitle { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class Image
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("url")]
+        public string? Url { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ImageDTO
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("url")]
@@ -911,67 +2279,42 @@ namespace MarketMinds.Services.ApiService
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Product
+    public partial class ProductImage
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("productId")]
+        public int ProductId { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("url")]
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Url { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("product")]
+        public AuctionProduct Product { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ProductTag
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("title")]
-        public string? Title { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("description")]
-        public string? Description { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("condition")]
-        public ProductCondition Condition { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("category")]
-        public ProductCategory Category { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("tags")]
-        public System.Collections.Generic.ICollection<ProductTag>? Tags { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("images")]
-        public System.Collections.Generic.ICollection<Image>? Images { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("seller")]
-        public User Seller { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ProductCategory
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public int Id { get; set; } = default!;
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Title { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
         public string? DisplayTitle { get; set; } = default!;
 
-        [System.Text.Json.Serialization.JsonPropertyName("description")]
-        public string? Description { get; set; } = default!;
-
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ProductCondition
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public int Id { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("displayTitle")]
-        public string? DisplayTitle { get; set; } = default!;
-
-        [System.Text.Json.Serialization.JsonPropertyName("description")]
-        public string? Description { get; set; } = default!;
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class ProductTag
+    public partial class ProductTagDTO
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -995,17 +2338,50 @@ namespace MarketMinds.Services.ApiService
         [System.Text.Json.Serialization.JsonPropertyName("email")]
         public string? Email { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("passwordHash")]
+        public string? PasswordHash { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("userType")]
         public int UserType { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("balance")]
-        public float Balance { get; set; } = default!;
+        public double Balance { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("rating")]
-        public float Rating { get; set; } = default!;
+        public double Rating { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("sellingItems")]
+        public System.Collections.Generic.ICollection<AuctionProduct>? SellingItems { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("bids")]
+        public System.Collections.Generic.ICollection<Bid>? Bids { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UserDTO
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("username")]
+        public string? Username { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("email")]
+        public string? Email { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("userType")]
+        public int UserType { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("balance")]
+        public double Balance { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("rating")]
+        public double Rating { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("password")]
-        public float Password { get; set; } = default!;
+        public int Password { get; set; } = default!;
 
     }
 

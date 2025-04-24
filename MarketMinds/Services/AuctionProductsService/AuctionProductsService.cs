@@ -35,8 +35,32 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
-            var response = httpClient.PostAsJsonAsync("auctionproducts", auctionProduct).Result;
-            response.EnsureSuccessStatusCode();
+
+            var productToSend = new
+            {
+                auctionProduct.Title,
+                auctionProduct.Description,
+                SellerId = auctionProduct.Seller?.Id ?? 0,
+                ConditionId = auctionProduct.Condition?.Id,
+                CategoryId = auctionProduct.Category?.Id,
+                StartTime = auctionProduct.StartAuctionDate,
+                EndTime = auctionProduct.EndAuctionDate,
+                StartPrice = auctionProduct.StartingPrice,
+                CurrentPrice = auctionProduct.StartingPrice,
+                Images = auctionProduct.Images == null
+                       ? new List<object>()
+                       : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+            };
+
+            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
+
+            var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
