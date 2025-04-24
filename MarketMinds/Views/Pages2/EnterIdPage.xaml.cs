@@ -1,50 +1,19 @@
-using Microsoft.UI.Xaml;
+using Marketplace_SE.Services;
+using Marketplace_SE.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Marketplace_SE
 {
     public sealed partial class EnterIdPage : Page
     {
+        public EnterIdPageViewModel ViewModel { get; }
+
         public EnterIdPage()
         {
             this.InitializeComponent();
+            IUserService userService = new UserService();
+            ViewModel = new EnterIdPageViewModel(userService, this.Frame); // Pass the Frame instance
+            DataContext = ViewModel;
         }
-
-        private string RetrieveUserId()
-        {
-            // Fake method to retrieve user ID
-            return "12345";
-        }
-
-        private void Continue_Click(object sender, RoutedEventArgs e)
-        {
-            string enteredId = IdInputBox.Text;
-
-            if (enteredId == RetrieveUserId()) 
-            {
-                Frame.Navigate(typeof(ResetPasswordPage));
-            }
-            else
-            {
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "Invalid ID",
-                    Content = "The ID you entered is not valid.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                _ = dialog.ShowAsync();
-            }
-        }
-
-        private void Back_Click(object sender, RoutedEventArgs e)
-        {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
-        }
-
     }
-
 }
