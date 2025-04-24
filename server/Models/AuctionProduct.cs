@@ -43,7 +43,7 @@ namespace server.Models // Adjusted namespace to server.Models
 
         // Navigation properties
         [ForeignKey("SellerId")]
-        public User Seller { get; set; } = null!;
+        public User? Seller { get; set; }
 
         [ForeignKey("ConditionId")]
         public Condition? Condition { get; set; }
