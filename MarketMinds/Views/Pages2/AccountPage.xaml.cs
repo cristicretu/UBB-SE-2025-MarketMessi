@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 using Marketplace_SE.Data;
-using Marketplace_SE.Objects;
+using DomainLayer.Domain;
 using Marketplace_SE.Utilities;
 
 using Microsoft.UI;

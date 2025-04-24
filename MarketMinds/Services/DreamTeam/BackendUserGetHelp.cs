@@ -1,6 +1,6 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System;
 using Marketplace_SE.Data;
-using System.Collections.Generic;
 using Marketplace_SE.Utilities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Windows.Media.ClosedCaptioning;
@@ -26,9 +26,8 @@ namespace Marketplace_SE.Service
 
             if (!status)
             {
-                //database connection failed
-                //ShowDialog("Database connection error", "Error connecting to database");
-
+                // database connection failed
+                // ShowDialog("Database connection error", "Error connecting to database");
                 Notification notification = new Notification("Database connection error", "Error connecting to database");
                 notification.OkButton.Click += (s, e) =>
                 {

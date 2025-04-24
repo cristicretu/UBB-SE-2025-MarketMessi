@@ -166,3 +166,51 @@ CREATE TABLE BasketItemsBuyProducts (
 	CONSTRAINT FK_BasketItems_Basket FOREIGN KEY (basket_id) REFERENCES Baskets(id),
 	CONSTRAINT FK_BasketItems_Product FOREIGN KEY (product_id) REFERENCES BuyProducts(id),
 );
+
+
+
+----- ORDERS ------
+CREATE TABLE Orders (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX),
+    cost FLOAT NOT NULL,
+    created BIGINT NOT NULL,
+    sellerId INT NOT NULL,
+    buyerId INT NOT NULL,
+    orderStatus NVARCHAR(50) NOT NULL
+);
+
+
+----- CHAT BOT TABLES ------
+CREATE TABLE ChatBotNodes
+(
+	pid INT PRIMARY KEY,
+	button_label NVARCHAR(100) NOT NULL,
+	label_text NVARCHAR(MAX) NOT NULL,
+	response_text NVARCHAR(MAX) NOT NULL,
+);
+
+CREATE TABLE ChatBotChildren
+(
+	cid INT PRIMARY KEY IDENTITY,
+	parentID INT FOREIGN KEY REFERENCES ChatBotNodes(pid) NOT NULL,
+	childID INT FOREIGN KEY REFERENCES ChatBotNodes(pid) NOT NULL
+);
+
+----- CHAT TABLES ------
+CREATE TABLE Conversations (
+        id INT PRIMARY KEY IDENTITY(1,1),
+        user1 INT NOT NULL,
+        user2 INT NOT NULL
+);
+
+CREATE TABLE Messages (
+        id INT PRIMARY KEY IDENTITY(1,1),
+        conversationId INT NOT NULL,
+	    creator INT NOT NULL,
+	    timestamp BIGINT NOT NULL,
+        contentType NVARCHAR(50) NOT NULL,
+        content NVARCHAR(MAX) NOT NULL,
+);
+

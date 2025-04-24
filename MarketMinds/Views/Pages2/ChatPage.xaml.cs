@@ -1,504 +1,401 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Media.Imaging;
+using DomainLayer.Domain;
+using MarketMinds;
+using MarketMinds.Helpers.Selectors;
+using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.ViewModels;
 using Marketplace_SE.Data;
-using Marketplace_SE.Objects;
 using Marketplace_SE.Utilities;
-
-
-
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Navigation;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Marketplace_SE
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class ChatPage : Page
     {
+        private ChatViewModel chatViewModel;
+        private IImageUploadService imageUploadService;
 
+        private User currentUser;
+        private User targetUser;
+
+        private DispatcherTimer updateTimer;
         private List<string> chatHistory = new();
+        private ObservableCollection<Message> displayedMessages = new();
 
+        private bool isInitializing = false;
+        private bool initialLoadComplete = false;
 
-        private Conversation conversation;
-        private long lastMessageTimestamp = 0;
-        private User me;
-        private User target;
-
-        private Task loopUpdater;
-        private CancellationTokenSource cancellationTokenSource;
-
-        public ChatPage(int hardcoded_template=0)
+        public ChatPage()
         {
-            // Open database connection
-            // Read Database.cs for guide
-            Database.databasee = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.databasee.Connect();
-
-            if (!status)
-            {
-                //database connection failed
-                //ShowDialog("Database connection error", "Error connecting to database");
-                
-                Notification notification = new Notification("Database connection error", "Error connecting to database");
-                notification.OkButton.Click += (s, e) =>
-                {
-                    notification.GetWindow().Close();
-                    Database.databasee.Close();
-                    if (hardcoded_template == 0 || hardcoded_template == 1 || hardcoded_template == 2)
-                    {
-                        Frame.Navigate(typeof(MainMarketplacePage));
-                    }
-                    if (hardcoded_template == 3)
-                    {
-                        Frame.Navigate(typeof(AdminAccountPage));
-                    }
-                };
-                notification.GetWindow().Activate();
-                return;
-            }
-
-            //hardcoded users
-
-            if (hardcoded_template == 0)
-            {
-                this.me = new User("test1", "");
-                this.me.SetId(0);
-
-                this.target = new User("test2", "");
-                this.target.SetId(1);
-            }
-            if(hardcoded_template == 1)
-            {
-                this.me = new User("test2", "");
-                this.me.SetId(1);
-
-                this.target = new User("test1", "");
-                this.target.SetId(0);
-            }
-            if(hardcoded_template == 2)
-            {
-                this.me = new User("test3", "");
-                this.me.SetId(2);
-
-                this.target = new User("test4", "");
-                this.target.SetId(3);
-            }
-            if (hardcoded_template == 3)
-            {
-                this.me = new User("test4", "");
-                this.me.SetId(3);
-
-                this.target = new User("test3", "");
-                this.target.SetId(2);
-            }
-
             this.InitializeComponent();
 
-            //Database actions
-            var data = Database.databasee.Get("SELECT * FROM dbo.Conversations WHERE ((user1=@MyID AND user2=@TargetID) OR (user2=@MyID AND user1=@TargetID))",
-            new string[]
-            {
-                "@MyID",
-                "@TargetID"
-            }, new object[]
-            {
-                me.Id,
-                target.Id
-            });
+            chatViewModel = App.ChatViewModel;
+            imageUploadService = App.ImageUploadService;
 
-            List<Conversation> conversationList = Database.databasee.ConvertToObject<Conversation>(data);
-
-            if (conversationList.Count == 0)
-            {
-                //Create conversation
-
-                int affected = Database.databasee.Execute("INSERT INTO Conversations (user1, user2) VALUES (@MyID, @TargetID)",
-                    new string[]
-                    {
-                        "@MyID",
-                        "@TargetID"
-                    }, new object[]
-                    {
-                        me.Id,
-                        target.Id
-                    }
-                );
-
-                //Get again
-                data = Database.databasee.Get("SELECT * FROM Conversations WHERE ((user1=@MyID AND user2=@TargetID) OR (user2=@MyID AND user1=@TargetID))",
-                new string[]
-                {
-                    "@MyID",
-                    "@TargetID"
-                }, new object[]
-                {
-                    me.Id,
-                    target.Id
-                });
-                conversationList = Database.databasee.ConvertToObject<Conversation>(data);
-            }
-
-            conversation = conversationList[0];
-
-            // Load chat history from conv 0
-            data = Database.databasee.Get("SELECT * FROM dbo.Messages WHERE conversationId=@ConvID",
-            new string[]
-            {
-                "@ConvID",
-            }, new object[]
-            {
-                conversation.id
-            });
-
-            List<Message> messages = Database.databasee.ConvertToObject<Message>(data);
-            //Sort messages timestamp
-            messages.Sort((a, b) =>
-            {
-                return (int)(a.timestamp - b.timestamp);
-            });
-
-            for (int i = 0; i < messages.Count; i++)
-            {
-                if (messages[i].creator != me.Id)
-                {
-                    lastMessageTimestamp = messages[i].timestamp;
-                }
-
-                if (messages[i].contentType == "text")
-                {
-                    AddMessageToChat(messages[i].content, me.Id == messages[i].creator);
-                }
-                else if (messages[i].contentType == "image")
-                {
-                    byte[] imgBytes = DataEncoder.HexDecode(messages[i].content);
-                    DisplayImageFromBytes(imgBytes, me.Id == messages[i].creator);
-                }
-                else
-                {
-                    //must not happen
-                }
-            }
-
-            Debug.WriteLine(lastMessageTimestamp.ToString());
-
-            cancellationTokenSource = new CancellationTokenSource();
-            loopUpdater = Task.Run(() => UpdateLoop(cancellationTokenSource.Token), cancellationTokenSource.Token);
-
-
+            ChatListView.ItemsSource = displayedMessages;
         }
 
-
-
-        public void StopUpdateLoop()
+        protected override void OnNavigatedTo(NavigationEventArgs eventArgs)
         {
-            if (cancellationTokenSource != null)
+            base.OnNavigatedTo(eventArgs);
+            displayedMessages.Clear();
+            chatHistory.Clear();
+
+            if (eventArgs.Parameter is UserNotSoldOrder selectedOrder)
             {
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource.Dispose();
-                cancellationTokenSource = null;
+                currentUser = App.CurrentUser;
+                targetUser = new User(selectedOrder.SellerId, "Seller", string.Empty);
             }
-        }
-
-        private void UpdateLoop(CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
+            else if (eventArgs.Parameter is User user)
             {
-                // Update conversation with new messages
-
-                var data = Database.databasee.Get("SELECT * FROM dbo.Messages WHERE conversationId=@ConvID AND creator!=@MyID AND timestamp>@LastMessageTimestamp",
-                new string[]
-                {
-                    "@ConvID",
-                    "@MyID",
-                    "@LastMessageTimestamp"
-                }, new object[]
-                {
-                    conversation.id,
-                    me.Id,
-                    lastMessageTimestamp
-
-                });
-
-                List<Message> messages = Database.databasee.ConvertToObject<Message>(data);
-                messages.Sort((a, b) =>
-                {
-                    return (int)(a.timestamp - b.timestamp);
-                });
-
-                for (int i = 0; i < messages.Count; i++)
-                {
-                    lastMessageTimestamp = messages[i].timestamp;
-
-                    if (messages[i].contentType == "text")
-                    {
-                        int idx = i;
-                        DispatcherQueue.TryEnqueue(() =>
-                        {
-                            AddMessageToChat(messages[idx].content, me.Id == messages[idx].creator);
-                        });
-                    }
-                    else if (messages[i].contentType == "image")
-                    {
-                        int idx = i;
-                        byte[] imgBytes = DataEncoder.HexDecode(messages[idx].content);
-                        DispatcherQueue.TryEnqueue(() =>
-                        {
-                            DisplayImageFromBytes(imgBytes, me.Id == messages[idx].creator);
-                        });
-                    }
-                    else
-                    {
-                        //must not happen
-                    }
-                }
-
-                try
-                {
-                    Task.Delay(1000, token).Wait();
-                }
-                catch (Exception)
-                {
-                    break;
-                }
-
-            }
-        }
-
-
-
-        private void SendMsgDatabase(object _content, string contentType = "")
-        {
-            //Allowed content type
-            // text
-            // image
-
-
-            DateTime currentTime = DateTime.UtcNow;
-            long unixTime = ((DateTimeOffset)currentTime).ToUnixTimeMilliseconds();
-
-
-            string content = "";
-            if (_content.GetType() == typeof(string))
-            {
-                if (contentType == "")
-                    contentType = "text";
-                content = _content as string;
+                currentUser = App.CurrentUser;
+                targetUser = user;
             }
             else
             {
-                if (_content.GetType() != typeof(byte[]))
-                {
-                    //only byte[] accepted
-                    return;
-                }
-                content = DataEncoder.HexEncode((byte[])_content);
-                if (contentType == "")
-                    contentType = "bytes";
+                currentUser = App.CurrentUser;
+                targetUser = App.TestingUser;
             }
 
-            int affected = Database.databasee.Execute("INSERT INTO Messages (conversationId, creator,timestamp,contentType,content) VALUES (@ConvID, @MyID,@Timestamp,@ContentType,@Content)",
-                    new string[]
-                    {
-                        "@ConvID",
-                        "@MyID",
-                        "@Timestamp",
-                        "@ContentType",
-                        "@Content"
-                    }, new object[]
-                    {
-                        conversation.id,
-                        me.Id,
-                        unixTime,
-                        contentType,
-                        content
-                    }
-                );
+            SetupTemplateSelector();
+
+            TargetUserTextBlock.Text = $"Chatting with {targetUser.Username}";
+
+            isInitializing = true;
+
+            try
+            {
+                chatViewModel.InitializeChat(currentUser, targetUser);
+
+                // Load initial messages
+                LoadInitialChatHistory();
+                initialLoadComplete = true;
+
+                // Start polling timer
+                SetupUpdateTimer();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog("Chat initialization error", ex.Message);
+            }
+            finally
+            {
+                isInitializing = false;
+            }
         }
 
+        protected override void OnNavigatedFrom(NavigationEventArgs eventArgs)
+        {
+            base.OnNavigatedFrom(eventArgs);
+            StopUpdateTimer();
+        }
 
+        private void SetupTemplateSelector()
+        {
+            var selector = new ChatMessageTemplateSelector
+            {
+                MyUserId = currentUser.Id,
+                MyImageMessageTemplate = this.Resources["MyImageMessageTemplate"] as DataTemplate,
+                MyTextMessageTemplate = this.Resources["MyTextMessageTemplate"] as DataTemplate,
+                TargetImageMessageTemplate = this.Resources["TargetImageMessageTemplate"] as DataTemplate,
+                TargetTextMessageTemplate = this.Resources["TargetTextMessageTemplate"] as DataTemplate
+            };
+            ChatListView.ItemTemplateSelector = selector;
+        }
+
+        private void SetupHardcodedUsers(int template)
+        {
+            switch (template)
+            {
+                case 0:
+                    currentUser = new User(0, "test1", string.Empty);
+                    targetUser = new User(1, "test2", string.Empty);
+                    break;
+                case 1:
+                    currentUser = new User(1, "test2", string.Empty);
+                    targetUser = new User(0, "test1", string.Empty);
+                    break;
+                case 2:
+                    currentUser = new User(2, "test3", string.Empty);
+                    targetUser = new User(3, "test4", string.Empty);
+                    break;
+                case 3: // Admin case
+                    currentUser = new User(3, "test4", string.Empty); // Assuming ID 3 is admin
+                    targetUser = new User(2, "test3", string.Empty);
+                    break;
+                default:
+                    // Handle invalid template?
+                    currentUser = null;
+                    targetUser = null;
+                    break;
+            }
+        }
+
+        private void SetupUpdateTimer()
+        {
+            if (updateTimer == null)
+            {
+                updateTimer = new DispatcherTimer();
+                updateTimer.Interval = TimeSpan.FromSeconds(1);
+                updateTimer.Tick += UpdateTimer_Tick;
+            }
+            updateTimer.Start();
+        }
+
+        private void StopUpdateTimer()
+        {
+            if (updateTimer != null)
+            {
+                updateTimer.Stop();
+                updateTimer.Tick -= UpdateTimer_Tick;
+                updateTimer = null;
+            }
+        }
+
+        private void UpdateTimer_Tick(object sender, object e)
+        {
+            if (isInitializing || !initialLoadComplete)
+            {
+                return;
+            }
+
+            try
+            {
+                List<Message> newMessages = chatViewModel.CheckForNewMessages();
+                if (newMessages?.Count > 0)
+                {
+                    bool addedNew = false;
+                    foreach (var message in newMessages)
+                    {
+                        if (!displayedMessages.Any(m => m.Id == message.Id && m.Id != 0))
+                        {
+                            AddMessageToDisplay(message);
+                            addedNew = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error checking for new messages: {ex.Message}");
+            }
+        }
+
+        private void LoadInitialChatHistory()
+        {
+            List<Message> initialMessages = chatViewModel.GetInitialMessages();
+            if (initialMessages != null)
+            {
+                foreach (var message in initialMessages)
+                {
+                    AddMessageToDisplay(message);
+                }
+            }
+        }
+
+        private void AddMessageToDisplay(Message message)
+        {
+            displayedMessages.Add(message);
+
+            string timeString = DateTimeOffset.FromUnixTimeMilliseconds(message.Timestamp).ToString("[HH:mm]");
+            bool isMe = message.Creator == currentUser.Id;
+            string prefix = isMe ? "[You]" : "[Peer]";
+            string contentForExport = message.ContentType == "text" ? message.Content : "<image>";
+
+            chatHistory.Add($"{timeString} {prefix}: {contentForExport}");
+        }
+
+        // --- Event Handlers ---
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
-            string message = MessageBox.Text.Trim();
-            if (string.IsNullOrEmpty(message)) return;
+            string messageText = MessageBox.Text.Trim();
+            if (string.IsNullOrEmpty(messageText) || chatViewModel == null || isInitializing)
+            {
+                return;
+            }
 
-            SendMsgDatabase(message);
-            AddMessageToChat(message, true);
-            MessageBox.Text = "";
+            string textToSend = messageText;
+            long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            Message message = new Message
+            {
+                ConversationId = chatViewModel.GetConversation().Id,
+                Content = textToSend,
+                ContentType = "text",
+                Creator = currentUser.Id,
+                Timestamp = pseudoTimestamp
+            };
+            AddMessageToDisplay(message);
+            MessageBox.Text = string.Empty;
+
+            MessageBox.IsEnabled = false;
+            SendButton.IsEnabled = false;
+
+            bool success = chatViewModel.SendTextMessage(textToSend);
+
+            if (!success)
+            {
+                ShowErrorDialog("Message error", "Failed to send message.");
+                return;
+            }
+
+            MessageBox.IsEnabled = true;
+            SendButton.IsEnabled = true;
+            MessageBox.Focus(FocusState.Programmatic);
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private async void AttachButton_Click(object sender, RoutedEventArgs e)
         {
-            StopUpdateLoop();
-            Database.databasee.Close();
-            if(this.me.Id == 0 || this.me.Id == 1 || this.me.Id == 2)
+            if (chatViewModel == null || isInitializing)
             {
-                Frame.Navigate(typeof(MainMarketplacePage));
+                return;
             }
-            if (this.me.Id == 3)
+
+            Window currentWindow = GetCurrentWindow();
+            if (currentWindow == null)
             {
-                Frame.Navigate(typeof(AdminAccountPage));
+                return;
+            }
+
+            AttachButton.IsEnabled = false;
+
+            try
+            {
+                string hexImageData = await imageUploadService.UploadImage(currentWindow);
+
+                if (!string.IsNullOrEmpty(hexImageData))
+                {
+                    byte[] bytes = null;
+                    try
+                    {
+                        bytes = DataEncoder.HexDecode(hexImageData);
+                    }
+                    catch (Exception ex)
+                    {
+                        AttachButton.IsEnabled = true;
+                        return;
+                    }
+
+                if (bytes != null && bytes.Length > 0)
+                    {
+                        long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                        Message message = new Message
+                        {
+                            ConversationId = chatViewModel.GetConversation().Id,
+                            Content = DataEncoder.HexEncode(bytes),
+                            ContentType = "image",
+                            Creator = currentUser.Id,
+                            Timestamp = pseudoTimestamp
+                        };
+                        AddMessageToDisplay(message);
+
+                        bool success = chatViewModel.SendImageMessage(bytes);
+
+                        if (!success)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog("Image upload error", "Failed to upload image.");
+            }
+            finally
+            {
+                AttachButton.IsEnabled = true;
             }
         }
 
         private async void ExportButton_Click(object sender, RoutedEventArgs e)
         {
-            var savePicker = new Windows.Storage.Pickers.FileSavePicker();
-            savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-            savePicker.FileTypeChoices.Add("Text File", new List<string>() { ".txt" });
-            savePicker.SuggestedFileName = "ChatHistory";
+            var currentElement = sender as UIElement;
+            if (currentElement == null)
+            {
+                return;
+            }
 
-            // Required for WinUI 3 desktop apps
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+            var savePicker = new Windows.Storage.Pickers.FileSavePicker
+            {
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = $"{currentUser.Username}_{targetUser.Username}_chat_history.txt"
+            };
+            savePicker.FileTypeChoices.Add("Text File", new List<string> { ".txt" });
+
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(currentElement.XamlRoot);
             WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hWnd);
 
             var file = await savePicker.PickSaveFileAsync();
             if (file != null)
             {
-                await Windows.Storage.FileIO.WriteLinesAsync(file, chatHistory);
-            }
-        }
-
-
-        private void AddMessageToChat(string message, bool isClient)
-        {
-            string timeStamp = DateTime.Now.ToString("[HH:mm]");
-            string displayText = $"{timeStamp} {message}";
-
-            var textBlock = new TextBlock
-            {
-                Text = displayText,
-                TextWrapping = TextWrapping.WrapWholeWords,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.White)
-            };
-
-            var border = new Border
-            {
-                Child = textBlock,
-                Background = new SolidColorBrush(isClient ? Microsoft.UI.Colors.Green : Microsoft.UI.Colors.Red),
-                CornerRadius = new CornerRadius(6),
-                Margin = new Thickness(0, 4, 0, 4),
-                Padding = new Thickness(8),
-                HorizontalAlignment = isClient ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                MaxWidth = 250
-            };
-
-            ChatPanel.Children.Add(border);
-
-            string prefix = isClient ? "[You]" : "[Peer]";
-            chatHistory.Add($"{timeStamp} {prefix}: {message}");
-
-            // Auto-scroll to bottom
-            if (ChatPanel.Parent is ScrollViewer scrollViewer)
-            {
-                scrollViewer.ChangeView(null, scrollViewer.ScrollableHeight, null);
-            }
-        }
-
-
-        /*
-        private void SendMessage(string message)
-        {
-            try
-            {
-                TcpClient client = new TcpClient("127.0.0.1", sendPort); // Send to server
-                byte[] data = Encoding.UTF8.GetBytes(message);
-                NetworkStream stream = client.GetStream();
-                stream.Write(data, 0, data.Length);
-                stream.Close();
-                client.Close();
-            }
-            catch (Exception ex)
-            {
-                DispatcherQueue.TryEnqueue(() =>
+                try
                 {
-                    AddMessageToChat("Send failed: " + ex.Message, false);
-                });
-            }
-        }
-        */
-
-        private async void AttachButton_Click(object sender, RoutedEventArgs e)
-        {
-            var picker = new Windows.Storage.Pickers.FileOpenPicker();
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".png");
-
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, hWnd);
-
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
-            {
-                var buffer = await Windows.Storage.FileIO.ReadBufferAsync(file);
-                byte[] bytes = buffer.ToArray();
-
-                SendMsgDatabase(bytes, "image");
-
-                // Tag the image so receiver knows what it is
-        /*  
-        byte[] header = Encoding.UTF8.GetBytes("IMG|");
-                byte[] fullMessage = header.Concat(bytes).ToArray();
-
-                SendBytes(fullMessage);
-        */
-                DisplayImageFromBytes(bytes, isClient: true);
-                chatHistory.Add($"[You]: <sent image>");
+                    await Windows.Storage.FileIO.WriteLinesAsync(file, chatHistory);
+                }
+                catch (Exception ex)
+                {
+                    ShowErrorDialog("Export error", "Failed to export chat history.");
+                    return;
+                }
             }
         }
 
-
-        private void DisplayImageFromBytes(byte[] imageData, bool isClient)
+        private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            using var stream = new MemoryStream(imageData);
-            var bitmap = new BitmapImage();
-            stream.Position = 0;
-
-            bitmap.SetSource(stream.AsRandomAccessStream());
-
-            var image = new Image
+            StopUpdateTimer();
+            if (Frame.CanGoBack)
             {
-                Source = bitmap,
-                Width = 150,
-                Height = 150,
-                Stretch = Stretch.UniformToFill
-            };
-
-            var border = new Border
+                Frame.GoBack();
+            }
+            else
             {
-                Child = image,
-                Background = new SolidColorBrush(isClient ? Microsoft.UI.Colors.Green : Microsoft.UI.Colors.Red),
-                CornerRadius = new CornerRadius(6),
-                Margin = new Thickness(0, 4, 0, 4),
-                Padding = new Thickness(4),
-                HorizontalAlignment = isClient ? HorizontalAlignment.Right : HorizontalAlignment.Left
-            };
-
-            ChatPanel.Children.Add(border);
+                Frame.Navigate(typeof(MainMarketplacePage));
+            }
         }
 
+        private async void ShowErrorDialog(string title, string message)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+
+        private Window GetCurrentWindow()
+        {
+            var currentWindow = Window.Current;
+            if (currentWindow == null)
+            {
+                ShowErrorDialog("Window error", "Could not retrieve the current window.");
+                return null;
+            }
+            return currentWindow;
+        }
+        private void ShowLoadingIndicator(bool show)
+        {
+            LoadingIndicator.IsActive = show;
+            LoadingIndicator.Visibility = Visibility.Visible;
+        }
     }
 }
