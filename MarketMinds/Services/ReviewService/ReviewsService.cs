@@ -70,9 +70,13 @@ namespace MarketMinds.Services.ReviewService
 
                         // Try to find test users that match the buyer ID
                         if (App.CurrentUser.Id == review.BuyerId)
-                            review.BuyerUsername = App.CurrentUser.Username;
+                        {
+                             review.BuyerUsername = App.CurrentUser.Username;
+                        }
                         else if (App.TestingUser.Id == review.BuyerId)
+                        {
                             review.BuyerUsername = App.TestingUser.Username;
+                        }
                     }
                 }
 
@@ -119,9 +123,13 @@ namespace MarketMinds.Services.ReviewService
 
                         // Try to find test users that match the seller ID
                         if (App.CurrentUser.Id == review.SellerId)
+                        {
                             review.SellerUsername = App.CurrentUser.Username;
+                        }
                         else if (App.TestingUser.Id == review.SellerId)
-                            review.SellerUsername = App.TestingUser.Username;
+                        {
+                             review.SellerUsername = App.TestingUser.Username;
+                        }
                     }
                 }
 
