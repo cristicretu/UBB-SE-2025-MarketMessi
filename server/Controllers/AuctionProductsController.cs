@@ -222,7 +222,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult PlaceBid(int id, [FromBody] BidDTO bidDTO)
+        public IActionResult PlaceBid(int id, [FromBody] CreateBidDTO bidDTO)
         {
             if (bidDTO == null || id != bidDTO.ProductId)
             {
@@ -232,6 +232,24 @@ namespace MarketMinds.Controllers
             try 
             {
                 var product = _auctionProductsRepository.GetProductByID(id);
+                
+                // Handle refund for previous bidder if any
+                if (product.Bids.Any())
+                {
+                    var previousBid = product.Bids.OrderByDescending(b => b.Timestamp).FirstOrDefault();
+                    if (previousBid != null)
+                    {
+                        var previousBidder = previousBid.Bidder;
+                        if (previousBidder != null)
+                        {
+                            // Refund the previous bidder's balance
+                            Console.WriteLine($"Refunding previous bidder (ID: {previousBidder.Id}) with amount: {previousBid.Price}");
+                            previousBidder.Balance += (double)previousBid.Price;
+                            
+                            // _userRepository.UpdateUser(previousBidder);
+                        }
+                    }
+                }
                 
                 // Create the bid
                 var bid = new Bid
@@ -260,14 +278,5 @@ namespace MarketMinds.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while placing the bid.");
             }
         }
-    }
-
-    // DTO for incoming bid data
-    public class BidDTO
-    {
-        public int ProductId { get; set; }
-        public int BidderId { get; set; }
-        public float Amount { get; set; }
-        public DateTime Timestamp { get; set; }
     }
 } 

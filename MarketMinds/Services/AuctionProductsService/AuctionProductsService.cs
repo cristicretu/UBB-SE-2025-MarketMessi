@@ -84,7 +84,6 @@ namespace MarketMinds.Services.AuctionProductsService
                     return;
                 }
                 bidder.Balance -= bidAmount;
-                RefundPreviousBidder(auction);
                 var bid = new Bid(bidder, bidAmount, DateTime.Now);
                 auction.AddBid(bid);
                 auction.CurrentPrice = bidAmount;
@@ -136,16 +135,6 @@ namespace MarketMinds.Services.AuctionProductsService
             if (DateTime.Now > auction.EndAuctionDate)
             {
                 throw new Exception("Auction already ended");
-            }
-        }
-
-        private void RefundPreviousBidder(AuctionProduct auction)
-        {
-            if (auction.BidHistory.Count > 0)
-            {
-                var previousBid = auction.BidHistory.Last();
-                Console.WriteLine($"Warning: Client-side refund logic for bidder ID {previousBid.Bidder.Id} needs review!!!!!!!!!.");
-                previousBid.Bidder.Balance += previousBid.Price;
             }
         }
 
