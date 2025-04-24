@@ -17,7 +17,6 @@ using Marketplace_SE.Service;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Marketplace_SE
 {
     /// <summary>
@@ -25,7 +24,7 @@ namespace Marketplace_SE
     /// </summary>
     public sealed partial class ViewHelpTicket : Page
     {
-        HelpTicket loadedTicket;
+        private HelpTicket loadedTicket;
 
         public ViewHelpTicket()
         {
@@ -62,7 +61,7 @@ namespace Marketplace_SE
         {
             int successCode = BackendUserGetHelp.CloseHelpTicketInDB(loadedTicket.TicketID);
 
-            if(successCode == (int)BackendUserGetHelp.BackendUserGetHelpStatusCodes.ClosedHelpTicketInDBFailure)
+            if (successCode == (int)BackendUserGetHelp.BackendUserGetHelpStatusCodes.ClosedHelpTicketInDBFailure)
             {
                 TextBlockViewHelpTicketTicketClosureFailed.Visibility = Visibility.Visible;
             }
@@ -93,7 +92,7 @@ namespace Marketplace_SE
             TextBoxViewHelpTicketDescription.Text = currentTicket.Descript;
             TextBlockViewHelpTicketClosed.Text = "Closed: " + currentTicket.Closed;
 
-            if(loadedTicket.Closed == "No")
+            if (loadedTicket.Closed == "No")
             {
                 ButtonViewHelpTicketCloseTicket.Visibility = Visibility.Visible;
             }
