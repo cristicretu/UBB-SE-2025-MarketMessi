@@ -15,6 +15,7 @@ namespace server.DataAccessLayer
         public DbSet<Condition> ProductConditions { get; set; }
         public DbSet<Category> ProductCategories { get; set; }
         public DbSet<ProductTag> ProductTags { get; set; }
+        public DbSet<Log> Logs { get; set; }
 
         // Reviews
         public DbSet<Review> Reviews { get; set; }
@@ -52,6 +53,13 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<User>().Property(u => u.Username).IsRequired();
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+
+            // Logs
+            modelBuilder.Entity<Log>().ToTable("Logs");
+            modelBuilder.Entity<Log>().HasKey(l => l.Id);
+            modelBuilder.Entity<Log>().Property(l => l.LogLevel).IsRequired();
+            modelBuilder.Entity<Log>().Property(l => l.Message).IsRequired();
+            modelBuilder.Entity<Log>().Property(l => l.Timestamp).IsRequired();
 
             // Reviews
             modelBuilder.Entity<Review>().ToTable("Reviews");

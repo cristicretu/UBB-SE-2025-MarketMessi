@@ -9,6 +9,7 @@ using MarketMinds.Repositories.ProductTagRepository;
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
 builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
+builder.Services.AddScoped<MarketMinds.Repositories.LoggerRepository.ILoggerRepository, MarketMinds.Repositories.LoggerRepository.LoggerRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
