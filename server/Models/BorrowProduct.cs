@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models
 {
@@ -11,6 +11,17 @@ namespace server.Models
         public DateTime? EndDate { get; set; }
         public float DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
+        
+        // Additional ID properties used only for DTO binding
+        // These should always be NotMapped as they're duplicated in the base class
+        [NotMapped]
+        public new int SellerId { get; set; }
+        
+        [NotMapped]
+        public new int? CategoryId { get; set; }
+        
+        [NotMapped]
+        public new int? ConditionId { get; set; }
         
         // Navigation properties
         public ICollection<BorrowProductImage> Images { get; set; }

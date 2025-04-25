@@ -1,4 +1,5 @@
-﻿using DomainLayer.Domain;
+﻿using System.Collections.Generic;
+using DomainLayer.Domain;
 
 namespace MarketMinds.Services.BorrowProductsService
 {
@@ -18,5 +19,16 @@ namespace MarketMinds.Services.BorrowProductsService
         /// </summary>
         /// <param name="product">The product to delete.</param>
         void DeleteListing(Product product);
+        /// <summary>
+        /// Gets all products.
+        /// </summary>
+        /// <returns>A list of all products.</returns>
+        List<Product> GetProducts();
+        /// <summary>
+        /// Gets a product by ID.
+        /// </summary>
+        /// <param name="id">The ID of the product to retrieve.</param>
+        /// <returns>The product with the specified ID.</returns>
+        Product GetProductById(int id);
     }
 }

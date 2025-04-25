@@ -132,12 +132,49 @@ namespace server.DataAccessLayer
             // Borrow products
             modelBuilder.Entity<BorrowProduct>().ToTable("BorrowProducts");
             modelBuilder.Entity<BorrowProduct>().HasKey(bp => bp.Id);
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.DailyRate).HasColumnName("daily_rate");
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.TimeLimit).HasColumnName("time_limit");
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.StartDate).HasColumnName("start_date");
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.EndDate).HasColumnName("end_date");
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.IsBorrowed).HasColumnName("is_borrowed");
+            // Explicitly map foreign key properties
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.SellerId).HasColumnName("seller_id");
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.CategoryId).HasColumnName("category_id");
+            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.ConditionId).HasColumnName("condition_id");
+            
+            // Ignore NotMapped properties from derived class to avoid duplication
+            modelBuilder.Entity<BorrowProduct>().Ignore("SellerId1");
+            modelBuilder.Entity<BorrowProduct>().Ignore("CategoryId1");
+            modelBuilder.Entity<BorrowProduct>().Ignore("ConditionId1");
 
             modelBuilder.Entity<BorrowProductImage>().ToTable("BorrowProductImages");
             modelBuilder.Entity<BorrowProductImage>().HasKey(i => i.Id);
+            modelBuilder.Entity<BorrowProductImage>().Property(i => i.ProductId).HasColumnName("product_id");
+            
+            // Configure one-to-many relationship between BorrowProduct and BorrowProductImage
+            modelBuilder.Entity<BorrowProductImage>()
+                .HasOne(i => i.Product)
+                .WithMany(p => p.Images)
+                .HasForeignKey(i => i.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<BorrowProductProductTag>().ToTable("BorrowProductProductTags");
             modelBuilder.Entity<BorrowProductProductTag>().HasKey(pt => pt.Id);
+            modelBuilder.Entity<BorrowProductProductTag>().Property(pt => pt.ProductId).HasColumnName("product_id");
+            modelBuilder.Entity<BorrowProductProductTag>().Property(pt => pt.TagId).HasColumnName("tag_id");
+            
+            // Configure many-to-many relationship
+            modelBuilder.Entity<BorrowProductProductTag>()
+                .HasOne(pt => pt.Product)
+                .WithMany(p => p.ProductTags)
+                .HasForeignKey(pt => pt.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BorrowProductProductTag>()
+                .HasOne(pt => pt.Tag)
+                .WithMany()
+                .HasForeignKey(pt => pt.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Basket
             modelBuilder.Entity<Basket>().ToTable("Baskets");
