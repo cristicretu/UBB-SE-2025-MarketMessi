@@ -78,7 +78,7 @@ namespace Marketplace_SE.Utilities
             }
             else
             {
-                q = hex[0] - 'a' + 10;
+                q = hex[1] - 'a' + 10;
             }
 
             return (byte)(p + q);
