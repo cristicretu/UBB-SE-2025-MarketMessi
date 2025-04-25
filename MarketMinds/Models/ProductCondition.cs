@@ -12,6 +12,14 @@ namespace DomainLayer.Domain
         public string DisplayTitle { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
 
+        // Default constructor for JSON deserialization
+        public ProductCondition()
+        {
+            Id = 0;
+            DisplayTitle = string.Empty;
+            Description = string.Empty;
+        }
+
         public ProductCondition(int id, string displayTitle, string description)
         {
             this.Id = id;

@@ -1,12 +1,14 @@
 ﻿using System.Threading.Tasks;
 using System.Text;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using DomainLayer.Domain;
-using MarketMinds.Repositories.AuctionProductsRepository;
+using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using MarketMinds.Repositories;
 
 namespace MarketMinds.Services.AuctionProductsService
 {
@@ -14,33 +16,113 @@ namespace MarketMinds.Services.AuctionProductsService
     {
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
-        private IAuctionProductsRepository auctionRepository;
-        public AuctionProductsService(IAuctionProductsRepository repository) : base(repository)
+        private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
+
+        public AuctionProductsService(IConfiguration configuration) : base(null)
         {
-            auctionRepository = repository;
+            httpClient = new HttpClient();
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+        }
+
+        public AuctionProductsService(IProductsRepository repository) : base(repository)
+        {
         }
 
         public void CreateListing(Product product)
         {
-            AddProduct(product);
+            if (!(product is AuctionProduct auctionProduct))
+            {
+                throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
+            }
+
+            var productToSend = new
+            {
+                auctionProduct.Title,
+                auctionProduct.Description,
+                SellerId = auctionProduct.Seller?.Id ?? 0,
+                ConditionId = auctionProduct.Condition?.Id,
+                CategoryId = auctionProduct.Category?.Id,
+                StartTime = auctionProduct.StartAuctionDate,
+                EndTime = auctionProduct.EndAuctionDate,
+                StartPrice = auctionProduct.StartingPrice,
+                CurrentPrice = auctionProduct.StartingPrice,
+                Images = auctionProduct.Images == null
+                       ? new List<object>()
+                       : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+            };
+
+            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
+
+            var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
         {
-            ValidateBid(auction, bidder, bidAmount);
-
-            bidder.Balance -= bidAmount;
-
-            RefundPreviousBidder(auction);
-
-            var bid = new Bid(bidder, bidAmount, DateTime.Now);
-            auction.AddBid(bid);
-            auction.CurrentPrice = bidAmount;
-
-            ExtendAuctionTime(auction);
-
-            auctionRepository.UpdateProduct(auction);
+            try
+            {
+                ValidateBid(auction, bidder, bidAmount);
+                var bidToSend = new
+                {
+                    ProductId = auction.Id,
+                    BidderId = bidder.Id,
+                    Amount = bidAmount,
+                    Timestamp = DateTime.Now
+                };
+                var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"API Error when placing bid: {response.StatusCode} - {errorContent}");
+                    response.EnsureSuccessStatusCode();
+                    return;
+                }
+                bidder.Balance -= bidAmount;
+                var bid = new Bid(bidder, bidAmount, DateTime.Now);
+                auction.AddBid(bid);
+                auction.CurrentPrice = bidAmount;
+                ExtendAuctionTime(auction);
+                Console.WriteLine($"Bid of ${bidAmount} successfully placed on auction {auction.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error placing bid: {ex.Message}");
+                throw;
+            }
         }
+
+        public void ConcludeAuction(AuctionProduct auction)
+        {
+            if (auction.Id == 0)
+            {
+                throw new ArgumentException("Auction Product ID must be set for delete.", nameof(auction.Id));
+            }
+            var response = httpClient.DeleteAsync($"auctionproducts/{auction.Id}").Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        public string GetTimeLeft(AuctionProduct auction)
+        {
+            var timeLeft = auction.EndAuctionDate - DateTime.Now;
+            return timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
+        }
+
+        public bool IsAuctionEnded(AuctionProduct auction)
+        {
+            return DateTime.Now >= auction.EndAuctionDate;
+        }
+
         private void ValidateBid(AuctionProduct auction, User bidder, float bidAmount)
         {
             float minBid = auction.BidHistory.Count == NULL_BID_AMOUNT ? auction.StartingPrice : auction.CurrentPrice + 1;
@@ -61,38 +143,36 @@ namespace MarketMinds.Services.AuctionProductsService
             }
         }
 
-        private void RefundPreviousBidder(AuctionProduct auction)
-        {
-            if (auction.BidHistory.Count > 0)
-            {
-                var previousBid = auction.BidHistory.Last();
-                previousBid.Bidder.Balance += previousBid.Price;
-            }
-        }
         private void ExtendAuctionTime(AuctionProduct auction)
         {
             var timeRemaining = auction.EndAuctionDate - DateTime.Now;
 
             if (timeRemaining.TotalMinutes < MAX_AUCTION_TIME)
             {
-                auction.EndAuctionDate = auction.EndAuctionDate.AddMinutes(1);
+                auction.EndAuctionDate = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
             }
         }
 
-        public void ConcludeAuction(AuctionProduct auction)
+        public override List<Product> GetProducts()
         {
-            auctionRepository.DeleteProduct(auction);
+            var products = httpClient.GetFromJsonAsync<List<AuctionProduct>>("auctionproducts").Result;
+            return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
 
-        public string GetTimeLeft(AuctionProduct auction)
+        public override Product GetProductById(int id)
         {
-            var timeLeft = auction.EndAuctionDate - DateTime.Now;
-            return timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
+            var product = httpClient.GetFromJsonAsync<AuctionProduct>($"auctionproducts/{id}").Result;
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Auction product with ID {id} not found.");
+            }
+            return product;
         }
 
-        public bool IsAuctionEnded(AuctionProduct auction)
+        public Task<IEnumerable<Product>> SortAndFilter(string sortOption, string filterOption, string filterValue)
         {
-            return DateTime.Now >= auction.EndAuctionDate;
+            Console.WriteLine("Warning: SortAndFilter not implemented with specific API call yet. Returning all products.");
+            return Task.FromResult(GetProducts().Cast<Product>());
         }
     }
 }

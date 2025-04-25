@@ -93,23 +93,27 @@ namespace MarketMinds
         private const int BUYER = 1;
         private const int SELLER = 2;
 
+        private static IConfiguration appConfiguration;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
         public App()
         {
+            InitializeComponent();
+            // Initialize configuration
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            appConfiguration = builder.Build();
+            // Initialize API configuration
             InitializeConfiguration();
-            this.InitializeComponent();
         }
 
         private IConfiguration InitializeConfiguration()
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            Configuration = builder.Build();
+            Configuration = appConfiguration;
             return Configuration;
         }
 
@@ -144,14 +148,14 @@ namespace MarketMinds
 
             // Instantiate services
             ProductService = new ProductService(BorrowProductsRepository);
-            BuyProductsService = new BuyProductsService(BuyProductsRepository);
+            BuyProductsService = new BuyProductsService(Configuration);
             BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
-            AuctionProductsService = new AuctionProductsService(AuctionProductsRepository);
+            AuctionProductsService = new AuctionProductsService(Configuration);
             CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(ProductTagRepository);
             ConditionService = new ProductConditionService(ProductConditionRepository);
-            ReviewsService = new ReviewsService(ReviewRepository);
-            BasketService = new BasketService(BasketRepository);
+            ReviewsService = new ReviewsService(Configuration);
+            BasketService = new BasketService(Configuration);
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
