@@ -37,7 +37,12 @@ namespace server.Models.DTOs.Mappers
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
                     Url = i.Url
-                }).ToList() ?? new List<ImageDTO>(),
+                }).ToList() ?? 
+                entity.NonMappedImages?.Select(i => new ImageDTO
+                {
+                    Url = i.Url
+                }).ToList() ?? 
+                new List<ImageDTO>(),
                 Seller = entity.Seller != null ? new UserDTO
                 {
                     Id = entity.Seller.Id,

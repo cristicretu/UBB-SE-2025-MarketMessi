@@ -96,32 +96,35 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
             modelBuilder.Entity<BuyProduct>().HasKey(bp => bp.Id);
 
-            // Explicitly specify that Tags and Images are not mapped
             modelBuilder.Entity<BuyProduct>()
-                .Ignore(bp => bp.Tags);
-            modelBuilder.Entity<BuyProduct>()
-                .Ignore(bp => bp.Images);
+                .Ignore(bp => bp.Tags)
+                .Ignore(bp => bp.NonMappedImages);
 
             modelBuilder.Entity<BuyProductImage>().ToTable("BuyProductImages");
             modelBuilder.Entity<BuyProductImage>().HasKey(i => i.Id);
             modelBuilder.Entity<BuyProductImage>().Property(i => i.ProductId).HasColumnName("product_id");
             
+            // Configure one-to-many relationship between BuyProduct and BuyProductImage
+            modelBuilder.Entity<BuyProductImage>()
+                .HasOne(i => i.Product)
+                .WithMany(p => p.Images)
+                .HasForeignKey(i => i.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<BuyProductProductTag>().ToTable("BuyProductProductTags");
             modelBuilder.Entity<BuyProductProductTag>().HasKey(pt => pt.Id);
             modelBuilder.Entity<BuyProductProductTag>().Property(pt => pt.ProductId).HasColumnName("product_id");
             modelBuilder.Entity<BuyProductProductTag>().Property(pt => pt.TagId).HasColumnName("tag_id");
             
-            
-
-            // Explicitly configure correct foreign key relationships
+                
             modelBuilder.Entity<BuyProductProductTag>()
-                .HasOne<BuyProduct>()
-                .WithMany()
+                .HasOne(pt => pt.Product)
+                .WithMany(p => p.ProductTags)
                 .HasForeignKey(pt => pt.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<BuyProductProductTag>()
-                .HasOne<ProductTag>()
+                .HasOne(pt => pt.Tag)
                 .WithMany()
                 .HasForeignKey(pt => pt.TagId)
                 .OnDelete(DeleteBehavior.Cascade);

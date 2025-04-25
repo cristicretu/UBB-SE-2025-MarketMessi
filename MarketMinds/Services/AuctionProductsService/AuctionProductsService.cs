@@ -40,7 +40,6 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
-
             var productToSend = new
             {
                 auctionProduct.Title,
@@ -56,9 +55,7 @@ namespace MarketMinds.Services.AuctionProductsService
                        ? new List<object>()
                        : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
-
             Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
-
             var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
             if (!response.IsSuccessStatusCode)
             {

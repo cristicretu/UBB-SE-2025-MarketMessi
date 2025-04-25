@@ -1,35 +1,81 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http;
+using System.Text.Json.Nodes;
 using DomainLayer.Domain;
-using MarketMinds.Repositories.ProductConditionRepository;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.ProductConditionService
 {
     public class ProductConditionService : IProductConditionService
     {
-        private IProductConditionRepository repository;
+        private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
 
-        public ProductConditionService(IProductConditionRepository repository)
+        public ProductConditionService(IConfiguration configuration)
         {
-            this.repository = repository;
+            httpClient = new HttpClient();
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
         public List<ProductCondition> GetAllProductConditions()
         {
-            return repository.GetAllProductConditions();
+            var response = httpClient.GetAsync("ProductCondition").Result;
+            response.EnsureSuccessStatusCode();
+            var responseJson = response.Content.ReadAsStringAsync().Result;
+            var clientConditions = new List<ProductCondition>();
+            var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
+
+            if (responseJsonArray != null)
+            {
+                foreach (var responseJsonItem in responseJsonArray)
+                {
+                    var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
+                    var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
+                    var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
+                    clientConditions.Add(new ProductCondition(id, name, description));
+                }
+            }
+            return clientConditions;
         }
 
         public ProductCondition CreateProductCondition(string displayTitle, string description)
         {
-            return repository.CreateProductCondition(displayTitle, description);
+            var requestContent = new StringContent(
+                $"{{\"displayTitle\":\"{displayTitle}\",\"description\":\"{description}\"}}",
+                System.Text.Encoding.UTF8,
+                "application/json");
+            var response = httpClient.PostAsync("ProductCondition", requestContent).Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+            var jsonObject = JsonNode.Parse(json);
+
+            if (jsonObject == null)
+            {
+                throw new InvalidOperationException("Failed to parse the server response.");
+            }
+
+            var id = jsonObject["id"]?.GetValue<int>() ?? 0;
+            var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
+            var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
+            return new ProductCondition(id, name, conditionDescription);
         }
 
         public void DeleteProductCondition(string displayTitle)
         {
-            repository.DeleteProductCondition(displayTitle);
+            var response = httpClient.DeleteAsync($"ProductCondition/{displayTitle}").Result;
+            response.EnsureSuccessStatusCode();
         }
+    }
+
+    public class ProductConditionRequest
+    {
+        public string DisplayTitle { get; set; } = null!;
+        public string Description { get; set; } = null!;
     }
 }

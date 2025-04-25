@@ -16,6 +16,12 @@ namespace server.Models
         [Column("tag_id")]
         public int TagId { get; set; }
 
+        [ForeignKey("ProductId")]
+        public virtual BuyProduct Product { get; set; }
+
+        [ForeignKey("TagId")]
+        public virtual ProductTag Tag { get; set; }
+
         // Navigation properties and Foreign Key relationships are configured in ApplicationDbContext
 
         public BuyProductProductTag() { }

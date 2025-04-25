@@ -1,8 +1,11 @@
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository;
-using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Repositories.BuyProductsRepository;
-using MarketMinds.Repositories.BasketRepository; // Add namespace for BasketRepository
+using MarketMinds.Repositories.BasketRepository;
+using MarketMinds.Repositories.ReviewRepository;
+using MarketMinds.Repositories.ProductCategoryRepository;
+using MarketMinds.Repositories.ProductConditionRepository;
+using MarketMinds.Repositories.ProductTagRepository;
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
@@ -12,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    // Use ReferenceHandler.Preserve for object reference handling
+    options.JsonSerializerOptions.ReferenceHandler = null;
 
     // Enable camel casing to match frontend expectations
     options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -21,6 +25,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
+// compatibility with old API without EF, need to remove this when EF is fully implemented
+builder.Services.AddSingleton<DataBaseConnection>();
+
 // EntityFramework database connection setup
 var InitialCatalog = builder.Configuration["InitialCatalog"];
 var LocalDataSource = builder.Configuration["LocalDataSource"];
@@ -28,11 +35,14 @@ var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trus
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-
+// Register all repositories
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
 builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
+builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
+builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
-using DomainLayer.Domain;
+using server.Models;
 
-namespace MarketMinds.Services.ProductCategoryService
+namespace MarketMinds.Repositories.ProductCategoryRepository
 {
     /// <summary>
-    /// Interface for ProductCategoryService to manage product category operations.
+    /// Interface for ProductCategoryRepository to manage product category operations.
     /// </summary>
-    public interface IProductCategoryService
+    public interface IProductCategoryRepository
     {
         /// <summary>
         /// Returns all the product categories.
         /// </summary>
         /// <returns>A list of all product categories.</returns>
-        List<ProductCategory> GetAllProductCategories();
+        List<Category> GetAllProductCategories();
 
         /// <summary>
         /// Creates a new product category.
@@ -20,7 +20,7 @@ namespace MarketMinds.Services.ProductCategoryService
         /// <param name="displayTitle">The display title of the product category.</param>
         /// <param name="description">The description of the product category.</param>
         /// <returns>The created product category.</returns>
-        ProductCategory CreateProductCategory(string displayTitle, string? description);
+        Category CreateProductCategory(string displayTitle, string? description);
 
         /// <summary>
         /// Deletes a product category by its display title.

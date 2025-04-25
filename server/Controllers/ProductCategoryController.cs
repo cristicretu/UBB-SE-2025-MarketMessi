@@ -1,0 +1,108 @@
+using Microsoft.AspNetCore.Mvc;
+using DataAccessLayer;
+using server.Models;
+using MarketMinds.Repositories.ProductCategoryRepository;
+using System.Collections.Generic;
+using System;
+using System.Net;
+
+namespace MarketMinds.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProductCategoryController : ControllerBase
+    {
+        private readonly IProductCategoryRepository productCategoryRepository;
+
+        public ProductCategoryController(IProductCategoryRepository productCategoryRepository)
+        {
+            this.productCategoryRepository = productCategoryRepository;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(List<Category>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult GetAllProductCategories()
+        {
+            try
+            {
+                var allCategories = productCategoryRepository.GetAllProductCategories();
+                return Ok(allCategories);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error getting all product categories: {exception}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(Category), (int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult CreateProductCategory([FromBody] ProductCategoryRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.DisplayTitle) || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var newCategory = productCategoryRepository.CreateProductCategory(
+                    request.DisplayTitle,
+                    request.Description
+                );
+                
+                return CreatedAtAction(
+                    nameof(GetAllProductCategories), 
+                    new { id = newCategory.Id }, 
+                    newCategory
+                );
+            }
+            catch (ArgumentException argumentException)
+            {
+                return BadRequest(argumentException.Message);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error creating product category: {exception}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the category.");
+            }
+        }
+
+        [HttpDelete("{title}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult DeleteProductCategory(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return BadRequest("Category title is required.");
+            }
+
+            try
+            {
+                productCategoryRepository.DeleteProductCategory(title);
+                return NoContent();
+            }
+            catch (KeyNotFoundException keyNotFoundException)
+            {
+                return NotFound(keyNotFoundException.Message);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error deleting product category '{title}': {exception}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the category.");
+            }
+        }
+    }
+
+    public class ProductCategoryRequest
+    {
+        public string DisplayTitle { get; set; } = null!;
+        public string? Description { get; set; }
+    }
+}
