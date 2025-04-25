@@ -23,6 +23,14 @@ using MarketMinds.Services.ProductConditionService;
 using MarketMinds.Services.ReviewService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
+using MarketMinds.ViewModels;
+using MarketMinds.Services.DreamTeam.ChatBotService;
+using MarketMinds.Repositories.ChatBotRepository;
+using MarketMinds.Repositories.ChatRepository;
+using MarketMinds.Services.DreamTeam.ChatService;
+using MarketMinds.Repositories.MainMarketplaceRepository;
+using MarketMinds.Services.DreamTeam.MainMarketplaceService;
+using MarketMinds.Services.ImagineUploadService;
 
 namespace MarketMinds
 {
@@ -42,6 +50,9 @@ namespace MarketMinds
         public static BuyProductsRepository BuyProductsRepository;
         public static ReviewRepository ReviewRepository;
         public static BasketRepository BasketRepository;
+        public static ChatBotRepository ChatBotRepository;
+        public static ChatRepository ChatRepository;
+        public static MainMarketplaceRepository MainMarketplaceRepository;
 
         // Service declarations
         public static ProductService ProductService;
@@ -53,6 +64,10 @@ namespace MarketMinds
         public static ProductConditionService ConditionService;
         public static ReviewsService ReviewsService;
         public static BasketService BasketService;
+        public static ChatBotService ChatBotService;
+        public static ChatService ChatService;
+        public static MainMarketplaceService MainMarketplaceService;
+        public static IImageUploadService ImageUploadService;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -69,7 +84,9 @@ namespace MarketMinds
         public static SeeSellerReviewsViewModel SeeSellerReviewsViewModel { get; private set; }
         public static BasketViewModel BasketViewModel { get; private set; }
         public static CompareProductsViewModel CompareProductsViewModel { get; private set; }
-
+        public static ChatBotViewModel ChatBotViewModel { get; private set; }
+        public static ChatViewModel ChatViewModel { get; private set; }
+        public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
         public static User CurrentUser { get; set; }
         public static User TestingUser { get; set; }
 
@@ -125,6 +142,9 @@ namespace MarketMinds
             BuyProductsRepository = new BuyProductsRepository(DatabaseConnection);
             ReviewRepository = new ReviewRepository(DatabaseConnection);
             BasketRepository = new BasketRepository(DatabaseConnection);
+            ChatBotRepository = new ChatBotRepository(DatabaseConnection);
+            ChatRepository = new ChatRepository(DatabaseConnection);
+            MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
 
             // Instantiate services
             ProductService = new ProductService(BorrowProductsRepository);
@@ -136,6 +156,9 @@ namespace MarketMinds
             ConditionService = new ProductConditionService(Configuration);
             ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(Configuration);
+            ChatBotService = new ChatBotService(ChatBotRepository);
+            ChatService = new ChatService(ChatRepository);
+            MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
 
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
@@ -152,8 +175,10 @@ namespace MarketMinds
             SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
             BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
             CompareProductsViewModel = new CompareProductsViewModel();
+            ChatBotViewModel = new ChatBotViewModel(ChatBotService);
+            ChatViewModel = new ChatViewModel(ChatService);
+            MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
         }
-
-        private Window mainWindow;
+        private Window mainWindow = null!;
     }
 }

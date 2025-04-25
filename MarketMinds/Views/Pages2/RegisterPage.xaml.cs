@@ -1,0 +1,172 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using DomainLayer.Domain;
+using ViewModelLayer.ViewModel;
+using MarketMinds;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+namespace Marketplace_SE
+{
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class RegisterPage : Page
+    {
+        public RegisterViewModel ViewModel { get; set; }
+        public User NewUser { get; set; }
+
+        public RegisterPage()
+        {
+            this.InitializeComponent();
+            ViewModel = new RegisterViewModel();
+            this.DataContext = ViewModel;
+            NewUser = new User(0, string.Empty, string.Empty, string.Empty);
+        }
+
+        private async void OnCreateUserClick(object sender, RoutedEventArgs e)
+        {
+            NewUser.Username = UsernameTextBox.Text;
+            NewUser.Email = EmailTextBox.Text;
+            NewUser.Password = PasswordBoxWithRevealMode.Password;
+            string confirmPassword = ConfirmPasswordBox.Password;
+
+            if (!IsValidUsername(NewUser.Username))
+            {
+                UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
+                return;
+            }
+            else
+            {
+                UsernameValidationTextBlock.Text = string.Empty;
+            }
+
+            if (await IsUsernameTaken(NewUser.Username))
+            {
+                await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
+                return;
+            }
+
+            string passwordStrength = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
+            if (passwordStrength == "Weak")
+            {
+                await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
+                return;
+            }
+
+            if (NewUser.Password != confirmPassword)
+            {
+                ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
+                return;
+            }
+            else
+            {
+                ConfirmPasswordValidationTextBlock.Text = string.Empty;
+            }
+
+            bool result = await ViewModel.CreateNewUser(NewUser);
+            if (result)
+            {
+                // Set current user if there's a global app state
+                MarketMinds.App.CurrentUser = NewUser;
+
+                await ShowDialog("Account Created", "Your account has been successfully created!");
+                Frame.Navigate(typeof(LoginPage));
+            }
+            else
+            {
+                await ShowDialog("Error", "Failed to create account. Please try again.");
+            }
+        }
+
+        private async Task<bool> IsUsernameTaken(string username)
+        {
+            try
+            {
+                // Call the ViewModel's async method and await the result
+                return await ViewModel.IsUsernameTaken(username);
+            }
+            catch (Exception ex)
+            {
+                // Log error (you should use proper logging in production)
+                Console.WriteLine($"Error checking username: {ex.Message}");
+
+                // Return true as a fail-safe to prevent duplicate usernames
+                // if there's an error checking availability
+                return true;
+            }
+        }
+
+        private bool IsValidUsername(string username)
+        {
+            return Regex.IsMatch(username, "^[A-Za-z0-9_]{5,20}$");
+        }
+
+        private bool IsValidPassword(string password)
+        {
+            return Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,15}$");
+        }
+
+        private void PasswordBoxWithRevealMode_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            PasswordStrengthTextBlock.Text = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
+        }
+
+        private string GetPasswordStrength(string password)
+        {
+            if (password.Length < 6)
+            {
+                return "Weak";
+            }
+
+            if (Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{6,15}$"))
+            {
+                return "Strong";
+            }
+
+            if (Regex.IsMatch(password, "^(?=.*[A-Z])|(?=.*\\d)|(?=.*[@$!%*?&]).{6,15}$"))
+            {
+                return "Medium";
+            }
+
+            return "Weak";
+        }
+
+        private async Task ShowDialog(string title, string content)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
+        {
+            PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
+            ConfirmPasswordBox.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
+        }
+
+        private void NavigateToLoginPage(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(LoginPage));
+        }
+    }
+}

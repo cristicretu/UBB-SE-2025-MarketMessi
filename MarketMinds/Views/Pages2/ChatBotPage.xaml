@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Marketplace_SE.ChatBotPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Marketplace_SE"
+    xmlns:models="using:DomainLayer.Domain"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Chat Interface -->
+        <RichEditBox
+            x:Name="ChatBotChatInterface"
+            IsReadOnly="False"
+            IsHitTestVisible="False"
+            FontSize="18"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsTabStop="False"
+            Padding="10"
+            Margin="12,12,12,0"
+            Grid.Row="0"/>
+
+        <!-- Options Panel - Will be populated manually from code-behind -->
+        <ItemsControl
+            x:Name="ChatBotOptionsItemsControl" 
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Margin="12,12,12,0"
+            Grid.Row="1">
+            <!-- Visibility still managed in code-behind -->
+
+            <ItemsControl.ItemTemplate>
+                <!-- DataTemplate defines the UI for ONE Node object -->
+                <DataTemplate x:DataType="models:Node">
+                    <Grid
+                        Margin="0,0,0,8" 
+                        MinHeight="40"
+                        HorizontalAlignment="Stretch">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <!-- Auto size for button -->
+                            <ColumnDefinition Width="*"/>
+                            <!-- Star for textblock -->
+                        </Grid.ColumnDefinitions>
+
+                        <Button
+                            Grid.Column="0"
+                            Content="{Binding ButtonLabel}"
+                            Tag="{Binding}" 
+                            Click="ChatBotOptionButton_Click"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Stretch"
+                            Padding="15, 5, 15, 5"
+                            MinWidth="100"/>
+
+                            <TextBlock
+                            Grid.Column="1"
+                            Text="{Binding LabelText}"
+                            FontSize="16"
+                            Padding="10, 0, 0, 0"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap"/>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+            <!-- Optional: Define how items are arranged (StackPanel is default for ItemsControl) -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Spacing="8"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+        </ItemsControl>
+
+        <!-- Exit Button -->
+        <Button
+            x:Name="ChatBotKill"
+            Height="40"
+            Content="Exit conversation"
+            FontSize="16"
+            FontWeight="Bold"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Margin="12"
+            Grid.Row="2"
+            Click="OnButtonClickChatBotKill"/>
+    </Grid>
+</Page>

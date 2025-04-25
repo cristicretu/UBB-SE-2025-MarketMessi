@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
 namespace DomainLayer.Domain
 {
@@ -14,11 +10,11 @@ namespace DomainLayer.Domain
         public int UserType { get; set; }
         public float Balance { get; set; }
         public float Rating { get; set; }
-        public float Password { get; set; }
+        public string Password { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
 
         private const float MAX_BALANCE = 999999;
 
-        // Default constructor for JSON deserialization
         public User()
         {
             Id = 0;
@@ -27,15 +23,26 @@ namespace DomainLayer.Domain
             UserType = 0;
             Balance = 0;
             Rating = 0;
-            Password = 0;
+            Password = string.Empty;
+            Token = string.Empty;
         }
 
-        public User(int id, string username, string email)
+        // Constructor with parameters
+        public User(int id, string username, string email, string token = "")
         {
-            this.Id = id;
-            this.Username = username;
-            this.Email = email;
-            this.Balance = MAX_BALANCE;
+            Id = id;
+            Username = username;
+            Email = email;
+            UserType = 0;
+            Balance = 0;
+            Rating = 0;
+            Password = string.Empty;
+            Token = token;
+        }
+
+        public int GetId()
+        {
+            return Id;
         }
     }
 }
