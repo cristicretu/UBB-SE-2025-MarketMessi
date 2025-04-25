@@ -1,75 +1,77 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Marketplace_SE.Service;
+using Marketplace_SE.ViewModels;
+using Marketplace_SE.Services;
+using MarketMinds.Repositories.HelpTicketRepository;
+using DataAccessLayer;
+using MarketMinds;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
-namespace Marketplace_SE
+namespace Marketplace_SE.Views.Pages2
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OpenHelpTicketPage : Page
     {
+        public HelpTicketViewModel ViewModel { get; }
+
         public OpenHelpTicketPage()
         {
             this.InitializeComponent();
+
+            // Initialize the service and repository
+            DataBaseConnection connection = App.DatabaseConnection;
+            var repository = new HelpTicketRepository(connection);
+            var service = new HelpTicketService(repository);
+
+            // Initialize the ViewModel
+            ViewModel = new HelpTicketViewModel(service);
+            this.DataContext = ViewModel;
         }
+
         private void OnButtonClickAdminOpenHelpTicket(object sender, RoutedEventArgs e)
         {
+            // Reset visibility of status messages
             TextBlockOpenTicketEmptyFields.Visibility = Visibility.Collapsed;
             TextBlockOpenTicketUserNotFound.Visibility = Visibility.Collapsed;
             TextBlockOpenTicketTicketAddedSuccessfully.Visibility = Visibility.Collapsed;
             TextBlockOpenTicketTicketAddFailed.Visibility = Visibility.Collapsed;
 
+            // Validate input fields
             bool isDataCorrect = true;
 
-            if (TextBoxOpenTicketUserID.Text == "" || TextBoxOpenTicketUserName.Text == "" || TextBoxOpenTicketDescription.Text == "")
+            if (string.IsNullOrWhiteSpace(TextBoxOpenTicketUserID.Text) ||
+                string.IsNullOrWhiteSpace(TextBoxOpenTicketUserName.Text) ||
+                string.IsNullOrWhiteSpace(TextBoxOpenTicketDescription.Text))
             {
                 TextBlockOpenTicketEmptyFields.Visibility = Visibility.Visible;
                 isDataCorrect = false;
             }
-            if(!BackendUserGetHelp.DoesUserIDExist(TextBoxOpenTicketUserID.Text))
+
+            // Validate user ID using the ViewModel
+            if (isDataCorrect && !ViewModel.ValidateUser(TextBoxOpenTicketUserID.Text))
             {
                 TextBlockOpenTicketUserNotFound.Visibility = Visibility.Visible;
                 isDataCorrect = false;
             }
 
-            if(isDataCorrect)
+            // Create the ticket using the ViewModel
+            if (isDataCorrect)
             {
-                int returnCode = BackendUserGetHelp.PushNewHelpTicketToDB(TextBoxOpenTicketUserID.Text, TextBoxOpenTicketUserName.Text, TextBoxOpenTicketDescription.Text, "No");
-                switch(returnCode)
+                ViewModel.UserID = TextBoxOpenTicketUserID.Text;
+                ViewModel.UserName = TextBoxOpenTicketUserName.Text;
+                ViewModel.Description = TextBoxOpenTicketDescription.Text;
+
+                ViewModel.CreateTicket();
+
+                if (ViewModel.StatusMessage == "Ticket created successfully.")
                 {
-                    case (int)BackendUserGetHelp.BackendUserGetHelpStatusCodes.PushNewHelpTicketToDBSuccess:
-                        {
-                            TextBlockOpenTicketTicketAddedSuccessfully.Visibility = Visibility.Visible;
-                            break;
-                        }
-                    case (int)BackendUserGetHelp.BackendUserGetHelpStatusCodes.PushNewHelpTicketToDBFailure:
-                        {
-                            TextBlockOpenTicketTicketAddFailed.Visibility = Visibility.Visible;
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
+                    TextBlockOpenTicketTicketAddedSuccessfully.Visibility = Visibility.Visible;
+                }
+                else if (ViewModel.StatusMessage == "Failed to create ticket.")
+                {
+                    TextBlockOpenTicketTicketAddFailed.Visibility = Visibility.Visible;
                 }
             }
         }
+
         private void OnButtonClickAdminNavigateOpenHelpTicketPageAdminAccountPage(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(AdminAccountPage));

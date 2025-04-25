@@ -5,6 +5,7 @@ using Marketplace_SE.Services;
 
 namespace Marketplace_SE.ViewModels
 {
+    // added this for new branch
     public class FinalizeOrderViewModel
     {
         private readonly IRatingService ratingService;
