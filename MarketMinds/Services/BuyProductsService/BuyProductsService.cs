@@ -39,7 +39,19 @@ namespace MarketMinds.Services.BuyProductsService
             {
                 throw new ArgumentException("Product must be a BuyProduct.", nameof(product));
             }
-            var response = httpClient.PostAsJsonAsync("buyproducts", buyProduct).Result;
+            var productToSend = new
+            {
+                buyProduct.Title,
+                buyProduct.Description,
+                SellerId = buyProduct.Seller?.Id ?? 0,
+                ConditionId = buyProduct.Condition?.Id,
+                CategoryId = buyProduct.Category?.Id,
+                buyProduct.Price,
+                Images = buyProduct.Images == null
+                       ? new List<object>()
+                       : buyProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+            };
+            var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = response.Content.ReadAsStringAsync().Result;

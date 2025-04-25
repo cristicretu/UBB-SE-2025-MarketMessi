@@ -28,11 +28,11 @@ namespace server.Models
         public int? CategoryId { get; set; }
 
         [Column("price")]
-        public float Price { get; set; }
+        public double Price { get; set; }
 
         // Navigation properties
         [ForeignKey("SellerId")]
-        public User Seller { get; set; } = null!;
+        public User? Seller { get; set; }
 
         [ForeignKey("ConditionId")]
         public Condition? Condition { get; set; }
@@ -50,7 +50,7 @@ namespace server.Models
         }
 
         public BuyProduct(string title, string? description, int sellerId, int? conditionId,
-            int? categoryId, float price)
+            int? categoryId, double price)
         {
             Title = title;
             Description = description;

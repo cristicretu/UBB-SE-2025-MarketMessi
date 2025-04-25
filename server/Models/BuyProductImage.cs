@@ -7,7 +7,7 @@ namespace server.Models
         public int ProductId { get; set; }
         
         // Navigation property
-        public BuyProduct Product { get; set; }
+        public BuyProduct? Product { get; set; }
         
         public BuyProductImage() { }
         

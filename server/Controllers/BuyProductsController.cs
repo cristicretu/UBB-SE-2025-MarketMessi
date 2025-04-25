@@ -7,6 +7,8 @@ using server.Models.DTOs.Mappers;
 using System.Collections.Generic;
 using System;
 using System.Net;
+using System.Linq;
+using System.Text.Json;
 
 namespace MarketMinds.Controllers
 {
@@ -68,9 +70,32 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateBuyProduct([FromBody] BuyProduct product)
         {
+            Console.WriteLine($"Received buy product in API: {JsonSerializer.Serialize(product)}");
+            
+            // Store incoming images and clear them before validation
+            var incomingImages = product.Images?.ToList() ?? new List<BuyProductImage>();
+            product.Images = new List<BuyProductImage>();
+            
+            // Log the ModelState before any manipulation
+            Console.WriteLine($"Initial ModelState: {JsonSerializer.Serialize(ModelState)}");
+            
             if (product == null || !ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                // Remove the top-level image validation error key
+                ModelState.Remove("Images"); 
+                
+                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) {
+                    var imageKeys = ModelState.Keys.Where(k => k.StartsWith("Images[")).ToList();
+                    foreach(var key in imageKeys) {
+                        ModelState.Remove(key);
+                    }
+                }
+                
+                if (!ModelState.IsValid) 
+                {
+                    Console.WriteLine($"Model state still invalid after filtering: {JsonSerializer.Serialize(ModelState)}");
+                    return BadRequest(ModelState);
+                }
             }
 
             if (product.Id != 0)
@@ -80,7 +105,26 @@ namespace MarketMinds.Controllers
 
             try
             {
+                // First save the product without images
                 _buyProductsRepository.AddProduct(product);
+                
+                // Now handle the images
+                if (incomingImages.Any())
+                {
+                    Console.WriteLine($"Processing {incomingImages.Count} images for product ID {product.Id}");
+                    
+                    foreach (var img in incomingImages)
+                    {
+                        Console.WriteLine($"Adding image with URL: {img.Url}");
+                        img.ProductId = product.Id;
+                        product.Images.Add(img);
+                    }
+                    
+                    // Update the product with images
+                    _buyProductsRepository.UpdateProduct(product);
+                    Console.WriteLine($"Updated product with images. Images count: {product.Images.Count}");
+                }
+                
                 var dto = BuyProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, dto);
             }
@@ -91,6 +135,10 @@ namespace MarketMinds.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error creating buy product: {ex}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
             }
         }

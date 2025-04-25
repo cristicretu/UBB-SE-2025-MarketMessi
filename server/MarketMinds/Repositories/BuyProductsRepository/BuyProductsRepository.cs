@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using System;
-using System.Data;
-using Microsoft.Data.SqlClient;
+using System.Linq;
 using server.Models;
-using DataAccessLayer;
+using server.DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketMinds.Repositories.BuyProductsRepository
 {
     public class BuyProductsRepository: IBuyProductsRepository
     {
-        private readonly DataBaseConnection connection;
+        private readonly ApplicationDbContext _context;
 
-        public BuyProductsRepository(DataBaseConnection connection)
+        public BuyProductsRepository(ApplicationDbContext context)
         {
-            this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public void AddProduct(BuyProduct product)
@@ -23,72 +23,20 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
-            string insertProductQuery = @"
-            INSERT INTO BuyProducts 
-            (title, description, seller_id, condition_id, category_id, price)
-            VALUES 
-            (@Title, @Description, @SellerId, @ConditionId, @CategoryId, @Price);
-            SELECT SCOPE_IDENTITY();";
-
-            connection.OpenConnection();
-
             try
             {
-                int newProductId;
-                using (SqlCommand cmd = new SqlCommand(insertProductQuery, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@Title", product.Title);
-                    cmd.Parameters.AddWithValue("@Description", product.Description);
-                    cmd.Parameters.AddWithValue("@SellerId", product.Seller.Id);
-                    cmd.Parameters.AddWithValue("@ConditionId", product.Condition.Id);
-                    cmd.Parameters.AddWithValue("@CategoryId", product.Category.Id);
-                    cmd.Parameters.AddWithValue("@Price", product.Price);
-
-                    object result = cmd.ExecuteScalar();
-                    newProductId = Convert.ToInt32(result);
-                }
-
-                if (product.ProductTags != null)
-                {
-                    foreach (var tag in product.ProductTags)
-                    {
-                        string insertTagQuery = @"
-                        INSERT INTO BuyProductProductTags (product_id, tag_id)
-                        VALUES (@ProductId, @TagId)";
-
-                        using (SqlCommand cmd = new SqlCommand(insertTagQuery, connection.GetConnection()))
-                        {
-                            cmd.Parameters.AddWithValue("@ProductId", newProductId);
-                            cmd.Parameters.AddWithValue("@TagId", tag.Id);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-
-                if (product.Images != null)
-                {
-                    foreach (var image in product.Images)
-                    {
-                        string insertImageQuery = @"
-                        INSERT INTO BuyProductImages (url, product_id)
-                        VALUES (@Url, @ProductId)";
-
-                        using (SqlCommand cmd = new SqlCommand(insertImageQuery, connection.GetConnection()))
-                        {
-                            cmd.Parameters.AddWithValue("@Url", image.Url);
-                            cmd.Parameters.AddWithValue("@ProductId", newProductId);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
+                _context.BuyProducts.Add(product);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"EF Core AddProduct Error: {ex.InnerException?.Message ?? ex.Message}");
+                throw new Exception("Failed to add product to the database", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to add product to the database", ex);
-            }
-            finally
-            {
-                connection.CloseConnection();
+                Console.WriteLine($"General AddProduct Error: {ex.Message}");
+                throw;
             }
         }
 
@@ -99,298 +47,76 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
-            string query = "DELETE FROM BuyProducts WHERE id = @Id";
-
-            connection.OpenConnection();
             try
             {
-                using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
+                var productToDelete = _context.BuyProducts.Find(product.Id);
+                if (productToDelete == null)
                 {
-                    cmd.Parameters.AddWithValue("@Id", product.Id);
-                    int affectedRows = cmd.ExecuteNonQuery();
-                    
-                    if (affectedRows == 0)
-                    {
-                        throw new KeyNotFoundException($"Product with ID {product.Id} not found.");
-                    }
+                    throw new KeyNotFoundException($"Product with ID {product.Id} not found for deletion.");
                 }
+                _context.BuyProducts.Remove(productToDelete);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"EF Core DeleteProduct Error: {ex.InnerException?.Message ?? ex.Message}");
+                throw new Exception("Failed to delete product from the database", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to delete product from the database", ex);
-            }
-            finally
-            {
-                connection.CloseConnection();
+                Console.WriteLine($"General DeleteProduct Error: {ex.Message}");
+                throw;
             }
         }
 
         public List<BuyProduct> GetProducts()
         {
-            List<BuyProduct> products = new List<BuyProduct>();
-            DataTable productsTable = new DataTable();
-
-            string mainQuery = @"
-            SELECT 
-                bp.id,
-                bp.title,
-                bp.description,
-                bp.seller_id,
-                u.username,
-                u.email,
-                bp.condition_id,
-                pc.title AS conditionTitle,
-                pc.description AS conditionDescription,
-                bp.category_id,
-                cat.title AS categoryTitle,
-                cat.description AS categoryDescription,
-                bp.price
-            FROM BuyProducts bp
-            JOIN Users u ON bp.seller_id = u.id
-            JOIN ProductConditions pc ON bp.condition_id = pc.id
-            JOIN ProductCategories cat ON bp.category_id = cat.id";
-
-            connection.OpenConnection();
             try
             {
-                using (SqlCommand cmd = new SqlCommand(mainQuery, connection.GetConnection()))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    productsTable.Load(reader);
-                }
-
-                foreach (DataRow row in productsTable.Rows)
-                {
-                    int id = (int)row["id"];
-                    string title = (string)row["title"];
-                    string description = (string)row["description"];
-
-                    int sellerId = (int)row["seller_id"];
-                    string username = (string)row["username"];
-                    string email = (string)row["email"];
-                    User seller = new User { Id = sellerId, Username = username, Email = email };
-
-                    int conditionId = (int)row["condition_id"];
-                    string conditionTitle = (string)row["conditionTitle"];
-                    string conditionDescription = (string)row["conditionDescription"];
-                    Condition condition = new Condition(conditionTitle) { Id = conditionId };
-
-                    int categoryId = (int)row["category_id"];
-                    string categoryTitle = (string)row["categoryTitle"];
-                    string categoryDescription = (string)row["categoryDescription"];
-                    Category category = new Category(categoryTitle, categoryDescription) { Id = categoryId };
-
-                    double priceDouble = (double)row["price"];
-                    float price = (float)priceDouble;
-
-                    BuyProduct product = new BuyProduct(
-                        title: title,
-                        description: description,
-                        sellerId: sellerId,
-                        conditionId: conditionId,
-                        categoryId: categoryId,
-                        price: price);
-                    product.Id = id;
-                    product.Seller = seller;
-                    product.Condition = condition;
-                    product.Category = category;
-
-                    List<ProductTag> tags = GetProductTags(id);
-                    List<BuyProductImage> images = GetProductImages(id);
-
-                    foreach (var tag in tags)
-                    {
-                        product.ProductTags.Add(new BuyProductProductTag { Product = product, Tag = tag });
-                    }
-                    
-                    foreach (var image in images)
-                    {
-                        product.Images.Add(image);
-                    }
-
-                    products.Add(product);
-                }
+                return _context.BuyProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    // Add these back one by one after confirming basic query works
+                    .Include(p => p.Images)
+                    // .Include(p => p.ProductTags)
+                    //    .ThenInclude(pt => pt.Tag)
+                    .ToList();
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error getting BuyProducts: {ex.Message}");
                 throw new Exception("Failed to retrieve products from the database", ex);
             }
-            finally
-            {
-                connection.CloseConnection();
-            }
-
-            return products;
-        }
-
-        private List<ProductTag> GetProductTags(int productId)
-        {
-            var tags = new List<ProductTag>();
-
-            string query = @"
-            SELECT pt.id, pt.title
-            FROM ProductTags pt
-            INNER JOIN BuyProductProductTags bpt ON pt.id = bpt.tag_id
-            WHERE bpt.product_id = @ProductId";
-
-            connection.OpenConnection();
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@ProductId", productId);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int tagId = reader.GetInt32(reader.GetOrdinal("id"));
-                            string tagTitle = reader.GetString(reader.GetOrdinal("title"));
-                            tags.Add(new ProductTag(tagId, tagTitle));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to retrieve tags for product {productId}", ex);
-            }
-            finally
-            {
-                connection.CloseConnection();
-            }
-            return tags;
-        }
-
-        private List<BuyProductImage> GetProductImages(int productId)
-        {
-            var images = new List<BuyProductImage>();
-
-            string query = @"
-            SELECT url
-            FROM BuyProductImages
-            WHERE product_id = @ProductId";
-
-            connection.OpenConnection();
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@ProductId", productId);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string url = reader.GetString(reader.GetOrdinal("url"));
-                            images.Add(new BuyProductImage { Url = url });
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to retrieve images for product {productId}", ex);
-            }
-            finally
-            {
-                connection.CloseConnection();
-            }
-            return images;
         }
 
         public BuyProduct GetProductByID(int productId)
         {
-            string query = @"
-            SELECT 
-                bp.id,
-                bp.title,
-                bp.description,
-                bp.seller_id,
-                u.username,
-                u.email,
-                bp.condition_id,
-                pc.title AS conditionTitle,
-                pc.description AS conditionDescription,
-                bp.category_id,
-                cat.title AS categoryTitle,
-                cat.description AS categoryDescription,
-                bp.price
-            FROM BuyProducts bp
-            JOIN Users u ON bp.seller_id = u.id
-            JOIN ProductConditions pc ON bp.condition_id = pc.id
-            JOIN ProductCategories cat ON bp.category_id = cat.id
-            WHERE bp.id = @ProductId";
-
-            connection.OpenConnection();
             try
             {
-                using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
+                var product = _context.BuyProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .Include(p => p.Images)
+                    .Include(p => p.ProductTags)
+                        .ThenInclude(pt => pt.Tag)
+                    .FirstOrDefault(p => p.Id == productId);
+
+                if (product == null)
                 {
-                    cmd.Parameters.AddWithValue("@ProductId", productId);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                        {
-                            throw new KeyNotFoundException($"Product with ID {productId} not found.");
-                        }
-
-                        int id = reader.GetInt32(reader.GetOrdinal("id"));
-                        string title = reader.GetString(reader.GetOrdinal("title"));
-                        string description = reader.GetString(reader.GetOrdinal("description"));
-
-                        int sellerId = reader.GetInt32(reader.GetOrdinal("seller_id"));
-                        string username = reader.GetString(reader.GetOrdinal("username"));
-                        string email = reader.GetString(reader.GetOrdinal("email"));
-                        User seller = new User { Id = sellerId, Username = username, Email = email };
-
-                        int conditionId = reader.GetInt32(reader.GetOrdinal("condition_id"));
-                        string conditionTitle = reader.GetString(reader.GetOrdinal("conditionTitle"));
-                        string conditionDescription = reader.GetString(reader.GetOrdinal("conditionDescription"));
-                        Condition condition = new Condition(conditionTitle) { Id = conditionId };
-
-                        int categoryId = reader.GetInt32(reader.GetOrdinal("category_id"));
-                        string categoryTitle = reader.GetString(reader.GetOrdinal("categoryTitle"));
-                        string categoryDescription = reader.GetString(reader.GetOrdinal("categoryDescription"));
-                        Category category = new Category(categoryTitle, categoryDescription) { Id = categoryId };
-
-                        double priceDouble = reader.GetDouble(reader.GetOrdinal("price"));
-                        float price = (float)priceDouble;
-
-                        BuyProduct product = new BuyProduct(
-                            title: title,
-                            description: description,
-                            sellerId: sellerId,
-                            conditionId: conditionId,
-                            categoryId: categoryId,
-                            price: price);
-                        product.Id = id;
-                        product.Seller = seller;
-                        product.Condition = condition;
-                        product.Category = category;
-
-                        List<ProductTag> tags = GetProductTags(id);
-                        List<BuyProductImage> images = GetProductImages(id);
-
-                        foreach (var tag in tags)
-                        {
-                            product.ProductTags.Add(new BuyProductProductTag { Product = product, Tag = tag });
-                        }
-                        
-                        foreach (var image in images)
-                        {
-                            product.Images.Add(image);
-                        }
-
-                        return product;
-                    }
+                    throw new KeyNotFoundException($"Product with ID {productId} not found.");
                 }
+                return product;
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error getting BuyProduct by ID {productId}: {ex.Message}");
                 throw new Exception($"Failed to retrieve product with ID {productId}", ex);
-            }
-            finally
-            {
-                connection.CloseConnection();
             }
         }
 
@@ -401,93 +127,70 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 throw new ArgumentNullException(nameof(product));
             }
 
-            string query = @"
-            UPDATE BuyProducts 
-            SET title = @Title,
-                description = @Description,
-                seller_id = @SellerId,
-                condition_id = @ConditionId,
-                category_id = @CategoryId,
-                price = @Price
-            WHERE id = @Id";
-
-            connection.OpenConnection();
             try
             {
-                using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@Id", product.Id);
-                    cmd.Parameters.AddWithValue("@Title", product.Title);
-                    cmd.Parameters.AddWithValue("@Description", product.Description);
-                    cmd.Parameters.AddWithValue("@SellerId", product.Seller.Id);
-                    cmd.Parameters.AddWithValue("@ConditionId", product.Condition.Id);
-                    cmd.Parameters.AddWithValue("@CategoryId", product.Category.Id);
-                    cmd.Parameters.AddWithValue("@Price", product.Price);
+                var existingProduct = _context.BuyProducts
+                    .Include(p => p.Images)
+                    .Include(p => p.ProductTags)
+                    .FirstOrDefault(p => p.Id == product.Id);
 
-                    int affectedRows = cmd.ExecuteNonQuery();
-                    if (affectedRows == 0)
+                if (existingProduct == null)
+                {
+                    throw new KeyNotFoundException($"Product with ID {product.Id} not found for update.");
+                }
+
+                _context.Entry(existingProduct).CurrentValues.SetValues(product);
+
+                var imagesToRemove = existingProduct.Images
+                    .Where(dbImg => !product.Images.Any(pImg => pImg.Id == dbImg.Id && pImg.Id != 0))
+                    .ToList();
+                _context.Set<BuyProductImage>().RemoveRange(imagesToRemove);
+
+                foreach (var image in product.Images)
+                {
+                    var existingImage = existingProduct.Images.FirstOrDefault(i => i.Id == image.Id && i.Id != 0);
+                    if (existingImage == null)
                     {
-                        throw new KeyNotFoundException($"Product with ID {product.Id} not found.");
+                        image.ProductId = existingProduct.Id;
+                        image.Id = 0;
+                        _context.Set<BuyProductImage>().Add(image);
                     }
                 }
 
-                // Update tags
-                string deleteTagsQuery = "DELETE FROM BuyProductProductTags WHERE product_id = @ProductId";
-                using (SqlCommand cmd = new SqlCommand(deleteTagsQuery, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@ProductId", product.Id);
-                    cmd.ExecuteNonQuery();
-                }
+                var tagsToRemove = existingProduct.ProductTags
+                    .Where(dbPt => !product.ProductTags.Any(pPt => pPt.TagId == dbPt.TagId))
+                    .ToList();
+                _context.Set<BuyProductProductTag>().RemoveRange(tagsToRemove);
 
-                if (product.ProductTags != null)
+                foreach (var productTag in product.ProductTags)
                 {
-                    foreach (var tag in product.ProductTags)
+                    var existingLink = existingProduct.ProductTags.FirstOrDefault(pt => pt.TagId == productTag.TagId);
+                    if (existingLink == null)
                     {
-                        string insertTagQuery = @"
-                        INSERT INTO BuyProductProductTags (product_id, tag_id)
-                        VALUES (@ProductId, @TagId)";
-
-                        using (SqlCommand cmd = new SqlCommand(insertTagQuery, connection.GetConnection()))
+                        _context.Set<BuyProductProductTag>().Add(new BuyProductProductTag
                         {
-                            cmd.Parameters.AddWithValue("@ProductId", product.Id);
-                            cmd.Parameters.AddWithValue("@TagId", tag.Id);
-                            cmd.ExecuteNonQuery();
-                        }
+                            ProductId = existingProduct.Id,
+                            TagId = productTag.TagId
+                        });
                     }
                 }
 
-                // Update images
-                string deleteImagesQuery = "DELETE FROM BuyProductImages WHERE product_id = @ProductId";
-                using (SqlCommand cmd = new SqlCommand(deleteImagesQuery, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@ProductId", product.Id);
-                    cmd.ExecuteNonQuery();
-                }
-
-                if (product.Images != null)
-                {
-                    foreach (var image in product.Images)
-                    {
-                        string insertImageQuery = @"
-                        INSERT INTO BuyProductImages (url, product_id)
-                        VALUES (@Url, @ProductId)";
-
-                        using (SqlCommand cmd = new SqlCommand(insertImageQuery, connection.GetConnection()))
-                        {
-                            cmd.Parameters.AddWithValue("@Url", image.Url);
-                            cmd.Parameters.AddWithValue("@ProductId", product.Id);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                Console.WriteLine($"Concurrency error updating product {product.Id}: {ex.Message}");
+                throw new Exception($"Failed to update product with ID {product.Id} due to concurrency conflict", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"EF Core UpdateProduct Error: {ex.InnerException?.Message ?? ex.Message}");
+                throw new Exception($"Failed to update product with ID {product.Id}", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to update product with ID {product.Id}", ex);
-            }
-            finally
-            {
-                connection.CloseConnection();
+                Console.WriteLine($"General UpdateProduct Error for ID {product.Id}: {ex.Message}");
+                throw;
             }
         }
     }
