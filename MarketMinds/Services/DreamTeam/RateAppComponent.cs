@@ -1,12 +1,12 @@
 ﻿// RateAppComponent.cs
-using Microsoft.UI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using System;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI;
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Marketplace_SE.Rating
 {
@@ -24,23 +24,22 @@ namespace Marketplace_SE.Rating
         private const int RATING_REMINDER_INTERVAL_DAYS = 14; // Reappear after 14 days if "Remind Me Later" is clicked
         private const int RATING_DISABLE_INTERVAL_DAYS = 90;  // Disable for 90 days after submission
 
-
         // UI Elements
-        private ContentDialog _ratingDialog;
-        private RatingControl _ratingControl;
-        private TextBox _commentTextBox;
-        private Button _submitButton;
-        private Button _remindLaterButton;
-        private TextBlock _characterCountTextBlock;
+        private ContentDialog ratingDialog;
+        private RatingControl ratingControl;
+        private TextBox commentTextBox;
+        private Button submitButton;
+        private Button remindLaterButton;
+        private TextBlock characterCountTextBlock;
 
         // State tracking
-        private bool _hasCompletedTransaction = false;
-        private double _selectedRating = 0;
+        private bool hasCompletedTransaction = false;
+        private double selectedRating = 0;
 
-        private bool _showThankYouMessage = false;
+        private bool showThankYouMessage = false;
 
         // Database service dependency (would be injected in a production app)
-        private readonly IRatingDatabaseService _ratingService;
+        private readonly IRatingDatabaseService ratingService;
 
         #endregion
 
@@ -52,7 +51,7 @@ namespace Marketplace_SE.Rating
         /// <param name="ratingService">Service for saving ratings to database</param>
         public RateAppComponent(IRatingDatabaseService ratingService)
         {
-            _ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
+            this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
             InitializeComponent();
         }
 
@@ -72,10 +71,10 @@ namespace Marketplace_SE.Rating
         {
             // This method is now simpler as the actual UI is built in ShowRatingDialogAsync
             // We just initialize the fields to null to avoid any null reference issues
-            _ratingControl = null;
-            _commentTextBox = null;
-            _characterCountTextBlock = null;
-            _ratingDialog = null;
+            ratingControl = null;
+            commentTextBox = null;
+            characterCountTextBlock = null;
+            ratingDialog = null;
         }
 
         #endregion
@@ -88,7 +87,7 @@ namespace Marketplace_SE.Rating
         /// </summary>
         public void OnTransactionCompleted()
         {
-            _hasCompletedTransaction = true;
+            hasCompletedTransaction = true;
 
             // In a real implementation, we would persist this state
             // For simplicity in this example, we're just using a field
@@ -101,8 +100,10 @@ namespace Marketplace_SE.Rating
         public async Task<bool> CheckAndShowRatingPromptAsync()
         {
             // If no completed transactions, don't show the dialog
-            if (!_hasCompletedTransaction)
+            if (!hasCompletedTransaction)
+            {
                 return false;
+            }
 
             // Check if we should show the rating dialog based on time intervals
             if (ShouldShowRatingDialog())
@@ -154,7 +155,6 @@ namespace Marketplace_SE.Rating
         /// Displays the rating dialog to the user.
         /// </summary>
         /// <returns>True if the dialog was shown; otherwise, false.</returns>
-
         private async Task<bool> ShowRatingDialogAsync()
         {
             try
@@ -170,7 +170,7 @@ namespace Marketplace_SE.Rating
                 contentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
                 // Reset the rating control
-                _ratingControl = new RatingControl
+                ratingControl = new RatingControl
                 {
                     Caption = "Please rate your experience:",
                     MaxRating = 5,
@@ -179,9 +179,9 @@ namespace Marketplace_SE.Rating
                     IsClearEnabled = false,
                     HorizontalAlignment = HorizontalAlignment.Left
                 };
-                _ratingControl.ValueChanged += RatingControl_ValueChanged;
-                Grid.SetRow(_ratingControl, 0);
-                contentGrid.Children.Add(_ratingControl);
+                ratingControl.ValueChanged += RatingControl_ValueChanged;
+                Grid.SetRow(ratingControl, 0);
+                contentGrid.Children.Add(ratingControl);
 
                 // Comment section
                 var commentPanel = new StackPanel
@@ -195,34 +195,34 @@ namespace Marketplace_SE.Rating
                 };
                 commentPanel.Children.Add(commentLabel);
 
-                _commentTextBox = new TextBox
+                commentTextBox = new TextBox
                 {
                     PlaceholderText = "Tell us more about your experience...",
                     TextWrapping = TextWrapping.Wrap,
                     MaxLength = 500,
                     MinHeight = 100
                 };
-                _commentTextBox.TextChanged += CommentTextBox_TextChanged;
-                commentPanel.Children.Add(_commentTextBox);
+                commentTextBox.TextChanged += CommentTextBox_TextChanged;
+                commentPanel.Children.Add(commentTextBox);
 
                 // Character count
-                _characterCountTextBlock = new TextBlock
+                characterCountTextBlock = new TextBlock
                 {
                     Text = "0/500 characters",
                     FontSize = 12,
                     Foreground = new SolidColorBrush(Colors.Gray),
                     HorizontalAlignment = HorizontalAlignment.Right
                 };
-                commentPanel.Children.Add(_characterCountTextBlock);
+                commentPanel.Children.Add(characterCountTextBlock);
                 Grid.SetRow(commentPanel, 1);
                 contentGrid.Children.Add(commentPanel);
 
                 // Reset state
-                _selectedRating = 0;
-                _showThankYouMessage = false;
+                selectedRating = 0;
+                showThankYouMessage = false;
 
                 // Create the dialog with the fresh content
-                _ratingDialog = new ContentDialog
+                ratingDialog = new ContentDialog
                 {
                     Title = "App Rating",
                     Content = contentGrid,
@@ -234,17 +234,17 @@ namespace Marketplace_SE.Rating
                 };
 
                 // Enable/disable submit button based on rating
-                _ratingDialog.IsPrimaryButtonEnabled = false;
-                _ratingDialog.PrimaryButtonClick += SubmitButton_Click;
-                _ratingDialog.SecondaryButtonClick += RemindLaterButton_Click;
+                ratingDialog.IsPrimaryButtonEnabled = false;
+                ratingDialog.PrimaryButtonClick += SubmitButton_Click;
+                ratingDialog.SecondaryButtonClick += RemindLaterButton_Click;
 
                 // Show the dialog
-                await _ratingDialog.ShowAsync();
+                await ratingDialog.ShowAsync();
 
                 // Check if we need to show the thank you message
-                if (_showThankYouMessage)
+                if (showThankYouMessage)
                 {
-                    _showThankYouMessage = false;
+                    showThankYouMessage = false;
                     await ShowThankYouMessageAsync();
                 }
 
@@ -279,14 +279,14 @@ namespace Marketplace_SE.Rating
                 };
 
                 // Save to database
-                await _ratingService.SaveRatingAsync(ratingData);
+                await ratingService.SaveRatingAsync(ratingData);
 
                 // Save the submission timestamp to prevent showing the dialog again too soon
                 var localSettings = ApplicationData.Current.LocalSettings;
                 localSettings.Values[LAST_RATING_SUBMISSION_KEY] = DateTime.Now.Ticks;
 
                 // Reset the transaction completed flag
-                _hasCompletedTransaction = false;
+                hasCompletedTransaction = false;
 
                 return true;
             }
@@ -343,10 +343,10 @@ namespace Marketplace_SE.Rating
         /// </summary>
         private void RatingControl_ValueChanged(RatingControl sender, object args)
         {
-            _selectedRating = sender.Value;
+            selectedRating = sender.Value;
 
             // Enable the submit button only if a rating is selected (server-side validation will also occur)
-            _ratingDialog.IsPrimaryButtonEnabled = _selectedRating > 0;
+            ratingDialog.IsPrimaryButtonEnabled = selectedRating > 0;
         }
 
         /// <summary>
@@ -354,13 +354,12 @@ namespace Marketplace_SE.Rating
         /// </summary>
         private void CommentTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _characterCountTextBlock.Text = $"{_commentTextBox.Text.Length}/500 characters";
+            characterCountTextBlock.Text = $"{commentTextBox.Text.Length}/500 characters";
         }
 
         /// <summary>
         /// Handles the submit button click event.
         /// </summary>
-
         private void SubmitButton_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             // Prevent the dialog from closing until we've processed the submission
@@ -368,20 +367,20 @@ namespace Marketplace_SE.Rating
             try
             {
                 // Validate the rating
-                if (_selectedRating <= 0)
+                if (selectedRating <= 0)
                 {
                     // This shouldn't happen since we disable the submit button, but just in case
-                    _ratingDialog.IsPrimaryButtonEnabled = false;
+                    ratingDialog.IsPrimaryButtonEnabled = false;
                     return;
                 }
 
                 // Save the rating
-                var success = SaveRatingAsync(_selectedRating, _commentTextBox.Text).GetAwaiter().GetResult();
+                var success = SaveRatingAsync(selectedRating, commentTextBox.Text).GetAwaiter().GetResult();
 
                 if (success)
                 {
                     // Set flag to show thank you message later, after this dialog closes
-                    _showThankYouMessage = true;
+                    showThankYouMessage = true;
                 }
             }
             finally

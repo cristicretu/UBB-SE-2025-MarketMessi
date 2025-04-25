@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using DomainLayer.Domain;
+using ViewModelLayer.ViewModel;
+using MarketMinds;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,15 +17,9 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using DomainLayer.Domain;
-using ViewModelLayer.ViewModel;
-using MarketMinds;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Marketplace_SE
 {
     /// <summary>
@@ -36,14 +35,14 @@ namespace Marketplace_SE
             this.InitializeComponent();
             ViewModel = new RegisterViewModel();
             this.DataContext = ViewModel;
-            NewUser = new User(0, "", "", "");
+            NewUser = new User(0, string.Empty, string.Empty, string.Empty);
         }
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs e)
         {
             NewUser.Username = UsernameTextBox.Text;
             NewUser.Email = EmailTextBox.Text;
-            NewUser.Password = float.Parse(PasswordBoxWithRevealMode.Password);
+            NewUser.Password = PasswordBoxWithRevealMode.Password;
             string confirmPassword = ConfirmPasswordBox.Password;
 
             if (!IsValidUsername(NewUser.Username))
@@ -53,7 +52,7 @@ namespace Marketplace_SE
             }
             else
             {
-                UsernameValidationTextBlock.Text = "";
+                UsernameValidationTextBlock.Text = string.Empty;
             }
 
             if (await IsUsernameTaken(NewUser.Username))
@@ -69,14 +68,14 @@ namespace Marketplace_SE
                 return;
             }
 
-            if (NewUser.Password != float.Parse(confirmPassword))
+            if (NewUser.Password != confirmPassword)
             {
                 ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
                 return;
             }
             else
             {
-                ConfirmPasswordValidationTextBlock.Text = "";
+                ConfirmPasswordValidationTextBlock.Text = string.Empty;
             }
 
             bool result = await ViewModel.CreateNewUser(NewUser);
@@ -129,9 +128,21 @@ namespace Marketplace_SE
 
         private string GetPasswordStrength(string password)
         {
-            if (password.Length < 6) return "Weak";
-            if (Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{6,15}$")) return "Strong";
-            if (Regex.IsMatch(password, "^(?=.*[A-Z])|(?=.*\\d)|(?=.*[@$!%*?&]).{6,15}$")) return "Medium";
+            if (password.Length < 6)
+            {
+                return "Weak";
+            }
+
+            if (Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{6,15}$"))
+            {
+                return "Strong";
+            }
+
+            if (Regex.IsMatch(password, "^(?=.*[A-Z])|(?=.*\\d)|(?=.*[@$!%*?&]).{6,15}$"))
+            {
+                return "Medium";
+            }
+
             return "Weak";
         }
 

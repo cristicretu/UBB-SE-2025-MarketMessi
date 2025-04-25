@@ -1,5 +1,6 @@
 using Marketplace_SE.Services;
 using Marketplace_SE.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Marketplace_SE
@@ -14,6 +15,23 @@ namespace Marketplace_SE
             IUserService userService = new UserService();
             ViewModel = new EnterIdPageViewModel(userService, this.Frame); // Pass the Frame instance
             DataContext = ViewModel;
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
+        }
+
+        private void Continue_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.EnteredId = IdInputBox.Text;
+            if (ViewModel.ContinueCommand.CanExecute(null))
+            {
+                ViewModel.ContinueCommand.Execute(null);
+            }
         }
     }
 }

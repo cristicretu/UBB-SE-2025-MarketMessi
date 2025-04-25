@@ -20,14 +20,14 @@ namespace MarketMinds.Repositories.UserRepository
                 UserType = 1,
                 Balance = 1000f,
                 Rating = 4.5f,
-                Password = 1234f
+                Password = "1234"
             },
             new User(2, "jane_doe", "jane@example.com", "token456")
             {
                 UserType = 2,
                 Balance = 2500f,
                 Rating = 4.8f,
-                Password = 1234f
+                Password = "1234"
             }
         };
         }
@@ -35,7 +35,7 @@ namespace MarketMinds.Repositories.UserRepository
         public bool ValidateCredentials(string username, string password)
         {
             // Hardcoded password check — fix your model to use string & secure password logic
-            return users.Any(u => u.Username == username && u.Password == 1234f);
+            return users.Any(u => u.Username == username && u.Password == password);
         }
 
         public User GetUserByUsername(string username)
@@ -50,7 +50,7 @@ namespace MarketMinds.Repositories.UserRepository
 
         public User GetUserByCredentials(string username, string password)
         {
-            return users.FirstOrDefault(u => u.Username == username && u.Password == 1234f);
+            return users.FirstOrDefault(u => u.Username == username && u.Password == password);
         }
 
         public void UpdateUser(User updatedUser)
@@ -77,7 +77,7 @@ namespace MarketMinds.Repositories.UserRepository
                 return false;
             }
 
-            // user.Password = newPassword;
+            user.Password = newPassword;
             UpdateUser(user);
             return true;
         }

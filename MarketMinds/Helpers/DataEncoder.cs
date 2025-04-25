@@ -13,7 +13,7 @@ namespace Marketplace_SE.Utilities
         {
             int p = data / 16;
             int q = data % 16;
-            string output = "";
+            string output = string.Empty;
 
             if (p < 10)
             {
@@ -86,7 +86,7 @@ namespace Marketplace_SE.Utilities
 
         public static string HexEncode(byte[] data)
         {
-            string hexString = BitConverter.ToString(data).Replace("-", "").ToLower();
+            string hexString = BitConverter.ToString(data).Replace("-", string.Empty).ToLower();
             return hexString;
             /*
             StringBuilder sb = new StringBuilder();
@@ -121,7 +121,6 @@ namespace Marketplace_SE.Utilities
             */
         }
 
-
         public static string ConvertTimestampToDate(ulong timestamp)
         {
             DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeMilliseconds((long)timestamp);
@@ -134,6 +133,5 @@ namespace Marketplace_SE.Utilities
             DateTimeOffset localTime = utcTime.ToLocalTime();
             return localTime.ToString("MM/dd/yyyy HH:mm:ss");
         }
-
     }
 }

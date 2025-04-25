@@ -1,10 +1,10 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Marketplace_SE.Utilities
 {
@@ -54,7 +54,6 @@ namespace Marketplace_SE.Utilities
             panel.Children.Add(OkButton);
             window.Content = panel;
 
-
             var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
             var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
@@ -65,8 +64,6 @@ namespace Marketplace_SE.Utilities
 
             CenterWindow(appWindow, windowWidth, windowHeight);
         }
-
-
 
         private void CenterWindow(Microsoft.UI.Windowing.AppWindow appWindow, int windowWidth, int windowHeight)
         {

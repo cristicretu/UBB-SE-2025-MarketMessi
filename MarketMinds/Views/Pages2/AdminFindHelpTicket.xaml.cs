@@ -70,7 +70,7 @@ namespace Marketplace_SE
 
             TextBlock textBlock = new TextBlock
             {
-                Text = ticket.toStringExceptDescription(),
+                Text = ticket.ToStringExceptDescription(),
                 Margin = new Thickness(0, 0, 0, 10),
                 FontSize = 16,
                 VerticalAlignment = VerticalAlignment.Center,

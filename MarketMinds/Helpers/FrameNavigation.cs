@@ -16,7 +16,8 @@ namespace Marketplace_SE.Utilities
 {
     public class FrameNavigation
     {
-        public static Frame NavigateWithConstructorParameters<T>(Frame frame, params object[] constructorParams) where T : Page
+        public static Frame NavigateWithConstructorParameters<T>(Frame frame, params object[] constructorParams)
+        where T : Page
         {
             var type = typeof(T);
             var constructorInfo = type.GetConstructor(constructorParams.Select(p => p.GetType()).ToArray());
@@ -31,6 +32,5 @@ namespace Marketplace_SE.Utilities
             frame.Content = page;
             return frame;
         }
-
     }
 }

@@ -26,55 +26,54 @@ namespace Marketplace_SE.Service
             return (int)BackendUserGetHelpStatusCodes.PushNewHelpTicketToDBSuccess;
         }
 
-        public static bool DoesUserIDExist(string UserID)
+        public static bool DoesUserIDExist(string userID)
         {
             return true;
         }
 
-        public static List<HelpTicket> LoadTicketsFromDB(List<string> TicketIDs)
+        public static List<HelpTicket> LoadTicketsFromDB(List<string> ticketIDs)
         {
             List<HelpTicket> returnList = new List<HelpTicket>();
-            
+
             // Mock implementation for now
-            foreach (string id in TicketIDs)
+            foreach (string id in ticketIDs)
             {
                 returnList.Add(new HelpTicket(
-                    id, 
-                    "user123", 
-                    "John Doe", 
-                    DateTime.Now.ToString("dd-MM-yyyy-HH-mm"), 
-                    "Mock ticket description", 
-                    "false"
-                ));
+                    id,
+                    "user123",
+                    "John Doe",
+                    DateTime.Now.ToString("dd-MM-yyyy-HH-mm"),
+                    "Mock ticket description",
+                    "false"));
             }
-            
+
             return returnList;
         }
 
-        public static List<string> GetTicketIDsMatchingCriteria(string UserID)
+        public static List<string> GetTicketIDsMatchingCriteria(string userID)
         {
             // Mock implementation
             List<string> returnList = new List<string> { "1", "2", "3" };
             return returnList;
         }
 
-        public static bool DoesTicketIDExist(int RequestedTicketID)
+        public static bool DoesTicketIDExist(int requestedTicketID)
         {
             // Mock implementation
-            return RequestedTicketID > 0 && RequestedTicketID < 100;
+            return requestedTicketID > 0 && requestedTicketID < 100;
         }
 
-        public static int UpdateHelpTicketDescriptionInDB(string TicketID, string NewDescription)
+        public static int UpdateHelpTicketDescriptionInDB(string ticketID, string newDescription)
         {
             // Mock implementation
-            Console.WriteLine($"Updating ticket {TicketID} with description {NewDescription}");
+            Console.WriteLine($"Updating ticket {ticketID} with description {newDescription}");
             return (int)BackendUserGetHelpStatusCodes.UpdateHelpTicketInDBSuccess;
         }
 
-        public static int CloseHelpTicketInDB(string TicketID)
+        public static int CloseHelpTicketInDB(string ticketID)
         {
             // Mock implementation
-            Console.WriteLine($"Closing ticket {TicketID}");
+            Console.WriteLine($"Closing ticket {ticketID}");
             return (int)BackendUserGetHelpStatusCodes.ClosedHelpTicketInDBSuccess;
         }
     }
@@ -98,7 +97,7 @@ namespace Marketplace_SE.Service
             Closed = closed;
         }
 
-        public string toStringExceptDescription()
+        public string ToStringExceptDescription()
         {
             return $"Ticket ID: {TicketID}, User: {UserName}, Date: {DateAndTime}, Closed: {Closed}";
         }
@@ -111,8 +110,7 @@ namespace Marketplace_SE.Service
                 other.UserName,
                 other.DateAndTime,
                 other.Descript,
-                other.Closed
-            );
+                other.Closed);
         }
     }
 

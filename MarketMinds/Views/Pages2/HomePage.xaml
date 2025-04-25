@@ -4,6 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid>
-        <Button x:Name="myButton" Content="Forgot Password?" Click="myButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" />
+        <Button x:Name="myButton" Content="Forgot Password?" Click="MyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" />
     </Grid>
 </Page>

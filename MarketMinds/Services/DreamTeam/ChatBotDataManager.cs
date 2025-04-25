@@ -11,7 +11,7 @@ namespace Marketplace_SE.Service
             return new Node { Id = 1 };
         }
     }
-    
+
     public class Node
     {
         public int Id { get; set; }
