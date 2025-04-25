@@ -1,0 +1,87 @@
+CREATE TABLE Users (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+    Password NVARCHAR(100) NOT NULL,
+    UserType INT NOT NULL,
+    Balance FLOAT NOT NULL DEFAULT 0,
+    Rating FLOAT DEFAULT 0,
+    Token NVARCHAR(100)
+);
+
+CREATE TABLE Conversations (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    User1 INT NOT NULL,
+    User2 INT NOT NULL,
+    FOREIGN KEY (User1) REFERENCES Users(Id),
+    FOREIGN KEY (User2) REFERENCES Users(Id)
+);
+
+CREATE TABLE Messages (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    ConversationId INT NOT NULL,
+    Creator INT NOT NULL,
+    Timestamp BIGINT NOT NULL,
+    ContentType NVARCHAR(50) NOT NULL,
+    Content NVARCHAR(MAX) NOT NULL,
+    FOREIGN KEY (ConversationId) REFERENCES Conversations(Id),
+    FOREIGN KEY (Creator) REFERENCES Users(Id)
+);
+
+CREATE TABLE ChatBotNodes (
+    Pid INT PRIMARY KEY IDENTITY(1,1),
+    Button_Label NVARCHAR(100),
+    Label_Text NVARCHAR(MAX),
+    Response_Text NVARCHAR(MAX)
+);
+
+CREATE TABLE ChatBotChildren (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    ParentID INT NOT NULL,
+    ChildID INT NOT NULL,
+    FOREIGN KEY (ParentID) REFERENCES ChatBotNodes(Pid),
+    FOREIGN KEY (ChildID) REFERENCES ChatBotNodes(Pid)
+);
+
+CREATE TABLE HardwareSurvey (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    DeviceID NVARCHAR(100) NOT NULL,
+    DeviceType NVARCHAR(50) NOT NULL,
+    OperatingSystem NVARCHAR(50) NOT NULL,
+    OSVersion NVARCHAR(50) NOT NULL,
+    BrowserName NVARCHAR(50),
+    BrowserVersion NVARCHAR(50),
+    ScreenResolution NVARCHAR(50) NOT NULL,
+    AvailableRAM NVARCHAR(50) NOT NULL,
+    CPUInformation NVARCHAR(100),
+    GPUInformation NVARCHAR(100),
+    ConnectionType NVARCHAR(50) NOT NULL,
+    Timestamp DATETIME NOT NULL,
+    AppVersion NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE UserGetHelpTickets (
+    TicketID INT PRIMARY KEY IDENTITY(1,1),
+    UserID NVARCHAR(50) NOT NULL,
+    UserName NVARCHAR(100) NOT NULL,
+    DateAndTime NVARCHAR(50) NOT NULL,
+    Descript NVARCHAR(MAX) NOT NULL,
+    Closed NVARCHAR(5) NOT NULL DEFAULT 'No'
+);
+
+CREATE TABLE Logs (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    LogLevel NVARCHAR(20) NOT NULL,
+    Message NVARCHAR(MAX) NOT NULL,
+    Timestamp DATETIME NOT NULL
+);
+
+CREATE TABLE Orders (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(MAX),
+    Cost FLOAT NOT NULL,
+    SellerId INT NOT NULL,
+    BuyerId INT NOT NULL DEFAULT -1,
+    FOREIGN KEY (SellerId) REFERENCES Users(Id)
+);

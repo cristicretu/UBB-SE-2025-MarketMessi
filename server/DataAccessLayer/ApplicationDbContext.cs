@@ -15,6 +15,7 @@ namespace server.DataAccessLayer
         public DbSet<Condition> ProductConditions { get; set; }
         public DbSet<Category> ProductCategories { get; set; }
         public DbSet<ProductTag> ProductTags { get; set; }
+        public DbSet<HardwareSurvey> HardwareSurveys { get; set; }
 
         // Reviews
         public DbSet<Review> Reviews { get; set; }
@@ -52,6 +53,14 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<User>().Property(u => u.Username).IsRequired();
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+
+            // Hardware Survey
+            modelBuilder.Entity<HardwareSurvey>().ToTable("HardwareSurvey");
+            modelBuilder.Entity<HardwareSurvey>().HasKey(h => h.Id);
+            modelBuilder.Entity<HardwareSurvey>().Property(h => h.DeviceID).IsRequired();
+            modelBuilder.Entity<HardwareSurvey>().Property(h => h.DeviceType).IsRequired();
+            modelBuilder.Entity<HardwareSurvey>().Property(h => h.OperatingSystem).IsRequired();
+            modelBuilder.Entity<HardwareSurvey>().Property(h => h.SurveyTimestamp).IsRequired();
 
             // Reviews
             modelBuilder.Entity<Review>().ToTable("Reviews");
