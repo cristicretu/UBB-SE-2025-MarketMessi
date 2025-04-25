@@ -111,8 +111,8 @@ namespace MarketMinds.Repositories.BasketRepository
                         .Where(pi => pi.ProductId == product.Id)
                         .ToList();
 
-                    product.Images = productImages.Select(pi => new Image(pi.Url)).ToList();
-                    Debug.WriteLine($"[Repository] Loaded {product.Images.Count} images for product {product.Id}");
+                    product.NonMappedImages = productImages.Select(pi => new Image(pi.Url)).ToList();
+                    Debug.WriteLine($"[Repository] Loaded {product.NonMappedImages.Count} images for product {product.Id}");
                 }
                 else
                 {

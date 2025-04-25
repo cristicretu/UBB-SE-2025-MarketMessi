@@ -51,13 +51,13 @@ namespace server.Models
         public List<ProductTag> Tags { get; set; }
 
         [NotMapped]
-        public List<Image> Images { get; set; }
+        public List<Image> NonMappedImages { get; set; }
 
         public BuyProduct() : base()
         {
             Price = 0;
             Tags = new List<ProductTag>();
-            Images = new List<Image>();
+            NonMappedImages = new List<Image>();
         }
 
         public BuyProduct(int id, string title, string description, User seller, Condition productCondition, Category productCategory,
@@ -70,7 +70,7 @@ namespace server.Models
             this.Condition = productCondition;
             this.Category = productCategory;
             this.Tags = productTags ?? new List<ProductTag>();
-            this.Images = images ?? new List<Image>();
+            this.NonMappedImages = images ?? new List<Image>();
             this.Price = price;
         }
 
@@ -83,7 +83,7 @@ namespace server.Models
             ConditionId = conditionId;
             CategoryId = categoryId;
             Price = price;
-            Images = new List<Image>();
+            NonMappedImages = new List<Image>();
             Tags = new List<ProductTag>();
         }
     }
