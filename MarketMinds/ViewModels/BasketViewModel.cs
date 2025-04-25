@@ -15,9 +15,9 @@ namespace ViewModelLayer.ViewModel
         private Basket basket;
 
         public List<BasketItem> BasketItems { get; private set; }
-        public float Subtotal { get; private set; }
-        public float Discount { get; private set; }
-        public float TotalAmount { get; private set; }
+        public double Subtotal { get; private set; }
+        public double Discount { get; private set; }
+        public double TotalAmount { get; private set; }
         public string PromoCode { get; set; }
         public string ErrorMessage { get; set; }
 
@@ -35,7 +35,7 @@ namespace ViewModelLayer.ViewModel
             try
             {
                 basket = basketService.GetBasketByUser(currentUser);
-                BasketItems = basket.GetItems();
+                BasketItems = basket.Items;
 
                 // Use service to calculate totals instead of local method
                 UpdateTotals();

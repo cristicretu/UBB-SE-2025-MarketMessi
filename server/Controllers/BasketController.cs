@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System;
 using System.Net;
 using MarketMinds.Repositories.BasketRepository;
+using server.DataAccessLayer;
+using System.Linq;
+using server.Models.DTOs;
+using server.Models.DTOs.Mappers;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MarketMinds.Controllers
 {
@@ -16,8 +22,17 @@ namespace MarketMinds.Controllers
         private const int NOUSER = 0;
         private const int NOBASKET = 0;
         private const int NOITEM = 0;
-        private const int NODISCOUNT = 0;
+        private const double NODISCOUNT = 0;
         private const int MaxQuantityPerItem = 10;
+        private const double SMALLEST_VALID_PRICE = 0;
+
+        // Add JsonSerializerOptions that disables reference handling
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            ReferenceHandler = ReferenceHandler.Preserve, // Use Preserve but we'll manually handle serialization
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
 
         public BasketController(IBasketRepository basketRepository)
         {
@@ -25,7 +40,7 @@ namespace MarketMinds.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        [ProducesResponseType(typeof(Basket), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BasketDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -39,7 +54,24 @@ namespace MarketMinds.Controllers
             try
             {
                 var basket = _basketRepository.GetBasketByUserId(userId);
-                return Ok(basket);
+
+                // Ensure all basket items have ProductId set
+                if (basket.Items != null)
+                {
+                    foreach (var item in basket.Items)
+                    {
+                        if (item.Product != null && item.ProductId == 0)
+                        {
+                            // If ProductId is not set, set it from the Product object
+                            item.ProductId = item.Product.Id;
+                        }
+                    }
+                }
+
+                var basketDto = BasketMapper.ToDTO(basket);
+
+                // Use the custom serializer settings and return the serialized JSON directly
+                return new JsonResult(basketDto, _jsonOptions);
             }
             catch (Exception ex)
             {
@@ -49,7 +81,7 @@ namespace MarketMinds.Controllers
         }
 
         [HttpGet("{basketId}/items")]
-        [ProducesResponseType(typeof(List<BasketItem>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<BasketItemDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketItems(int basketId)
@@ -62,7 +94,21 @@ namespace MarketMinds.Controllers
             try
             {
                 var items = _basketRepository.GetBasketItems(basketId);
-                return Ok(items);
+
+                // Ensure each item has ProductId set
+                foreach (var item in items)
+                {
+                    if (item.Product != null && item.ProductId == 0)
+                    {
+                        // If ProductId is not set, set it from the Product object
+                        item.ProductId = item.Product.Id;
+                    }
+                }
+
+                var itemDtos = items.Select(item => BasketMapper.ToDTO(item)).ToList();
+
+                // Use the custom serializer settings
+                return new JsonResult(itemDtos, _jsonOptions);
             }
             catch (Exception ex)
             {
@@ -332,15 +378,15 @@ namespace MarketMinds.Controllers
                 string normalizedCode = code.ToUpper().Trim();
 
                 // Dictionary of valid promo codes
-                Dictionary<string, float> validCodes = new Dictionary<string, float>
+                Dictionary<string, double> validCodes = new Dictionary<string, double>
                 {
-                    { "DISCOUNT10", 0.10f },  // 10% discount
-                    { "WELCOME20", 0.20f },
-                    { "FLASH30", 0.30f },     // 30% discount
+                    { "DISCOUNT10", 0.10 },  // 10% discount
+                    { "WELCOME20", 0.20 },   // 20% discount
+                    { "FLASH30", 0.30 },     // 30% discount
                 };
 
                 // Check if the code exists in the valid codes
-                if (validCodes.TryGetValue(normalizedCode, out float discountRate))
+                if (validCodes.TryGetValue(normalizedCode, out double discountRate))
                 {
                     return Ok(new { DiscountRate = discountRate });
                 }
@@ -355,7 +401,7 @@ namespace MarketMinds.Controllers
         }
 
         [HttpGet("{basketId}/totals")]
-        [ProducesResponseType(typeof(BasketTotals), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BasketTotalsDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CalculateBasketTotals(int basketId, [FromQuery] string promoCode = null)
@@ -368,14 +414,14 @@ namespace MarketMinds.Controllers
             try
             {
                 List<BasketItem> items = _basketRepository.GetBasketItems(basketId);
-                float subtotal = 0;
+                double subtotal = 0;
 
                 foreach (var item in items)
                 {
                     subtotal += item.GetPrice();
                 }
 
-                float discount = NODISCOUNT;
+                double discount = NODISCOUNT;
 
                 if (!string.IsNullOrEmpty(promoCode))
                 {
@@ -383,21 +429,21 @@ namespace MarketMinds.Controllers
                     string normalizedCode = promoCode.ToUpper().Trim();
 
                     // Dictionary of valid promo codes
-                    Dictionary<string, float> validCodes = new Dictionary<string, float>
+                    Dictionary<string, double> validCodes = new Dictionary<string, double>
                     {
-                        { "DISCOUNT10", 0.10f },  // 10% discount
-                        { "WELCOME20", 0.20f },
-                        { "FLASH30", 0.30f },     // 30% discount
+                        { "DISCOUNT10", 0.10 },  // 10% discount
+                        { "WELCOME20", 0.20 },   // 20% discount
+                        { "FLASH30", 0.30 },     // 30% discount
                     };
 
                     // Check if the code exists in the valid codes
-                    if (validCodes.TryGetValue(normalizedCode, out float discountRate))
+                    if (validCodes.TryGetValue(normalizedCode, out double discountRate))
                     {
                         discount = subtotal * discountRate;
                     }
                 }
 
-                float totalAmount = subtotal - discount;
+                double totalAmount = subtotal - discount;
 
                 var basketTotals = new BasketTotals
                 {
@@ -406,7 +452,10 @@ namespace MarketMinds.Controllers
                     TotalAmount = totalAmount
                 };
 
-                return Ok(basketTotals);
+                var totalsDto = BasketMapper.ToDTO(basketTotals);
+
+                // Use the custom serializer settings
+                return new JsonResult(totalsDto, _jsonOptions);
             }
             catch (Exception ex)
             {
@@ -445,8 +494,7 @@ namespace MarketMinds.Controllers
                         return Ok(false);
                     }
 
-                    // Check if product is of valid type
-                    if (!item.HasValidPrice)
+                    if (item.Price <= SMALLEST_VALID_PRICE)
                     {
                         return Ok(false);
                     }
@@ -464,9 +512,9 @@ namespace MarketMinds.Controllers
         // Helper class to return the basket total values
         public class BasketTotals
         {
-            public float Subtotal { get; set; }
-            public float Discount { get; set; }
-            public float TotalAmount { get; set; }
+            public double Subtotal { get; set; }
+            public double Discount { get; set; }
+            public double TotalAmount { get; set; }
         }
     }
 }

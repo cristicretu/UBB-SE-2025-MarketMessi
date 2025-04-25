@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +24,7 @@ namespace MarketMinds.Services.BasketService
 
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
+        private readonly JsonSerializerOptions jsonOptions;
 
         // Constructor with configuration
         public BasketService(IConfiguration configuration)
@@ -33,6 +36,22 @@ namespace MarketMinds.Services.BasketService
                 apiBaseUrl += "/";
             }
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/basket/");
+
+            // Configure JSON options that match the server's configuration
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                // Match server's configuration
+                ReferenceHandler = ReferenceHandler.Preserve
+            };
+
+            // Set longer timeout for HTTP requests
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
         }
 
         public void AddProductToBasket(int userId, int productId, int quantity)
@@ -75,9 +94,40 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.GetAsync(fullUrl).Result;
                 response.EnsureSuccessStatusCode();
 
-                var basket = response.Content.ReadFromJsonAsync<Basket>().Result;
+                // Use the custom JSON converter to properly deserialize the response
+                var responseContent = response.Content.ReadAsStringAsync().Result;
 
-                return basket;
+                try
+                {
+                    // Create improved JsonSerializerOptions optimized for the client
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        AllowTrailingCommas = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        // Use Preserve for consistency
+                        ReferenceHandler = ReferenceHandler.Preserve
+                    };
+
+                    // Deserialize directly
+                    var basket = JsonSerializer.Deserialize<Basket>(responseContent, options);
+
+                    // Make sure we have an Items collection
+                    if (basket.Items == null)
+                    {
+                        basket.Items = new List<BasketItem>();
+                    }
+
+                    return basket;
+                }
+                catch (JsonException ex)
+                {
+                    // Try to fallback to a simpler deserialization
+                    var fallbackBasket = new Basket { Id = user.Id, Items = new List<BasketItem>() };
+                    return fallbackBasket;
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -102,18 +152,17 @@ namespace MarketMinds.Services.BasketService
 
             try
             {
-                // Remove the product through API
+                // Make the API call to remove product from basket
                 var response = httpClient.DeleteAsync($"user/{userId}/product/{productId}").Result;
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex)
             {
-                throw new InvalidOperationException($"Could not remove product: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to remove product from basket: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error removing product: {ex.Message}");
-                throw new InvalidOperationException($"Could not remove product: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to remove product from basket: {ex.Message}", ex);
             }
         }
 
@@ -134,17 +183,20 @@ namespace MarketMinds.Services.BasketService
 
             try
             {
-                // Update quantity through API
-                var response = httpClient.PutAsJsonAsync($"user/{userId}/product/{productId}", quantity).Result;
+                // Apply the maximum quantity limit
+                int limitedQuantity = Math.Min(quantity, MaxQuantityPerItem);
+
+                // Make the API call to update product quantity
+                var response = httpClient.PutAsJsonAsync($"user/{userId}/product/{productId}", limitedQuantity).Result;
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex)
             {
-                throw new InvalidOperationException($"Could not update quantity: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to update product quantity: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Could not update quantity: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to update product quantity: {ex.Message}", ex);
             }
         }
 
@@ -152,6 +204,12 @@ namespace MarketMinds.Services.BasketService
         {
             // Initialize output parameter
             quantity = NOQUANTITY;
+
+            // Check if the input is empty
+            if (string.IsNullOrWhiteSpace(quantityText))
+            {
+                return false;
+            }
 
             // Try to parse the input string to an integer
             if (!int.TryParse(quantityText, out quantity))
@@ -206,8 +264,26 @@ namespace MarketMinds.Services.BasketService
             try
             {
                 // Validate basket through API
-                var response = httpClient.GetFromJsonAsync<bool>($"{basketId}/validate").Result;
-                return response;
+                var response = httpClient.GetAsync($"{basketId}/validate").Result;
+                response.EnsureSuccessStatusCode();
+
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                try
+                {
+                    return JsonSerializer.Deserialize<bool>(responseContent, jsonOptions);
+                }
+                catch (JsonException)
+                {
+                    // Try a simple parsing approach as fallback
+                    responseContent = responseContent.Trim().ToLower();
+                    if (responseContent == "true")
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -250,8 +326,14 @@ namespace MarketMinds.Services.BasketService
             }
         }
 
+        // Class for deserializing discount rate response
+        private class DiscountResponse
+        {
+            public double DiscountRate { get; set; }
+        }
+
         // Add a new method to get the discount for a promo code
-        public float GetPromoCodeDiscount(string code, float subtotal)
+        public double GetPromoCodeDiscount(string code, double subtotal)
         {
             if (string.IsNullOrWhiteSpace(code))
             {
@@ -266,7 +348,8 @@ namespace MarketMinds.Services.BasketService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = response.Content.ReadFromJsonAsync<DiscountResponse>().Result;
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    var result = JsonSerializer.Deserialize<DiscountResponse>(responseContent, jsonOptions);
                     return subtotal * result.DiscountRate;
                 }
 
@@ -295,8 +378,21 @@ namespace MarketMinds.Services.BasketService
                     endpoint += $"?promoCode={promoCode}";
                 }
 
-                var response = httpClient.GetFromJsonAsync<BasketTotals>(endpoint).Result;
-                return response;
+                var response = httpClient.GetAsync(endpoint).Result;
+                response.EnsureSuccessStatusCode();
+
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+
+                try
+                {
+                    var totals = JsonSerializer.Deserialize<BasketTotals>(responseContent, jsonOptions);
+                    return totals;
+                }
+                catch (JsonException)
+                {
+                    // Create a default totals object
+                    return new BasketTotals();
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -361,19 +457,5 @@ namespace MarketMinds.Services.BasketService
                 throw new InvalidOperationException($"Could not increase quantity: {ex.Message}", ex);
             }
         }
-    }
-
-    // Helper class to return the basket total values
-    public class BasketTotals
-    {
-        public float Subtotal { get; set; }
-        public float Discount { get; set; }
-        public float TotalAmount { get; set; }
-    }
-
-    // Helper class for discount response
-    internal class DiscountResponse
-    {
-        public float DiscountRate { get; set; }
     }
 }

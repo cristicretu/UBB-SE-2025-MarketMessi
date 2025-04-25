@@ -10,11 +10,11 @@ namespace server.Models
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        
+
         [Required]
         [Column("title")]
         public string Title { get; set; } = string.Empty;
-        
+
         // DisplayTitle property for backward compatibility
         [NotMapped]
         public string DisplayTitle
@@ -23,6 +23,7 @@ namespace server.Models
             set { Title = value; }
         }
 
+        // Constructors
         public ProductTag(int id, string displayTitle)
         {
             this.Id = id;
@@ -32,4 +33,4 @@ namespace server.Models
         // Default constructor for potential framework needs (e.g., deserialization)
         public ProductTag() { }
     }
-} 
+}

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
+using server.DataAccessLayer;
 using server.Models;
-using Microsoft.Data.SqlClient;
+using System.Diagnostics;
 
 namespace MarketMinds.Repositories.BasketRepository
 {
@@ -16,230 +16,116 @@ namespace MarketMinds.Repositories.BasketRepository
         private const int DEFAULTPRICE = 0;
         private const int MINIMUMID = 0;
         private const int NOQUANTITY = 0;
-        private DataBaseConnection connection;
+        private readonly ApplicationDbContext _context;
 
-        public BasketRepository(DataBaseConnection connection)
+        public BasketRepository(ApplicationDbContext context)
         {
-            this.connection = connection;
+            _context = context;
         }
 
         public Basket GetBasketByUserId(int userId)
         {
-            // Retrieves the user's basket, or creates one if it doesn't exist
-            // input: userId
-            // output: user's basket
-            Basket? basket = null;
-            int basketId = NOBASKET;
-
-            // First try to find existing basket for the user
-            string query = "SELECT id FROM Baskets WHERE buyer_id = @userId";
-            connection.OpenConnection();
-
-            using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
-            {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                object result = cmd.ExecuteScalar();
-
-                if (result != null && result != DBNull.Value)
-                {
-                    basketId = Convert.ToInt32(result);
-                }
-            }
+            // Try to find existing basket for the user
+            var basketEntity = _context.Baskets
+                .FirstOrDefault(b => b.BuyerId == userId);
 
             // If no basket exists, create one
-            if (basketId == NOBASKET)
+            if (basketEntity == null)
             {
-                string insertCmd = "INSERT INTO Baskets (buyer_id) VALUES (@userId); SELECT CAST(SCOPE_IDENTITY() as int);";
-
-                using (SqlCommand cmd = new SqlCommand(insertCmd, connection.GetConnection()))
+                basketEntity = new Basket
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    basketId = (int)cmd.ExecuteScalar();
-                }
+                    BuyerId = userId
+                };
+                _context.Baskets.Add(basketEntity);
+                _context.SaveChanges();
             }
 
-            // Create basket object and populate with items
-            basket = new Basket(basketId);
+            // Load basket items
+            basketEntity.Items = GetBasketItems(basketEntity.Id);
 
-            // Get basket items
-            List<BasketItem> items = GetBasketItems(basketId);
-            foreach (BasketItem item in items)
-            {
-                // Add each item to the basket
-                basket.Items.Add(item);
-            }
-
-            connection.CloseConnection();
-            return basket;
+            return basketEntity;
         }
 
         public void RemoveItemByProductId(int basketId, int productId)
         {
-            string deleteCmd = "DELETE FROM BasketItemsBuyProducts WHERE basket_id = @basketId AND product_id = @productId";
+            var basketItem = _context.BasketItems
+                .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
-            connection.OpenConnection();
-            try
+            if (basketItem != null)
             {
-                using (SqlCommand cmd = new SqlCommand(deleteCmd, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@basketId", basketId);
-                    cmd.Parameters.AddWithValue("@productId", productId);
-                    int rowsAffected = cmd.ExecuteNonQuery();
-                }
-            }
-            finally
-            {
-                connection.CloseConnection();
+                _context.BasketItems.Remove(basketItem);
+                _context.SaveChanges();
             }
         }
 
         public List<BasketItem> GetBasketItems(int basketId)
         {
-            List<BasketItem> items = new List<BasketItem>();
+            Debug.WriteLine($"[Repository] GetBasketItems called with basketId: {basketId}");
 
-            // Query to get basket items with product details, conditions, and categories in one go
-            string query = @"
-            SELECT bi.id, bi.product_id, bi.quantity, bi.price, p.description, p.title,
-                pc.id AS condition_id, pc.title AS condition_title, pc.description AS condition_description,
-                pcat.id AS category_id, pcat.title AS category_title, pcat.description AS category_description,
-                u.id AS seller_id, u.username AS seller_username, u.email AS seller_email
-            FROM BasketItemsBuyProducts bi
-            JOIN BuyProducts p ON bi.product_id = p.id
-            LEFT JOIN ProductConditions pc ON p.condition_id = pc.id
-            LEFT JOIN ProductCategories pcat ON p.category_id = pcat.id
-            LEFT JOIN Users u ON p.seller_id = u.id
-            WHERE bi.basket_id = @basketId";
+            // Get basket items - don't include Product since it's NotMapped
+            var basketItems = _context.BasketItems
+                .Where(bi => bi.BasketId == basketId)
+                .ToList();
 
-            connection.OpenConnection();
-            using (SqlCommand cmd = new SqlCommand(query, connection.GetConnection()))
+            Debug.WriteLine($"[Repository] Found {basketItems.Count} basket items in database");
+
+            // For each item, load its product details separately
+            foreach (var item in basketItems)
             {
-                cmd.Parameters.AddWithValue("@basketId", basketId);
+                Debug.WriteLine($"[Repository] Loading product details for item {item.Id}, productId: {item.ProductId}");
 
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                // Load the product details
+                var product = _context.BuyProducts
+                    .Include(p => p.Seller)
+                    .Include(p => p.Condition)
+                    .Include(p => p.Category)
+                    .FirstOrDefault(p => p.Id == item.ProductId);
+
+                if (product != null)
                 {
-                    while (reader.Read())
+                    Debug.WriteLine($"[Repository] Found product: {product.Id} - {product.Title}");
+                    item.Product = product;
+
+                    // Ensure ProductId matches the product's ID
+                    if (item.ProductId != product.Id)
                     {
-                        // Inside your while(reader.Read()) loop:
-                        int itemId = reader.GetInt32(0);
-                        int productId = reader.GetInt32(1);
-                        int quantity = reader.GetInt32(2);
-                        double price = reader.GetDouble(3);
-                        string description = reader.GetString(4);
-                        string productTitle = reader.GetString(5);
-
-                        // The rest of your reader code needs to be updated with new indices
-                        int conditionId = reader.IsDBNull(6) ? -1 : reader.GetInt32(6);
-                        string conditionTitle = reader.IsDBNull(7) ? string.Empty : reader.GetString(7);
-                        string conditionDesc = reader.IsDBNull(8) ? string.Empty : reader.GetString(8);
-
-                        int categoryId = reader.IsDBNull(9) ? -1 : reader.GetInt32(9);
-                        string categoryTitle = reader.IsDBNull(10) ? string.Empty : reader.GetString(10);
-                        string categoryDesc = reader.IsDBNull(11) ? string.Empty : reader.GetString(11);
-
-                        int sellerId = reader.IsDBNull(12) ? -1 : reader.GetInt32(12);
-                        string sellerUsername = reader.IsDBNull(13) ? string.Empty : reader.GetString(13);
-                        string sellerEmail = reader.IsDBNull(14) ? string.Empty : reader.GetString(14);
-                        string sellerPassword = string.Empty; // Assuming password is not needed here
-
-                        // Create condition and category objects
-                        Condition? condition = conditionId > MINIMUMID ?
-                            new Condition(conditionTitle) : null;
-
-                        Category? category = categoryId > MINIMUMID ?
-                            new Category(categoryTitle) : null;
-
-                        // Create the seller object
-                        User? seller = sellerId > MINIMUMID ?
-                            new User(sellerUsername, sellerEmail, sellerPassword) : null;
-                        // Create the product with basic information
-                        BuyProduct product = new BuyProduct(
-                            productId,                   // Id
-                            productTitle ?? string.Empty,          // Title
-                            description ?? string.Empty,           // Description
-                            seller ?? new User(string.Empty, string.Empty, string.Empty),  // Seller with default values if null
-                            condition ?? new Condition(string.Empty),  // Default condition if null
-                            category ?? new Category(string.Empty),    // Default category if null
-                            new List<ProductTag>(),      // Tags
-                            new List<Image>(),           // Images
-                            (float)price);               // Price
-                        // Create the basket item
-                        BasketItem item = new BasketItem(itemId, product, quantity);
-                        item.Price = (float)price;
-                        items.Add(item);
+                        Debug.WriteLine($"[Repository] WARNING: ProductId mismatch! Setting ProductId={product.Id} for item {item.Id}");
+                        item.ProductId = product.Id;
                     }
+
+                    // Load tags
+                    var productTagIds = _context.Set<BuyProductProductTag>()
+                        .Where(pt => pt.ProductId == product.Id)
+                        .Select(pt => pt.TagId)
+                        .ToList();
+
+                    var tags = _context.Set<ProductTag>()
+                        .Where(t => productTagIds.Contains(t.Id))
+                        .ToList();
+
+                    product.Tags = tags;
+                    Debug.WriteLine($"[Repository] Loaded {tags.Count} tags for product {product.Id}");
+
+                    // Load images
+                    var productImages = _context.Set<BuyProductImage>()
+                        .Where(pi => pi.ProductId == product.Id)
+                        .ToList();
+
+                    product.Images = productImages.Select(pi => new Image(pi.Url)).ToList();
+                    Debug.WriteLine($"[Repository] Loaded {product.Images.Count} images for product {product.Id}");
+                }
+                else
+                {
+                    Debug.WriteLine($"[Repository] WARNING: Product with ID {item.ProductId} not found!");
                 }
             }
-            connection.CloseConnection();
 
-            // Now load tags for each product
-            foreach (BasketItem item in items)
-            {
-                // Get tags for this product
-                string tagsQuery = @"
-                    SELECT t.id, t.title
-                    FROM ProductTags t
-                    JOIN BuyProductProductTags pt ON t.id = pt.tag_id
-                    WHERE pt.product_id = @productId";
-                connection.OpenConnection();
-                using (SqlCommand cmd = new SqlCommand(tagsQuery, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@productId", item.Product.Id);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int tagId = reader.GetInt32(0);
-                            string tagTitle = reader.GetString(1);
-
-                            item.Product.Tags.Add(new ProductTag(tagId, tagTitle));
-                        }
-                    }
-                }
-                connection.CloseConnection();
-            }
-
-            // After loading tags, now load images for each product
-            foreach (BasketItem item in items)
-            {
-                // Get images for this product
-                string imagesQuery = @"
-                    SELECT id, url
-                    FROM BuyProductImages
-                    WHERE product_id = @productId";
-
-                connection.OpenConnection();
-                using (SqlCommand cmd = new SqlCommand(imagesQuery, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@productId", item.Product.Id);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string imageUrl = reader.GetString(1);
-
-                            item.Product.Images.Add(new Image(imageUrl));
-                        }
-                    }
-                }
-                connection.CloseConnection();
-            }
-
-            return items;
+            Debug.WriteLine($"[Repository] Returning {basketItems.Count} fully loaded basket items");
+            return basketItems;
         }
 
         public void AddItemToBasket(int basketId, int productId, int quantity)
         {
-            // Add an item to the basket
-            // input: basketId, productId, quantity
-            // output: none
-
-            // First, check if the item already exists in the basket
-            string checkQuery = "SELECT id, quantity FROM BasketItemsBuyProducts WHERE basket_id = @basketId AND product_id = @productId";
-            int existingItemId = NOITEM;
-            int existingQuantity = NOQUANTITY;
-
             if (quantity < 0)
             {
                 throw new ArgumentException("Quantity cannot be negative");
@@ -250,105 +136,73 @@ namespace MarketMinds.Repositories.BasketRepository
                 throw new ArgumentException("Product ID cannot be negative");
             }
 
-            connection.OpenConnection();
-
-            using (SqlCommand cmd = new SqlCommand(checkQuery, connection.GetConnection()))
+            // Get the product
+            var product = _context.BuyProducts.Find(productId);
+            if (product == null)
             {
-                cmd.Parameters.AddWithValue("@basketId", basketId);
-                cmd.Parameters.AddWithValue("@productId", productId);
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        existingItemId = reader.GetInt32(0);
-                        existingQuantity = reader.GetInt32(1);
-                    }
-                }
+                throw new Exception("Product not found");
             }
 
-            // Get the current price of the product
-            string priceQuery = "SELECT price FROM BuyProducts WHERE id = @productId";
-            float price = DEFAULTPRICE;
+            // Check if the item already exists in the basket
+            var existingItem = _context.BasketItems
+                .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
-            using (SqlCommand cmd = new SqlCommand(priceQuery, connection.GetConnection()))
-            {
-                cmd.Parameters.AddWithValue("@productId", productId);
-                object result = cmd.ExecuteScalar();
-                if (result != null && result != DBNull.Value)
-                {
-                    price = Convert.ToSingle(result);
-                }
-                else
-                {
-                    // Product doesn't exist or has no price
-                    throw new Exception("Product not found or has no price");
-                }
-            }
-
-            if (existingItemId != NOITEM)
+            if (existingItem != null)
             {
                 // Update existing item quantity
-                string updateCmd = "UPDATE BasketItemsBuyProducts SET quantity = @quantity WHERE id = @id";
-
-                using (SqlCommand cmd = new SqlCommand(updateCmd, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@id", existingItemId);
-                    cmd.Parameters.AddWithValue("@quantity", existingQuantity + quantity);
-                    cmd.ExecuteNonQuery();
-                }
+                existingItem.Quantity += quantity;
+                _context.BasketItems.Update(existingItem);
             }
             else
             {
-                // Insert new item
-                string insertCmd = "INSERT INTO BasketItemsBuyProducts (basket_id, product_id, quantity, price) VALUES (@basketId, @productId, @quantity, @price)";
-
-                using (SqlCommand cmd = new SqlCommand(insertCmd, connection.GetConnection()))
+                // Create new basket item - don't assign Product directly since it's NotMapped
+                var basketItem = new BasketItem
                 {
-                    cmd.Parameters.AddWithValue("@basketId", basketId);
-                    cmd.Parameters.AddWithValue("@productId", productId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.Parameters.AddWithValue("@price", price);
-                    cmd.ExecuteNonQuery();
-                }
+                    BasketId = basketId,
+                    ProductId = productId,
+                    Quantity = quantity,
+                    Price = product.Price
+                };
+                _context.BasketItems.Add(basketItem);
             }
 
-            connection.CloseConnection();
+            _context.SaveChanges();
         }
 
-        public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
+        public void UpdateProductQuantity(int basketId, int productId, int quantity)
         {
-            if (quantity < NOQUANTITY)
+            if (quantity < 0)
             {
                 throw new ArgumentException("Quantity cannot be negative");
             }
 
-            if (productId < NOITEM)
+            if (productId < 0)
             {
                 throw new ArgumentException("Product ID cannot be negative");
             }
-            if (basketId < NOBASKET)
+
+            // Find the basket item
+            var basketItem = _context.BasketItems
+                .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
+
+            if (basketItem == null)
             {
-                throw new ArgumentException("Basket ID cannot be negative");
+                throw new Exception("Basket item not found");
             }
 
-            string updateCmd = "UPDATE BasketItemsBuyProducts SET quantity = @quantity WHERE basket_id = @basketId AND product_id = @productId";
+            if (quantity == 0)
+            {
+                // Remove the item if quantity is 0
+                _context.BasketItems.Remove(basketItem);
+            }
+            else
+            {
+                // Update quantity
+                basketItem.Quantity = quantity;
+                _context.BasketItems.Update(basketItem);
+            }
 
-            connection.OpenConnection();
-            try
-            {
-                using (SqlCommand cmd = new SqlCommand(updateCmd, connection.GetConnection()))
-                {
-                    cmd.Parameters.AddWithValue("@basketId", basketId);
-                    cmd.Parameters.AddWithValue("@productId", productId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            finally
-            {
-                connection.CloseConnection();
-            }
+            _context.SaveChanges();
         }
 
         public void ClearBasket(int basketId)
@@ -358,20 +212,70 @@ namespace MarketMinds.Repositories.BasketRepository
                 throw new ArgumentException("Basket ID cannot be negative");
             }
 
-            // Remove all items from the basket
-            // input: basketId
-            // output: none
-            string deleteCmd = "DELETE FROM BasketItemsBuyProducts WHERE basket_id = @basketId";
+            var basketItems = _context.BasketItems
+                .Where(bi => bi.BasketId == basketId);
 
-            connection.OpenConnection();
+            _context.BasketItems.RemoveRange(basketItems);
+            _context.SaveChanges();
+        }
 
-            using (SqlCommand cmd = new SqlCommand(deleteCmd, connection.GetConnection()))
+        public bool RemoveProductFromBasket(int basketId, int productId)
+        {
+            if (productId < 0)
             {
-                cmd.Parameters.AddWithValue("@basketId", basketId);
-                cmd.ExecuteNonQuery();
+                throw new ArgumentException("Product ID cannot be negative");
             }
 
-            connection.CloseConnection();
+            // Find the basket item
+            var basketItem = _context.BasketItems
+                .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
+
+            if (basketItem == null)
+            {
+                return false; // Item not found
+            }
+
+            // Remove the item
+            _context.BasketItems.Remove(basketItem);
+            _context.SaveChanges();
+
+            return true;
+        }
+
+        public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
+        {
+            if (quantity < 0)
+            {
+                throw new ArgumentException("Quantity cannot be negative");
+            }
+
+            if (productId < 0)
+            {
+                throw new ArgumentException("Product ID cannot be negative");
+            }
+
+            // Find the basket item
+            var basketItem = _context.BasketItems
+                .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
+
+            if (basketItem == null)
+            {
+                throw new Exception("Basket item not found");
+            }
+
+            if (quantity == 0)
+            {
+                // Remove the item if quantity is 0
+                _context.BasketItems.Remove(basketItem);
+            }
+            else
+            {
+                // Update quantity
+                basketItem.Quantity = quantity;
+                _context.BasketItems.Update(basketItem);
+            }
+
+            _context.SaveChanges();
         }
     }
 }

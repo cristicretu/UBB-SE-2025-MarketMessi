@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace MarketMinds.Views.Pages
 
         public BasketView()
         {
+            Debug.WriteLine("[View] BasketView constructor called");
             this.InitializeComponent();
 
             // Get the current user from the app
@@ -52,6 +54,8 @@ namespace MarketMinds.Views.Pages
 
         private void LoadBasketData()
         {
+            Debug.WriteLine("[View] LoadBasketData called");
+
             try
             {
                 // Refresh basket data from the view model
@@ -71,6 +75,12 @@ namespace MarketMinds.Views.Pages
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[View] ERROR in LoadBasketData: {ex.GetType().Name} - {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[View] Inner exception: {ex.InnerException.Message}");
+                }
+
                 // Show error message to user
                 ErrorMessageTextBlock.Text = $"Error loading basket: {ex.Message}";
                 ErrorMessageTextBlock.Visibility = Visibility.Visible;
