@@ -1,5 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
 using DomainLayer.Domain;
 
 namespace MarketMinds.Services.ReviewCalculationService
@@ -9,23 +14,33 @@ namespace MarketMinds.Services.ReviewCalculationService
         private const int NO_REVIEWS = 0;
         private const int NO_RATINGS = 0;
 
-        public float CalculateAverageRating(IEnumerable<Review> reviews)
+        public double CalculateAverageRating(ObservableCollection<Review> reviews)
         {
-            if (reviews == null || !reviews.Any())
+            if (reviews == null || reviews.Count == 0)
             {
-                return NO_RATINGS;
+                return 0;
             }
-            return reviews.Average(r => r.Rating);
+
+            double totalRating = 0;
+            foreach (var review in reviews)
+            {
+                totalRating += review.Rating;
+            }
+
+            double averageRating = totalRating / reviews.Count;
+            return averageRating;
         }
 
-        public int GetReviewCount(IEnumerable<Review> reviews)
+        public int GetReviewCount(ObservableCollection<Review> reviews)
         {
-            return reviews?.Count() ?? NO_REVIEWS;
+            int count = reviews?.Count ?? 0;
+            return count;
         }
 
-        public bool AreReviewsEmpty(IEnumerable<Review> reviews)
+        public bool AreReviewsEmpty(ObservableCollection<Review> reviews)
         {
-            return reviews == null || !reviews.Any();
+            bool isEmpty = reviews == null || reviews.Count == 0;
+            return isEmpty;
         }
     }
 }

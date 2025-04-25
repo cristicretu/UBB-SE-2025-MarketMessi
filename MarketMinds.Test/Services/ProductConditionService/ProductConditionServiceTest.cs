@@ -7,55 +7,174 @@ namespace MarketMinds.Test.Services.ProductConditionService
     [TestFixture]
     internal class ProductConditionServiceTest
     {
-        private ProductConditionRepositoryMock mockRepository;
-        private IProductConditionService service;
+        // Constants to replace magic strings and numbers
+        private const int FIRST_CONDITION_ID = 1;
+        private const int SECOND_CONDITION_ID = 2;
+        private const string NEW_CONDITION_TITLE = "New";
+        private const string NEW_CONDITION_DESCRIPTION = "Never used";
+        private const string USED_CONDITION_TITLE = "Used";
+        private const string USED_CONDITION_DESCRIPTION = "Shows use marks";
+        private const string CONDITION_TO_DELETE_TITLE = "Condition to Delete";
+        private const string CONDITION_TO_DELETE_DESCRIPTION = "Description";
+        private const int EXPECTED_SINGLE_ITEM = 1;
+        private const int EXPECTED_TWO_ITEMS = 2;
+        private const int EXPECTED_ZERO_ITEMS = 0;
+
+        private ProductConditionRepositoryMock _mockRepository;
+        private IProductConditionService _service;
 
         [SetUp]
         public void Setup()
         {
-            mockRepository = new ProductConditionRepositoryMock();
-            service = new MarketMinds.Services.ProductConditionService.ProductConditionService(mockRepository);
+            _mockRepository = new ProductConditionRepositoryMock();
+            _service = new MarketMinds.Services.ProductConditionService.ProductConditionService(_mockRepository);
+        }
+
+        #region GetAllProductConditions Tests
+
+        [Test]
+        public void GetAllProductConditions_ReturnsCorrectNumberOfConditions()
+        {
+            // Arrange
+            AddTestConditions();
+
+            // Act
+            var result = _service.GetAllProductConditions();
+
+            // Assert
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_TWO_ITEMS));
         }
 
         [Test]
-        public void GetAllProductConditions_ShouldReturnAllConditions()
+        public void GetAllProductConditions_FirstConditionHasCorrectTitle()
         {
-            mockRepository.Conditions.Add(new ProductCondition(1, "New", "Never used"));
-            mockRepository.Conditions.Add(new ProductCondition(2, "Used", "Shows use marks"));
+            // Arrange
+            AddTestConditions();
 
-            var result = service.GetAllProductConditions();
+            // Act
+            var result = _service.GetAllProductConditions();
 
-            Assert.That(result.Count, Is.EqualTo(2));
-            Assert.That(result[0].DisplayTitle, Is.EqualTo("New"));
-            Assert.That(result[1].DisplayTitle, Is.EqualTo("Used"));
-            Assert.That(result[0].Description, Is.EqualTo("Never used"));
-            Assert.That(result[1].Description, Is.EqualTo("Shows use marks"));
+            // Assert
+            Assert.That(result[0].DisplayTitle, Is.EqualTo(NEW_CONDITION_TITLE));
         }
 
         [Test]
-        public void CreateProductCategory_ShouldCreateAndReturnNewCategory()
+        public void GetAllProductConditions_SecondConditionHasCorrectTitle()
         {
-            string displayTitle = "New";
-            string description = "Never used";
+            // Arrange
+            AddTestConditions();
 
-            var result = service.CreateProductCondition(displayTitle, description);
+            // Act
+            var result = _service.GetAllProductConditions();
 
-            Assert.That(result.DisplayTitle, Is.EqualTo(displayTitle));
-            Assert.That(result.Description, Is.EqualTo(description));
-            Assert.That(result.Id, Is.EqualTo(1));
-            Assert.That(mockRepository.Conditions.Count, Is.EqualTo(1));
+            // Assert
+            Assert.That(result[1].DisplayTitle, Is.EqualTo(USED_CONDITION_TITLE));
         }
 
         [Test]
-        public void DeleteProductCategory_ShouldRemoveCategoryFromList()
+        public void GetAllProductConditions_FirstConditionHasCorrectDescription()
         {
-            string displayTitle = "Condition to Delete";
-            mockRepository.Conditions.Add(new ProductCondition(1, displayTitle, "Description"));
-            Assert.That(mockRepository.Conditions.Count, Is.EqualTo(1));
+            // Arrange
+            AddTestConditions();
 
-            service.DeleteProductCondition(displayTitle);
+            // Act
+            var result = _service.GetAllProductConditions();
 
-            Assert.That(mockRepository.Conditions.Count, Is.EqualTo(0));
+            // Assert
+            Assert.That(result[0].Description, Is.EqualTo(NEW_CONDITION_DESCRIPTION));
         }
+
+        [Test]
+        public void GetAllProductConditions_SecondConditionHasCorrectDescription()
+        {
+            // Arrange
+            AddTestConditions();
+
+            // Act
+            var result = _service.GetAllProductConditions();
+
+            // Assert
+            Assert.That(result[1].Description, Is.EqualTo(USED_CONDITION_DESCRIPTION));
+        }
+
+        #endregion
+
+        #region CreateProductCondition Tests
+
+        [Test]
+        public void CreateProductCondition_ReturnsConditionWithCorrectTitle()
+        {
+            // Act
+            var result = _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
+
+            // Assert
+            Assert.That(result.DisplayTitle, Is.EqualTo(NEW_CONDITION_TITLE));
+        }
+
+        [Test]
+        public void CreateProductCondition_ReturnsConditionWithCorrectDescription()
+        {
+            // Act
+            var result = _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
+
+            // Assert
+            Assert.That(result.Description, Is.EqualTo(NEW_CONDITION_DESCRIPTION));
+        }
+
+        [Test]
+        public void CreateProductCondition_ReturnsConditionWithCorrectId()
+        {
+            // Act
+            var result = _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
+
+            // Assert
+            Assert.That(result.Id, Is.EqualTo(FIRST_CONDITION_ID));
+        }
+
+        [Test]
+        public void CreateProductCondition_AddsConditionToRepository()
+        {
+            // Act
+            _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
+
+            // Assert
+            Assert.That(_mockRepository.Conditions.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
+        }
+
+        #endregion
+
+        #region DeleteProductCondition Tests
+
+        [Test]
+        public void DeleteProductCondition_RemovesConditionFromRepository()
+        {
+            // Arrange
+            AddConditionToDelete();
+            Assert.That(_mockRepository.Conditions.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM),
+                "Precondition: Repository should have exactly one condition before deletion");
+
+            // Act
+            _service.DeleteProductCondition(CONDITION_TO_DELETE_TITLE);
+
+            // Assert
+            Assert.That(_mockRepository.Conditions.Count, Is.EqualTo(EXPECTED_ZERO_ITEMS));
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private void AddTestConditions()
+        {
+            _mockRepository.Conditions.Add(new ProductCondition(FIRST_CONDITION_ID, NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION));
+            _mockRepository.Conditions.Add(new ProductCondition(SECOND_CONDITION_ID, USED_CONDITION_TITLE, USED_CONDITION_DESCRIPTION));
+        }
+
+        private void AddConditionToDelete()
+        {
+            _mockRepository.Conditions.Add(new ProductCondition(FIRST_CONDITION_ID, CONDITION_TO_DELETE_TITLE, CONDITION_TO_DELETE_DESCRIPTION));
+        }
+
+        #endregion
     }
 }

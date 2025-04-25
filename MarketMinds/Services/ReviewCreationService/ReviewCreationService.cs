@@ -18,7 +18,7 @@ namespace MarketMinds.Services.ReviewCreationService
             imageService = new ImageUploadService();
         }
 
-        public Review CreateReview(string description, List<Image> images, float rating, User seller, User buyer)
+        public Review CreateReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
             if (seller == null || buyer == null || reviewsService == null)
             {
@@ -29,7 +29,7 @@ namespace MarketMinds.Services.ReviewCreationService
             return new Review(-1, description, images, rating, seller.Id, buyer.Id);
         }
 
-        public void UpdateReview(Review currentReview, string newDescription, float newRating)
+        public void UpdateReview(Review currentReview, string newDescription, double newRating)
         {
             if (currentReview == null)
             {
@@ -46,7 +46,7 @@ namespace MarketMinds.Services.ReviewCreationService
                 newRating);
         }
 
-        public void EditReview(Review review, string description, float rating)
+        public void EditReview(Review review, string description, double rating)
         {
             if (review == null)
             {

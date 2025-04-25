@@ -20,6 +20,6 @@ namespace server.Models
 
         // Navigation property
         [ForeignKey("ProductId")]
-        public AuctionProduct Product { get; set; } = null!;
+        public AuctionProduct? Product { get; set; }
     }
 } 

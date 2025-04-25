@@ -63,4 +63,12 @@ namespace server.Models.DTOs
         public double Rating { get; set; }
         public int Password { get; set; } 
     }
+
+    public class CreateBidDTO
+    {
+        public int ProductId { get; set; }
+        public int BidderId { get; set; }
+        public float Amount { get; set; }
+        public DateTime Timestamp { get; set; }
+    }
 } 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,16 +8,18 @@ namespace DomainLayer.Domain
 {
     public class BuyProduct : Product
     {
-        public float Price { get; set; }
+        public double Price { get; set; }
 
-        public BuyProduct()
+        public BuyProduct() : base()
         {
+            Price = 0;
             Tags = new List<ProductTag>();
             Images = new List<Image>();
+
         }
 
         public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
-            List<ProductTag> productTags, List<Image> images, float price)
+            List<ProductTag> productTags, List<Image> images, double price)
         {
             this.Id = id;
             this.Title = title;
@@ -26,7 +28,6 @@ namespace DomainLayer.Domain
             this.Condition = productCondition;
             this.Category = productCategory;
             this.Tags = productTags;
-            this.Seller = seller;
             this.Images = images;
             this.Price = price;
         }

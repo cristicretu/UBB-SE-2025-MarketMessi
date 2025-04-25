@@ -87,7 +87,7 @@ namespace MarketMinds
             InitializeComponent();
             // Initialize configuration
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             appConfiguration = builder.Build();
             // Initialize API configuration
@@ -134,8 +134,8 @@ namespace MarketMinds
             CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(ProductTagRepository);
             ConditionService = new ProductConditionService(ProductConditionRepository);
-            ReviewsService = new ReviewsService(ReviewRepository);
-            BasketService = new BasketService(BasketRepository);
+            ReviewsService = new ReviewsService(Configuration);
+            BasketService = new BasketService(Configuration);
 
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);

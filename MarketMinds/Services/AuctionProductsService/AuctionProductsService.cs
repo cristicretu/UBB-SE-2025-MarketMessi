@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
+using MarketMinds.Repositories;
 
 namespace MarketMinds.Services.AuctionProductsService
 {
@@ -29,32 +30,76 @@ namespace MarketMinds.Services.AuctionProductsService
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
+        public AuctionProductsService(IProductsRepository repository) : base(repository)
+        {
+        }
+
         public void CreateListing(Product product)
         {
             if (!(product is AuctionProduct auctionProduct))
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
-            var response = httpClient.PostAsJsonAsync("auctionproducts", auctionProduct).Result;
-            response.EnsureSuccessStatusCode();
+
+            var productToSend = new
+            {
+                auctionProduct.Title,
+                auctionProduct.Description,
+                SellerId = auctionProduct.Seller?.Id ?? 0,
+                ConditionId = auctionProduct.Condition?.Id,
+                CategoryId = auctionProduct.Category?.Id,
+                StartTime = auctionProduct.StartAuctionDate,
+                EndTime = auctionProduct.EndAuctionDate,
+                StartPrice = auctionProduct.StartingPrice,
+                CurrentPrice = auctionProduct.StartingPrice,
+                Images = auctionProduct.Images == null
+                       ? new List<object>()
+                       : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+            };
+
+            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
+
+            var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
         {
-            ValidateBid(auction, bidder, bidAmount);
-
-            bidder.Balance -= bidAmount;
-
-            RefundPreviousBidder(auction);
-
-            var bid = new Bid(bidder, bidAmount, DateTime.Now);
-            auction.AddBid(bid);
-            auction.CurrentPrice = bidAmount;
-
-            ExtendAuctionTime(auction);
-
-            var response = httpClient.PutAsJsonAsync($"auctionproducts/{auction.Id}", auction).Result;
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                ValidateBid(auction, bidder, bidAmount);
+                var bidToSend = new
+                {
+                    ProductId = auction.Id,
+                    BidderId = bidder.Id,
+                    Amount = bidAmount,
+                    Timestamp = DateTime.Now
+                };
+                var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"API Error when placing bid: {response.StatusCode} - {errorContent}");
+                    response.EnsureSuccessStatusCode();
+                    return;
+                }
+                bidder.Balance -= bidAmount;
+                var bid = new Bid(bidder, bidAmount, DateTime.Now);
+                auction.AddBid(bid);
+                auction.CurrentPrice = bidAmount;
+                ExtendAuctionTime(auction);
+                Console.WriteLine($"Bid of ${bidAmount} successfully placed on auction {auction.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error placing bid: {ex.Message}");
+                throw;
+            }
         }
 
         public void ConcludeAuction(AuctionProduct auction)
@@ -95,16 +140,6 @@ namespace MarketMinds.Services.AuctionProductsService
             if (DateTime.Now > auction.EndAuctionDate)
             {
                 throw new Exception("Auction already ended");
-            }
-        }
-
-        private void RefundPreviousBidder(AuctionProduct auction)
-        {
-            if (auction.BidHistory.Count > 0)
-            {
-                var previousBid = auction.BidHistory.Last();
-                Console.WriteLine($"Warning: Client-side refund logic for bidder ID {previousBid.Bidder.Id} needs review!!!!!!!!!.");
-                previousBid.Bidder.Balance += previousBid.Price;
             }
         }
 

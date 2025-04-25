@@ -3,44 +3,51 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using server.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DomainLayer.Domain
+namespace server.Models
 {
-    // Represents an item in the shopping basket with its associated product, quantity, and price
+    [Table("BasketItemsBuyProducts")]
     public class BasketItem
     {
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
-        public BuyProduct Product { get; set; }
 
-        // Add missing properties to match server model
-        public int ProductId { get; set; }
+        [Column("basket_id")]
         public int BasketId { get; set; }
 
+        [Column("product_id")]
+        public int ProductId { get; set; }
+
+        // Navigation property is handled through Entity Framework configuration
+        [NotMapped]
+        public BuyProduct Product { get; set; }
+
+        [Column("quantity")]
         public int Quantity { get; set; }
+
+        [Column("price")]
         public double Price { get; set; }
 
-        public string FormattedPrice => $"${Price:F2}";
-
-        private const int DEFAULT_PRICE = 0;
+        private const double DEFAULT_PRICE = 0;
 
         public BasketItem(int id, BuyProduct product, int quantity)
         {
             this.Id = id;
             this.Product = product;
-            this.ProductId = product.Id; // Set ProductId from the product
+            this.ProductId = product.Id;
             this.Quantity = quantity;
-
-            // Set the price based on the product
             this.Price = product.Price;
         }
 
-        // Default constructor for serialization
         public BasketItem()
         {
             this.Id = 0;
             this.Product = null;
             this.ProductId = 0;
-            this.BasketId = 0;
             this.Quantity = 0;
             this.Price = DEFAULT_PRICE;
         }
@@ -48,7 +55,7 @@ namespace DomainLayer.Domain
         public double GetPrice()
         {
             // Calculates the total price for this basket item (unit price × quantity)
-            return Price * Quantity;
+            return (Price * Quantity);
         }
     }
 }
