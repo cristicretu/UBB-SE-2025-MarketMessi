@@ -31,7 +31,7 @@ namespace MarketMinds.Services.ReviewService
         /// <param name="rating">The rating of the review.</param>
         /// <param name="seller">The seller being reviewed.</param>
         /// <param name="buyer">The buyer writing the review.</param>
-        void AddReview(string description, List<Image> images, float rating, User seller, User buyer);
+        void AddReview(string description, List<Image> images, double rating, User seller, User buyer);
 
         /// <summary>
         /// Edits an existing review.
@@ -43,7 +43,7 @@ namespace MarketMinds.Services.ReviewService
         /// <param name="buyerid">The ID of the buyer writing the review.</param>
         /// <param name="newDescription">The new description for the review.</param>
         /// <param name="newRating">The new rating for the review.</param>
-        void EditReview(string description, List<Image> images, float rating, int sellerid, int buyerid, string newDescription, float newRating);
+        void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating);
 
         /// <summary>
         /// Deletes a review.
@@ -53,7 +53,7 @@ namespace MarketMinds.Services.ReviewService
         /// <param name="rating">The rating of the review.</param>
         /// <param name="sellerid">The ID of the seller being reviewed.</param>
         /// <param name="buyerid">The ID of the buyer writing the review.</param>
-        void DeleteReview(string description, List<Image> images, float rating, int sellerid, int buyerid);
+        void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid);
     }
 }
 

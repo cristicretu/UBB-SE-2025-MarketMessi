@@ -17,7 +17,7 @@ namespace MarketMinds.Services.ReviewCreationService
         /// <param name="seller">The seller being reviewed.</param>
         /// <param name="buyer">The buyer writing the review.</param>
         /// <returns>The created Review object.</returns>
-        Review CreateReview(string description, List<Image> images, float rating, User seller, User buyer);
+        Review CreateReview(string description, List<Image> images, double rating, User seller, User buyer);
 
         /// <summary>
         /// Updates an existing review with new details.
@@ -25,7 +25,7 @@ namespace MarketMinds.Services.ReviewCreationService
         /// <param name="currentReview">The current review to update.</param>
         /// <param name="newDescription">The new description for the review.</param>
         /// <param name="newRating">The new rating for the review.</param>
-        void UpdateReview(Review currentReview, string newDescription, float newRating);
+        void UpdateReview(Review currentReview, string newDescription, double newRating);
 
         /// <summary>
         /// Edits an existing review.
@@ -33,7 +33,7 @@ namespace MarketMinds.Services.ReviewCreationService
         /// <param name="review">The review to edit.</param>
         /// <param name="description">The new description for the review.</param>
         /// <param name="rating">The new rating for the review.</param>
-        void EditReview(Review review, string description, float rating);
+        void EditReview(Review review, string description, double rating);
 
         /// <summary>
         /// Deletes a review.

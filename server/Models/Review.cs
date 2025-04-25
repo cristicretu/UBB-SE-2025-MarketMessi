@@ -1,34 +1,82 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace server.Models
 {
+    [Table("Reviews")]
     public class Review
     {
+        // The review doesn't take into account the product for which the review has been made,
+        // it can be mentioned in the description, and images
+        [Key]
+        [Column("id")]
         public int Id { get; set; }
-        public int ReviewerId { get; set; }
+
+        [Column("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [NotMapped] // This property is not directly mapped to a column in the Reviews table
+        public List<Image> Images { get; set; } = new List<Image>();
+
+        [Column("rating")]
+        public double Rating { get; set; }
+
+        [Column("seller_id")]
         public int SellerId { get; set; }
-        public string Description { get; set; }
-        public float Rating { get; set; }
-        
-        // Navigation properties
-        public User Reviewer { get; set; }
-        public User Seller { get; set; }
-        public ICollection<ReviewPicture> Pictures { get; set; }
-        
-        public Review() 
+
+        [Column("reviewer_id")]
+        public int BuyerId { get; set; }
+
+        // Navigation property for the join table
+        [InverseProperty("Review")]
+        public virtual ICollection<ReviewImage> ReviewImages { get; set; } = new List<ReviewImage>();
+
+        public Review(int id, string description, List<Image> images, double rating, int sellerId, int buyerId)
         {
-            Pictures = new List<ReviewPicture>();
+            this.Id = id;
+            this.Description = description;
+            this.Images = images ?? new List<Image>();
+            this.Rating = rating;
+            this.SellerId = sellerId;
+            this.BuyerId = buyerId;
         }
-        
-        public Review(int id, int reviewerId, int sellerId, string description, float rating)
+
+        // Default constructor for Entity Framework
+        public Review()
         {
-            Id = id;
-            ReviewerId = reviewerId;
-            SellerId = sellerId;
-            Description = description;
-            Rating = rating;
-            Pictures = new List<ReviewPicture>();
+            Images = new List<Image>();
+            ReviewImages = new List<ReviewImage>();
+        }
+
+        // Helper method to sync Images and ReviewImages collections before saving to DB
+        public void SyncImagesBeforeSave()
+        {
+            if (Images != null && Id > 0)
+            {
+                // Clear existing ReviewImages and recreate from Images
+                ReviewImages.Clear();
+                foreach (var image in Images)
+                {
+                    ReviewImages.Add(ReviewImage.FromImage(image, Id));
+                }
+            }
+        }
+
+        // Helper method to populate Images collection from ReviewImages after loading from DB
+        public void LoadGenericImages()
+        {
+            if (ReviewImages != null)
+            {
+                Images.Clear();
+                foreach (var reviewImage in ReviewImages)
+                {
+                    Images.Add(reviewImage.ToImage());
+                }
+            }
         }
     }
-} 
+}

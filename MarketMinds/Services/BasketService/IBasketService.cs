@@ -80,7 +80,7 @@ namespace MarketMinds.Services.BasketService
         /// <param name="code">The promo code.</param>
         /// <param name="subtotal">The subtotal amount.</param>
         /// <returns>The discount amount.</returns>
-        float GetPromoCodeDiscount(string code, float subtotal);
+        double GetPromoCodeDiscount(string code, double subtotal);
 
         /// <summary>
         /// Calculates the total values for a basket including subtotal, discount, and final amount.

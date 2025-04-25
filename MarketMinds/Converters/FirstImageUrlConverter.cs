@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml.Data;
 
 namespace MarketMinds.Converters
@@ -8,23 +9,36 @@ namespace MarketMinds.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is IEnumerable images)
+            try
             {
-                foreach (var item in images)
+                if (value == null)
                 {
-                    var prop = item.GetType().GetProperty("Url");
-                    if (prop != null)
+                    return parameter?.ToString() ?? "/Assets/placeholder.png";
+                }
+
+                if (value is IEnumerable images)
+                {
+                    foreach (var item in images)
                     {
-                        string url = prop.GetValue(item)?.ToString();
-                        if (!string.IsNullOrEmpty(url))
+                        var prop = item.GetType().GetProperty("Url");
+                        if (prop != null)
                         {
-                            return url;
+                            string url = prop.GetValue(item)?.ToString();
+                            if (!string.IsNullOrEmpty(url))
+                            {
+                                return url;
+                            }
                         }
                     }
                 }
             }
-            // If a converter parameter (fallback) is provided, return it; otherwise, return an empty string
-            return parameter?.ToString() ?? string.Empty;
+            catch (Exception)
+            {
+                // Silent catch - return fallback
+            }
+
+            // Return fallback image
+            return parameter?.ToString() ?? "/Assets/placeholder.png";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
