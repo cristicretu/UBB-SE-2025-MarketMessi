@@ -9,13 +9,15 @@ using MarketMinds.Repositories.ProductTagRepository;
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
+using server.MarketMinds.Repositories.BorrowProductsRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    // Use ReferenceHandler.Preserve for object reference handling
+    // Do not use ReferenceHandler.Preserve as requested by the user
+    // We'll use JsonIgnore attributes on navigation properties instead
     options.JsonSerializerOptions.ReferenceHandler = null;
 
     // Enable camel casing to match frontend expectations
@@ -43,6 +45,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
 builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
+builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

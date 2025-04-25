@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace server.Models
 {
     public class BorrowProductImage
@@ -7,7 +9,8 @@ namespace server.Models
         public int ProductId { get; set; }
         
         // Navigation property
-        public BorrowProduct Product { get; set; }
+        [JsonIgnore] // Break circular reference during serialization
+        public BorrowProduct? Product { get; set; }
         
         public BorrowProductImage() { }
         
