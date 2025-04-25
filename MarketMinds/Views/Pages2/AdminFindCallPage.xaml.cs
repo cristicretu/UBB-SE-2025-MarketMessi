@@ -17,7 +17,6 @@ using Marketplace_SE.Utilities;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Marketplace_SE
 {
     /// <summary>
@@ -29,7 +28,7 @@ namespace Marketplace_SE
         {
             this.InitializeComponent();
 
-            //Lookup the wait list and try to open a chat
+            // Lookup the wait list and try to open a chat
         }
         private void OnButtonClickNavigateAdminFindCallPageAdminAccountPage(object sender, RoutedEventArgs e)
         {
