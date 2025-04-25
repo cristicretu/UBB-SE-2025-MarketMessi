@@ -11,8 +11,8 @@ namespace Marketplace_SE.ViewModels
     {
         private readonly IUserService userService;
         private readonly Frame navigationFrame;
-        private string enteredId;
-        private string errorMessage;
+        private string enteredId = string.Empty;
+        private string errorMessage = string.Empty;
 
         public string EnteredId
         {
@@ -37,7 +37,7 @@ namespace Marketplace_SE.ViewModels
         public ICommand ContinueCommand { get; }
         public ICommand BackCommand { get; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
         public EnterIdPageViewModel(IUserService userService, Frame navigationFrame)
         {

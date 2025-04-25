@@ -19,7 +19,7 @@ namespace Marketplace_SE.ViewModels
             this.loggerService = loggerService;
         }
 
-        public void FinalizeOrder()
+        public async Task FinalizeOrder()
         {
             try
             {

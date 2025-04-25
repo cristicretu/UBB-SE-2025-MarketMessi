@@ -12,6 +12,11 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using DomainLayer.Domain;
+using ViewModelLayer.ViewModel;
+using MarketMinds;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -21,26 +26,27 @@ namespace Marketplace_SE
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class SignUpPage : Page
+    public sealed partial class RegisterPage : Page
     {
         public RegisterViewModel ViewModel { get; set; }
-        public User NewUser { get; set; } = new User();
+        public User NewUser { get; set; }
 
-        public SignUpPage()
+        public RegisterPage()
         {
             this.InitializeComponent();
-            ViewModel = new SignUpViewModel();
+            ViewModel = new RegisterViewModel();
             this.DataContext = ViewModel;
+            NewUser = new User(0, "", "", "");
         }
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs e)
         {
-            NewUser.UserName = UsernameTextBox.Text;
+            NewUser.Username = UsernameTextBox.Text;
             NewUser.Email = EmailTextBox.Text;
-            NewUser.Password = PasswordBoxWithRevealMode.Password;
+            NewUser.Password = float.Parse(PasswordBoxWithRevealMode.Password);
             string confirmPassword = ConfirmPasswordBox.Password;
 
-            if (!IsValidUsername(NewUser.UserName))
+            if (!IsValidUsername(NewUser.Username))
             {
                 UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
                 return;
@@ -50,20 +56,20 @@ namespace Marketplace_SE
                 UsernameValidationTextBlock.Text = "";
             }
 
-            if (await IsUsernameTaken(NewUser.UserName))
+            if (await IsUsernameTaken(NewUser.Username))
             {
                 await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
                 return;
             }
 
-            string passwordStrength = GetPasswordStrength(NewUser.Password);
+            string passwordStrength = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
             if (passwordStrength == "Weak")
             {
                 await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
                 return;
             }
 
-            if (NewUser.Password != confirmPassword)
+            if (NewUser.Password != float.Parse(confirmPassword))
             {
                 ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
                 return;
@@ -73,13 +79,19 @@ namespace Marketplace_SE
                 ConfirmPasswordValidationTextBlock.Text = "";
             }
 
-            ViewModel.CreateNewUser(NewUser);
+            bool result = await ViewModel.CreateNewUser(NewUser);
+            if (result)
+            {
+                // Set current user if there's a global app state
+                MarketMinds.App.CurrentUser = NewUser;
 
-            // Optionally set the CurrentUser globally if needed
-            Duo.App.CurrentUser = NewUser;
-
-            await ShowDialog("Account Created", "Your account has been successfully created!");
-            Frame.Navigate(typeof(ShellPage));
+                await ShowDialog("Account Created", "Your account has been successfully created!");
+                Frame.Navigate(typeof(LoginPage));
+            }
+            else
+            {
+                await ShowDialog("Error", "Failed to create account. Please try again.");
+            }
         }
 
         private async Task<bool> IsUsernameTaken(string username)

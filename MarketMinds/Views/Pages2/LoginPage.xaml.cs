@@ -23,7 +23,7 @@ namespace Marketplace_SE
 
         private void NavigateToSignUpPage(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(SignUpPage));
+            Frame.Navigate(typeof(RegisterPage));
         }
 
         private void OnLoginButtonClick(object sender, RoutedEventArgs e)

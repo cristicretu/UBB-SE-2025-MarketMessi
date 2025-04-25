@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Marketplace_SE.Services.DreamTeam;
-using Marketplace_SE.Objects;
+using DomainLayer.Domain;
 
 namespace Marketplace_SE.ViewModel.DreamTeam
 {
@@ -24,7 +24,7 @@ namespace Marketplace_SE.ViewModel.DreamTeam
         public void Initialize()
         {
             Me = service.GetCurrentUser();
-            Orders = service.GetUserOrders(Me.Id);
+            Orders = service.GetUserOrders(Me.GetId());
         }
     }
 }

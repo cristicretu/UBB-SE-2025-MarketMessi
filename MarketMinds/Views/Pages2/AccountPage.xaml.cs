@@ -6,7 +6,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Xml.Linq;
 using Marketplace_SE;
 using Marketplace_SE.Data;
-using Marketplace_SE.Objects;
 using Marketplace_SE.Utilities;
 using Marketplace_SE.ViewModel.DreamTeam;
 using Microsoft.UI;
@@ -64,7 +63,7 @@ namespace Marketplace_SE
             Orientation = Orientation.Vertical
         };
 
-        bool isBuyOrder = order.buyerId == viewModel.Me.Id;
+        bool isBuyOrder = order.BuyerId == viewModel.Me.GetId();
 
         Grid orderTypeGrid = new Grid
         {
@@ -95,7 +94,7 @@ namespace Marketplace_SE
 
         TextBlock orderInfo = new TextBlock
         {
-            Text = $"{order.name} - {order.description} - ${order.cost:F2} - {DataEncoder.ConvertTimestampToLocalDateTime(order.created)}",
+            Text = $"{order.Name} - {order.Description} - ${order.Cost:F2} - {DataEncoder.ConvertTimestampToLocalDateTime(order.Created)}",
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
@@ -104,7 +103,7 @@ namespace Marketplace_SE
 
         TextBlock statusText = new TextBlock
         {
-            Text = $"Status: {order.orderStatus}",
+            Text = $"Status: {order.OrderStatus}",
             HorizontalAlignment = HorizontalAlignment.Left,
             Margin = new Thickness(0, 0, 0, 10)
         };

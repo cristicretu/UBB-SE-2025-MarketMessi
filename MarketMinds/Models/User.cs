@@ -27,5 +27,10 @@ namespace DomainLayer.Domain
             this.Balance = MAX_BALANCE;
             this.Token = token;
         }
+        
+        public int GetId()
+        {
+            return Id;
+        }
     }
 }

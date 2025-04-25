@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using DomainLayer.Domain;
 using Marketplace_SE.Data;
-using Marketplace_SE.Objects;
 
 namespace Marketplace_SE.Services.DreamTeam
 {
@@ -13,8 +13,7 @@ namespace Marketplace_SE.Services.DreamTeam
     {
         public User GetCurrentUser()
         {
-            var user = new User("test", string.Empty);
-            user.SetId(0);
+            var user = new User(0, "test", string.Empty);
             return user;
         }
 
@@ -39,7 +38,7 @@ namespace Marketplace_SE.Services.DreamTeam
             List<UserOrder> orders = Database.Databases.ConvertToObject<UserOrder>(data);
 
             // Sort by creation time descending
-            orders.Sort((a, b) => (int)(b.created - a.created));
+            orders.Sort((a, b) => (int)(b.Created - a.Created));
 
             return orders;
         }

@@ -177,6 +177,6 @@ namespace MarketMinds
 
         }
 
-        private Window mainWindow;
+        private Window mainWindow = null!;
     }
 }
