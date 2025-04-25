@@ -143,9 +143,9 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BorrowProduct>().Property(bp => bp.ConditionId).HasColumnName("condition_id");
             
             // Ignore NotMapped properties from derived class to avoid duplication
-            modelBuilder.Entity<BorrowProduct>().Ignore("SellerId1");
-            modelBuilder.Entity<BorrowProduct>().Ignore("CategoryId1");
-            modelBuilder.Entity<BorrowProduct>().Ignore("ConditionId1");
+            modelBuilder.Entity<BorrowProduct>().Ignore("SellerId");
+            modelBuilder.Entity<BorrowProduct>().Ignore("CategoryId");
+            modelBuilder.Entity<BorrowProduct>().Ignore("ConditionId");
 
             modelBuilder.Entity<BorrowProductImage>().ToTable("BorrowProductImages");
             modelBuilder.Entity<BorrowProductImage>().HasKey(i => i.Id);
