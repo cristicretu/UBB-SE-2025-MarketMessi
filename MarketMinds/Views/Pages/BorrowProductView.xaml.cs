@@ -172,7 +172,7 @@ namespace MarketMinds
                 // Calculate price based on days difference and daily rate
                 TimeSpan duration = SelectedEndDate.Value - Product.StartDate;
                 int days = duration.Days + 1; // Include both start and end dates
-                float totalPrice = days * Product.DailyRate;
+                double totalPrice = days * Product.DailyRate;
 
                 PriceTextBlock.Text = totalPrice.ToString("C"); // Format as currency
             }

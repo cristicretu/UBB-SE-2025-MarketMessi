@@ -9,7 +9,7 @@ namespace server.Models
         public DateTime TimeLimit { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public float DailyRate { get; set; }
+        public double DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
         
         // Additional ID properties used only for DTO binding
@@ -35,7 +35,7 @@ namespace server.Models
         
         public BorrowProduct(int id, string title, string description, User seller,
             Condition condition, Category category, DateTime timeLimit, 
-            float dailyRate)
+            double dailyRate)
         {
             Id = id;
             Title = title;

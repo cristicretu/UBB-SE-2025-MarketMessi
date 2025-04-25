@@ -34,7 +34,7 @@ public class CreateBorrowProductDTO
     [JsonPropertyName("endDate")]
     public DateTime? EndDate { get; set; }
     [JsonPropertyName("dailyRate")]
-    public float DailyRate { get; set; }
+    public double DailyRate { get; set; }
     [JsonPropertyName("isBorrowed")]
     public bool IsBorrowed { get; set; }
     [JsonPropertyName("images")]
@@ -179,8 +179,36 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
         {
             throw new InvalidOperationException("HTTP client is not properly initialized");
         }
-        var products = httpClient.GetFromJsonAsync<List<BorrowProduct>>("borrowproducts").Result;
-        return products?.Cast<Product>().ToList() ?? new List<Product>();
+
+        try
+        {
+            // Create serializer options that are more lenient for deserialization
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            // Get the response as a string first to handle deserialization manually if needed
+            var response = httpClient.GetAsync("borrowproducts").Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine("Received JSON from server:");
+            Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+            var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+            return products?.Cast<Product>().ToList() ?? new List<Product>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting products: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
+            // Return empty list instead of throwing to avoid cascading failures
+            return new List<Product>();
+        }
     }
 
     public override Product GetProductById(int id)
@@ -189,11 +217,42 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
         {
             throw new InvalidOperationException("HTTP client is not properly initialized");
         }
-        var product = httpClient.GetFromJsonAsync<BorrowProduct>($"borrowproducts/{id}").Result;
-        if (product == null)
+
+        try
         {
-            throw new KeyNotFoundException($"Borrow product with ID {id} not found.");
+            // Create serializer options that are more lenient for deserialization
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            // Get the response as a string first to handle deserialization manually if needed
+            var response = httpClient.GetAsync($"borrowproducts/{id}").Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine($"Received JSON for product {id} from server:");
+            Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+            var product = System.Text.Json.JsonSerializer.Deserialize<BorrowProduct>(json, serializerOptions);
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Borrow product with ID {id} not found.");
+            }
+            return product;
         }
-        return product;
+        catch (KeyNotFoundException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
+            throw new KeyNotFoundException($"Borrow product with ID {id} not found: {ex.Message}");
+        }
     }
 }

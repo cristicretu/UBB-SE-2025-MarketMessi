@@ -14,7 +14,7 @@ namespace server.Models.DTOs
         public DateTime TimeLimit { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public float DailyRate { get; set; }
+        public double DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
         
         // Serialize images as simple objects with URL property
