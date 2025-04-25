@@ -34,7 +34,7 @@ namespace MarketMinds.Repositories.ProductConditionRepository
         {
             try
             {
-                var conditionToCreate = new Condition(displayTitle);
+                var conditionToCreate = new Condition(displayTitle, description);
                 databaseContext.ProductConditions.Add(conditionToCreate);
                 databaseContext.SaveChanges();
                 return conditionToCreate;

@@ -14,6 +14,9 @@ namespace server.Models
         [Column("title")]
         public string Name { get; set; }
 
+        [Column("description")]
+        public string Description { get; set; }
+
         // Navigation property
         public ICollection<AuctionProduct> Products { get; set; }
 
@@ -25,6 +28,13 @@ namespace server.Models
         public Condition(string name)
         {
             Name = name;
+            Products = new List<AuctionProduct>();
+        }
+        
+        public Condition(string name, string description)
+        {
+            Name = name;
+            Description = description;
             Products = new List<AuctionProduct>();
         }
     }

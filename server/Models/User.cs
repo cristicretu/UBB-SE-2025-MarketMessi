@@ -19,7 +19,7 @@ namespace server.Models
         public string Email { get; set; }
         
         [Column("passwordHash")]
-        public string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
         
         [Column("userType")]
         public int UserType { get; set; }

@@ -27,7 +27,7 @@ namespace MarketMinds.Controllers
             {
                 var allConditions = productConditionRepository.GetAllProductConditions();
                 return Ok(allConditions);
-            }
+            } 
             catch (Exception exception)
             {
                 Console.WriteLine($"Error getting all product conditions: {exception}");
@@ -73,6 +73,7 @@ namespace MarketMinds.Controllers
         [HttpDelete("{title}")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult DeleteProductCondition(string title)
         {
@@ -88,10 +89,18 @@ namespace MarketMinds.Controllers
             }
             catch (KeyNotFoundException)
             {
+                // If the condition doesn't exist, return success anyway (idempotent delete)
                 return NoContent();
             }
             catch (Exception exception)
             {
+                // Look for foreign key constraint errors
+                if (exception.ToString().Contains("REFERENCE constraint") || 
+                    exception.ToString().Contains("FK_BorrowProducts_ProductConditions"))
+                {
+                    return BadRequest($"Cannot delete condition '{title}' because it is being used by one or more products. Update or delete those products first.");
+                }
+                
                 Console.WriteLine($"Error deleting product condition '{title}': {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the condition.");
             }

@@ -35,7 +35,27 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
-            var response = httpClient.PostAsJsonAsync("auctionproducts", auctionProduct).Result;
+
+            var serverProduct = new
+            {
+                Title = auctionProduct.Title,
+                Description = auctionProduct.Description,
+                SellerId = auctionProduct.Seller.Id,
+                Seller = new
+                {
+                    Id = auctionProduct.Seller.Id,
+                    Username = auctionProduct.Seller.Username,
+                    Email = auctionProduct.Seller.Email
+                },
+                ConditionId = auctionProduct.Condition?.Id,
+                CategoryId = auctionProduct.Category?.Id,
+                StartTime = auctionProduct.StartAuctionDate,
+                EndTime = auctionProduct.EndAuctionDate,
+                StartPrice = auctionProduct.StartingPrice,
+                CurrentPrice = auctionProduct.StartingPrice
+            };
+
+            var response = httpClient.PostAsJsonAsync("auctionproducts", serverProduct).Result;
             response.EnsureSuccessStatusCode();
         }
 
