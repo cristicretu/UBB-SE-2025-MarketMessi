@@ -9,54 +9,51 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Enter username:" 
-           HorizontalAlignment="Center" 
-           VerticalAlignment="Center" 
-           Margin="10"
-           />
-            <TextBox PlaceholderText="" 
-         HorizontalAlignment="Center" 
-         VerticalAlignment="Center" 
-         Width="200"
-         x:Name="LineEditUsername"/>
-            <TextBlock Text="Enter password:" 
-           HorizontalAlignment="Center" 
-           VerticalAlignment="Center" 
-           Margin="10"
-           />
-            <TextBox PlaceholderText="" 
-         HorizontalAlignment="Center" 
-         VerticalAlignment="Center" 
-         Width="200"
-         x:Name="LineEditPassword"/>
-            <TextBlock Text="Wrong username or password!" 
-           HorizontalAlignment="Center" 
-           VerticalAlignment="Center" 
-           Margin="10"
-           x:Name="TextBlockWrong"/>
-            <Button Content="Login" 
-        HorizontalAlignment="Center" 
-        VerticalAlignment="Center" 
-        Width="200" 
-        Height="50" 
-        Click="OnButtonClickLogin"
-        x:Name="ButtonLogin"/>
-            <Button Content="Register" 
-        HorizontalAlignment="Center" 
-        VerticalAlignment="Center" 
-        Width="200" 
-        Height="50" 
-        Click="OnButtonClickRegister"
-        x:Name="ButtonRegister"/>
-            <Button Content="Reset password" 
-        HorizontalAlignment="Center" 
-        VerticalAlignment="Center" 
-        Width="200" 
-        Height="50" 
-        Click="OnButtonClickResetPassword"
-        x:Name="ButtonResetPassword"/>
-        </StackPanel>
-    </Grid>
+	<Grid VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20">
+		<StackPanel Orientation="Vertical" Spacing="15" Width="300">
+			<TextBlock Text="Welcome to MarketPlace" FontSize="24" HorizontalAlignment="Center"/>
+
+			<TextBox x:Name="UsernameTextBox"
+                     PlaceholderText="Username"
+                     Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+			<PasswordBox x:Name="PasswordBoxWithRevealMode" PlaceholderText="Password"/>
+
+			<CheckBox x:Name="RevealModeCheckBox" Content="Show Password" Checked="RevealModeCheckbox_Changed" Unchecked="RevealModeCheckbox_Changed" />
+
+			<Button x:Name="LoginButton"
+                Click="OnLoginButtonClick"
+                Content="Login"
+                HorizontalAlignment="Stretch"
+                Foreground="White"
+                Background="#0078D4"
+                BorderThickness="0"
+                Padding="10"
+                FontSize="16"
+                CornerRadius="5"/>
+
+			<Button Content="Forgot Password?"
+                Click="OnForgotPasswordClick"
+                HorizontalAlignment="Center"
+                Foreground="#0078D4"
+                BorderThickness="0"
+                FontSize="14"
+                Padding="5"/>
+
+			<Button Content="Don't have an account? Sign Up"
+                Click="NavigateToSignUpPage"
+                HorizontalAlignment="Center"
+                Foreground="#0078D4"
+                BorderThickness="0"
+                FontSize="14"
+                Padding="5"/>
+
+			<TextBlock x:Name="LoginStatusMessage"
+               Text=""
+               Foreground="Red"
+               FontSize="14"
+               HorizontalAlignment="Center"
+               Visibility="Collapsed"/>
+		</StackPanel>
+	</Grid>
 </Page>
