@@ -1,6 +1,7 @@
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Repositories.ReviewRepository;
+using MarketMinds.Repositories.BuyProductsRepository;
 using MarketMinds.Repositories.BasketRepository; // Add namespace for BasketRepository
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
@@ -27,8 +28,9 @@ var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trus
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Register repositories
+
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
+builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,10 +10,11 @@ namespace DomainLayer.Domain
     {
         public double Price { get; set; }
 
-        // Default constructor for JSON deserialization
         public BuyProduct() : base()
         {
             Price = 0;
+            Tags = new List<ProductTag>();
+            Images = new List<Image>();
         }
 
         public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,

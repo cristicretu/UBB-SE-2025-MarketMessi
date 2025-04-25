@@ -104,10 +104,14 @@ namespace server.DataAccessLayer
 
             modelBuilder.Entity<BuyProductImage>().ToTable("BuyProductImages");
             modelBuilder.Entity<BuyProductImage>().HasKey(i => i.Id);
-
-            // Configure junction table
+            modelBuilder.Entity<BuyProductImage>().Property(i => i.ProductId).HasColumnName("product_id");
+            
             modelBuilder.Entity<BuyProductProductTag>().ToTable("BuyProductProductTags");
             modelBuilder.Entity<BuyProductProductTag>().HasKey(pt => pt.Id);
+            modelBuilder.Entity<BuyProductProductTag>().Property(pt => pt.ProductId).HasColumnName("product_id");
+            modelBuilder.Entity<BuyProductProductTag>().Property(pt => pt.TagId).HasColumnName("tag_id");
+            
+            
 
             // Explicitly configure correct foreign key relationships
             modelBuilder.Entity<BuyProductProductTag>()

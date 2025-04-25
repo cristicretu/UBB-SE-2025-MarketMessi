@@ -38,7 +38,7 @@ namespace server.Models // Adjusted namespace to server.Models
 
         [ForeignKey("CategoryId")]
         public Category Category { get; set; }
-      
+
         // Default constructor for JSON serialization/deserialization
         protected Product()
         {

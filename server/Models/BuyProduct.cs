@@ -10,10 +10,42 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace server.Models
 {
     [Table("BuyProducts")]
-    public class BuyProduct : Product
+    public class BuyProduct
     {
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Column("title")]
+        public string Title { get; set; }
+
+        [Column("description")]
+        public string? Description { get; set; }
+
+        [Column("seller_id")]
+        public int SellerId { get; set; }
+
+        [Column("condition_id")]
+        public int? ConditionId { get; set; }
+
+        [Column("category_id")]
+        public int? CategoryId { get; set; }
+
         [Column("price")]
         public double Price { get; set; }
+
+        // Navigation properties
+        [ForeignKey("SellerId")]
+        public User? Seller { get; set; }
+
+        [ForeignKey("ConditionId")]
+        public Condition? Condition { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
+
+        public ICollection<BuyProductImage> Images { get; set; } = new List<BuyProductImage>();
+        public ICollection<BuyProductProductTag> ProductTags { get; set; } = new List<BuyProductProductTag>();
 
         [NotMapped]
         public List<ProductTag> Tags { get; set; }
@@ -42,15 +74,14 @@ namespace server.Models
             this.Price = price;
         }
 
-        public BuyProduct(int id, string title, string description, User seller,
-            Condition condition, Category category, double price)
+        public BuyProduct(string title, string? description, int sellerId, int? conditionId,
+            int? categoryId, double price)
         {
-            Id = id;
             Title = title;
             Description = description;
-            Seller = seller;
-            Condition = condition;
-            Category = category;
+            SellerId = sellerId;
+            ConditionId = conditionId;
+            CategoryId = categoryId;
             Price = price;
             Images = new List<Image>();
             Tags = new List<ProductTag>();

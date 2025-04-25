@@ -17,9 +17,8 @@ namespace server.Models
         public int ProductId { get; set; }
 
         // Navigation property
-        [ForeignKey("ProductId")]
-        public BuyProduct Product { get; set; }
-
+        public BuyProduct? Product { get; set; }
+        
         public BuyProductImage() { }
 
         public BuyProductImage(int id, string url, int productId)
