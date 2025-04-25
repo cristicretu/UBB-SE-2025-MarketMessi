@@ -117,12 +117,19 @@ namespace MarketMinds.Controllers
                     {
                         Console.WriteLine($"Adding image with URL: {img.Url}");
                         img.ProductId = product.Id;
-                        product.Images.Add(img);
+                        // Don't add to in-memory product.Images collection, but directly to the context
+                        _buyProductsRepository.AddImageToProduct(product.Id, img);
                     }
                     
-                    // Update the product with images
-                    _buyProductsRepository.UpdateProduct(product);
-                    Console.WriteLine($"Updated product with images. Images count: {product.Images.Count}");
+                    Console.WriteLine($"Images added to repository.");
+                    
+                    // Verify images were saved by retrieving the product again
+                    try {
+                        var savedProduct = _buyProductsRepository.GetProductByID(product.Id);
+                        Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
+                    } catch(Exception ex) {
+                        Console.WriteLine($"Error verifying images: {ex.Message}");
+                    }
                 }
                 
                 var dto = BuyProductMapper.ToDTO(product);

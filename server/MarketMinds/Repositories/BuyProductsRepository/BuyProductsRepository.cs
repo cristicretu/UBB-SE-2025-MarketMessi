@@ -77,10 +77,9 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
-                    // Add these back one by one after confirming basic query works
                     .Include(p => p.Images)
-                    // .Include(p => p.ProductTags)
-                    //    .ThenInclude(pt => pt.Tag)
+                    .Include(p => p.ProductTags)
+                        .ThenInclude(pt => pt.Tag)
                     .ToList();
             }
             catch (Exception ex)
@@ -152,8 +151,8 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     if (existingImage == null)
                     {
                         image.ProductId = existingProduct.Id;
-                        image.Id = 0;
-                        _context.Set<BuyProductImage>().Add(image);
+                        _context.BuyProductImages.Add(image);
+                        Console.WriteLine($"Added image with URL {image.Url} to product {existingProduct.Id}");
                     }
                 }
 
@@ -191,6 +190,35 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             {
                 Console.WriteLine($"General UpdateProduct Error for ID {product.Id}: {ex.Message}");
                 throw;
+            }
+        }
+
+        public void AddImageToProduct(int productId, BuyProductImage image)
+        {
+            try
+            {
+                // Make sure the product exists
+                var product = _context.BuyProducts.Find(productId);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Product with ID {productId} not found.");
+                }
+
+                // Set the product ID and add the image
+                image.ProductId = productId;
+                
+                // Add image directly to the DbSet
+                _context.BuyProductImages.Add(image);
+                
+                // Save changes to the database
+                _context.SaveChanges();
+                
+                Console.WriteLine($"Successfully added image with URL {image.Url} to product {productId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding image to product ID {productId}: {ex.Message}");
+                throw new Exception($"Failed to add image to product ID {productId}", ex);
             }
         }
     }

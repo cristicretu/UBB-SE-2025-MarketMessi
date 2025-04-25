@@ -38,5 +38,12 @@ namespace MarketMinds.Repositories.BuyProductsRepository
         /// </summary>
         /// <param name="product">The product with updated information.</param>
         void UpdateProduct(BuyProduct product);
+
+        /// <summary>
+        /// Adds an image to an existing product.
+        /// </summary>
+        /// <param name="productId">The ID of the product to add the image to.</param>
+        /// <param name="image">The image to add.</param>
+        void AddImageToProduct(int productId, BuyProductImage image);
     }
 }
