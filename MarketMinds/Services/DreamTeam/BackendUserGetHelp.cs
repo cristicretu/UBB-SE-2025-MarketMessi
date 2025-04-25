@@ -227,7 +227,7 @@ namespace Marketplace_SE.Service
                     }
                 );
 
-            object value = Database.Databasee.Close();
+            Database.Databasee.Close();
 
             return (int)BackendUserGetHelpStatusCodes.UpdateHelpTicketInDBSuccess;
         }
