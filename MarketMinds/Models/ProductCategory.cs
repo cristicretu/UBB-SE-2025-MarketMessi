@@ -9,22 +9,27 @@ namespace DomainLayer.Domain
     public class ProductCategory
     {
         public int Id { get; set; }
-        public string DisplayTitle { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
 
         // Default constructor for JSON deserialization
         public ProductCategory()
         {
             Id = 0;
-            DisplayTitle = string.Empty;
+            Name = string.Empty;
             Description = string.Empty;
         }
 
-        public ProductCategory(int id, string displayTitle, string description)
+        public ProductCategory(int id, string name, string description)
         {
             this.Id = id;
-            this.DisplayTitle = displayTitle;
+            this.Name = name;
             this.Description = description;
         }
+
+        // Keep DisplayTitle property for backward compatibility or UI binding if needed
+        // You might need to adjust UI bindings if they used DisplayTitle directly
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string DisplayTitle => Name;
     }
 }

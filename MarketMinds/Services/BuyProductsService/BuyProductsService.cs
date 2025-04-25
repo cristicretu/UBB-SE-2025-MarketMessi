@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
@@ -29,8 +30,38 @@ namespace MarketMinds.Services.BuyProductsService
 
         public override List<Product> GetProducts()
         {
-            var products = httpClient.GetFromJsonAsync<List<BuyProduct>>("buyproducts").Result;
-            return products?.Cast<Product>().ToList() ?? new List<Product>();
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var response = httpClient.GetAsync("buyproducts").Result;
+                response.EnsureSuccessStatusCode();
+                var json = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine("Received JSON from server:");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<BuyProduct>>(json, serializerOptions);
+                return products?.Cast<Product>().ToList() ?? new List<Product>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting products: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<Product>();
+            }
         }
 
         public void CreateListing(Product product)
@@ -68,6 +99,50 @@ namespace MarketMinds.Services.BuyProductsService
             }
             var response = httpClient.DeleteAsync($"buyproducts/{product.Id}").Result;
             response.EnsureSuccessStatusCode();
+        }
+
+        public override Product GetProductById(int id)
+        {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var response = httpClient.GetAsync($"buyproducts/{id}").Result;
+                response.EnsureSuccessStatusCode();
+                var json = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"Received JSON for product {id} from server:");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+                var product = System.Text.Json.JsonSerializer.Deserialize<BuyProduct>(json, serializerOptions);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Buy product with ID {id} not found.");
+                }
+                return product;
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                throw new KeyNotFoundException($"Buy product with ID {id} not found: {ex.Message}");
+            }
         }
     }
 }

@@ -31,13 +31,13 @@ namespace server.Models // Adjusted namespace to server.Models
         
         // Navigation properties
         [ForeignKey("SellerId")]
-        public User Seller { get; set; }
+        public User? Seller { get; set; }
 
         [ForeignKey("ConditionId")]
-        public Condition Condition { get; set; }
+        public Condition? Condition { get; set; }
 
         [ForeignKey("CategoryId")]
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
 
         // Default constructor for JSON serialization/deserialization
         protected Product()

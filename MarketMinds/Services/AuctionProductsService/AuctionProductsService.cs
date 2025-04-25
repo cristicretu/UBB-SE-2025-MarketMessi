@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
@@ -152,18 +153,82 @@ namespace MarketMinds.Services.AuctionProductsService
 
         public override List<Product> GetProducts()
         {
-            var products = httpClient.GetFromJsonAsync<List<AuctionProduct>>("auctionproducts").Result;
-            return products?.Cast<Product>().ToList() ?? new List<Product>();
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var response = httpClient.GetAsync("auctionproducts").Result;
+                response.EnsureSuccessStatusCode();
+                var json = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine("Received JSON from server:");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+                var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
+                return products?.Cast<Product>().ToList() ?? new List<Product>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting products: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<Product>();
+            }
         }
 
         public override Product GetProductById(int id)
         {
-            var product = httpClient.GetFromJsonAsync<AuctionProduct>($"auctionproducts/{id}").Result;
-            if (product == null)
+            if (httpClient == null || httpClient.BaseAddress == null)
             {
-                throw new KeyNotFoundException($"Auction product with ID {id} not found.");
+                throw new InvalidOperationException("HTTP client is not properly initialized");
             }
-            return product;
+
+            try
+            {
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                };
+                serializerOptions.Converters.Add(new UserJsonConverter());
+
+                var response = httpClient.GetAsync($"auctionproducts/{id}").Result;
+                response.EnsureSuccessStatusCode();
+                var json = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine($"Received JSON for product {id} from server:");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+                var product = System.Text.Json.JsonSerializer.Deserialize<AuctionProduct>(json, serializerOptions);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Auction product with ID {id} not found.");
+                }
+                return product;
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                throw new KeyNotFoundException($"Auction product with ID {id} not found: {ex.Message}");
+            }
         }
 
         public Task<IEnumerable<Product>> SortAndFilter(string sortOption, string filterOption, string filterValue)
