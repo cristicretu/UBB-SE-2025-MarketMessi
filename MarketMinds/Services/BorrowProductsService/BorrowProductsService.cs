@@ -189,6 +189,7 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
+            serializerOptions.Converters.Add(new UserJsonConverter());
 
             // Get the response as a string first to handle deserialization manually if needed
             var response = httpClient.GetAsync("borrowproducts").Result;
@@ -227,6 +228,7 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
+            serializerOptions.Converters.Add(new UserJsonConverter());
 
             // Get the response as a string first to handle deserialization manually if needed
             var response = httpClient.GetAsync($"borrowproducts/{id}").Result;
