@@ -15,7 +15,6 @@ namespace DomainLayer.Domain
             Price = 0;
             Tags = new List<ProductTag>();
             Images = new List<Image>();
-
         }
 
         public BuyProduct(int id, string title, string description, User seller, ProductCondition productCondition, ProductCategory productCategory,
