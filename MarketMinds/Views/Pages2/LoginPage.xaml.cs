@@ -1,59 +1,66 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using ViewModelLayer.ViewModel;
 
 namespace Marketplace_SE
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class LoginPage : Page
     {
+        public LoginViewModel ViewModel { get; set; }
         public LoginPage()
         {
             this.InitializeComponent();
-            TextBlockWrong.Visibility = Visibility.Collapsed;
+            ViewModel = new LoginViewModel();
+            this.DataContext = ViewModel;
         }
 
-        private void OnButtonClickLogin(object sender, RoutedEventArgs e)
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
         {
-            if (LineEditUsername.Text == "" && LineEditPassword.Text == "") {
-                Frame.Navigate(typeof(MainMarketplacePage));
-            }
-            else if (LineEditUsername.Text == "admin" && LineEditPassword.Text == "password")
+            PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
+        }
+
+        private void NavigateToSignUpPage(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(SignUpPage));
+        }
+
+        private void OnLoginButtonClick(object sender, RoutedEventArgs e)
+        {
+            string username = UsernameTextBox.Text;
+            string password = PasswordBoxWithRevealMode.Password;
+            Console.WriteLine(username);
+            ViewModel.AttemptLogin(username, password);
+            if (ViewModel.LoginStatus)
             {
-                Frame.Navigate(typeof(AdminAccountPage));
-            }
-            else if (LineEditUsername.Text == "username" && LineEditPassword.Text == "password")
-            {
-                Frame.Navigate(typeof(MainMarketplacePage));
+                MarketMinds.App.CurrentUser = ViewModel.LoggedInUser;
+                LoginStatusMessage.Text = "You have successfully logged in!";
+                LoginStatusMessage.Visibility = Visibility.Visible;
+                // Frame.Navigate(typeof());
             }
             else
             {
-                TextBlockWrong.Visibility = Visibility.Visible;
+                LoginStatusMessage.Text = "Invalid username or password.";
+                LoginStatusMessage.Visibility = Visibility.Visible;
             }
         }
-        private void OnButtonClickRegister(object sender, RoutedEventArgs e)
+
+        private void OnForgotPasswordClick(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(RegisterPage));
+            Frame.Navigate(typeof(ResetPasswordPage));
         }
-        private void OnButtonClickResetPassword(object sender, RoutedEventArgs e)
+
+        private async Task ShowDialog(string title, string content)
         {
-            Frame.Navigate(typeof(EnterIdPage));
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
         }
     }
 }

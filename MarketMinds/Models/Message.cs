@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Marketplace_SE.Objects
+namespace DomainLayer.Domain
 {
     public class Message
     {
-        public int id;
-        public int conversationId;
-        public int creator;
-        public long timestamp;
-        public string contentType;
-        public string content;
+        public int Id { get; set; }
+        public int ConversationId { get; set; }
+        public int Creator { get; set; }
+        public long Timestamp { get; set; }
+        public string ContentType { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
     }
 }
