@@ -25,7 +25,7 @@ public class UserOrder
     public float Price { get; set; }
 
     // Created timestamp - used for display purposes
-    public ulong Created { get; set; } = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    public ulong Created { get; set; }
 
     public int SellerId { get; set; }
     public int BuyerId { get; set; }
