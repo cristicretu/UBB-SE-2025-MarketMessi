@@ -196,14 +196,12 @@ namespace ViewModelLayer.ViewModel
                 IsCheckoutInProgress = true;
                 ErrorMessage = string.Empty;
 
-                Debug.WriteLine($"Starting checkout process for user {currentUser.Id}, basket {basket.Id}");
 
                 // Call the service to process the checkout
-                CheckoutSuccess = await basketService.CheckoutBasketAsync(currentUser.Id, basket.Id);
+                CheckoutSuccess = await basketService.CheckoutBasketAsync(currentUser.Id, basket.Id, Discount, TotalAmount);
 
                 if (CheckoutSuccess)
                 {
-                    Debug.WriteLine("Checkout completed successfully");
                     // Clear the local basket after successful checkout
                     BasketItems.Clear();
                     UpdateTotals();
@@ -268,17 +266,18 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                BasketTotals totals = basketService.CalculateBasketTotals(basket.Id, PromoCode);
-                Subtotal = totals.Subtotal;
-                Discount = totals.Discount;
-                TotalAmount = totals.TotalAmount;
+                Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
+
+                Discount = string.IsNullOrEmpty(PromoCode) ? NODISCOUNT :
+                    basketService.GetPromoCodeDiscount(PromoCode, Subtotal);
+
+                TotalAmount = Math.Max(0, Subtotal - Discount);
+
             }
             catch (Exception ex)
             {
-                // Handle calculation errors
-                ErrorMessage = $"Failed to calculate totals: {ex.Message}";
-                // Set default values
-                Subtotal = BasketItems.Sum(item => item.GetPrice());
+                // Use safe defaults
+                Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
                 Discount = NODISCOUNT;
                 TotalAmount = Subtotal;
             }

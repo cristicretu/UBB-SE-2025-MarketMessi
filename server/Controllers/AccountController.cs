@@ -114,20 +114,26 @@ namespace server.Controllers
 
                 // Get the basket total cost
                 var basketTotal = await _accountRepository.GetBasketTotalAsync(userId, request.BasketId);
-
-                // Check if user has enough balance
-                if (user.Balance < basketTotal)
+                
+                double finalTotal = basketTotal;
+                if (request.TotalAmount > 0 && request.DiscountAmount > 0)
                 {
-                    _logger.LogWarning("User {UserId} has insufficient funds. Balance: {Balance}, Required: {Total}",
-                        userId, user.Balance, basketTotal);
-                    return BadRequest($"Insufficient funds. Your balance is ${user.Balance:F2}, but the total cost is ${basketTotal:F2}.");
+                    _logger.LogInformation("Using provided discount amount: {DiscountAmount}, total amount: {TotalAmount}",
+                        request.DiscountAmount, request.TotalAmount);
+                    finalTotal = request.TotalAmount;
                 }
 
-                // Create orders from basket
-                var createdOrders = await _accountRepository.CreateOrderFromBasketAsync(userId, request.BasketId);
+                // Check if user has enough balance
+                if (user.Balance < finalTotal)
+                {
+                    _logger.LogWarning("User {UserId} has insufficient funds. Balance: {Balance}, Required: {Total}",
+                        userId, user.Balance, finalTotal);
+                    return BadRequest($"Insufficient funds. Your balance is ${user.Balance:F2}, but the total cost is ${finalTotal:F2}.");
+                }
 
-                // Update user's balance
-                user.Balance -= basketTotal;
+                var createdOrders = await _accountRepository.CreateOrderFromBasketAsync(userId, request.BasketId, request.DiscountAmount);
+
+                user.Balance -= finalTotal;
                 await _accountRepository.UpdateUserAsync(user);
 
                 _logger.LogInformation("Successfully created {OrderCount} orders for userId: {UserId} from basketId: {BasketId}. New balance: {Balance}",
@@ -161,5 +167,7 @@ namespace server.Controllers
     public class CreateOrderRequest
     {
         public int BasketId { get; set; }
+        public double DiscountAmount { get; set; } = 0;
+        public double TotalAmount { get; set; } = 0;
     }
 }

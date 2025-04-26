@@ -314,6 +314,8 @@ namespace MarketMinds.Views.Pages
                 CheckoutButton.IsEnabled = false;
                 CheckoutButton.Content = "Processing...";
 
+                Debug.WriteLine($"DIAGNOSTIC: BasketView - Starting checkout with PromoCode='{var_basketViewModel.PromoCode}', Discount=${var_basketViewModel.Discount:F2}, Total=${var_basketViewModel.TotalAmount:F2}");
+
                 // Call async checkout method
                 bool success = await var_basketViewModel.CheckoutAsync();
 

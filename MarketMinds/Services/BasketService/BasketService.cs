@@ -345,20 +345,20 @@ namespace MarketMinds.Services.BasketService
 
             try
             {
-                // This is just to get the discount rate, we use a temporary basket ID of 1
-                // In a real implementation, this should be changed to a dedicated endpoint
-                var response = httpClient.PostAsJsonAsync($"1/promocode", code).Result;
+                string normalizedCode = code.Trim().ToUpper();
+                var response = httpClient.PostAsJsonAsync($"1/promocode", normalizedCode).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     var result = JsonSerializer.Deserialize<DiscountResponse>(responseContent, jsonOptions);
-                    return subtotal * result.DiscountRate;
+                    double discount = subtotal * result.DiscountRate;
+                    return discount;
                 }
 
                 return NODISCOUNT;
             }
-            catch
+            catch (Exception ex)
             {
                 return NODISCOUNT;
             }
@@ -461,7 +461,7 @@ namespace MarketMinds.Services.BasketService
             }
         }
 
-        public async Task<bool> CheckoutBasketAsync(int userId, int basketId)
+        public async Task<bool> CheckoutBasketAsync(int userId, int basketId, double discountAmount = 0, double totalAmount = 0)
         {
             if (userId <= NOUSER)
             {
@@ -481,16 +481,37 @@ namespace MarketMinds.Services.BasketService
                     throw new InvalidOperationException("Basket validation failed");
                 }
 
+                // Get the current basket totals
+                var basketTotals = CalculateBasketTotals(basketId, null);
+                System.Diagnostics.Debug.WriteLine($"DIAGNOSTIC: CheckoutBasketAsync - Raw basketTotal: {basketTotals.TotalAmount}, Provided discount: {discountAmount}, Provided total: {totalAmount}");
+
+                // Use provided values if they are valid
+                if (discountAmount > 0 && totalAmount > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"DIAGNOSTIC: Using provided discount ({discountAmount}) and total ({totalAmount})");
+                    basketTotals.Discount = discountAmount;
+                    basketTotals.TotalAmount = totalAmount;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"DIAGNOSTIC: No valid discount/total provided, using calculated totals");
+                }
+
                 // Create an HTTP client for account API
                 using var httpClientAccount = new HttpClient();
                 httpClientAccount.BaseAddress = new Uri(apiBaseUrl);
                 httpClientAccount.Timeout = TimeSpan.FromSeconds(30);
 
                 // Create request for the account API to create orders from the basket
+                // Include discount information
                 var request = new
                 {
-                    BasketId = basketId
+                    BasketId = basketId,
+                    DiscountAmount = basketTotals.Discount,
+                    TotalAmount = basketTotals.TotalAmount
                 };
+
+                System.Diagnostics.Debug.WriteLine($"Checkout request: BasketId={basketId}, Discount={basketTotals.Discount}, Total={basketTotals.TotalAmount}");
 
                 // Call the account API to create the order
                 var response = await httpClientAccount.PostAsJsonAsync($"api/account/{userId}/orders", request);
