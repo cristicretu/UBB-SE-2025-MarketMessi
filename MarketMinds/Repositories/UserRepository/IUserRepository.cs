@@ -11,6 +11,5 @@ namespace MarketMinds.Repositories.UserRepository
         Task<User> GetUserByEmailAsync(string email);
         Task<bool> IsUsernameTakenAsync(string username);
         Task<int> CreateUserAsync(User newUser);
-        Task<bool> ResetUserPasswordAsync(string email, string newPassword);
     }
 } 

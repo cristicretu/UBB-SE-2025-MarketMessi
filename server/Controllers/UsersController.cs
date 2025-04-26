@@ -3,11 +3,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using server.Data;
+using server.DataAccessLayer;
 
 namespace server.Controllers
 {
@@ -25,45 +25,51 @@ namespace server.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User user)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             try
             {
-                if (user == null)
+                if (request == null || string.IsNullOrEmpty(request.Username) || 
+                    string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
                 {
-                    return BadRequest("User data is null");
+                    return BadRequest("User data is incomplete");
                 }
 
                 // Check if username is taken
-                if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+                if (await _context.Users.AnyAsync(u => u.Username == request.Username))
                 {
                     return Conflict("Username is already taken");
                 }
 
                 // Check if email is taken
-                if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+                if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                 {
                     return Conflict("Email is already registered");
                 }
 
-                // Hash the password before saving
-                user.PasswordHash = HashPassword(user.Password);
-                user.Password = null; // Don't store plaintext password
-                
-                // Set default values for new users
-                user.Balance = 0;
-                user.Rating = 0;
-                
-                // Default to buyer role (1)
-                user.UserType = 1;
-                
-                // Generate a token for the user
-                user.Token = Guid.NewGuid().ToString();
+                // Create a new user with constructor
+                var user = new User(request.Username, request.Email, HashPassword(request.Password))
+                {
+                    Balance = 0,
+                    Rating = 0,
+                    UserType = 1  // Default to buyer role
+                };
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                return Created($"api/users/{user.Id}", user);
+                // Return user without password hash
+                var userResponse = new
+                {
+                    user.Id,
+                    user.Username,
+                    user.Email,
+                    user.UserType,
+                    user.Balance,
+                    user.Rating
+                };
+
+                return Created($"api/users/{user.Id}", userResponse);
             }
             catch (Exception ex)
             {
@@ -95,10 +101,6 @@ namespace server.Controllers
                     return Unauthorized("Invalid credentials");
                 }
 
-                // Generate a new token for the session
-                user.Token = Guid.NewGuid().ToString();
-                await _context.SaveChangesAsync();
-
                 // Don't return the password hash in the response
                 var userResponse = new
                 {
@@ -107,8 +109,7 @@ namespace server.Controllers
                     user.Email,
                     user.UserType,
                     user.Balance,
-                    user.Rating,
-                    user.Token
+                    user.Rating
                 };
 
                 return Ok(userResponse);
@@ -161,4 +162,11 @@ namespace server.Controllers
         public string Username { get; set; }
         public string Password { get; set; }
     }
-} 
+
+    public class RegisterRequest
+    {
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+}

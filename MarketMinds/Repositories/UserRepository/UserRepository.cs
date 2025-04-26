@@ -13,13 +13,31 @@ namespace MarketMinds.Repositories.UserRepository
     public class UserRepository : IUserRepository
     {
         private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
         private readonly JsonSerializerOptions _jsonOptions;
 
         public UserRepository(IConfiguration configuration)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null");
+            }
+
             _httpClient = new HttpClient();
-            _baseUrl = configuration["ApiSettings:BaseUrl"];
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            
+            if (string.IsNullOrEmpty(apiBaseUrl))
+            {
+                throw new InvalidOperationException("API base URL is null or empty");
+            }
+
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
+
+            _httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            Console.WriteLine($"Initialized HTTP client with base address: {_httpClient.BaseAddress}");
+
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -36,7 +54,7 @@ namespace MarketMinds.Repositories.UserRepository
                     Password = password
                 };
 
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/login", loginRequest);
+                var response = await _httpClient.PostAsJsonAsync("users/login", loginRequest);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -56,7 +74,7 @@ namespace MarketMinds.Repositories.UserRepository
                     Password = password
                 };
 
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/login", loginRequest);
+                var response = await _httpClient.PostAsJsonAsync("users/login", loginRequest);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -78,7 +96,7 @@ namespace MarketMinds.Repositories.UserRepository
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/users/{username}");
+                var response = await _httpClient.GetAsync($"users/{username}");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -100,7 +118,7 @@ namespace MarketMinds.Repositories.UserRepository
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/users/by-email/{email}");
+                var response = await _httpClient.GetAsync($"users/by-email/{email}");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -122,7 +140,7 @@ namespace MarketMinds.Repositories.UserRepository
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/api/users/check-username/{username}");
+                var response = await _httpClient.GetAsync($"users/check-username/{username}");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -146,7 +164,7 @@ namespace MarketMinds.Repositories.UserRepository
             try
             {
                 var userDto = new UserDto(newUser);
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/register", userDto);
+                var response = await _httpClient.PostAsJsonAsync("users/register", userDto);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -161,26 +179,6 @@ namespace MarketMinds.Repositories.UserRepository
             {
                 Console.WriteLine($"Error creating user: {ex.Message}");
                 return -1;
-            }
-        }
-
-        public async Task<bool> ResetUserPasswordAsync(string email, string newPassword)
-        {
-            try
-            {
-                var resetRequest = new
-                {
-                    Email = email,
-                    NewPassword = newPassword
-                };
-
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/reset-password", resetRequest);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error resetting password: {ex.Message}");
-                return false;
             }
         }
         
