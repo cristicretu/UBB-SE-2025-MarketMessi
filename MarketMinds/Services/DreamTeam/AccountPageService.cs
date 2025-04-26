@@ -25,7 +25,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         private readonly string apiBaseUrl;
         private readonly JsonSerializerOptions jsonOptions;
 
-        public AccountPageService(IConfiguration configuration, ILogger<AccountPageService> logger)
+        public AccountPageService(IConfiguration configuration)
         {
             httpClient = new HttpClient();
 

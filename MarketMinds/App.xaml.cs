@@ -139,13 +139,6 @@ namespace MarketMinds
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
-            // Initialize ImageUploadService if necessary
-            if (ImageUploadService == null)
-            {
-                // Implement or use a mock service as appropriate
-                // ImageUploadService = new LocalImageUploadService();
-            }
-
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);

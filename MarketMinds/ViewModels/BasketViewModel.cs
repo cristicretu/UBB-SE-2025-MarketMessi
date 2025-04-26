@@ -197,7 +197,6 @@ namespace ViewModelLayer.ViewModel
                 IsCheckoutInProgress = true;
                 ErrorMessage = string.Empty;
 
-
                 // Call the service to process the checkout
                 CheckoutSuccess = await basketService.CheckoutBasketAsync(currentUser.Id, basket.Id, Discount, TotalAmount);
 
@@ -269,11 +268,10 @@ namespace ViewModelLayer.ViewModel
             {
                 Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
 
-                Discount = string.IsNullOrEmpty(PromoCode) ? NODISCOUNT :
+                Discount = string.IsNullOrEmpty(PromoCode) ? NullDiscount :
                     basketService.GetPromoCodeDiscount(PromoCode, Subtotal);
 
                 TotalAmount = Math.Max(0, Subtotal - Discount);
-
             }
             catch (Exception ex)
             {
