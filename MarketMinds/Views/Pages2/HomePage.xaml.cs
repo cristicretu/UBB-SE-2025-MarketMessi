@@ -22,7 +22,7 @@ namespace Marketplace_SE
             this.InitializeComponent();
         }
 
-        private void MyButton_Click(object sender, RoutedEventArgs e)
+        private void MyButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(EnterIdPage));
         }

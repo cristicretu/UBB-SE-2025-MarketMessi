@@ -25,38 +25,46 @@ namespace MarketMinds
     /// </summary>
     public sealed partial class BuyProductView : Window
     {
-        private readonly BuyProduct priv_product;
-        private readonly User priv_currentUser;
+        private readonly BuyProduct privateProduct;
+        private readonly User privateCurrentUser;
         private readonly BasketViewModel priv_basketViewModel = App.BasketViewModel;
 
         private Window? seeSellerReviewsView;
+
+        private const int ImageHeight = 250; // magic numbers removal
+        private const int TextBlockMargin = 4;
+        private const int TextBlockPaddingLeft = 8;
+        private const int TextBlockPaddingTop = 4;
+        private const int TextBlockPaddingRight = 8;
+        private const int TextBlockPaddingBottom = 4;
+
         public BuyProductView(BuyProduct product)
         {
             this.InitializeComponent();
-            priv_product = product;
-            priv_currentUser = MarketMinds.App.CurrentUser;
+            privateProduct = product;
+            privateCurrentUser = MarketMinds.App.CurrentUser;
             LoadProductDetails();
             LoadImages();
         }
         private void LoadProductDetails()
         {
             // Basic Info
-            TitleTextBlock.Text = priv_product.Title;
-            CategoryTextBlock.Text = priv_product.Category.DisplayTitle;
-            ConditionTextBlock.Text = priv_product.Condition.DisplayTitle;
-            PriceTextBlock.Text = $"{priv_product.Price:C}";
+            TitleTextBlock.Text = privateProduct.Title;
+            CategoryTextBlock.Text = privateProduct.Category.DisplayTitle;
+            ConditionTextBlock.Text = privateProduct.Condition.DisplayTitle;
+            PriceTextBlock.Text = $"{privateProduct.Price:C}";
 
             // Seller Info
-            SellerTextBlock.Text = priv_product.Seller.Username;
-            DescriptionTextBox.Text = priv_product.Description;
+            SellerTextBlock.Text = privateProduct.Seller.Username;
+            DescriptionTextBox.Text = privateProduct.Description;
 
-            TagsItemsControl.ItemsSource = priv_product.Tags.Select(tag =>
+            TagsItemsControl.ItemsSource = privateProduct.Tags.Select(tag =>
             {
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(4),
-                    Padding = new Thickness(8, 4, 8, 4),
+                    Margin = new Thickness(TextBlockMargin),
+                    Padding = new Thickness(TextBlockPaddingLeft, TextBlockPaddingTop, TextBlockPaddingRight, TextBlockPaddingBottom),
                 };
             }).ToList();
         }
@@ -64,26 +72,26 @@ namespace MarketMinds
         private void LoadImages()
         {
             ImageCarousel.Items.Clear();
-            foreach (var image in priv_product.Images)
+            foreach (var image in privateProduct.Images)
             {
-                var img = new Microsoft.UI.Xaml.Controls.Image
+                var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
                     Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Height = ImageHeight,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                ImageCarousel.Items.Add(img);
+                ImageCarousel.Items.Add(newImage);
             }
         }
 
-        private void OnAddtoBascketClicked(object sender, RoutedEventArgs e)
+        private void OnAddtoBascketClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
-                priv_basketViewModel.AddToBasket(priv_product.Id);
+                priv_basketViewModel.AddToBasket(privateProduct.Id);
 
                 // Show success notification
                 BasketNotificationTip.Title = "Success";
@@ -91,21 +99,21 @@ namespace MarketMinds
                 BasketNotificationTip.IconSource = new SymbolIconSource() { Symbol = Symbol.Accept };
                 BasketNotificationTip.IsOpen = true;
             }
-            catch (Exception ex)
+            catch (Exception basketAdditionException)
             {
-                Debug.WriteLine($"Failed to add product to basket: {ex.Message}");
+                Debug.WriteLine($"Failed to add product to basket: {basketAdditionException.Message}");
 
                 // Show error notification
                 BasketNotificationTip.Title = "Error";
-                BasketNotificationTip.Subtitle = $"Failed to add product: {ex.Message}";
+                BasketNotificationTip.Subtitle = $"Failed to add product: {basketAdditionException.Message}";
                 BasketNotificationTip.IconSource = new SymbolIconSource() { Symbol = Symbol.Accept };
                 BasketNotificationTip.IsOpen = true;
             }
         }
 
-        private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
+        private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            App.SeeSellerReviewsViewModel.Seller = priv_product.Seller;
+            App.SeeSellerReviewsViewModel.Seller = privateProduct.Seller;
             // Create a window to host the SeeSellerReviewsView page
             seeSellerReviewsView = new Window();
             seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);

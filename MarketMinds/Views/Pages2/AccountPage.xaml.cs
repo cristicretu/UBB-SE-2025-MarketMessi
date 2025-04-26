@@ -31,6 +31,50 @@ namespace Marketplace_SE
     {
         private AccountPageViewModel viewModel;
 
+        private const int OrderBorderThickness = 1;  // magic numbers removal
+        private const int OrderCornerRadius = 10;
+        private const int OrderPadding = 10;
+        private const int OrderMarginTop = 5;
+        private const int OrderMarginBottom = 5;
+        private const int OrderMarginLeft = 0;
+        private const int OrderMarginRight = 0;
+
+        private const int TypeIndicatorWidth = 10;
+        private const int TypeIndicatorHeight = 20;
+        private const int TypeIndicatorCornerRadius = 2;
+        private const int TypeIndicatorMarginLeft = 0;
+        private const int TypeIndicatorMarginTop = 0;
+        private const int TypeIndicatorMarginRight = 5;
+        private const int TypeIndicatorMarginBottom = 0;
+
+        private const int TypeLabelMarginLeft = 15;
+        private const int TypeLabelMarginTop = 0;
+        private const int TypeLabelMarginRight = 0;
+        private const int TypeLabelMarginBottom = 0;
+
+        private const int OrderTypeGridMarginBottom = 10;
+        private const int OrderTypeGridMarginTop = 0;
+        private const int OrderTypeGridMarginLeft = 0;
+        private const int OrderTypeGridMarginRight = 0;
+
+        private const int InfoTextMarginBottom = 10;
+        private const int InfoTextMarginTop = 0;
+        private const int InfoTextMarginLeft = 0;
+        private const int InfoTextMarginRight = 0;
+
+        private const int StatusTextMarginBottom = 10;
+        private const int StatusTextMarginTop = 0;
+        private const int StatusTextMarginLeft = 0;
+        private const int StatusTextMarginRight = 0;
+
+        private const int ButtonWidth = 150;
+        private const int ButtonHeight = 50;
+
+        private const int ButtonMarginTop = 5;
+        private const int ButtonMarginBottom = 5;
+        private const int ButtonMarginLeft = 0;
+        private const int ButtonMarginRight = 0;
+
         public AccountPage()
         {
             this.InitializeComponent();
@@ -57,10 +101,10 @@ namespace Marketplace_SE
             Border orderBorder = new Border
             {
                 BorderBrush = new SolidColorBrush(Colors.Black),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(10),
-                Margin = new Thickness(0, 5, 0, 5)
+                BorderThickness = new Thickness(OrderBorderThickness),
+                CornerRadius = new CornerRadius(OrderCornerRadius),
+                Padding = new Thickness(OrderPadding),
+                Margin = new Thickness(OrderMarginLeft, OrderMarginTop, OrderMarginRight, OrderMarginBottom)
             };
 
             StackPanel contentPanel = new StackPanel
@@ -72,16 +116,16 @@ namespace Marketplace_SE
 
             Grid orderTypeGrid = new Grid
             {
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(OrderTypeGridMarginLeft, OrderTypeGridMarginTop, OrderTypeGridMarginRight, OrderTypeGridMarginBottom)
             };
 
             Border typeIndicator = new Border
             {
                 Background = new SolidColorBrush(isBuyOrder ? Colors.Green : Colors.Red),
-                Width = 10,
-                Height = 20,
-                CornerRadius = new CornerRadius(2),
-                Margin = new Thickness(0, 0, 5, 0),
+                Width = TypeIndicatorWidth,
+                Height = TypeIndicatorHeight,
+                CornerRadius = new CornerRadius(TypeIndicatorCornerRadius),
+                Margin = new Thickness(TypeIndicatorMarginLeft, TypeIndicatorMarginTop, TypeIndicatorMarginRight, TypeIndicatorMarginBottom),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left
             };
@@ -90,7 +134,7 @@ namespace Marketplace_SE
             {
                 Text = isBuyOrder ? "Buy Order" : "Sell Order",
                 FontWeight = FontWeights.Bold,
-                Margin = new Thickness(15, 0, 0, 0),
+                Margin = new Thickness(TypeLabelMarginLeft, TypeLabelMarginTop, TypeLabelMarginRight, TypeLabelMarginBottom),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -103,14 +147,14 @@ namespace Marketplace_SE
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(InfoTextMarginLeft, InfoTextMarginTop, InfoTextMarginRight, InfoTextMarginBottom)
             };
 
             TextBlock statusText = new TextBlock
             {
                 Text = $"Status: {order.OrderStatus}",
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(StatusTextMarginLeft, StatusTextMarginTop, StatusTextMarginRight, StatusTextMarginBottom)
             };
 
             Button viewButton = new Button
@@ -118,12 +162,12 @@ namespace Marketplace_SE
                 Content = "View order",
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                Width = 150,
-                Height = 50,
-                Margin = new Thickness(0, 5, 0, 5)
+                Width = ButtonWidth,
+                Height = ButtonHeight,
+                Margin = new Thickness(ButtonMarginLeft, ButtonMarginTop, ButtonMarginRight, ButtonMarginBottom)
             };
 
-            viewButton.Click += (s, e) =>
+            viewButton.Click += (sender, eventArgs) =>
             {
                 viewModel.SelectedOrder = order;
                 Frame.Navigate(typeof(PlacedOrderPage));
@@ -143,7 +187,7 @@ namespace Marketplace_SE
                     VerticalAlignment = VerticalAlignment.Center,
                     Width = 150,
                     Height = 50,
-                    Margin = new Thickness(0, 5, 0, 5)
+                    Margin = new Thickness(ButtonMarginLeft, ButtonMarginTop, ButtonMarginRight, ButtonMarginBottom)
                 };
 
                 returnButton.Click += (s, e) =>

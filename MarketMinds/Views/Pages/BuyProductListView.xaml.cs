@@ -29,6 +29,8 @@ namespace UiLayer
         private int totalPages = 1;
         private List<BuyProduct> currentFullList;
 
+        private const int FirstPageNumber = 1;  // magic numbers removal
+
         public BuyProductListView()
         {
             this.InitializeComponent();
@@ -45,9 +47,9 @@ namespace UiLayer
             ApplyFiltersAndPagination();
         }
 
-        private void BuyListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void BuyListView_ItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            var selectedProduct = e.ClickedItem as BuyProduct;
+            var selectedProduct = itemClickEventArgs.ClickedItem as BuyProduct;
             if (selectedProduct != null)
             {
                 var detailView = new BuyProductView(selectedProduct);
@@ -67,7 +69,7 @@ namespace UiLayer
             }
         }
 
-        private void NextPageButton_Click(object sender, RoutedEventArgs e)
+        private void NextPageButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (currentPage < totalPages)
             {
@@ -76,16 +78,16 @@ namespace UiLayer
             }
         }
 
-        private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousPageButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > 1)
+            if (currentPage > FirstPageNumber)
             {
                 currentPage--;
                 ApplyFiltersAndPagination();
             }
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (currentPage < totalPages)
             {
@@ -94,22 +96,22 @@ namespace UiLayer
             }
         }
 
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > 1)
+            if (currentPage > FirstPageNumber)
             {
                 currentPage--;
                 ApplyFiltersAndPagination();
             }
         }
 
-        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             sortAndFilterViewModel.HandleSearchQueryChange(SearchTextBox.Text);
             ApplyFiltersAndPagination();
         }
 
-        private async void FilterButton_Click(object sender, RoutedEventArgs e)
+        private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
             filterDialog.XamlRoot = Content.XamlRoot;
@@ -120,13 +122,13 @@ namespace UiLayer
             }
         }
 
-        private void SortButton_Click(object sender, RoutedEventArgs e)
+        private void SortButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             SortingComboBox.Visibility = SortingComboBox.Visibility == Visibility.Visible ?
                                          Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs routedEventArgs)
         {
             if (SortingComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
@@ -141,7 +143,7 @@ namespace UiLayer
             }
         }
 
-        private void AddToCompare_Click(object sender, RoutedEventArgs e)
+        private void AddToCompare_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is Button button && button.DataContext is Product selectedProduct)
             {

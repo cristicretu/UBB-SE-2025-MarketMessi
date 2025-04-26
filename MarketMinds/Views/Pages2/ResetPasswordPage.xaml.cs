@@ -16,7 +16,7 @@ namespace Marketplace_SE
             this.DataContext = ViewModel;
         }
 
-        private void OnResetPasswordClick(object sender, RoutedEventArgs e)
+        private void OnResetPasswordClick(object sender, RoutedEventArgs routedEventArgs)
         {
             ViewModel.NewPassword = NewPasswordBox.Password;
             ViewModel.ConfirmPassword = ConfirmPasswordBox.Password;

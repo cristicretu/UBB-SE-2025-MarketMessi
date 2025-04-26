@@ -25,9 +25,9 @@ namespace ViewModelLayer.ViewModel
 			{
 				return await registerService.RegisterUser(user);
 			}
-			catch (Exception ex)
+			catch (Exception userCreationException)
 			{
-				Console.WriteLine($"Error creating user: {ex.Message}");
+				Console.WriteLine($"Error creating user: {userCreationException.Message}");
 				return false;
 			}
 		}

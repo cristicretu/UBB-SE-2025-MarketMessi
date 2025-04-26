@@ -24,6 +24,20 @@ namespace Marketplace_SE
     {
         private AdminFindHelpTicketViewModel viewModel;
 
+        private const int BorderThicknessValue = 2;  // magic numbers removal
+        private const int BorderCornerRadius = 5;
+        private const int BorderPadding = 10;
+        private const int BorderMargin = 5;
+        private const int TicketFontSize = 16;
+        private const int TextBlockBottomMargin = 10;
+        private const int TextBlockLeftMargin = 0;
+        private const int TextBlockTopMargin = 0;
+        private const int TextBlockRightMargin = 0;
+        private const byte BorderBrushAlpha = 255;
+        private const byte BorderBrushRed = 130;
+        private const byte BorderBrushGreen = 130;
+        private const byte BorderBrushBlue = 130;
+
         public AdminFindHelpTicket()
         {
             this.InitializeComponent();
@@ -31,7 +45,7 @@ namespace Marketplace_SE
             this.DataContext = viewModel;
         }
 
-        private void OnButtonClickAdminSearchHelpTicket(object sender, RoutedEventArgs e)
+        private void OnButtonClickAdminSearchHelpTicket(object sender, RoutedEventArgs routedEventArgs)
         {
             viewModel.SearchHelpTickets(TextBoxLookupHelpTicketUserID.Text);
 
@@ -54,11 +68,11 @@ namespace Marketplace_SE
         {
             Border border = new Border
             {
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(5),
-                BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 130, 130, 130)),
-                Padding = new Thickness(10),
-                Margin = new Thickness(5),
+                BorderThickness = new Thickness(BorderThicknessValue),
+                CornerRadius = new CornerRadius(BorderCornerRadius),
+                BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(BorderBrushAlpha, BorderBrushRed, BorderBrushGreen, BorderBrushBlue)),
+                Padding = new Thickness(BorderPadding),
+                Margin = new Thickness(BorderMargin),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
@@ -71,8 +85,8 @@ namespace Marketplace_SE
             TextBlock textBlock = new TextBlock
             {
                 Text = ticket.ToStringExceptDescription(),
-                Margin = new Thickness(0, 0, 0, 10),
-                FontSize = 16,
+                Margin = new Thickness(TextBlockLeftMargin, TextBlockTopMargin, TextBlockRightMargin, TextBlockBottomMargin),
+                FontSize = TicketFontSize,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left
             };
@@ -84,7 +98,7 @@ namespace Marketplace_SE
                 HorizontalAlignment = HorizontalAlignment.Right
             };
 
-            button.Click += (s, e) =>
+            button.Click += (sender, eventArgs) =>
             {
                 Frame.Navigate(typeof(ViewHelpTicket), ticket.TicketID);
             };
@@ -97,7 +111,7 @@ namespace Marketplace_SE
             StackPanelAdminFindHelpTickets.Children.Add(border);
         }
 
-        private void OnButtonClickNavigateAdminSearchHelpTicketPageAdminAccountPage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigateAdminSearchHelpTicketPageAdminAccountPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AdminAccountPage));
         }

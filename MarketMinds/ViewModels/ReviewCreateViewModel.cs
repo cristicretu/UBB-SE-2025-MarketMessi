@@ -65,10 +65,10 @@ namespace ViewModelLayer.ViewModel
                     return false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception imageAdditionException)
             {
                 // Handle errors
-                StatusMessage = $"Error uploading image: {ex.Message}";
+                StatusMessage = $"Error uploading image: {imageAdditionException.Message}";
                 return false;
             }
         }
@@ -82,9 +82,9 @@ namespace ViewModelLayer.ViewModel
                 CurrentReview = reviewCreationService.CreateReview(Description, Images, Rating, Seller, Buyer);
                 StatusMessage = "Review submitted successfully";
             }
-            catch (Exception ex)
+            catch (Exception reviewSubmissionException)
             {
-                StatusMessage = $"Error submitting review: {ex.Message}";
+                StatusMessage = $"Error submitting review: {reviewSubmissionException.Message}";
             }
         }
 
@@ -96,9 +96,9 @@ namespace ViewModelLayer.ViewModel
                 reviewCreationService.UpdateReview(CurrentReview, Description, Rating);
                 StatusMessage = "Review updated successfully";
             }
-            catch (Exception ex)
+            catch (Exception reviewUpateException)
             {
-                StatusMessage = $"Error updating review: {ex.Message}";
+                StatusMessage = $"Error updating review: {reviewUpateException.Message}";
             }
         }
     }

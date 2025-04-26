@@ -24,20 +24,22 @@ namespace Marketplace_SE
     /// </summary>
     public sealed partial class AdminFindCallPage : Page
     {
+        private const int CHAT_PAGE_DEFAULT_PARAMETER = 3;
+
         public AdminFindCallPage()
         {
             this.InitializeComponent();
 
             // Lookup the wait list and try to open a chat
         }
-        private void OnButtonClickNavigateAdminFindCallPageAdminAccountPage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigateAdminFindCallPageAdminAccountPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AdminAccountPage));
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs navigationEventArgs)
         {
-            base.OnNavigatedTo(e);
-            FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, 3);
+            base.OnNavigatedTo(navigationEventArgs);
+            FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, CHAT_PAGE_DEFAULT_PARAMETER);
         }
     }
 }

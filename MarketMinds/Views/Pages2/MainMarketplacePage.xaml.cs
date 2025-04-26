@@ -27,7 +27,7 @@ namespace Marketplace_SE
             me = App.CurrentUser;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs routedEventArgs)
         {
             base.OnNavigatedTo(e);
             LoadAvailableItems();
@@ -50,9 +50,9 @@ namespace Marketplace_SE
                     ShowNotification("Error", "Failed to load items.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception itemsLoadingException)
             {
-                ShowNotification("Error", $"An error occurred while loading items: {ex.Message}");
+                ShowNotification("Error", $"An error occurred while loading items: {itemsLoadingException.Message}");
             }
             finally
             {
@@ -60,7 +60,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void BuyItemButton_Click(object sender, RoutedEventArgs e)
+        private void BuyItemButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var selectedItem = (sender as Button)?.DataContext as UserNotSoldOrder;
             if (selectedItem != null)
@@ -69,7 +69,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void ChatWithSellerButton_Click(object sender, RoutedEventArgs e)
+        private void ChatWithSellerButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is FrameworkElement element && element.Tag is UserNotSoldOrder selectedOrder)
             {
@@ -81,12 +81,12 @@ namespace Marketplace_SE
             }
         }
 
-        private void OpenAccountButton_Click(object sender, RoutedEventArgs e)
+        private void OpenAccountButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AccountPage));
         }
 
-        private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
+        private void OpenHelpButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(GetHelpPage));
         }

@@ -21,6 +21,9 @@ namespace MarketMinds.Views.Pages
         private Window parentWindow;
         private readonly IProductViewNavigationService navigationService;
 
+        private const int RightImageHeight = 250; // magic numbers removal
+        private const int LeftImageHeight = 200;
+
         public CompareProductsView(CompareProductsViewModel viewModel)
         {
             ViewModel = viewModel;
@@ -29,7 +32,7 @@ namespace MarketMinds.Views.Pages
             LoadImages();
         }
 
-        public void OnSeeReviewsLeftProductClicked(object sender, RoutedEventArgs e)
+        public void OnSeeReviewsLeftProductClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             App.SeeSellerReviewsViewModel.Seller = ViewModel.LeftProduct.Seller;
             // Create a window to host the SeeSellerReviewsView page
@@ -38,7 +41,7 @@ namespace MarketMinds.Views.Pages
             window.Activate();
         }
 
-        public void OnSeeReviewsRightProductClicked(object sender, RoutedEventArgs e)
+        public void OnSeeReviewsRightProductClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             App.SeeSellerReviewsViewModel.Seller = ViewModel.RightProduct.Seller;
             // Create a window to host the SeeSellerReviewsView page
@@ -56,36 +59,36 @@ namespace MarketMinds.Views.Pages
             {
                 Debug.WriteLine("Loading image: " + image.Url);
 
-                var img = new Microsoft.UI.Xaml.Controls.Image
+                var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
                     Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 200,
+                    Height = LeftImageHeight,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                LeftImageCarousel.Items.Add(img);
+                LeftImageCarousel.Items.Add(newImage);
             }
 
             foreach (var image in ViewModel.RightProduct.Images)
             {
                 Debug.WriteLine("Loading image: " + image.Url);
 
-                var img = new Microsoft.UI.Xaml.Controls.Image
+                var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
                     Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Height = RightImageHeight,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                RightImageCarousel.Items.Add(img);
+                RightImageCarousel.Items.Add(newImage);
             }
         }
 
-        private void OnSelectLeftProductClicked(object sender, RoutedEventArgs e)
+        private void OnSelectLeftProductClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             if (parentWindow == null)
             {
@@ -113,7 +116,7 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private void OnSelectRightProductClicked(object sender, RoutedEventArgs e)
+        private void OnSelectRightProductClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             if (parentWindow == null)
             {
@@ -146,7 +149,7 @@ namespace MarketMinds.Views.Pages
             parentWindow = window;
         }
 
-        private void ViewProduct_Click(object sender, RoutedEventArgs e)
+        private void ViewProduct_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is Button button && button.DataContext is Product product)
             {
@@ -155,7 +158,7 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private void ViewSeller_Click(object sender, RoutedEventArgs e)
+        private void ViewSeller_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is Button button && button.DataContext is Product product)
             {

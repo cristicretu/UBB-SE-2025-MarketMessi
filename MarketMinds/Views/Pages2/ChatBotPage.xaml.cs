@@ -21,9 +21,9 @@ namespace Marketplace_SE
             chatBotViewModel = App.ChatBotViewModel;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs navigationEventArgs)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(navigationEventArgs);
             chatBotViewModel.InitializeChat();
             UpdateChatUI();
         }

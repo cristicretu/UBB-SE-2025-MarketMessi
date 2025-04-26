@@ -27,6 +27,13 @@ namespace MarketMinds
         private readonly User currentUser;
         public DateTime? SelectedEndDate { get; private set; }
 
+        private const int ImageHeight = 250;  // magic numbers removal
+        private const int TextBlockMargin = 4;
+        private const int TextBlockPaddingLeft = 8;
+        private const int TextBlockPaddingTop = 4;
+        private const int TextBlockPaddingRight = 8;
+        private const int TextBlockPaddingBottom = 4;
+
         public BorrowProductView(BorrowProduct product)
         {
             Debug.WriteLine($"[BorrowProductView] Constructor - Product: {product?.Title ?? "null"}");
@@ -58,10 +65,10 @@ namespace MarketMinds
                 Debug.WriteLine($"[BorrowProductView] Date controls initialized - StartDate: {StartDateTextBlock.Text}, TimeLimit: {TimeLimitTextBlock.Text}");
                 Debug.WriteLine($"[BorrowProductView] DatePicker range set - Min: {EndDatePicker.MinDate}, Max: {EndDatePicker.MaxDate}");
             }
-            catch (Exception ex)
+            catch (Exception productBurrowViewException)
             {
-                Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {ex.Message}");
-                Debug.WriteLine($"[BorrowProductView] Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {productBurrowViewException.Message}");
+                Debug.WriteLine($"[BorrowProductView] Stack trace: {productBurrowViewException.StackTrace}");
             }
 
             LoadProductDetails();
@@ -85,16 +92,16 @@ namespace MarketMinds
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(4),
-                    Padding = new Thickness(8, 4, 8, 4)
+                    Margin = new Thickness(TextBlockMargin),
+                    Padding = new Thickness(TextBlockPaddingLeft, TextBlockPaddingTop, TextBlockPaddingRight, TextBlockPaddingBottom)
                 };
             }).ToList();
         }
-        private void OnJoinWaitListClicked(object sender, RoutedEventArgs e)
+        private void OnJoinWaitListClicked(object sender, RoutedEventArgs routedEventArgs)
         {
         }
 
-        private void OnLeaveWaitListClicked(object sender, RoutedEventArgs e)
+        private void OnLeaveWaitListClicked(object sender, RoutedEventArgs routedEventArgs)
         {
         }
 
@@ -103,20 +110,20 @@ namespace MarketMinds
             ImageCarousel.Items.Clear();
             foreach (var image in Product.Images)
             {
-                var img = new Microsoft.UI.Xaml.Controls.Image
+                var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
                     Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Height = ImageHeight,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                ImageCarousel.Items.Add(img);
+                ImageCarousel.Items.Add(newImage);
             }
         }
 
-        private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
+        private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             App.SeeSellerReviewsViewModel.Seller = Product.Seller;
             // Create a window to host the SeeSellerReviewsView page
@@ -127,11 +134,11 @@ namespace MarketMinds
             seeSellerReviewsView = window;
         }
 
-        private void EndDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        private void EndDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs calendarDatePickerChangedEventArgs)
         {
             Debug.WriteLine("[EndDatePicker] DateChanged event started");
             Debug.WriteLine($"[EndDatePicker] Sender null? {sender == null}");
-            Debug.WriteLine($"[EndDatePicker] Args null? {args == null}");
+            Debug.WriteLine($"[EndDatePicker] Args null? {calendarDatePickerChangedEventArgs == null}");
             Debug.WriteLine($"[EndDatePicker] Product null? {Product == null}");
             if (sender == null)
             {
@@ -158,14 +165,14 @@ namespace MarketMinds
                     CalculatePriceButton.IsEnabled = false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception endDatePickerException)
             {
-                Debug.WriteLine($"[EndDatePicker] Error in date processing: {ex.Message}");
-                Debug.WriteLine($"[EndDatePicker] Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"[EndDatePicker] Error in date processing: {endDatePickerException.Message}");
+                Debug.WriteLine($"[EndDatePicker] Stack trace: {endDatePickerException.StackTrace}");
             }
         }
 
-        private void OnCalculatePriceClicked(object sender, RoutedEventArgs e)
+        private void OnCalculatePriceClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             if (SelectedEndDate.HasValue)
             {

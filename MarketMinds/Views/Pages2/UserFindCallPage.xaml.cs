@@ -23,19 +23,21 @@ namespace Marketplace_SE
     /// </summary>
     public sealed partial class UserFindCallPage : Page
     {
+        private const int CHAT_PAGE_PARAMETER = 2;
+
         public UserFindCallPage()
         {
             this.InitializeComponent();
         }
 
-        private void OnButtonClickNavigateUserFindCallPageUserAccountPage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigateUserFindCallPageUserAccountPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AccountPage));
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, 2);
+            FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, CHAT_PAGE_PARAMETER);
         }
     }
 }

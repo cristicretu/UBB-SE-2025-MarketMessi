@@ -10,6 +10,7 @@ namespace Marketplace_SE.ViewModels
     public class HelpTicketViewModel : INotifyPropertyChanged
     {
         private readonly IHelpTicketService service;
+        private const int SuccessStatusCode = 1;
 
         public ObservableCollection<HelpTicket> HelpTickets { get; set; }
         public string UserID { get; set; }
@@ -48,7 +49,7 @@ namespace Marketplace_SE.ViewModels
             }
 
             var result = service.CreateHelpTicket(UserID, UserName, Description);
-            if (result == 1)
+            if (result == SuccessStatusCode)
             {
                 StatusMessage = "Ticket created successfully.";
                 LoadTickets();

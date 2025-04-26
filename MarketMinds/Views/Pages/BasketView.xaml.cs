@@ -13,10 +13,11 @@ namespace MarketMinds.Views.Pages
 {
     public sealed partial class BasketView : Page
     {
-        private BasketViewModel var_basketViewModel;
-        private ObservableCollection<BasketItem> var_basketItems;
-        private User var_currentUser;
+        private BasketViewModel basketViewModel;
+        private ObservableCollection<BasketItem> basketItems;
+        private User currentUser;
         private const int ZERO_QUANTITY = 0;
+        private const int ONE_QUANTITY = 1;
 
         public BasketView()
         {
@@ -24,16 +25,16 @@ namespace MarketMinds.Views.Pages
             this.InitializeComponent();
 
             // Get the current user from the app
-            var_currentUser = MarketMinds.App.CurrentUser;
+            currentUser = MarketMinds.App.CurrentUser;
 
             // Get the BasketViewModel from the app
-            var_basketViewModel = MarketMinds.App.BasketViewModel;
+            basketViewModel = MarketMinds.App.BasketViewModel;
 
             // Initialize basket items as ObservableCollection for auto-UI updates
-            var_basketItems = new ObservableCollection<BasketItem>();
+            basketItems = new ObservableCollection<BasketItem>();
 
             // Set the ListView's data source
-            BasketItemsListView.ItemsSource = var_basketItems;
+            BasketItemsListView.ItemsSource = basketItems;
 
             // Load basket data
             LoadBasketData();
@@ -59,30 +60,30 @@ namespace MarketMinds.Views.Pages
             try
             {
                 // Refresh basket data from the view model
-                var_basketViewModel.LoadBasket();
+                basketViewModel.LoadBasket();
 
                 // Clear the current basket items
-                var_basketItems.Clear();
+                basketItems.Clear();
 
                 // Add all items from the view model
-                foreach (var item in var_basketViewModel.BasketItems)
+                foreach (var item in basketViewModel.BasketItems)
                 {
-                    var_basketItems.Add(item);
+                    basketItems.Add(item);
                 }
 
                 // Update UI elements
                 UpdateUIElements();
             }
-            catch (Exception ex)
+            catch (Exception basketDataLoadException)
             {
-                Debug.WriteLine($"[View] ERROR in LoadBasketData: {ex.GetType().Name} - {ex.Message}");
-                if (ex.InnerException != null)
+                Debug.WriteLine($"[View] ERROR in LoadBasketData: {basketDataLoadException.GetType().Name} - {basketDataLoadException.Message}");
+                if (basketDataLoadException.InnerException != null)
                 {
-                    Debug.WriteLine($"[View] Inner exception: {ex.InnerException.Message}");
+                    Debug.WriteLine($"[View] Inner exception: {basketDataLoadException.InnerException.Message}");
                 }
 
                 // Show error message to user
-                ErrorMessageTextBlock.Text = $"Error loading basket: {ex.Message}";
+                ErrorMessageTextBlock.Text = $"Error loading basket: {basketDataLoadException.Message}";
                 ErrorMessageTextBlock.Visibility = Visibility.Visible;
             }
         }
@@ -90,16 +91,16 @@ namespace MarketMinds.Views.Pages
         private void UpdateUIElements()
         {
             // Update item count
-            int itemCount = var_basketItems.Sum(item => item.Quantity);
-            ItemCountTextBlock.Text = $"{itemCount} item{(itemCount != 1 ? "s" : string.Empty)} in your basket";
+            int itemCount = basketItems.Sum(item => item.Quantity);
+            ItemCountTextBlock.Text = $"{itemCount} item{(itemCount != ONE_QUANTITY ? "s" : string.Empty)} in your basket";
 
             // Update price displays
-            SubtotalTextBlock.Text = $"${var_basketViewModel.Subtotal:F2}";
-            DiscountTextBlock.Text = $"-${var_basketViewModel.Discount:F2}";
-            TotalTextBlock.Text = $"${var_basketViewModel.TotalAmount:F2}";
+            SubtotalTextBlock.Text = $"${basketViewModel.Subtotal:F2}";
+            DiscountTextBlock.Text = $"-${basketViewModel.Discount:F2}";
+            TotalTextBlock.Text = $"${basketViewModel.TotalAmount:F2}";
 
             // Show empty basket message if there are no items
-            if (var_basketItems.Count == ZERO_QUANTITY)
+            if (basketItems.Count == ZERO_QUANTITY)
             {
                 EmptyBasketMessage.Visibility = Visibility.Visible;
                 BasketItemsListView.Visibility = Visibility.Collapsed;
@@ -111,12 +112,12 @@ namespace MarketMinds.Views.Pages
             }
 
             // Enable/disable checkout button based on whether checkout is possible
-            CheckoutButton.IsEnabled = var_basketViewModel.CanCheckout();
+            CheckoutButton.IsEnabled = basketViewModel.CanCheckout();
 
             // Show any error messages
-            if (!string.IsNullOrEmpty(var_basketViewModel.ErrorMessage))
+            if (!string.IsNullOrEmpty(basketViewModel.ErrorMessage))
             {
-                ErrorMessageTextBlock.Text = var_basketViewModel.ErrorMessage;
+                ErrorMessageTextBlock.Text = basketViewModel.ErrorMessage;
                 ErrorMessageTextBlock.Visibility = Visibility.Visible;
             }
             else
@@ -125,7 +126,7 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private void HandleRemoveItemButton_Click(object sender, RoutedEventArgs e)
+        private void HandleRemoveItemButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
@@ -133,22 +134,22 @@ namespace MarketMinds.Views.Pages
                 if (button != null && button.CommandParameter is int itemId)
                 {
                     // Find the corresponding basket item
-                    var item = var_basketItems.FirstOrDefault(i => i.Id == itemId);
+                    var item = basketItems.FirstOrDefault(basketItem => basketItem.Id == itemId);
                     if (item != null)
                     {
                         // Remove using product ID instead of item ID
-                        var_basketViewModel.RemoveProductFromBasket(item.Product.Id);
+                        basketViewModel.RemoveProductFromBasket(item.Product.Id);
                     }
                     LoadBasketData();
                 }
             }
-            catch (Exception ex)
+            catch (Exception itemRemovalButtonClickException)
             {
-                ShowErrorMessage($"Failed to remove item: {ex.Message}");
+                ShowErrorMessage($"Failed to remove item: {itemRemovalButtonClickException.Message}");
             }
         }
 
-        private void HandleIncreaseQuantityButton_Click(object sender, RoutedEventArgs e)
+        private void HandleIncreaseQuantityButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
@@ -156,24 +157,24 @@ namespace MarketMinds.Views.Pages
                 if (button != null && button.CommandParameter is int itemId)
                 {
                     // Find the corresponding basket item
-                    var basketItem = var_basketItems.FirstOrDefault(item => item.Id == itemId);
+                    var basketItem = basketItems.FirstOrDefault(item => item.Id == itemId);
                     if (basketItem != null)
                     {
                         // Call the view model to handle the logic
-                        var_basketViewModel.IncreaseProductQuantity(basketItem.Product.Id);
+                        basketViewModel.IncreaseProductQuantity(basketItem.Product.Id);
                         // Reload the basket data - this is already done in the view model's method,
                         // but kept here for consistency and to ensure UI updates
                         LoadBasketData();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception quantityIncreaseException)
             {
-                ShowErrorMessage($"Failed to increase quantity: {ex.Message}");
+                ShowErrorMessage($"Failed to increase quantity: {quantityIncreaseException.Message}");
             }
         }
 
-        private void HandleDecreaseQuantityButton_Click(object sender, RoutedEventArgs e)
+        private void HandleDecreaseQuantityButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
@@ -181,20 +182,20 @@ namespace MarketMinds.Views.Pages
                 if (button != null && button.CommandParameter is int itemId)
                 {
                     // Find the corresponding basket item
-                    var basketItem = var_basketItems.FirstOrDefault(item => item.Id == itemId);
+                    var basketItem = basketItems.FirstOrDefault(item => item.Id == itemId);
                     if (basketItem != null)
                     {
                         // Call the view model to handle the logic
-                        var_basketViewModel.DecreaseProductQuantity(basketItem.Product.Id);
+                        basketViewModel.DecreaseProductQuantity(basketItem.Product.Id);
                         // Reload the basket data - this is already done in the view model's method,
                         // but kept here for consistency and to ensure UI updates
                         LoadBasketData();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception quantityDecreaseException)
             {
-                ShowErrorMessage($"Failed to decrease quantity: {ex.Message}");
+                ShowErrorMessage($"Failed to decrease quantity: {quantityDecreaseException.Message}");
             }
         }
 
@@ -203,7 +204,7 @@ namespace MarketMinds.Views.Pages
             if (textBox != null && textBox.Tag is int itemId)
             {
                 string errorMessage;
-                bool success = var_basketViewModel.UpdateQuantityFromText(itemId, textBox.Text, out errorMessage);
+                bool success = basketViewModel.UpdateQuantityFromText(itemId, textBox.Text, out errorMessage);
 
                 if (!success)
                 {
@@ -214,7 +215,7 @@ namespace MarketMinds.Views.Pages
                     }
 
                     // Reset the text box to current value if validation failed
-                    var basketItem = var_basketViewModel.GetBasketItemById(itemId);
+                    var basketItem = basketViewModel.GetBasketItemById(itemId);
                     if (basketItem != null)
                     {
                         textBox.Text = basketItem.Quantity.ToString();
@@ -228,31 +229,31 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private void QuantityTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void QuantityTextBox_LostFocus(object sender, RoutedEventArgs routedEventArgs)
         {
             UpdateQuantityFromTextBox(sender as TextBox);
         }
 
-        private void QuantityTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void QuantityTextBox_KeyDown(object sender, KeyRoutedEventArgs routedEventArgs)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if (routedEventArgs.Key == Windows.System.VirtualKey.Enter)
             {
                 UpdateQuantityFromTextBox(sender as TextBox);
-                e.Handled = true;
+                routedEventArgs.Handled = true;
             }
         }
 
-        private void HandleApplyPromoCodeButton_Click(object sender, RoutedEventArgs e)
+        private void HandleApplyPromoCodeButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             string promoCode = PromoCodeTextBox.Text?.Trim();
             if (!string.IsNullOrEmpty(promoCode))
             {
                 try
                 {
-                    var_basketViewModel.ApplyPromoCode(promoCode);
+                    basketViewModel.ApplyPromoCode(promoCode);
 
                     // The promo code was applied successfully if it gets here
-                    if (var_basketViewModel.Discount > 0)
+                    if (basketViewModel.Discount > 0)
                     {
                         ErrorMessageTextBlock.Text = $"Promo code '{promoCode}' applied successfully!";
                         ErrorMessageTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
@@ -266,9 +267,9 @@ namespace MarketMinds.Views.Pages
                     }
                     LoadBasketData();
                 }
-                catch (Exception ex)
+                catch (Exception promoCodeApplicationException)
                 {
-                    ErrorMessageTextBlock.Text = $"Error applying promo code: {ex.Message}";
+                    ErrorMessageTextBlock.Text = $"Error applying promo code: {promoCodeApplicationException.Message}";
                     ErrorMessageTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red);
                     ErrorMessageTextBlock.Visibility = Visibility.Visible;
                 }
@@ -281,7 +282,7 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private void HandleClearBasketButton_Click(object sender, RoutedEventArgs e)
+        private void HandleClearBasketButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             ContentDialog dialog = new ContentDialog
             {
@@ -292,24 +293,24 @@ namespace MarketMinds.Views.Pages
                 XamlRoot = Content.XamlRoot
             };
 
-            _ = dialog.ShowAsync().AsTask().ContinueWith(t =>
+            _ = dialog.ShowAsync().AsTask().ContinueWith(task =>
             {
-                if (t.Result == ContentDialogResult.Primary)
+                if (task.Result == ContentDialogResult.Primary)
                 {
                     DispatcherQueue.TryEnqueue(() =>
                     {
-                        var_basketViewModel.ClearBasket();
+                        basketViewModel.ClearBasket();
                         LoadBasketData();
                     });
                 }
             });
         }
 
-        private void HandleCheckoutButton_Click(object sender, RoutedEventArgs e)
+        private void HandleCheckoutButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (var_basketViewModel.CanCheckout())
+            if (basketViewModel.CanCheckout())
             {
-                var_basketViewModel.Checkout();
+                basketViewModel.Checkout();
                 // Navigate to checkout page
                 ShowCheckoutMessage();
             }
@@ -333,7 +334,7 @@ namespace MarketMinds.Views.Pages
             await dialog.ShowAsync();
         }
 
-        private void HandleContinueShoppingButton_Click(object sender, RoutedEventArgs e)
+        private void HandleContinueShoppingButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Navigate back or to product listing page
             // Since this is a Page, we use Frame navigation instead of Close()

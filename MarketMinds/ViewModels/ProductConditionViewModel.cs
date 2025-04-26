@@ -110,9 +110,9 @@ namespace ViewModelLayer.ViewModel
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception conditionCreationException)
             {
-                ErrorMessage = $"Error creating condition: {ex.Message}";
+                ErrorMessage = $"Error creating condition: {conditionCreationException.Message}";
                 return false;
             }
         }

@@ -24,15 +24,15 @@ namespace Marketplace_SE
         {
             this.InitializeComponent();
         }
-        private void OnButtonClickOpenChatbotConversation(object sender, RoutedEventArgs e)
+        private void OnButtonClickOpenChatbotConversation(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(ChatBotPage));
         }
-        private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs e)
+        private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(UserFindCallPage));
         }
-        private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(MainMarketplacePage));
         }

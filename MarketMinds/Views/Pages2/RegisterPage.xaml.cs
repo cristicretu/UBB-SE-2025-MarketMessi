@@ -30,6 +30,8 @@ namespace Marketplace_SE
         public RegisterViewModel ViewModel { get; set; }
         public User NewUser { get; set; }
 
+        private const int MinimumPasswordLength = 6;
+
         public RegisterPage()
         {
             this.InitializeComponent();
@@ -38,7 +40,7 @@ namespace Marketplace_SE
             NewUser = new User(0, string.Empty, string.Empty, string.Empty);
         }
 
-        private async void OnCreateUserClick(object sender, RoutedEventArgs e)
+        private async void OnCreateUserClick(object sender, RoutedEventArgs routedEventArgs)
         {
             NewUser.Username = UsernameTextBox.Text;
             NewUser.Email = EmailTextBox.Text;
@@ -100,10 +102,10 @@ namespace Marketplace_SE
                 // Call the ViewModel's async method and await the result
                 return await ViewModel.IsUsernameTaken(username);
             }
-            catch (Exception ex)
+            catch (Exception usernameCheckException)
             {
                 // Log error (you should use proper logging in production)
-                Console.WriteLine($"Error checking username: {ex.Message}");
+                Console.WriteLine($"Error checking username: {usernameCheckException.Message}");
 
                 // Return true as a fail-safe to prevent duplicate usernames
                 // if there's an error checking availability
@@ -121,14 +123,14 @@ namespace Marketplace_SE
             return Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,15}$");
         }
 
-        private void PasswordBoxWithRevealMode_PasswordChanged(object sender, RoutedEventArgs e)
+        private void PasswordBoxWithRevealMode_PasswordChanged(object sender, RoutedEventArgs routedEventArgs)
         {
             PasswordStrengthTextBlock.Text = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
         }
 
         private string GetPasswordStrength(string password)
         {
-            if (password.Length < 6)
+            if (password.Length < MinimumPasswordLength)
             {
                 return "Weak";
             }
@@ -158,13 +160,13 @@ namespace Marketplace_SE
             await dialog.ShowAsync();
         }
 
-        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs routedEventArgs)
         {
             PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
             ConfirmPasswordBox.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
         }
 
-        private void NavigateToLoginPage(object sender, RoutedEventArgs e)
+        private void NavigateToLoginPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(LoginPage));
         }

@@ -19,13 +19,16 @@ namespace MarketMinds
     public sealed partial class CreateReviewView : Window
     {
         public ReviewCreateViewModel ViewModel { get; set; }
-        private readonly bool var_isEditing;
+        private readonly bool isEditing;
+
+        private const int CloseDelayMilliseconds = 1000;  // magic numbers removal
+        private const int DefaultRating = 0;
 
         public CreateReviewView(ReviewCreateViewModel viewModel, Review? review = null)
         {
             ViewModel = viewModel;
-            var_isEditing = review != null;
-            if (var_isEditing)
+            isEditing = review != null;
+            if (isEditing)
             {
                 ViewModel.CurrentReview = review;
                 ViewModel.Description = review.Description;
@@ -41,13 +44,13 @@ namespace MarketMinds
             }
         }
 
-        private async void HandleAddImage_Click(object sender, RoutedEventArgs e)
+        private async void HandleAddImage_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             await ViewModel.AddImage(this);
             UpdateStatusMessage();
         }
 
-        private void HandleSubmit_Click(object sender, RoutedEventArgs e)
+        private void HandleSubmit_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (ViewModel == null)
             {
@@ -61,7 +64,7 @@ namespace MarketMinds
                 return;
             }
 
-            if (var_isEditing)
+            if (isEditing)
             {
                 ViewModel.UpdateReview();
             }
@@ -73,18 +76,18 @@ namespace MarketMinds
             UpdateStatusMessage();
 
             // Allow a moment to see the status message before closing
-            Task.Delay(1000).ContinueWith(_ => this.DispatcherQueue.TryEnqueue(() => this.Close()));
+            Task.Delay(CloseDelayMilliseconds).ContinueWith(_ => this.DispatcherQueue.TryEnqueue(() => this.Close()));
         }
 
-        private void OnWindowClosed(object sender, Microsoft.UI.Xaml.WindowEventArgs e)
+        private void OnWindowClosed(object sender, Microsoft.UI.Xaml.WindowEventArgs windowEventArgs)
         {
             // Clear ViewModel properties when the window is closed
             ViewModel.Description = string.Empty;
             ViewModel.ImagesString = string.Empty;
-            ViewModel.Rating = 0;
+            ViewModel.Rating = DefaultRating;
         }
 
-        private async void OnUploadImageClick(object sender, RoutedEventArgs e)
+        private async void OnUploadImageClick(object sender, RoutedEventArgs routedEventArgs)
         {
             await ViewModel.AddImage(this);
             UpdateStatusMessage();

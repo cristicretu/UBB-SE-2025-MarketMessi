@@ -16,17 +16,17 @@ namespace Marketplace_SE
             this.DataContext = ViewModel;
         }
 
-        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs routedEventArgse)
         {
             PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
         }
 
-        private void NavigateToSignUpPage(object sender, RoutedEventArgs e)
+        private void NavigateToSignUpPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(RegisterPage));
         }
 
-        private void OnLoginButtonClick(object sender, RoutedEventArgs e)
+        private void OnLoginButtonClick(object sender, RoutedEventArgs routedEventArgs)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBoxWithRevealMode.Password;
@@ -46,7 +46,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void OnForgotPasswordClick(object sender, RoutedEventArgs e)
+        private void OnForgotPasswordClick(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(ResetPasswordPage));
         }

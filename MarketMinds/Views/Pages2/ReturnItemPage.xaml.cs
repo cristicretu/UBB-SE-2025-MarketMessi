@@ -41,7 +41,7 @@ namespace Marketplace_SE
             dbConnection = new DataBaseConnection(config);
         }
 
-        private void Click_MoneyCheckBox(object sender, RoutedEventArgs e)
+        private void Click_MoneyCheckBox(object sender, RoutedEventArgs routedEventArgs)
         {
             if (Moneyback_CheckBox.IsChecked == true)
             {
@@ -49,7 +49,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void Click_ProductCheckBox(object sender, RoutedEventArgs e)
+        private void Click_ProductCheckBox(object sender, RoutedEventArgs routedEventArgs)
         {
             if (Anotherproduct_CheckBox.IsChecked == true)
             {
@@ -57,11 +57,11 @@ namespace Marketplace_SE
             }
         }
 
-        private void Click_Back(object sender, RoutedEventArgs e)
+        private void Click_Back(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AccountPage));
         }
-        private void Click_Return_Item(object sender, RoutedEventArgs e)
+        private void Click_Return_Item(object sender, RoutedEventArgs routedEventArgs)
         {
             // added the database connection and the query to insert the return request into the database
             if ((Moneyback_CheckBox.IsChecked == true || Anotherproduct_CheckBox.IsChecked == true) && !string.IsNullOrWhiteSpace(Description_TextBox.Text))
@@ -84,9 +84,9 @@ namespace Marketplace_SE
 
                     Display_TextBlock.Text = "Request sent successfully!";
                 }
-                catch (Exception ex)
+                catch (Exception itemReturnException)
                 {
-                    Display_TextBlock.Text = "Error: " + ex.Message;
+                    Display_TextBlock.Text = "Error: " + itemReturnException.Message;
                 }
                 finally
                 {

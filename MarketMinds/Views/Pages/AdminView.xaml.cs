@@ -40,17 +40,17 @@ namespace UiLayer
                 new Microsoft.UI.Xaml.Data.Binding() { Path = new PropertyPath("ConditionDescription"), Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay, Source = productConditionViewModel });
 
             // Register for property changed events to show dialogs
-            productCategoryViewModel.PropertyChanged += ViewModel_PropertyChanged;
-            productConditionViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            productCategoryViewModel.PropertyChanged += ViewModelPropertyChanged;
+            productConditionViewModel.PropertyChanged += ViewModelPropertyChanged;
 
             // Load existing data
             LoadCategories();
             LoadConditions();
         }
 
-        private async void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private async void ViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            if (e.PropertyName == "IsDialogOpen" && sender is INotifyPropertyChanged viewModel)
+            if (propertyChangedEventArgs.PropertyName == "IsDialogOpen" && sender is INotifyPropertyChanged viewModel)
             {
                 if (viewModel is ProductCategoryViewModel categoryViewModel && categoryViewModel.IsDialogOpen)
                 {
@@ -73,7 +73,7 @@ namespace UiLayer
             }
         }
 
-        private void HandleAddCategoryButton_Click(object sender, RoutedEventArgs e)
+        private void HandleAddCategoryButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (productCategoryViewModel.ValidateAndCreateCategory())
             {
@@ -81,7 +81,7 @@ namespace UiLayer
             }
         }
 
-        private void HandleAddConditionButton_Click(object sender, RoutedEventArgs e)
+        private void HandleAddConditionButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (productConditionViewModel.ValidateAndCreateCondition())
             {

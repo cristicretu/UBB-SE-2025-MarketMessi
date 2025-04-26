@@ -24,7 +24,7 @@ namespace Marketplace_SE
         {
             this.InitializeComponent();
         }
-        private void OnButtonClickNavigatePlacedOrderPageAccountPage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigatePlacedOrderPageAccountPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AccountPage));
         }

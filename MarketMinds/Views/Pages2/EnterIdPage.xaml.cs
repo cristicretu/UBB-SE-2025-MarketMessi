@@ -17,7 +17,7 @@ namespace Marketplace_SE
             DataContext = ViewModel;
         }
 
-        private void Back_Click(object sender, RoutedEventArgs e)
+        private void Back_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (Frame.CanGoBack)
             {
@@ -25,7 +25,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void Continue_Click(object sender, RoutedEventArgs e)
+        private void Continue_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             ViewModel.EnteredId = IdInputBox.Text;
             if (ViewModel.ContinueCommand.CanExecute(null))

@@ -40,6 +40,11 @@ namespace Marketplace_SE
         private bool isInitializing = false;
         private bool initialLoadComplete = false;
 
+        private const int ZeroBytes = 0;  // magic numbers removal
+        private const int ZeroMessages = 0;
+        private const int ZeroMessageId = 0;
+        private const int TimerOneSecond = 1;
+
         public ChatPage()
         {
             this.InitializeComponent();
@@ -89,9 +94,9 @@ namespace Marketplace_SE
                 // Start polling timer
                 SetupUpdateTimer();
             }
-            catch (Exception ex)
+            catch (Exception chatInitializeException)
             {
-                ShowErrorDialog("Chat initialization error", ex.Message);
+                ShowErrorDialog("Chat initialization error", chatInitializeException.Message);
             }
             finally
             {
@@ -99,9 +104,9 @@ namespace Marketplace_SE
             }
         }
 
-        protected override void OnNavigatedFrom(NavigationEventArgs eventArgs)
+        protected override void OnNavigatedFrom(NavigationEventArgs navigationEventArgs)
         {
-            base.OnNavigatedFrom(eventArgs);
+            base.OnNavigatedFrom(navigationEventArgs);
             StopUpdateTimer();
         }
 
@@ -151,7 +156,7 @@ namespace Marketplace_SE
             if (updateTimer == null)
             {
                 updateTimer = new DispatcherTimer();
-                updateTimer.Interval = TimeSpan.FromSeconds(1);
+                updateTimer.Interval = TimeSpan.FromSeconds(TimerOneSecond);
                 updateTimer.Tick += UpdateTimer_Tick;
             }
             updateTimer.Start();
@@ -167,7 +172,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void UpdateTimer_Tick(object sender, object e)
+        private void UpdateTimer_Tick(object sender, object eventArgs)
         {
             if (isInitializing || !initialLoadComplete)
             {
@@ -177,12 +182,12 @@ namespace Marketplace_SE
             try
             {
                 List<Message> newMessages = chatViewModel.CheckForNewMessages();
-                if (newMessages?.Count > 0)
+                if (newMessages?.Count > ZeroMessages)
                 {
                     bool addedNew = false;
                     foreach (var message in newMessages)
                     {
-                        if (!displayedMessages.Any(m => m.Id == message.Id && m.Id != 0))
+                        if (!displayedMessages.Any(existingMessage => existingMessage.Id == message.Id && existingMessage.Id != ZeroMessageId))
                         {
                             AddMessageToDisplay(message);
                             addedNew = true;
@@ -190,9 +195,9 @@ namespace Marketplace_SE
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception newMessagesException)
             {
-                Debug.WriteLine($"Error checking for new messages: {ex.Message}");
+                Debug.WriteLine($"Error checking for new messages: {newMessagesException.Message}");
             }
         }
 
@@ -221,7 +226,7 @@ namespace Marketplace_SE
         }
 
         // --- Event Handlers ---
-        private void SendButton_Click(object sender, RoutedEventArgs e)
+        private void SendButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             string messageText = MessageBox.Text.Trim();
             if (string.IsNullOrEmpty(messageText) || chatViewModel == null || isInitializing)
@@ -259,7 +264,7 @@ namespace Marketplace_SE
             MessageBox.Focus(FocusState.Programmatic);
         }
 
-        private async void AttachButton_Click(object sender, RoutedEventArgs e)
+        private async void AttachButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (chatViewModel == null || isInitializing)
             {
@@ -285,13 +290,13 @@ namespace Marketplace_SE
                     {
                         bytes = DataEncoder.HexDecode(hexImageData);
                     }
-                    catch (Exception ex)
+                    catch (Exception hexDecodeException)
                     {
                         AttachButton.IsEnabled = true;
                         return;
                     }
 
-                if (bytes != null && bytes.Length > 0)
+                if (bytes != null && bytes.Length > ZeroBytes)
                     {
                         long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
@@ -314,7 +319,7 @@ namespace Marketplace_SE
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception imageUploadingException)
             {
                 ShowErrorDialog("Image upload error", "Failed to upload image.");
             }
@@ -324,7 +329,7 @@ namespace Marketplace_SE
             }
         }
 
-        private async void ExportButton_Click(object sender, RoutedEventArgs e)
+        private async void ExportButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var currentElement = sender as UIElement;
             if (currentElement == null)
@@ -349,7 +354,7 @@ namespace Marketplace_SE
                 {
                     await Windows.Storage.FileIO.WriteLinesAsync(file, chatHistory);
                 }
-                catch (Exception ex)
+                catch (Exception chatHistoryExportException)
                 {
                     ShowErrorDialog("Export error", "Failed to export chat history.");
                     return;
@@ -357,7 +362,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             StopUpdateTimer();
             if (Frame.CanGoBack)

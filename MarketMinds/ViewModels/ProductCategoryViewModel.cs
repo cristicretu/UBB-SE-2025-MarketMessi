@@ -110,9 +110,9 @@ namespace ViewModelLayer.ViewModel
                 CategoryDescription = string.Empty;
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception categoryCreationException)
             {
-                ErrorMessage = $"Error creating category: {ex.Message}";
+                ErrorMessage = $"Error creating category: {categoryCreationException.Message}";
                 return false;
             }
         }
