@@ -41,7 +41,7 @@ namespace MarketMinds.Controllers
                 return null;
             }
             return code.ToUpper().Trim();
-        });
+        };
 
         // Add JsonSerializerOptions that disables reference handling
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
