@@ -7,42 +7,42 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds; // For App.CurrentUser
 using MarketMinds.Services;
-using System.Diagnostics;
 
 namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Services namespace
 {
     public class AccountPageService : IAccountPageService // Implementing the interface
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiBaseUrl;
-        private readonly JsonSerializerOptions _jsonOptions;
-        private readonly bool _useRealApi = true; // Always use the real API
+        private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
+        private readonly JsonSerializerOptions jsonOptions;
+        private readonly bool useRealApi = true; // Always use the real API
 
         public AccountPageService(IConfiguration configuration/*, ILogger<AccountPageService> logger*/)
         {
-            _httpClient = new HttpClient();
+            httpClient = new HttpClient();
 
             // Get API base URL from configuration, same way as BasketService
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            Debug.WriteLine($"Using API base URL from configuration: {_apiBaseUrl}");
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            Debug.WriteLine($"Using API base URL from configuration: {apiBaseUrl}");
 
-            if (!_apiBaseUrl.EndsWith("/"))
+            if (!apiBaseUrl.EndsWith("/"))
             {
-                _apiBaseUrl += "/";
+                apiBaseUrl += "/";
             }
 
             // Set base address to include api/account/ path
-            _httpClient.BaseAddress = new Uri(_apiBaseUrl + "api/account/");
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/account/");
 
             // Set longer timeout for HTTP requests, same as BasketService
-            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
 
             // Configure JSON options to match BasketService
-            _jsonOptions = new JsonSerializerOptions
+            jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 AllowTrailingCommas = true,
@@ -53,7 +53,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 ReferenceHandler = ReferenceHandler.Preserve
             };
 
-            Debug.WriteLine($"AccountPageService initialized with API URL: {_httpClient.BaseAddress}");
+            Debug.WriteLine($"AccountPageService initialized with API URL: {httpClient.BaseAddress}");
         }
 
         public async Task<User> GetUserAsync(int userId)
@@ -69,7 +69,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
             try
             {
                 // Use relative URL since BaseAddress already includes api/account/
-                var response = await _httpClient.GetAsync($"{userId}");
+                var response = await httpClient.GetAsync($"{userId}");
                 Debug.WriteLine($"API response status code: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
@@ -79,7 +79,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
 
                     try
                     {
-                        var user = JsonSerializer.Deserialize<User>(responseContent, _jsonOptions);
+                        var user = JsonSerializer.Deserialize<User>(responseContent, jsonOptions);
 
                         if (user != null)
                         {
@@ -178,7 +178,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
             try
             {
                 // Use relative URL since BaseAddress already includes api/account/
-                var response = await _httpClient.GetAsync($"{userId}/orders");
+                var response = await httpClient.GetAsync($"{userId}/orders");
                 Debug.WriteLine($"Orders API response status code: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
@@ -187,7 +187,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                     Debug.WriteLine($"Orders API response received, length: {responseContent?.Length ?? 0} chars");
                     Debug.WriteLine($"Orders content: {responseContent}");
 
-                    var orders = JsonSerializer.Deserialize<List<UserOrder>>(responseContent, _jsonOptions);
+                    var orders = JsonSerializer.Deserialize<List<UserOrder>>(responseContent, jsonOptions);
                     Debug.WriteLine($"Deserialized {orders?.Count ?? 0} orders");
 
                     // If we got orders, map the server model properties to client model
@@ -252,7 +252,10 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         // Helper to create a copy of a user object to avoid reference issues
         private User CreateUserCopy(User source)
         {
-            if (source == null) return null;
+            if (source == null)
+            {
+                 return null;
+            }
 
             var copy = new User(source.Id, source.Username, source.Email, source.Token);
             copy.UserType = source.UserType;

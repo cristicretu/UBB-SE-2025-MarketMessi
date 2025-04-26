@@ -21,6 +21,8 @@ namespace MarketMinds.Services.BasketService
         private const double MINIMUM_DISCOUNT = 0;
         private const int MINIMUM_QUANTITY = 0;
         private const int DEFAULT_QUANTITY = 1;
+        private const int INVALID_USER_ID = -1;
+        private const int INVALID_BASKET_ID = -1;
 
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
@@ -463,12 +465,12 @@ namespace MarketMinds.Services.BasketService
 
         public async Task<bool> CheckoutBasketAsync(int userId, int basketId)
         {
-            if (userId <= NOUSER)
+            if (userId <= INVALID_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
 
-            if (basketId <= NOBASKET)
+            if (basketId <= INVALID_BASKET_ID)
             {
                 throw new ArgumentException("Invalid basket ID");
             }
