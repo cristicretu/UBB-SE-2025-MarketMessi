@@ -83,7 +83,9 @@ namespace Marketplace_SE
 
         private void OpenAccountButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(AccountPage));
+            var accountWindow = new Window();
+            accountWindow.Content = new AccountPage();
+            accountWindow.Activate();
         }
 
         private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
