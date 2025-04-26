@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 // using server.Services; // Removed service dependency
 using server.Repositories; // Added repository dependency
-using server.Models; // Changed to use server models
+using DomainLayer.Domain; // Assuming User and UserOrder are here
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;

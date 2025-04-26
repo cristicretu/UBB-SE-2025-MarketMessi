@@ -21,8 +21,7 @@ using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using DomainLayer.Domain;
-using MarketMinds.ViewModels.DreamTeam;
-using System.Threading.Tasks;
+using MarketMinds;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -30,32 +29,42 @@ namespace Marketplace_SE
 {
     public sealed partial class AccountPage : Page
     {
-        private AccountPageViewModel ViewModel { get; set; }
+        private User? currentUser; // Store the fetched user
 
         public AccountPage()
         {
             this.InitializeComponent();
-            ViewModel = new AccountPageViewModel();
-            this.DataContext = ViewModel;
             this.Loaded += AccountPage_Loaded;
         }
 
         private async void AccountPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await ViewModel.LoadDataAsync();
-            PopulateOrdersListFromViewModel();
+            try
+            {
+                currentUser = await App.AccountPageService.GetCurrentLoggedInUserAsync();
+
+                if (currentUser != null)
+                {
+                    var orders = await App.AccountPageService.GetUserOrdersAsync(currentUser.Id);
+                    PopulateOrdersList(orders);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading account page: {ex}");
+            }
         }
 
-        private void PopulateOrdersListFromViewModel()
+        private void PopulateOrdersList(List<UserOrder> orders)
         {
             orderList.Children.Clear();
-            if (ViewModel.Orders == null || !ViewModel.Orders.Any())
+            if (orders == null || !orders.Any())
             {
                 orderList.Children.Add(new TextBlock { Text = "No orders found.", Margin = new Thickness(10) });
                 return;
             }
 
-            foreach (var order in ViewModel.Orders)
+            foreach (var order in orders)
             {
                 CreateOrderUI(order);
             }
@@ -84,7 +93,7 @@ namespace Marketplace_SE
                 Orientation = Orientation.Vertical
             };
 
-            bool isBuyOrder = order.BuyerId == ViewModel.CurrentUser?.Id;
+            bool isBuyOrder = order.BuyerId == currentUser?.Id;
 
             Grid orderTypeGrid = new Grid
             {
@@ -115,7 +124,7 @@ namespace Marketplace_SE
 
             TextBlock orderInfo = new TextBlock
             {
-                Text = $"{order.ItemName} - {order.Description} - ${order.Price:F2} - {(DataEncoder.ConvertTimestampToLocalDateTime(order.Created))}",
+                Text = $"{order.Name} - {order.Description} - ${order.Cost:F2} - {DataEncoder.ConvertTimestampToLocalDateTime(order.Created)}",
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.Wrap,
@@ -141,9 +150,8 @@ namespace Marketplace_SE
 
             viewButton.Click += (s, e) =>
             {
-                var orderWindow = new Microsoft.UI.Xaml.Window();
-                orderWindow.Content = new PlacedOrderPage(order);
-                orderWindow.Activate();
+                // viewModel.SelectedOrder = order;
+                // Frame.Navigate(typeof(PlacedOrderPage));
             };
 
             contentPanel.Children.Add(orderTypeGrid);
@@ -165,9 +173,8 @@ namespace Marketplace_SE
 
                 returnButton.Click += (s, e) =>
                 {
-                    var returnWindow = new Microsoft.UI.Xaml.Window();
-                    returnWindow.Content = new ReturnItemPage(order);
-                    returnWindow.Activate();
+                    // viewModel.SelectedOrder = order;
+                    // Frame.Navigate(typeof(ReturnItemPage));
                 };
 
                 contentPanel.Children.Add(returnButton);
@@ -176,6 +183,7 @@ namespace Marketplace_SE
             orderBorder.Child = contentPanel;
             orderBorder.Tag = order;
 
+            // Add to list
             orderList.Children.Add(orderBorder);
         }
     }

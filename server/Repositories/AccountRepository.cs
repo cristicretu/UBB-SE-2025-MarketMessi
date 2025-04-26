@@ -1,5 +1,5 @@
 using server.DataAccessLayer; // Assuming DbContext is here
-using server.Models; // Changed to use server models
+using DomainLayer.Domain; // Assuming User and UserOrder models are here
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
