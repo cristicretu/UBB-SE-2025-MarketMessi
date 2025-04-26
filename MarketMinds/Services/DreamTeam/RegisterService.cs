@@ -2,24 +2,29 @@ using System;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Repositories.UserRepository;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.RegisterService
 {
     public class RegisterService
     {
-        private readonly UserRepository userRepository;
+        private readonly IUserRepository _userRepository;
 
         public RegisterService()
         {
-            userRepository = new UserRepository();
+            _userRepository = MarketMinds.App.UserRepository;
+        }
+
+        public RegisterService(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
         }
 
         public async Task<bool> IsUsernameTaken(string username)
         {
             try
             {
-                var user = await Task.Run(() => userRepository.GetUserByUsername(username));
-                return user != null;
+                return await _userRepository.IsUsernameTakenAsync(username);
             }
             catch (Exception ex)
             {
@@ -30,19 +35,30 @@ namespace MarketMinds.Services.RegisterService
 
         public async Task<bool> RegisterUser(User user)
         {
-            // Check if email exists
-            if (await Task.Run(() => userRepository.GetUserByEmail(user.Email)) != null)
+            try
             {
-                return false;
-            }
-            // Check if username exists
-            if (await IsUsernameTaken(user.Username))
-            {
-                return false;
-            }
+                // Check if email exists
+                var existingUserByEmail = await _userRepository.GetUserByEmailAsync(user.Email);
+                if (existingUserByEmail != null)
+                {
+                    return false;
+                }
 
-            user.Id = userRepository.CreateUser(user);
-            return true;
+                // Check if username exists
+                if (await IsUsernameTaken(user.Username))
+                {
+                    return false;
+                }
+
+                // Create user and return success if Id > 0
+                int userId = await _userRepository.CreateUserAsync(user);
+                return userId > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error registering user: {ex.Message}");
+                return false;
+            }
         }
     }
 }

@@ -23,6 +23,11 @@ using MarketMinds.Services.DreamTeam.ChatService;
 using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.Repositories.UserRepository;
+using MarketMinds.Services.AuthService;
+using MarketMinds.Services.LoginService;
+using MarketMinds.Services.RegisterService;
+using MarketMinds.Services.ResetPasswordService;
 
 namespace MarketMinds
 {
@@ -37,6 +42,7 @@ namespace MarketMinds
         public static ChatBotRepository ChatBotRepository;
         public static ChatRepository ChatRepository;
         public static MainMarketplaceRepository MainMarketplaceRepository;
+        public static IUserRepository UserRepository;
 
         // Service declarations
         public static ProductService ProductService;
@@ -52,6 +58,10 @@ namespace MarketMinds
         public static ChatService ChatService;
         public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
+        public static IAuthService AuthService;
+        public static LoginService LoginServiceInstance;
+        public static RegisterService RegisterServiceInstance;
+        public static ResetPasswordService ResetPasswordServiceInstance;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -121,6 +131,7 @@ namespace MarketMinds
             ChatBotRepository = new ChatBotRepository(DatabaseConnection);
             ChatRepository = new ChatRepository(DatabaseConnection);
             MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
+            UserRepository = new UserRepository(Configuration);
 
             // Instantiate services
             BuyProductsService = new BuyProductsService(Configuration);
@@ -131,9 +142,15 @@ namespace MarketMinds
             ConditionService = new ProductConditionService(Configuration);
             ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(Configuration);
+            AuthService = new AuthService(UserRepository);
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
+            
+            // Initialize DreamTeam services that depend on UserRepository
+            LoginServiceInstance = new LoginService(UserRepository);
+            RegisterServiceInstance = new RegisterService(UserRepository);
+            ResetPasswordServiceInstance = new ResetPasswordService(UserRepository);
             
             // Initialize ImageUploadService if necessary
             if (ImageUploadService == null)
@@ -160,8 +177,8 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
-            LoginViewModel = new LoginViewModel();
-            RegisterViewModel = new RegisterViewModel();
+            LoginViewModel = new LoginViewModel(AuthService);
+            RegisterViewModel = new RegisterViewModel(AuthService);
             
             // Show login window first instead of main window
             loginWindow = new LoginWindow();

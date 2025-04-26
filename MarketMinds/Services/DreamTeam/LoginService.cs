@@ -1,31 +1,45 @@
 using System;
+using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Repositories.UserRepository;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.LoginService
 {
     public class LoginService
     {
-        private readonly UserRepository userRepository;
+        private readonly IUserRepository _userRepository;
 
         public LoginService()
         {
-            userRepository = new UserRepository();
+            _userRepository = MarketMinds.App.UserRepository;
         }
 
-        public bool AuthenticateUser(string username, string password)
+        public LoginService(IUserRepository userRepository)
         {
-            return userRepository.ValidateCredentials(username, password);
+            _userRepository = userRepository;
         }
 
-        public User GetUserByCredentials(string username, string password)
+        public async Task<bool> AuthenticateUser(string username, string password)
         {
-            if (AuthenticateUser(username, password))
+            return await _userRepository.ValidateCredentialsAsync(username, password);
+        }
+
+        public async Task<User> GetUserByCredentials(string username, string password)
+        {
+            try
             {
-                var user = userRepository.GetUserByUsername(username);
-                userRepository.UpdateUser(user);
+                if (await AuthenticateUser(username, password))
+                {
+                    return await _userRepository.GetUserByCredentialsAsync(username, password);
+                }
+                return null;
             }
-            return userRepository.GetUserByCredentials(username, password);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user by credentials: {ex.Message}");
+                return null;
+            }
         }
     }
 }

@@ -40,89 +40,75 @@ namespace Marketplace_SE
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs e)
         {
+            // Clear any previous validation messages
+            UsernameValidationTextBlock.Text = string.Empty;
+            ConfirmPasswordValidationTextBlock.Text = string.Empty;
+            
+            // Set loading state
             CreateAccountButton.IsEnabled = false;
             RegisterProgressRing.IsActive = true;
             
-            NewUser.Username = UsernameTextBox.Text;
-            NewUser.Email = EmailTextBox.Text;
-            NewUser.Password = PasswordBoxWithRevealMode.Password;
-            string confirmPassword = ConfirmPasswordBox.Password;
-
-            if (!IsValidUsername(NewUser.Username))
-            {
-                UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
-                CreateAccountButton.IsEnabled = true;
-                RegisterProgressRing.IsActive = false;
-                return;
-            }
-            else
-            {
-                UsernameValidationTextBlock.Text = string.Empty;
-            }
-
-            if (await IsUsernameTaken(NewUser.Username))
-            {
-                await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
-                CreateAccountButton.IsEnabled = true;
-                RegisterProgressRing.IsActive = false;
-                return;
-            }
-
-            string passwordStrength = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
-            if (passwordStrength == "Weak")
-            {
-                await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
-                CreateAccountButton.IsEnabled = true;
-                RegisterProgressRing.IsActive = false;
-                return;
-            }
-
-            if (NewUser.Password != confirmPassword)
-            {
-                ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
-                CreateAccountButton.IsEnabled = true;
-                RegisterProgressRing.IsActive = false;
-                return;
-            }
-            else
-            {
-                ConfirmPasswordValidationTextBlock.Text = string.Empty;
-            }
-
-            bool result = await ViewModel.CreateNewUser(NewUser);
-            
-            CreateAccountButton.IsEnabled = true;
-            RegisterProgressRing.IsActive = false;
-            
-            if (result)
-            {
-                // Set current user if there's a global app state
-                MarketMinds.App.CurrentUser = NewUser;
-
-                await ShowDialog("Account Created", "Your account has been successfully created!");
-                Frame.Navigate(typeof(LoginPage));
-            }
-            else
-            {
-                await ShowDialog("Error", "Failed to create account. Please try again.");
-            }
-        }
-
-        private async Task<bool> IsUsernameTaken(string username)
-        {
             try
             {
-                // Call the ViewModel's async method and await the result
-                return await ViewModel.IsUsernameTaken(username);
+                NewUser.Username = UsernameTextBox.Text;
+                NewUser.Email = EmailTextBox.Text;
+                NewUser.Password = PasswordBoxWithRevealMode.Password;
+                string confirmPassword = ConfirmPasswordBox.Password;
+
+                // Client-side validation
+                if (!IsValidUsername(NewUser.Username))
+                {
+                    UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
+                    return;
+                }
+
+                // Check if username is already taken
+                if (await ViewModel.IsUsernameTaken(NewUser.Username))
+                {
+                    await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
+                    return;
+                }
+
+                // Password strength validation
+                string passwordStrength = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
+                if (passwordStrength == "Weak")
+                {
+                    await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
+                    return;
+                }
+
+                // Password confirmation validation
+                if (NewUser.Password != confirmPassword)
+                {
+                    ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
+                    return;
+                }
+
+                // Attempt to create the user
+                bool result = await ViewModel.CreateNewUser(NewUser);
+                
+                if (result)
+                {
+                    // Store user in the app context
+                    MarketMinds.App.CurrentUser = NewUser;
+
+                    await ShowDialog("Account Created", "Your account has been successfully created!");
+                    Frame.Navigate(typeof(LoginPage));
+                }
+                else
+                {
+                    await ShowDialog("Error", "Failed to create account. Please try again.");
+                }
             }
             catch (Exception ex)
             {
-                // Log error (you should use proper logging in production)
-                Console.WriteLine($"Error checking username: {ex.Message}");
-
-                // Return true as a fail-safe to prevent duplicate usernames
-                // if there's an error checking availability
-                return true;
+                await ShowDialog("Error", $"An error occurred: {ex.Message}");
+            }
+            finally
+            {
+                // Reset loading state
+                CreateAccountButton.IsEnabled = true;
+                RegisterProgressRing.IsActive = false;
             }
         }
 

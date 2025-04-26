@@ -1,85 +1,192 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
+using MarketMinds.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Repositories.UserRepository
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
-        private readonly List<User> users;
+        private readonly HttpClient _httpClient;
+        private readonly string _baseUrl;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        public UserRepository()
+        public UserRepository(IConfiguration configuration)
         {
-            users = new List<User>
+            _httpClient = new HttpClient();
+            _baseUrl = configuration["ApiSettings:BaseUrl"];
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+        }
+
+        public async Task<bool> ValidateCredentialsAsync(string username, string password)
         {
-            new User(1, "john_doe", "john@example.com", "token123")
+            try
             {
-                UserType = 1,
-                Balance = 1000f,
-                Rating = 4.5f,
-                Password = "1234"
-            },
-            new User(2, "jane_doe", "jane@example.com", "token456")
-            {
-                UserType = 2,
-                Balance = 2500f,
-                Rating = 4.8f,
-                Password = "1234"
+                var loginRequest = new
+                {
+                    Username = username,
+                    Password = password
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/login", loginRequest);
+                return response.IsSuccessStatusCode;
             }
-        };
-        }
-
-        public bool ValidateCredentials(string username, string password)
-        {
-            // Hardcoded password check — fix your model to use string & secure password logic
-            return users.Any(u => u.Username == username && u.Password == password);
-        }
-
-        public User GetUserByUsername(string username)
-        {
-            return users.FirstOrDefault(u => u.Username == username);
-        }
-
-        public User GetUserByEmail(string email)
-        {
-            return users.FirstOrDefault(u => u.Email == email);
-        }
-
-        public User GetUserByCredentials(string username, string password)
-        {
-            return users.FirstOrDefault(u => u.Username == username && u.Password == password);
-        }
-
-        public void UpdateUser(User updatedUser)
-        {
-            var index = users.FindIndex(u => u.Id == updatedUser.Id);
-            if (index != -1)
+            catch (Exception ex)
             {
-                users[index] = updatedUser;
-            }
-        }
-
-        public int CreateUser(User newUser)
-        {
-            newUser.Id = users.Max(u => u.Id) + 1;
-            users.Add(newUser);
-            return newUser.Id;
-        }
-
-        public bool ResetUserPassword(string email, string newPassword)
-        {
-            var user = GetUserByEmail(email);
-            if (user == null)
-            {
+                Console.WriteLine($"Error validating credentials: {ex.Message}");
                 return false;
             }
+        }
 
-            user.Password = newPassword;
-            UpdateUser(user);
-            return true;
+        public async Task<User> GetUserByCredentialsAsync(string username, string password)
+        {
+            try
+            {
+                var loginRequest = new
+                {
+                    Username = username,
+                    Password = password
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/login", loginRequest);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    return userDto?.ToDomainUser();
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user by credentials: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<User> GetUserByUsernameAsync(string username)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_baseUrl}/api/users/{username}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    return userDto?.ToDomainUser();
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user by username: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_baseUrl}/api/users/by-email/{email}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    return userDto?.ToDomainUser();
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user by email: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<bool> IsUsernameTakenAsync(string username)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_baseUrl}/api/users/check-username/{username}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<UsernameCheckResult>(content, _jsonOptions);
+                    return result.Exists;
+                }
+                
+                // Default to true (username taken) if there's an error
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking username: {ex.Message}");
+                return true;
+            }
+        }
+
+        public async Task<int> CreateUserAsync(User newUser)
+        {
+            try
+            {
+                var userDto = new UserDto(newUser);
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/register", userDto);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var createdUserDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    return createdUserDto?.Id ?? -1;
+                }
+                
+                return -1;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating user: {ex.Message}");
+                return -1;
+            }
+        }
+
+        public async Task<bool> ResetUserPasswordAsync(string email, string newPassword)
+        {
+            try
+            {
+                var resetRequest = new
+                {
+                    Email = email,
+                    NewPassword = newPassword
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/users/reset-password", resetRequest);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error resetting password: {ex.Message}");
+                return false;
+            }
+        }
+        
+        private class UsernameCheckResult
+        {
+            public bool Exists { get; set; }
         }
     }
 }

@@ -31,29 +31,44 @@ namespace Marketplace_SE
             string username = UsernameTextBox.Text;
             string password = PasswordBoxWithRevealMode.Password;
             
+            // Clear previous status
+            LoginStatusMessage.Text = string.Empty;
+            LoginStatusMessage.Visibility = Visibility.Collapsed;
+            
             // Set login button to loading state
             LoginButton.IsEnabled = false;
             LoginProgressRing.IsActive = true;
             
-            await Task.Run(() => ViewModel.AttemptLogin(username, password));
-            
-            // Reset login button state
-            LoginButton.IsEnabled = true;
-            LoginProgressRing.IsActive = false;
-            
-            if (ViewModel.LoginStatus)
+            try
             {
-                MarketMinds.App.CurrentUser = ViewModel.LoggedInUser;
-                LoginStatusMessage.Text = "You have successfully logged in!";
-                LoginStatusMessage.Visibility = Visibility.Visible;
+                // Use the async method from the ViewModel
+                await ViewModel.AttemptLogin(username, password);
                 
-                // Navigate to main window
-                MarketMinds.App.ShowMainWindow();
+                if (ViewModel.LoginStatus)
+                {
+                    MarketMinds.App.CurrentUser = ViewModel.LoggedInUser;
+                    LoginStatusMessage.Text = "You have successfully logged in!";
+                    LoginStatusMessage.Visibility = Visibility.Visible;
+                    
+                    // Navigate to main window
+                    MarketMinds.App.ShowMainWindow();
+                }
+                else
+                {
+                    LoginStatusMessage.Text = "Invalid username or password.";
+                    LoginStatusMessage.Visibility = Visibility.Visible;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                LoginStatusMessage.Text = "Invalid username or password.";
+                LoginStatusMessage.Text = $"Login error: {ex.Message}";
                 LoginStatusMessage.Visibility = Visibility.Visible;
+            }
+            finally
+            {
+                // Reset login button state
+                LoginButton.IsEnabled = true;
+                LoginProgressRing.IsActive = false;
             }
         }
 
