@@ -141,7 +141,7 @@ namespace MarketMinds
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
             Debug.WriteLine("DEBUG: CurrentUser before view model initialization: " + (CurrentUser == null ? "NULL" : CurrentUser.ToString()));
-            // Instantiate view models
+            // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
             ProductCategoryViewModel = new ProductCategoryViewModel(CategoryService);
@@ -151,16 +151,16 @@ namespace MarketMinds
             AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel(AuctionProductsService);
             BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel(BorrowProductsService);
             BuyProductSortAndFilterViewModel = new SortAndFilterViewModel(BuyProductsService);
-            ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
-            SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, TestingUser, TestingUser);
-            SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-            BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
             LoginViewModel = new LoginViewModel(UserService);
             RegisterViewModel = new RegisterViewModel(UserService);
+            ReviewCreateViewModel = null;
+            SeeSellerReviewsViewModel = null;
+            SeeBuyerReviewsViewModel = null;
+            BasketViewModel = null;
             // Show login window first instead of main window
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
@@ -171,21 +171,39 @@ namespace MarketMinds
             if (CurrentUser != null)
             {
                 Debug.WriteLine("DEBUG: User is valid. Updating view models with CurrentUser");
-                // Update view models with the current user
+                UpdateTestingUser();
                 BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
                 ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
+                Debug.WriteLine($"DEBUG: Created ReviewCreateViewModel - Buyer: {CurrentUser?.Id}, Seller: {TestingUser?.Id}");
                 SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, TestingUser);
-                // Close login window
+                Debug.WriteLine($"DEBUG: Created SeeBuyerReviewsViewModel - User: {CurrentUser?.Id}");
+                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
+                Debug.WriteLine($"DEBUG: Created SeeSellerReviewsViewModel - Seller: {CurrentUser?.Id}, Viewer: {CurrentUser?.Id}");
                 if (LoginWindow != null)
                 {
                     LoginWindow.Close();
                 }
-                MainWindow.Activate();
+                                MainWindow.Activate();
             }
             else
             {
                 Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
+            }
+        }
+        private static void UpdateTestingUser()
+        {
+            if (CurrentUser != null && TestingUser == null)
+            {
+                TestingUser = new User(
+                    CurrentUser.Id,
+                    CurrentUser.Username,
+                    CurrentUser.Email,
+                    CurrentUser.Token);
+                TestingUser.Password = CurrentUser.Password;
+                TestingUser.UserType = CurrentUser.UserType;
+                TestingUser.Balance = CurrentUser.Balance;
+                TestingUser.Rating = CurrentUser.Rating;
+                Debug.WriteLine($"DEBUG: Created TestingUser from CurrentUser, ID: {TestingUser?.Id}, Username: {TestingUser?.Username}");
             }
         }
     }
