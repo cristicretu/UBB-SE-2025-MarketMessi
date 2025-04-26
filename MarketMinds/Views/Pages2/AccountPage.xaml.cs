@@ -275,52 +275,9 @@ namespace Marketplace_SE
             detailsPanel.Children.Add(priceText);
             detailsPanel.Children.Add(statusText);
 
-            // Buttons Panel
-            StackPanel buttonsPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Spacing = 10,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-
-            Button viewButton = new Button
-            {
-                Content = "View Details",
-                Width = 120,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-
-            viewButton.Click += (s, e) =>
-            {
-                ViewModel.SelectedOrder = order;
-                ViewModel.ViewOrderCommand.Execute(null);
-            };
-
-            buttonsPanel.Children.Add(viewButton);
-
-            if (isBuyOrder)
-            {
-                Button returnButton = new Button
-                {
-                    Content = "Return Item",
-                    Width = 120,
-                    Margin = new Thickness(0, 5, 0, 5)
-                };
-
-                returnButton.Click += (s, e) =>
-                {
-                    ViewModel.SelectedOrder = order;
-                    ViewModel.ReturnItemCommand.Execute(null);
-                };
-
-                buttonsPanel.Children.Add(returnButton);
-            }
-
             contentPanel.Children.Add(orderHeader);
             contentPanel.Children.Add(new Rectangle { Height = 1, Fill = new SolidColorBrush(Colors.LightGray), Margin = new Thickness(0, 0, 0, 10) });
             contentPanel.Children.Add(detailsPanel);
-            contentPanel.Children.Add(buttonsPanel);
 
             orderBorder.Child = contentPanel;
             orderBorder.Tag = order;

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json; // Requires System.Net.Http.Json nuget package
 using System.Text;
 using System.Text.Json;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Diagnostics;
@@ -12,6 +14,8 @@ using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds; // For App.CurrentUser
 using MarketMinds.Services;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Services namespace
 {
@@ -20,9 +24,8 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
         private readonly JsonSerializerOptions jsonOptions;
-        private readonly bool useRealApi = true; // Always use the real API
 
-        public AccountPageService(IConfiguration configuration/*, ILogger<AccountPageService> logger*/)
+        public AccountPageService(IConfiguration configuration, ILogger<AccountPageService> logger)
         {
             httpClient = new HttpClient();
 
@@ -79,7 +82,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
 
                     try
                     {
-                        var user = JsonSerializer.Deserialize<User>(responseContent, jsonOptions);
+                        var user = System.Text.Json.JsonSerializer.Deserialize<User>(responseContent, jsonOptions);
 
                         if (user != null)
                         {
@@ -100,7 +103,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             Debug.WriteLine("Failed to deserialize user - result was null");
                         }
                     }
-                    catch (JsonException jsonEx)
+                    catch (System.Text.Json.JsonException jsonEx)
                     {
                         Debug.WriteLine($"JSON Deserialization error: {jsonEx.Message}");
 
@@ -169,11 +172,8 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         {
             if (userId <= 0)
             {
-                Debug.WriteLine($"Invalid user ID for orders: {userId}");
                 return new List<UserOrder>();
             }
-
-            Debug.WriteLine($"Making API request for orders of user {userId}");
 
             try
             {
@@ -184,10 +184,8 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Orders API response received, length: {responseContent?.Length ?? 0} chars");
-                    Debug.WriteLine($"Orders content: {responseContent}");
 
-                    var orders = JsonSerializer.Deserialize<List<UserOrder>>(responseContent, jsonOptions);
+                    var orders = System.Text.Json.JsonSerializer.Deserialize<List<UserOrder>>(responseContent, jsonOptions);
                     Debug.WriteLine($"Deserialized {orders?.Count ?? 0} orders");
 
                     // If we got orders, map the server model properties to client model
@@ -220,33 +218,46 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             }
                         }
 
-                        Debug.WriteLine($"Successfully mapped {orders.Count} orders");
                         return orders;
                     }
                     else
                     {
-                        Debug.WriteLine("No orders found or deserialization returned null");
                     }
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Orders API error: {response.StatusCode}, Content: {errorContent}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Debug.WriteLine($"HTTP Request error for orders: {ex.Message}");
-                Debug.WriteLine("Server might be down or unreachable. Verify server is running.");
+                if (ex.InnerException != null)
+                {
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error retrieving orders: {ex.GetType().Name}: {ex.Message}");
             }
 
             // Return empty list if no orders found or error occurred
-            Debug.WriteLine("No orders returned from API, returning empty list");
             return new List<UserOrder>();
+        }
+
+        // Helper method to get property value using reflection
+        private T GetPropertyValue<T>(object obj, string propertyName)
+        {
+            try
+            {
+                var property = obj.GetType().GetProperty(propertyName);
+                if (property != null)
+                {
+                    return (T)property.GetValue(obj);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return default(T);
         }
 
         // Helper to create a copy of a user object to avoid reference issues
@@ -254,7 +265,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         {
             if (source == null)
             {
-                 return null;
+                return null;
             }
 
             var copy = new User(source.Id, source.Username, source.Email, source.Token);

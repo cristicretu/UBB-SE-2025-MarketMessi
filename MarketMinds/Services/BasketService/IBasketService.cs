@@ -112,7 +112,9 @@ namespace MarketMinds.Services.BasketService
         /// </summary>
         /// <param name="userId">The ID of the user.</param>
         /// <param name="basketId">The ID of the basket.</param>
+        /// <param name="discountAmount">The discount amount to apply to the order.</param>
+        /// <param name="totalAmount">The total amount after discount.</param>
         /// <returns>True if checkout was successful, otherwise false.</returns>
-        Task<bool> CheckoutBasketAsync(int userId, int basketId);
+        Task<bool> CheckoutBasketAsync(int userId, int basketId, double discountAmount = 0, double totalAmount = 0);
     }
 }

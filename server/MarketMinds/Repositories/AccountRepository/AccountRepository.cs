@@ -88,7 +88,7 @@ namespace server.MarketMinds.Repositories.AccountRepository
             }
         }
 
-        public async Task<List<Order>> CreateOrderFromBasketAsync(int userId, int basketId)
+        public async Task<List<Order>> CreateOrderFromBasketAsync(int userId, int basketId, double discountAmount = 0)
         {
             // Validate parameters
             if (userId <= 0)
@@ -142,6 +142,17 @@ namespace server.MarketMinds.Repositories.AccountRepository
                             return 0; // Default seller ID if product not found
                         });
 
+                    double totalBasketCost = basketItems.Sum(item => item.Price * item.Quantity);
+                    
+                    if (totalBasketCost <= 0 || discountAmount <= 0)
+                    {
+                        discountAmount = 0;
+                    }
+                    else if (discountAmount > totalBasketCost)
+                    {
+                        discountAmount = totalBasketCost;
+                    }
+
                     foreach (var sellerGroup in itemsBySeller)
                     {
                         int sellerId = sellerGroup.Key;
@@ -152,7 +163,15 @@ namespace server.MarketMinds.Repositories.AccountRepository
                         var sellerItems = sellerGroup.ToList();
 
                         // Calculate total cost for this seller's items
-                        double totalCost = sellerItems.Sum(item => item.Price * item.Quantity);
+                        double sellerTotalCost = sellerItems.Sum(item => item.Price * item.Quantity);
+                        
+                        double sellerDiscount = 0;
+                        if (totalBasketCost > 0 && discountAmount > 0)
+                        {
+                            sellerDiscount = (sellerTotalCost / totalBasketCost) * discountAmount;
+                        }
+                        
+                        double discountedSellerTotal = sellerTotalCost - sellerDiscount;
 
                         // Create detailed description listing all items
                         var itemDescriptions = new List<string>();
@@ -161,14 +180,18 @@ namespace server.MarketMinds.Repositories.AccountRepository
                             var product = productDictionary[item.ProductId];
                             itemDescriptions.Add($"{product.Title} (x{item.Quantity}) - ${item.Price * item.Quantity:F2}");
                         }
-                        string detailedDescription = string.Join(", ", itemDescriptions);
+                        
+                        string discountDescription = sellerDiscount > 0 
+                            ? $" | Discount: ${sellerDiscount:F2}" 
+                            : "";
+                            
+                        string detailedDescription = string.Join(", ", itemDescriptions) + discountDescription;
 
-                        // Create order for this seller
                         var order = new Order
                         {
                             Name = $"Order from {user.Username}",
                             Description = detailedDescription,
-                            Cost = totalCost,
+                            Cost = discountedSellerTotal,
                             SellerId = sellerId,
                             BuyerId = userId
                         };

@@ -25,6 +25,7 @@ using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.UserService;
 using Marketplace_SE.Services.DreamTeam;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MarketMinds
 {
