@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.UI.Xaml;
 using BusinessLogicLayer.ViewModel;
@@ -139,6 +140,7 @@ namespace MarketMinds
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
+            Debug.WriteLine("DEBUG: CurrentUser before view model initialization: " + (CurrentUser == null ? "NULL" : CurrentUser.ToString()));
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -168,13 +170,22 @@ namespace MarketMinds
         {
             if (CurrentUser != null)
             {
+                Debug.WriteLine("DEBUG: User is valid. Updating view models with CurrentUser");
+                // Update view models with the current user
+                BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
+                SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
+                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, TestingUser);
                 // Close login window
                 if (LoginWindow != null)
                 {
                     LoginWindow.Close();
                 }
-                // vrei baschet?
                 MainWindow.Activate();
+            }
+            else
+            {
+                Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
             }
         }
     }
