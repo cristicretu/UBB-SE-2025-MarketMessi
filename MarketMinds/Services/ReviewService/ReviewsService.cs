@@ -63,9 +63,13 @@ namespace MarketMinds.Services.ReviewService
                         // Ensure rating is within the expected range (0-5)
                         // If rating is on a different scale, normalize it
                         if (review.Rating < 0)
+                        {
                             review.Rating = 0;
+                        }
                         else if (review.Rating > 5)
+                        {
                             review.Rating = 5;
+                        }
 
                         // Set username properties for UI display
                         review.SellerUsername = seller.Username;
@@ -120,9 +124,13 @@ namespace MarketMinds.Services.ReviewService
                         // Ensure rating is within the expected range (0-5)
                         // If rating is on a different scale, normalize it
                         if (review.Rating < 0)
+                        {
                             review.Rating = 0;
+                        }
                         else if (review.Rating > 5)
+                        {
                             review.Rating = 5;
+                        }
 
                         // Set username properties for UI display
                         review.BuyerUsername = buyer.Username;
