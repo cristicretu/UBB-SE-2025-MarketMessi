@@ -27,7 +27,6 @@ using MarketMinds.Repositories.UserRepository;
 using MarketMinds.Services.AuthService;
 using MarketMinds.Services.LoginService;
 using MarketMinds.Services.RegisterService;
-using MarketMinds.Services.ResetPasswordService;
 
 namespace MarketMinds
 {
@@ -61,7 +60,6 @@ namespace MarketMinds
         public static IAuthService AuthService;
         public static LoginService LoginServiceInstance;
         public static RegisterService RegisterServiceInstance;
-        public static ResetPasswordService ResetPasswordServiceInstance;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -150,8 +148,7 @@ namespace MarketMinds
             // Initialize DreamTeam services that depend on UserRepository
             LoginServiceInstance = new LoginService(UserRepository);
             RegisterServiceInstance = new RegisterService(UserRepository);
-            ResetPasswordServiceInstance = new ResetPasswordService(UserRepository);
-            
+                        
             // Initialize ImageUploadService if necessary
             if (ImageUploadService == null)
             {

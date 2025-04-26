@@ -66,18 +66,5 @@ namespace MarketMinds.Services.AuthService
                 return false;
             }
         }
-
-        public async Task<bool> ResetPasswordAsync(string email, string newPassword)
-        {
-            try
-            {
-                return await _userRepository.ResetUserPasswordAsync(email, newPassword);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error resetting password: {ex.Message}");
-                return false;
-            }
-        }
     }
 } 

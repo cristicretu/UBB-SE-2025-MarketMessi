@@ -9,6 +9,5 @@ namespace MarketMinds.Services.AuthService
         Task<User> GetUserByCredentialsAsync(string username, string password);
         Task<bool> IsUsernameTakenAsync(string username);
         Task<bool> RegisterUserAsync(User user);
-        Task<bool> ResetPasswordAsync(string email, string newPassword);
     }
 } 

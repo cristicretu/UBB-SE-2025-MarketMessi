@@ -72,11 +72,6 @@ namespace Marketplace_SE
             }
         }
 
-        private void OnForgotPasswordClick(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(ResetPasswordPage));
-        }
-
         private async Task ShowDialog(string title, string content)
         {
             ContentDialog dialog = new ContentDialog

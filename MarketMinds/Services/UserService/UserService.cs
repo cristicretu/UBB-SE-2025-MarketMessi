@@ -51,10 +51,5 @@ namespace Marketplace_SE.Services
         {
             return await _authService.RegisterUserAsync(user);
         }
-
-        public async Task<bool> ResetPasswordAsync(string email, string newPassword)
-        {
-            return await _authService.ResetPasswordAsync(email, newPassword);
-        }
     }
 }
