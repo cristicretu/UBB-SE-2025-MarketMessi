@@ -1,13 +1,13 @@
 using System;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
-using MarketMinds.Services.AuthService;
+using MarketMinds.Services.UserService;
 
 namespace ViewModelLayer.ViewModel
 {
 	public class LoginViewModel
 	{
-		private readonly IAuthService _authService;
+		private readonly IUserService _userService;
 
 		public string Username { get; set; } = string.Empty;
 		public string Password { get; set; } = string.Empty;
@@ -17,12 +17,12 @@ namespace ViewModelLayer.ViewModel
 
 		public LoginViewModel()
 		{
-			_authService = MarketMinds.App.AuthService;
+			_userService = MarketMinds.App.UserService;
 		}
 		
-		public LoginViewModel(IAuthService authService)
+		public LoginViewModel(IUserService userService)
 		{
-			_authService = authService;
+			_userService = userService;
 		}
 
 		public async Task AttemptLogin(string username, string password)
@@ -32,7 +32,7 @@ namespace ViewModelLayer.ViewModel
 				Username = username;
 				Password = password;
 
-				LoggedInUser = await _authService.GetUserByCredentialsAsync(Username, Password);
+				LoggedInUser = await _userService.GetUserByCredentialsAsync(Username, Password);
 				LoginStatus = LoggedInUser != null;
 			}
 			catch (Exception ex)

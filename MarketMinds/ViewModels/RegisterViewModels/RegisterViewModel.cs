@@ -1,29 +1,29 @@
 using System;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
-using MarketMinds.Services.AuthService;
+using MarketMinds.Services.UserService;
 
 namespace ViewModelLayer.ViewModel
 {
 	public class RegisterViewModel
 	{
-		private readonly IAuthService _authService;
+		private readonly IUserService _userService;
 
 		public RegisterViewModel()
 		{
-			_authService = MarketMinds.App.AuthService;
+			_userService = MarketMinds.App.UserService;
 		}
 		
-		public RegisterViewModel(IAuthService authService)
+		public RegisterViewModel(IUserService userService)
 		{
-			_authService = authService;
+			_userService = userService;
 		}
 
 		public async Task<bool> IsUsernameTaken(string username)
 		{
 			try
 			{
-				return await _authService.IsUsernameTakenAsync(username);
+				return await _userService.IsUsernameTakenAsync(username);
 			}
 			catch (Exception ex)
 			{
@@ -36,7 +36,7 @@ namespace ViewModelLayer.ViewModel
 		{
 			try
 			{
-				return await _authService.RegisterUserAsync(user);
+				return await _userService.RegisterUserAsync(user);
 			}
 			catch (Exception ex)
 			{
