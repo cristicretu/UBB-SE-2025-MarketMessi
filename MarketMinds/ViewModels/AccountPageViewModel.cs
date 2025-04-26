@@ -13,23 +13,23 @@ namespace MarketMinds.ViewModels
 {
     public class AccountPageViewModel : INotifyPropertyChanged
     {
-        private User _currentUser;
-        private ObservableCollection<UserOrder> _orders;
-        private UserOrder _selectedOrder;
-        private string _errorMessage;
-        private bool _isLoading;
-        private readonly IAccountPageService _accountPageService;
+        private User currentUser;
+        private ObservableCollection<UserOrder> orders;
+        private UserOrder selectedOrder;
+        private string errorMessage;
+        private bool isLoading;
+        private readonly IAccountPageService accountPageService;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public User CurrentUser
         {
-            get => _currentUser;
+            get => currentUser;
             set
             {
-                if (_currentUser != value)
+                if (currentUser != value)
                 {
-                    _currentUser = value;
+                    currentUser = value;
                     OnPropertyChanged();
                 }
             }
@@ -37,12 +37,12 @@ namespace MarketMinds.ViewModels
 
         public ObservableCollection<UserOrder> Orders
         {
-            get => _orders;
+            get => orders;
             set
             {
-                if (_orders != value)
+                if (orders != value)
                 {
-                    _orders = value;
+                    orders = value;
                     OnPropertyChanged();
                 }
             }
@@ -50,12 +50,12 @@ namespace MarketMinds.ViewModels
 
         public UserOrder SelectedOrder
         {
-            get => _selectedOrder;
+            get => selectedOrder;
             set
             {
-                if (_selectedOrder != value)
+                if (selectedOrder != value)
                 {
-                    _selectedOrder = value;
+                    selectedOrder = value;
                     OnPropertyChanged();
                 }
             }
@@ -63,12 +63,12 @@ namespace MarketMinds.ViewModels
 
         public string ErrorMessage
         {
-            get => _errorMessage;
+            get => errorMessage;
             set
             {
-                if (_errorMessage != value)
+                if (errorMessage != value)
                 {
-                    _errorMessage = value;
+                    errorMessage = value;
                     OnPropertyChanged();
                 }
             }
@@ -76,12 +76,12 @@ namespace MarketMinds.ViewModels
 
         public bool IsLoading
         {
-            get => _isLoading;
+            get => isLoading;
             set
             {
-                if (_isLoading != value)
+                if (isLoading != value)
                 {
-                    _isLoading = value;
+                    isLoading = value;
                     OnPropertyChanged();
                 }
             }
@@ -94,7 +94,7 @@ namespace MarketMinds.ViewModels
 
         public AccountPageViewModel(IAccountPageService accountPageService)
         {
-            _accountPageService = accountPageService ?? throw new ArgumentNullException(nameof(accountPageService));
+            this.accountPageService = accountPageService ?? throw new ArgumentNullException(nameof(accountPageService));
             Orders = new ObservableCollection<UserOrder>();
 
             // Initialize commands
@@ -111,30 +111,56 @@ namespace MarketMinds.ViewModels
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                CurrentUser = await _accountPageService.GetCurrentLoggedInUserAsync();
+                System.Diagnostics.Debug.WriteLine("AccountPageViewModel: Fetching current user data...");
+
+                // Check if accountPageService is initialized
+                if (accountPageService == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("ERROR: accountPageService is null");
+                    ErrorMessage = "Internal error: Service not initialized";
+                    return;
+                }
+
+                // Attempt to get current user
+                CurrentUser = await accountPageService.GetCurrentLoggedInUserAsync();
 
                 if (CurrentUser != null)
                 {
-                    var userOrders = await _accountPageService.GetUserOrdersAsync(CurrentUser.Id);
+                    System.Diagnostics.Debug.WriteLine($"User loaded successfully: ID={CurrentUser.Id}, Name={CurrentUser.Username}");
+
+                    // Get user orders
+                    var userOrders = await accountPageService.GetUserOrdersAsync(CurrentUser.Id);
                     Orders.Clear();
+
+                    System.Diagnostics.Debug.WriteLine($"Retrieved {userOrders?.Count ?? 0} orders for user");
 
                     if (userOrders != null && userOrders.Any())
                     {
                         foreach (var order in userOrders)
                         {
                             // Add additional order properties if needed
-                            // For example, set the order status based on properties or calculate display values
                             order.OrderStatus = DetermineOrderStatus(order);
-
                             Orders.Add(order);
                         }
                     }
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to load user data - CurrentUser is null");
+                    ErrorMessage = "Unable to load user data";
+                }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"ERROR in LoadUserDataAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+
                 ErrorMessage = $"Error loading account data: {ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"Error loading account page: {ex}");
             }
             finally
             {
@@ -201,23 +227,23 @@ namespace MarketMinds.ViewModels
     // Simple implementation of RelayCommand for MVVM pattern
     public class RelayCommand
     {
-        private readonly Action<object> _execute;
-        private readonly Predicate<object> _canExecute;
+        private readonly Action<object> execute;
+        private readonly Predicate<object> canExecute;
 
         public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
         {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
+            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            this.canExecute = canExecute;
         }
 
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null || _canExecute(parameter);
+            return canExecute == null || canExecute(parameter);
         }
 
         public void Execute(object parameter)
         {
-            _execute(parameter);
+            execute(parameter);
         }
     }
 }

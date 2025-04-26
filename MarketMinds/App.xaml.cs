@@ -114,8 +114,11 @@ namespace MarketMinds
             // Create test users that match the database
             TestingUser = new User(1, "alice123", "alice@example.com");
             TestingUser.UserType = BUYER; // Matches database value
+            TestingUser.Balance = 75.50f; // Add balance for testing
+
             CurrentUser = new User(2, "bob321", "bob@example.com");
             CurrentUser.UserType = SELLER; // Matches database value
+            CurrentUser.Balance = 150.75f; // Add balance for testing
 
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
