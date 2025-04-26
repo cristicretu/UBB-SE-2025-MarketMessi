@@ -24,6 +24,7 @@ using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.UserService;
+using Marketplace_SE.Services.DreamTeam;
 
 namespace MarketMinds
 {
@@ -54,6 +55,7 @@ namespace MarketMinds
         public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
         public static IUserService UserService;
+        public static AccountPageService AccountPageService { get; private set; }
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -115,7 +117,6 @@ namespace MarketMinds
         {
             // Create but don't show the main window yet
             mainWindow = new UiLayer.MainWindow();
-            
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
             
@@ -134,6 +135,7 @@ namespace MarketMinds
             ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(Configuration);
             UserService = new UserService(Configuration);
+            AccountPageService = new AccountPageService(Configuration);
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);

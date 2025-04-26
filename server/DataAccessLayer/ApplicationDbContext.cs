@@ -40,6 +40,8 @@ namespace server.DataAccessLayer
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketItem> BasketItems { get; set; }
 
+        public DbSet<Order> Orders { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -181,6 +183,26 @@ namespace server.DataAccessLayer
                 .HasOne<BuyProduct>()
                 .WithMany()
                 .HasForeignKey(bi => bi.ProductId);
+
+            modelBuilder.Entity<Order>().ToTable("Orders");
+            modelBuilder.Entity<Order>().HasKey(o => o.Id);
+            modelBuilder.Entity<Order>().Property(o => o.Name).IsRequired().HasMaxLength(100);
+            modelBuilder.Entity<Order>().Property(o => o.Description).IsRequired(false); 
+            modelBuilder.Entity<Order>().Property(o => o.Cost).IsRequired();
+            modelBuilder.Entity<Order>().Property(o => o.SellerId).IsRequired();
+            modelBuilder.Entity<Order>().Property(o => o.BuyerId).IsRequired(); 
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Seller)       
+                .WithMany()                  
+                .HasForeignKey(o => o.SellerId) 
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            // modelBuilder.Entity<Order>()
+            //     .HasOne(o => o.Buyer)
+            //     .WithMany()
+            //     .HasForeignKey(o => o.BuyerId)
+            //     .OnDelete(DeleteBehavior.Restrict); // Would fail if BuyerId is -1
         }
     }
 }

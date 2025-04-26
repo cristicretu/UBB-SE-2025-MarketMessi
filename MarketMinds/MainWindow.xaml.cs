@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Marketplace_SE;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -97,5 +98,20 @@ namespace UiLayer
         private Window leaveReviewViewWindow;
         public Window CreateListingViewWindow { get; set; }
         private Window seeReviewsWindow;
+        private Window mainMarketplacePageWindow;
+
+        private void HandleOpenMainMarketplacePageButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mainMarketplacePageWindow == null || !mainMarketplacePageWindow.Visible)
+            {
+                mainMarketplacePageWindow = new Window();
+                mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
+                mainMarketplacePageWindow.Activate();
+            }
+            else
+            {
+                mainMarketplacePageWindow.Activate();
+            }
+        }
     }
 }

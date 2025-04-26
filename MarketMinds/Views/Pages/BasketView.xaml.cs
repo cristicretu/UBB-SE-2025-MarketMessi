@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ViewModelLayer.ViewModel;
 using DomainLayer.Domain;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Views.Pages
 {
@@ -305,13 +306,43 @@ namespace MarketMinds.Views.Pages
             });
         }
 
-        private void HandleCheckoutButton_Click(object sender, RoutedEventArgs e)
+        private async void HandleCheckoutButton_Click(object sender, RoutedEventArgs e)
         {
             if (var_basketViewModel.CanCheckout())
             {
-                var_basketViewModel.Checkout();
-                // Navigate to checkout page
-                ShowCheckoutMessage();
+                // Show loading indicator
+                CheckoutButton.IsEnabled = false;
+                CheckoutButton.Content = "Processing...";
+
+                // Call async checkout method
+                bool success = await var_basketViewModel.CheckoutAsync();
+
+                // Reset button
+                CheckoutButton.Content = "Proceed to Checkout";
+                CheckoutButton.IsEnabled = true;
+
+                if (success)
+                {
+                    // Refresh the UI to show empty basket
+                    LoadBasketData();
+
+                    // Show success message
+                    await ShowCheckoutSuccessMessage();
+                }
+                else
+                {
+                    // Show error message
+                    if (!string.IsNullOrEmpty(var_basketViewModel.ErrorMessage))
+                    {
+                        ErrorMessageTextBlock.Text = var_basketViewModel.ErrorMessage;
+                        ErrorMessageTextBlock.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        ErrorMessageTextBlock.Text = "Unable to complete checkout. Please try again later.";
+                        ErrorMessageTextBlock.Visibility = Visibility.Visible;
+                    }
+                }
             }
             else
             {
@@ -320,12 +351,12 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private async void ShowCheckoutMessage()
+        private async Task ShowCheckoutSuccessMessage()
         {
             ContentDialog dialog = new ContentDialog
             {
-                Title = "Checkout",
-                Content = "This would navigate to the checkout process. Checkout functionality is not yet implemented.",
+                Title = "Order Placed Successfully",
+                Content = "Your order has been placed successfully. You can view your orders in the Account page.",
                 CloseButtonText = "OK",
                 XamlRoot = Content.XamlRoot
             };
