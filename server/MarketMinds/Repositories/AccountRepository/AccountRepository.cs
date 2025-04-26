@@ -7,22 +7,13 @@ using System.Threading.Tasks;
 using System.Transactions;
 using System;
 
-namespace server.Repositories
+namespace server.MarketMinds.Repositories.AccountRepository
 {
-    public interface IAccountRepository
-    {
-        Task<User> GetUserByIdAsync(int userId);
-        Task<List<UserOrder>> GetUserOrdersAsync(int userId);
-        Task<List<Order>> CreateOrderFromBasketAsync(int userId, int basketId);
-        Task<double> GetBasketTotalAsync(int userId, int basketId);
-        Task<bool> UpdateUserAsync(User user);
-    }
-
     public class AccountRepository : IAccountRepository
     {
-        private readonly server.DataAccessLayer.ApplicationDbContext _context;
+        private readonly DataAccessLayer.ApplicationDbContext _context;
 
-        public AccountRepository(server.DataAccessLayer.ApplicationDbContext context)
+        public AccountRepository(DataAccessLayer.ApplicationDbContext context)
         {
             _context = context;
         }

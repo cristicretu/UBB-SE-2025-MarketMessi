@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 // using server.Services; // Removed service dependency
-using server.Repositories; // Added repository dependency
 using server.Models; // Using server models
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System;
+using server.MarketMinds.Repositories.AccountRepository;
 
 namespace server.Controllers
 {

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
 using server.MarketMinds.Repositories.BorrowProductsRepository;
-using server.Repositories;
+using server.MarketMinds.Repositories.AccountRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
