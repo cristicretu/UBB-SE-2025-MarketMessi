@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 // using server.Services; // Removed service dependency
 using server.Repositories; // Added repository dependency
-using DomainLayer.Domain; // Assuming User and UserOrder are here
+using server.Models; // Using server models
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -63,7 +63,7 @@ namespace server.Controllers
             _logger.LogInformation("GetUserOrders endpoint called for userId: {UserId}", userId);
             if (userId <= 0)
             {
-                 _logger.LogWarning("GetUserOrders called with invalid userId: {UserId}", userId);
+                _logger.LogWarning("GetUserOrders called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");
             }
 
@@ -79,4 +79,4 @@ namespace server.Controllers
             }
         }
     }
-} 
+}

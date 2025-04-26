@@ -35,7 +35,7 @@ builder.Services.AddSingleton<DataBaseConnection>();
 var InitialCatalog = builder.Configuration["InitialCatalog"];
 var LocalDataSource = builder.Configuration["LocalDataSource"];
 var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Register all repositories

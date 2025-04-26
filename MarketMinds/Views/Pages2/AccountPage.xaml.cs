@@ -22,6 +22,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using DomainLayer.Domain;
 using MarketMinds;
+using MarketMinds.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -29,42 +30,43 @@ namespace Marketplace_SE
 {
     public sealed partial class AccountPage : Page
     {
-        private User? currentUser; // Store the fetched user
+        public AccountPageViewModel ViewModel { get; private set; }
 
         public AccountPage()
         {
             this.InitializeComponent();
+
+            // Initialize ViewModel with the service from App
+            ViewModel = new AccountPageViewModel(App.AccountPageService);
+
+            // Set DataContext for bindings
+            this.DataContext = ViewModel;
+
             this.Loaded += AccountPage_Loaded;
         }
 
         private async void AccountPage_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                currentUser = await App.AccountPageService.GetCurrentLoggedInUserAsync();
+            await ViewModel.LoadUserDataAsync();
 
-                if (currentUser != null)
-                {
-                    var orders = await App.AccountPageService.GetUserOrdersAsync(currentUser.Id);
-                    PopulateOrdersList(orders);
-                }
-            }
-            catch (Exception ex)
+            // Create order UI elements after data is loaded
+            if (ViewModel.Orders != null)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading account page: {ex}");
+                UpdateOrdersUI();
             }
         }
 
-        private void PopulateOrdersList(List<UserOrder> orders)
+        private void UpdateOrdersUI()
         {
             orderList.Children.Clear();
-            if (orders == null || !orders.Any())
+
+            if (ViewModel.Orders == null || ViewModel.Orders.Count == 0)
             {
                 orderList.Children.Add(new TextBlock { Text = "No orders found.", Margin = new Thickness(10) });
                 return;
             }
 
-            foreach (var order in orders)
+            foreach (var order in ViewModel.Orders)
             {
                 CreateOrderUI(order);
             }
@@ -93,7 +95,7 @@ namespace Marketplace_SE
                 Orientation = Orientation.Vertical
             };
 
-            bool isBuyOrder = order.BuyerId == currentUser?.Id;
+            bool isBuyOrder = order.BuyerId == ViewModel.CurrentUser?.Id;
 
             Grid orderTypeGrid = new Grid
             {
@@ -124,7 +126,7 @@ namespace Marketplace_SE
 
             TextBlock orderInfo = new TextBlock
             {
-                Text = $"{order.Name} - {order.Description} - ${order.Cost:F2} - {DataEncoder.ConvertTimestampToLocalDateTime(order.Created)}",
+                Text = $"{order.Name} - {order.Description} - ${order.Cost:F2} - {ViewModel.FormatOrderDateTime(order.Created)}",
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.Wrap,
@@ -150,8 +152,8 @@ namespace Marketplace_SE
 
             viewButton.Click += (s, e) =>
             {
-                // viewModel.SelectedOrder = order;
-                // Frame.Navigate(typeof(PlacedOrderPage));
+                ViewModel.SelectedOrder = order;
+                ViewModel.ViewOrderCommand.Execute(null);
             };
 
             contentPanel.Children.Add(orderTypeGrid);
@@ -173,8 +175,8 @@ namespace Marketplace_SE
 
                 returnButton.Click += (s, e) =>
                 {
-                    // viewModel.SelectedOrder = order;
-                    // Frame.Navigate(typeof(ReturnItemPage));
+                    ViewModel.SelectedOrder = order;
+                    ViewModel.ReturnItemCommand.Execute(null);
                 };
 
                 contentPanel.Children.Add(returnButton);

@@ -9,14 +9,15 @@ using System.Threading.Tasks;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds; // For App.CurrentUser
+using MarketMinds.Services;
 
 namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Services namespace
 {
-    public class AccountPageService // Rename to AccountService or similar?
+    public class AccountPageService : IAccountPageService // Implementing the interface
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiBaseUrl;
-        
+
         public AccountPageService(IConfiguration configuration/*, ILogger<AccountPageService> logger*/)
         {
             _httpClient = new HttpClient();
@@ -26,11 +27,11 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
             {
                 _apiBaseUrl += "/";
             }
-            _httpClient.BaseAddress = new Uri(_apiBaseUrl); 
+            _httpClient.BaseAddress = new Uri(_apiBaseUrl);
         }
 
         // Renamed and made async to fetch from API
-        public async Task<User?> GetUserAsync(int userId)
+        public async Task<User> GetUserAsync(int userId)
         {
             if (userId <= 0)
             {
@@ -46,7 +47,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
                     {
-                        return null; 
+                        return null;
                     }
                     var user = await response.Content.ReadFromJsonAsync<User>();
                     return user;
@@ -58,36 +59,36 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return null; 
+                    return null;
                 }
             }
             catch (HttpRequestException ex)
             {
-                return null; 
+                return null;
             }
             catch (JsonException ex)
             {
-                return null; 
+                return null;
             }
             catch (Exception ex)
             {
-                return null; 
+                return null;
             }
         }
 
-        public async Task<User?> GetCurrentLoggedInUserAsync()
+        public async Task<User> GetCurrentLoggedInUserAsync()
         {
-            int currentUserId = App.CurrentUser?.Id ?? 0; 
+            int currentUserId = App.CurrentUser?.Id ?? 0;
             if (currentUserId > 0)
             {
-                 return await GetUserAsync(currentUserId);
+                return await GetUserAsync(currentUserId);
             }
             return null;
         }
 
         public async Task<List<UserOrder>> GetUserOrdersAsync(int userId)
         {
-             if (userId <= 0)
+            if (userId <= 0)
             {
                 return new List<UserOrder>(); // Return empty list
             }
@@ -101,24 +102,24 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
                     {
-                        return new List<UserOrder>(); 
+                        return new List<UserOrder>();
                     }
                     var orders = await response.Content.ReadFromJsonAsync<List<UserOrder>>();
-                    return orders ?? new List<UserOrder>(); 
+                    return orders ?? new List<UserOrder>();
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    return new List<UserOrder>(); 
+                    return new List<UserOrder>();
                 }
             }
             catch (HttpRequestException ex)
             {
-                 return new List<UserOrder>();
+                return new List<UserOrder>();
             }
-             catch (JsonException ex)
+            catch (JsonException ex)
             {
-                 return new List<UserOrder>();
+                return new List<UserOrder>();
             }
             catch (Exception ex)
             {
