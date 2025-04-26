@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
 using server.MarketMinds.Repositories.BorrowProductsRepository;
+using server.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,7 @@ builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository
 builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

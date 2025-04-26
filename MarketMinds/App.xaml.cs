@@ -23,6 +23,7 @@ using MarketMinds.Services.DreamTeam.ChatService;
 using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
+using Marketplace_SE.Services.DreamTeam;
 
 namespace MarketMinds
 {
@@ -52,6 +53,7 @@ namespace MarketMinds
         public static ChatService ChatService;
         public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
+        public static AccountPageService AccountPageService { get; private set; }
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -153,6 +155,9 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+
+            // Instantiate AccountPageService (Client-side)
+            AccountPageService = new AccountPageService(Configuration);
         }
         private Window mainWindow = null!;
     }

@@ -1,46 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json; // Requires System.Net.Http.Json nuget package
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-
 using DomainLayer.Domain;
-using Marketplace_SE.Data;
+using Microsoft.Extensions.Configuration; // For IConfiguration
+using MarketMinds; // For App.CurrentUser
 
-namespace Marketplace_SE.Services.DreamTeam
+namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Services namespace
 {
-    public class AccountPageService
+    public class AccountPageService // Rename to AccountService or similar?
     {
-        public User GetCurrentUser()
+        private readonly HttpClient _httpClient;
+        private readonly string _apiBaseUrl;
+        
+        public AccountPageService(IConfiguration configuration/*, ILogger<AccountPageService> logger*/)
         {
-            var user = new User(0, "test", string.Empty);
-            return user;
+            _httpClient = new HttpClient();
+
+            _apiBaseUrl = configuration["ServerApiBaseUrl"] ?? "https://localhost:5000"; // Default fallback
+            if (!_apiBaseUrl.EndsWith("/"))
+            {
+                _apiBaseUrl += "/";
+            }
+            _httpClient.BaseAddress = new Uri(_apiBaseUrl); 
         }
 
-        public List<UserOrder> GetUserOrders(int userId)
+        // Renamed and made async to fetch from API
+        public async Task<User?> GetUserAsync(int userId)
         {
-            Database.Databases = new Database(@"Integrated Security=True;TrustServerCertificate=True;data source=DESKTOP-45FVE4D\SQLEXPRESS;initial catalog=Marketplace_SE_UserGetHelp;trusted_connection=true");
-            bool status = Database.Databases.Connect();
-
-            if (!status)
+            if (userId <= 0)
             {
-                throw new System.Exception("Database connection error");
+                return null;
             }
 
-            var data = Database.Databases.Get("SELECT * FROM Orders WHERE sellerId=@MyId OR buyerId=@MyId", new string[]
+            string requestUrl = $"{_apiBaseUrl}/api/account/{userId}";
+            try
             {
-                "@MyId"
-            }, new object[]
+                var response = await _httpClient.GetAsync(requestUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    {
+                        return null; 
+                    }
+                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    return user;
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return null; 
+                }
+            }
+            catch (HttpRequestException ex)
             {
-                userId
-            });
+                return null; 
+            }
+            catch (JsonException ex)
+            {
+                return null; 
+            }
+            catch (Exception ex)
+            {
+                return null; 
+            }
+        }
 
-            List<UserOrder> orders = Database.Databases.ConvertToObject<UserOrder>(data);
+        public async Task<User?> GetCurrentLoggedInUserAsync()
+        {
+            int currentUserId = App.CurrentUser?.Id ?? 0; 
+            if (currentUserId > 0)
+            {
+                 return await GetUserAsync(currentUserId);
+            }
+            return null;
+        }
 
-            // Sort by creation time descending
-            orders.Sort((a, b) => (int)(b.Created - a.Created));
+        public async Task<List<UserOrder>> GetUserOrdersAsync(int userId)
+        {
+             if (userId <= 0)
+            {
+                return new List<UserOrder>(); // Return empty list
+            }
 
-            return orders;
+            string requestUrl = $"{_apiBaseUrl}/api/account/{userId}/orders";
+            try
+            {
+                var response = await _httpClient.GetAsync(requestUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    {
+                        return new List<UserOrder>(); 
+                    }
+                    var orders = await response.Content.ReadFromJsonAsync<List<UserOrder>>();
+                    return orders ?? new List<UserOrder>(); 
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return new List<UserOrder>(); 
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                 return new List<UserOrder>();
+            }
+             catch (JsonException ex)
+            {
+                 return new List<UserOrder>();
+            }
+            catch (Exception ex)
+            {
+                return new List<UserOrder>();
+            }
         }
     }
 }
