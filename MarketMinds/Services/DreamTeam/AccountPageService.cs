@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -22,13 +23,10 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
         private readonly JsonSerializerOptions jsonOptions;
-        private readonly bool useRealApi = true; // Always use the real API
-        private readonly ILogger<AccountPageService> logger;
 
         public AccountPageService(IConfiguration configuration, ILogger<AccountPageService> logger)
         {
             httpClient = new HttpClient();
-            this.logger = logger;
 
             // Get API base URL from configuration, same way as BasketService
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
@@ -173,26 +171,21 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         {
             if (userId <= 0)
             {
-                logger.LogError($"Invalid user ID for orders: {userId}");
                 return new List<UserOrder>();
             }
-
-            logger.LogDebug($"Making API request for orders of user {userId}");
 
             try
             {
                 // Use relative URL since BaseAddress already includes api/account/
                 var response = await httpClient.GetAsync($"{userId}/orders");
-                logger.LogDebug($"Orders API response status code: {response.StatusCode}");
+                Debug.WriteLine($"Orders API response status code: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    logger.LogDebug($"Orders API response received, length: {responseContent?.Length ?? 0} chars");
-                    logger.LogDebug($"Orders content: {responseContent}");
 
                     var orders = System.Text.Json.JsonSerializer.Deserialize<List<UserOrder>>(responseContent, jsonOptions);
-                    logger.LogDebug($"Deserialized {orders?.Count ?? 0} orders");
+                    Debug.WriteLine($"Deserialized {orders?.Count ?? 0} orders");
 
                     // If we got orders, map the server model properties to client model
                     if (orders != null && orders.Any())
@@ -224,37 +217,28 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             }
                         }
 
-                        logger.LogDebug($"Successfully mapped {orders.Count} orders");
                         return orders;
                     }
                     else
                     {
-                        logger.LogWarning("No orders found or deserialization returned null");
                     }
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    logger.LogError($"Orders API error: {response.StatusCode}, Content: {errorContent}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                logger.LogError($"HTTP Request error for orders: {ex.Message}");
-                logger.LogError("Server might be down or unreachable. Verify server is running.");
-
                 if (ex.InnerException != null)
                 {
-                    logger.LogError($"Inner exception: {ex.InnerException.Message}");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error retrieving orders: {ex.GetType().Name}: {ex.Message}");
             }
 
             // Return empty list if no orders found or error occurred
-            logger.LogDebug("No orders returned from API, returning empty list");
             return new List<UserOrder>();
         }
 
@@ -271,7 +255,6 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error getting property {propertyName}: {ex.Message}");
             }
             return default(T);
         }

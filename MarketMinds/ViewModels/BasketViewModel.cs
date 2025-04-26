@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Services.BasketService;
-using System.Diagnostics;
 
 namespace ViewModelLayer.ViewModel
 {
