@@ -46,8 +46,8 @@ namespace MarketMinds.Services.BasketService
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                // Match server's configuration
-                ReferenceHandler = ReferenceHandler.Preserve
+                // Changed from Preserve to IgnoreCycles
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
             };
 
             // Set longer timeout for HTTP requests
@@ -107,9 +107,12 @@ namespace MarketMinds.Services.BasketService
                         ReadCommentHandling = JsonCommentHandling.Skip,
                         NumberHandling = JsonNumberHandling.AllowReadingFromString,
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        // Use Preserve for consistency
-                        ReferenceHandler = ReferenceHandler.Preserve
+                        // Use IgnoreCycles instead of Preserve
+                        ReferenceHandler = ReferenceHandler.IgnoreCycles
                     };
+
+                    // Add UserJsonConverter to handle password field type mismatch
+                    options.Converters.Add(new MarketMinds.Services.UserJsonConverter());
 
                     // Deserialize directly
                     var basket = JsonSerializer.Deserialize<Basket>(responseContent, options);
