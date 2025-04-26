@@ -6,14 +6,6 @@ using DataAccessLayer;
 using DomainLayer.Domain;
 using ViewModelLayer.ViewModel;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Repositories.AuctionProductsRepository;
-using MarketMinds.Repositories.BasketRepository;
-using MarketMinds.Repositories.BorrowProductsRepository;
-using MarketMinds.Repositories.BuyProductsRepository;
-using MarketMinds.Repositories.ProductCategoryRepository;
-using MarketMinds.Repositories.ProductConditionRepository;
-using MarketMinds.Repositories.ProductTagRepository;
-using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Services.AuctionProductsService;
 using MarketMinds.Services.BorrowProductsService;
 using MarketMinds.Services.BasketService;
@@ -42,14 +34,6 @@ namespace MarketMinds
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
-        public static ProductCategoryRepository ProductCategoryRepository;
-        public static ProductConditionRepository ProductConditionRepository;
-        public static ProductTagRepository ProductTagRepository;
-        public static AuctionProductsRepository AuctionProductsRepository;
-        public static BorrowProductsRepository BorrowProductsRepository;
-        public static BuyProductsRepository BuyProductsRepository;
-        public static ReviewRepository ReviewRepository;
-        public static BasketRepository BasketRepository;
         public static ChatBotRepository ChatBotRepository;
         public static ChatRepository ChatRepository;
         public static MainMarketplaceRepository MainMarketplaceRepository;
@@ -134,20 +118,11 @@ namespace MarketMinds
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
             // Instantiate repositories
-            ProductCategoryRepository = new ProductCategoryRepository(DatabaseConnection);
-            ProductConditionRepository = new ProductConditionRepository(DatabaseConnection);
-            ProductTagRepository = new ProductTagRepository(DatabaseConnection);
-            AuctionProductsRepository = new AuctionProductsRepository(DatabaseConnection);
-            BorrowProductsRepository = new BorrowProductsRepository(DatabaseConnection);
-            BuyProductsRepository = new BuyProductsRepository(DatabaseConnection);
-            ReviewRepository = new ReviewRepository(DatabaseConnection);
-            BasketRepository = new BasketRepository(DatabaseConnection);
             ChatBotRepository = new ChatBotRepository(DatabaseConnection);
             ChatRepository = new ChatRepository(DatabaseConnection);
             MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
 
             // Instantiate services
-            ProductService = new ProductService(BorrowProductsRepository);
             BuyProductsService = new BuyProductsService(Configuration);
             BorrowProductsService = new BorrowProductsService(Configuration);
             AuctionProductsService = new AuctionProductsService(Configuration);
