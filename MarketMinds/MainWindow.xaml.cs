@@ -102,14 +102,43 @@ namespace UiLayer
 
         private void HandleOpenMainMarketplacePageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (mainMarketplacePageWindow == null || !mainMarketplacePageWindow.Visible)
+            try
             {
+                // Check if window exists and try to access it (will throw an exception if already closed)
+                bool isWindowActive = mainMarketplacePageWindow != null && mainMarketplacePageWindow.Visible;
+
+                if (!isWindowActive)
+                {
+                    // Create a new window if one doesn't exist or the previous one was closed
+                    mainMarketplacePageWindow = new Window();
+                    mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
+
+                    // Add a closed event handler to set the reference to null when window is closed
+                    mainMarketplacePageWindow.Closed += (s, args) =>
+                    {
+                        mainMarketplacePageWindow = null;
+                    };
+
+                    mainMarketplacePageWindow.Activate();
+                }
+                else
+                {
+                    // Window exists and is visible, bring it to front
+                    mainMarketplacePageWindow.Activate();
+                }
+            }
+            catch (Exception)
+            {
+                // If any exception occurs (like the COM exception), create a new window
                 mainMarketplacePageWindow = new Window();
                 mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
-                mainMarketplacePageWindow.Activate();
-            }
-            else
-            {
+
+                // Add a closed event handler to set the reference to null when window is closed
+                mainMarketplacePageWindow.Closed += (s, args) =>
+                {
+                    mainMarketplacePageWindow = null;
+                };
+
                 mainMarketplacePageWindow.Activate();
             }
         }

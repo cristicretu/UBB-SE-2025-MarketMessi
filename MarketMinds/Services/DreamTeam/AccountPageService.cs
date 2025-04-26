@@ -5,44 +5,48 @@ using System.Net.Http;
 using System.Net.Http.Json; // Requires System.Net.Http.Json nuget package
 using System.Text;
 using System.Text.Json;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds; // For App.CurrentUser
 using MarketMinds.Services;
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Services namespace
 {
     public class AccountPageService : IAccountPageService // Implementing the interface
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiBaseUrl;
-        private readonly JsonSerializerOptions _jsonOptions;
-        private readonly bool _useRealApi = true; // Always use the real API
+        private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
+        private readonly JsonSerializerOptions jsonOptions;
+        private readonly bool useRealApi = true; // Always use the real API
+        private readonly ILogger<AccountPageService> logger;
 
-        public AccountPageService(IConfiguration configuration/*, ILogger<AccountPageService> logger*/)
+        public AccountPageService(IConfiguration configuration, ILogger<AccountPageService> logger)
         {
-            _httpClient = new HttpClient();
+            httpClient = new HttpClient();
+            this.logger = logger;
 
             // Get API base URL from configuration, same way as BasketService
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            Debug.WriteLine($"Using API base URL from configuration: {_apiBaseUrl}");
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            Debug.WriteLine($"Using API base URL from configuration: {apiBaseUrl}");
 
-            if (!_apiBaseUrl.EndsWith("/"))
+            if (!apiBaseUrl.EndsWith("/"))
             {
-                _apiBaseUrl += "/";
+                apiBaseUrl += "/";
             }
 
             // Set base address to include api/account/ path
-            _httpClient.BaseAddress = new Uri(_apiBaseUrl + "api/account/");
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/account/");
 
             // Set longer timeout for HTTP requests, same as BasketService
-            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
 
             // Configure JSON options to match BasketService
-            _jsonOptions = new JsonSerializerOptions
+            jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 AllowTrailingCommas = true,
@@ -53,7 +57,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 ReferenceHandler = ReferenceHandler.Preserve
             };
 
-            Debug.WriteLine($"AccountPageService initialized with API URL: {_httpClient.BaseAddress}");
+            Debug.WriteLine($"AccountPageService initialized with API URL: {httpClient.BaseAddress}");
         }
 
         public async Task<User> GetUserAsync(int userId)
@@ -69,7 +73,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
             try
             {
                 // Use relative URL since BaseAddress already includes api/account/
-                var response = await _httpClient.GetAsync($"{userId}");
+                var response = await httpClient.GetAsync($"{userId}");
                 Debug.WriteLine($"API response status code: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
@@ -79,7 +83,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
 
                     try
                     {
-                        var user = JsonSerializer.Deserialize<User>(responseContent, _jsonOptions);
+                        var user = System.Text.Json.JsonSerializer.Deserialize<User>(responseContent, jsonOptions);
 
                         if (user != null)
                         {
@@ -100,7 +104,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             Debug.WriteLine("Failed to deserialize user - result was null");
                         }
                     }
-                    catch (JsonException jsonEx)
+                    catch (System.Text.Json.JsonException jsonEx)
                     {
                         Debug.WriteLine($"JSON Deserialization error: {jsonEx.Message}");
 
@@ -169,26 +173,26 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
         {
             if (userId <= 0)
             {
-                Debug.WriteLine($"Invalid user ID for orders: {userId}");
+                logger.LogError($"Invalid user ID for orders: {userId}");
                 return new List<UserOrder>();
             }
 
-            Debug.WriteLine($"Making API request for orders of user {userId}");
+            logger.LogDebug($"Making API request for orders of user {userId}");
 
             try
             {
                 // Use relative URL since BaseAddress already includes api/account/
-                var response = await _httpClient.GetAsync($"{userId}/orders");
-                Debug.WriteLine($"Orders API response status code: {response.StatusCode}");
+                var response = await httpClient.GetAsync($"{userId}/orders");
+                logger.LogDebug($"Orders API response status code: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Orders API response received, length: {responseContent?.Length ?? 0} chars");
-                    Debug.WriteLine($"Orders content: {responseContent}");
+                    logger.LogDebug($"Orders API response received, length: {responseContent?.Length ?? 0} chars");
+                    logger.LogDebug($"Orders content: {responseContent}");
 
-                    var orders = JsonSerializer.Deserialize<List<UserOrder>>(responseContent, _jsonOptions);
-                    Debug.WriteLine($"Deserialized {orders?.Count ?? 0} orders");
+                    var orders = System.Text.Json.JsonSerializer.Deserialize<List<UserOrder>>(responseContent, jsonOptions);
+                    logger.LogDebug($"Deserialized {orders?.Count ?? 0} orders");
 
                     // If we got orders, map the server model properties to client model
                     if (orders != null && orders.Any())
@@ -220,39 +224,65 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             }
                         }
 
-                        Debug.WriteLine($"Successfully mapped {orders.Count} orders");
+                        logger.LogDebug($"Successfully mapped {orders.Count} orders");
                         return orders;
                     }
                     else
                     {
-                        Debug.WriteLine("No orders found or deserialization returned null");
+                        logger.LogWarning("No orders found or deserialization returned null");
                     }
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Orders API error: {response.StatusCode}, Content: {errorContent}");
+                    logger.LogError($"Orders API error: {response.StatusCode}, Content: {errorContent}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Debug.WriteLine($"HTTP Request error for orders: {ex.Message}");
-                Debug.WriteLine("Server might be down or unreachable. Verify server is running.");
+                logger.LogError($"HTTP Request error for orders: {ex.Message}");
+                logger.LogError("Server might be down or unreachable. Verify server is running.");
+
+                if (ex.InnerException != null)
+                {
+                    logger.LogError($"Inner exception: {ex.InnerException.Message}");
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error retrieving orders: {ex.GetType().Name}: {ex.Message}");
+                logger.LogError($"Error retrieving orders: {ex.GetType().Name}: {ex.Message}");
             }
 
             // Return empty list if no orders found or error occurred
-            Debug.WriteLine("No orders returned from API, returning empty list");
+            logger.LogDebug("No orders returned from API, returning empty list");
             return new List<UserOrder>();
+        }
+
+        // Helper method to get property value using reflection
+        private T GetPropertyValue<T>(object obj, string propertyName)
+        {
+            try
+            {
+                var property = obj.GetType().GetProperty(propertyName);
+                if (property != null)
+                {
+                    return (T)property.GetValue(obj);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error getting property {propertyName}: {ex.Message}");
+            }
+            return default(T);
         }
 
         // Helper to create a copy of a user object to avoid reference issues
         private User CreateUserCopy(User source)
         {
-            if (source == null) return null;
+            if (source == null)
+            {
+                return null;
+            }
 
             var copy = new User(source.Id, source.Username, source.Email, source.Token);
             copy.UserType = source.UserType;

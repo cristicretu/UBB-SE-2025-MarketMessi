@@ -24,6 +24,7 @@ using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
 using Marketplace_SE.Services.DreamTeam;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MarketMinds
 {
@@ -160,7 +161,7 @@ namespace MarketMinds
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
 
             // Instantiate AccountPageService (Client-side)
-            AccountPageService = new AccountPageService(Configuration);
+            AccountPageService = new AccountPageService(Configuration, new NullLogger<AccountPageService>());
         }
         private Window mainWindow = null!;
     }
