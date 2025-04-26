@@ -34,8 +34,7 @@ namespace MarketMinds.Services.ReviewService
             jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                ReferenceHandler = ReferenceHandler.Preserve // Enable reference handling
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
         }
 
@@ -53,37 +52,45 @@ namespace MarketMinds.Services.ReviewService
 
                 var jsonString = response.Content.ReadAsStringAsync().Result;
 
-                // Then deserialize using System.Text.Json which handles the reference format
+                // Deserialize to list of client-side Review objects
                 var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
+                var result = new List<Review>();
 
-                // Update username properties for display
                 if (reviews != null)
                 {
                     foreach (var review in reviews)
                     {
-                        // We know the seller username from the input parameter
-                        review.SellerUsername = seller.Username;
+                        // Ensure rating is within the expected range (0-5)
+                        // If rating is on a different scale, normalize it
+                        if (review.Rating < 0)
+                        {
+                            review.Rating = 0;
+                        }
+                        else if (review.Rating > 5)
+                        {
+                            review.Rating = 5;
+                        }
 
-                        // For buyer username, we'll need to display the ID as a fallback
-                        // In a real implementation, you would fetch the buyer's username from a user service
+                        // Set username properties for UI display
+                        review.SellerUsername = seller.Username;
                         review.BuyerUsername = $"User #{review.BuyerId}";
 
                         // Try to find test users that match the buyer ID
                         if (App.CurrentUser.Id == review.BuyerId)
                         {
-                             review.BuyerUsername = App.CurrentUser.Username;
+                            review.BuyerUsername = App.CurrentUser.Username;
                         }
                         else if (App.TestingUser.Id == review.BuyerId)
                         {
                             review.BuyerUsername = App.TestingUser.Username;
                         }
+
+                        result.Add(review);
                     }
                 }
 
                 // Convert to ObservableCollection
-                return reviews != null
-                    ? new ObservableCollection<Review>(reviews)
-                    : new ObservableCollection<Review>();
+                return new ObservableCollection<Review>(result);
             }
             catch (Exception ex)
             {
@@ -106,19 +113,27 @@ namespace MarketMinds.Services.ReviewService
 
                 var jsonString = response.Content.ReadAsStringAsync().Result;
 
-                // Then deserialize using System.Text.Json which handles the reference format
+                // Deserialize to list of client-side Review objects
                 var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
+                var result = new List<Review>();
 
-                // Update username properties for display
                 if (reviews != null)
                 {
                     foreach (var review in reviews)
                     {
-                        // We know the buyer username from the input parameter
-                        review.BuyerUsername = buyer.Username;
+                        // Ensure rating is within the expected range (0-5)
+                        // If rating is on a different scale, normalize it
+                        if (review.Rating < 0)
+                        {
+                            review.Rating = 0;
+                        }
+                        else if (review.Rating > 5)
+                        {
+                            review.Rating = 5;
+                        }
 
-                        // For seller username, we'll need to display the ID as a fallback
-                        // In a real implementation, you would fetch the seller's username from a user service
+                        // Set username properties for UI display
+                        review.BuyerUsername = buyer.Username;
                         review.SellerUsername = $"User #{review.SellerId}";
 
                         // Try to find test users that match the seller ID
@@ -128,15 +143,15 @@ namespace MarketMinds.Services.ReviewService
                         }
                         else if (App.TestingUser.Id == review.SellerId)
                         {
-                             review.SellerUsername = App.TestingUser.Username;
+                            review.SellerUsername = App.TestingUser.Username;
                         }
+
+                        result.Add(review);
                     }
                 }
 
                 // Convert to ObservableCollection
-                return reviews != null
-                    ? new ObservableCollection<Review>(reviews)
-                    : new ObservableCollection<Review>();
+                return new ObservableCollection<Review>(result);
             }
             catch (Exception ex)
             {
@@ -147,34 +162,37 @@ namespace MarketMinds.Services.ReviewService
 
         public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
-            // Create the review object without an ID
-            var reviewDto = new
+            // Ensure rating is within the expected range (0-5)
+            double validRating = Math.Max(0, Math.Min(5, rating));
+
+            // Create a Review object directly
+            var review = new Review
             {
                 Description = description,
-                Images = images,
-                Rating = rating,
+                Images = images ?? new List<Image>(),
+                Rating = validRating,
                 SellerId = seller.Id,
                 BuyerId = buyer.Id
             };
 
-            var response = httpClient.PostAsJsonAsync("review", reviewDto, jsonOptions).Result;
+            var response = httpClient.PostAsJsonAsync("review", review, jsonOptions).Result;
             response.EnsureSuccessStatusCode();
         }
 
         public void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating)
         {
-            // Create a review object with the updated values
-            var updatedReview = new Review(
-                -1, // The API will find the review based on other fields
-                description,
-                images,
-                rating,
-                sellerid,
-                buyerid);
+            // Ensure new rating is within the expected range (0-5)
+            double validRating = Math.Max(0, Math.Min(5, newRating));
 
-            // Update with new values
-            updatedReview.Description = newDescription;
-            updatedReview.Rating = newRating;
+            // Create a Review object with the updated values
+            var updatedReview = new Review
+            {
+                Description = newDescription,
+                Images = images ?? new List<Image>(),
+                Rating = validRating,
+                SellerId = sellerid,
+                BuyerId = buyerid
+            };
 
             var response = httpClient.PutAsJsonAsync("review", updatedReview, jsonOptions).Result;
             response.EnsureSuccessStatusCode();
@@ -182,14 +200,18 @@ namespace MarketMinds.Services.ReviewService
 
         public void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid)
         {
-            // Create a review object to delete
-            var reviewToDelete = new Review(
-                -1, // The API will find the review based on other fields
-                description,
-                images,
-                rating,
-                sellerid,
-                buyerid);
+            // Ensure rating is within the expected range (0-5)
+            double validRating = Math.Max(0, Math.Min(5, rating));
+
+            // Create a Review object to delete
+            var reviewToDelete = new Review
+            {
+                Description = description,
+                Images = images ?? new List<Image>(),
+                Rating = validRating,
+                SellerId = sellerid,
+                BuyerId = buyerid
+            };
 
             // Using HttpRequestMessage for DELETE with body
             var request = new HttpRequestMessage
