@@ -173,7 +173,7 @@ namespace MarketMinds
                 {
                     LoginWindow.Close();
                 }
-                // Show main window
+                // vrei baschet?
                 MainWindow.Activate();
             }
         }
