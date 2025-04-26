@@ -7,6 +7,10 @@ namespace server.Models.DTOs.Mappers
 {
     public static class AuctionProductMapper
     {
+        private int UNDEFINED_USER_TYPE = 0;
+        private int UNDEFINED_BALANCE = 0;
+        private int UNDEFINED_RATING = 0;
+        private int UNDEFINED_PASSWORD = 0;
         public static AuctionProductDTO ToDTO(AuctionProduct entity)
         {
             if (entity == null) return null;
@@ -30,10 +34,10 @@ namespace server.Models.DTOs.Mappers
                         Id = b.Bidder.Id,
                         Username = b.Bidder.Username,
                         Email = b.Bidder.Email,
-                        UserType = 0,
-                        Balance = 0,
-                        Rating = 0,
-                        Password = 0
+                        UserType = UNDEFINED_USER_TYPE,
+                        Balance = UNDEFINED_BALANCE,
+                        Rating = UNDEFINED_RATING,
+                        Password = UNDEFINED_PASSWORD
                     } : null
                 }).ToList() ?? new List<BidDTO>(),
                 Condition = entity.Condition != null ? new ConditionDTO

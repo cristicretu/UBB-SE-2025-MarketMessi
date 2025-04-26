@@ -8,6 +8,10 @@ namespace server.Models.DTOs.Mappers
 {
     public static class BasketMapper
     {
+        private int UNDEFINED_USER_TYPE = 0;
+        private int UNDEFINED_BALANCE = 0;
+        private int UNDEFINED_RATING = 0;
+        private int UNDEFINED_PASSWORD = 0;
         public static BasketDTO ToDTO(Basket basket)
         {
             if (basket == null)
@@ -54,10 +58,10 @@ namespace server.Models.DTOs.Mappers
                     Username = product.Seller.Username,
                     Email = product.Seller.Email,
                     // Set default values for other UserDTO properties
-                    UserType = 0,
-                    Balance = 0,
-                    Rating = 0,
-                    Password = 0
+                    UserType = UNDEFINED_USER_TYPE,
+                    Balance = UNDEFINED_BALANCE,
+                    Rating = UNDEFINED_RATING,
+                    Password = UNDEFINED_PASSWORD
                 } : null,
                 Condition = product.Condition != null ? new ConditionDTO
                 {

@@ -7,6 +7,11 @@ namespace server.Models.DTOs.Mappers
 {
     public static class BuyProductMapper
     {
+
+        private int UNDEFINED_USER_TYPE = 0;
+        private int UNDEFINED_BALANCE = 0;
+        private int UNDEFINED_RATING = 0;
+        private int UNDEFINED_PASSWORD = 0;
         public static BuyProductDTO ToDTO(BuyProduct entity)
         {
             if (entity == null) return null;
@@ -48,10 +53,10 @@ namespace server.Models.DTOs.Mappers
                     Id = entity.Seller.Id,
                     Username = entity.Seller.Username,
                     Email = entity.Seller.Email,
-                    UserType = 0,
-                    Balance = 0,
-                    Rating = 0,
-                    Password = 0
+                    UserType = UNDEFINED_USER_TYPE,
+                    Balance = UNDEFINED_BALANCE,
+                    Rating = UNDEFINED_RATING,
+                    Password = UNDEFINED_PASSWORD
                 } : null
             };
         }

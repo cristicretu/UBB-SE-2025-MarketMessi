@@ -14,13 +14,13 @@ namespace MarketMinds.Services.BasketService
 {
     public class BasketService : IBasketService
     {
-        public const int MaxQuantityPerItem = 10;
-        private const int NOUSER = 0;
-        private const int NOITEM = 0;
-        private const int NOBASKET = 0;
-        private const int NODISCOUNT = 0;
-        private const int NOQUANTITY = 0;
-        private const int DEFAULTQUANTITY = 1;
+        public const int MAXIMUM_QUANTITY_PER_ITEM = 10;
+        private const int MINIMUM_USER_ID = 0;
+        private const int MINIMUM_ITEM_ID = 0;
+        private const int MINIMUM_BASKET_ID = 0;
+        private const double MINIMUM_DISCOUNT = 0;
+        private const int MINIMUM_QUANTITY = 0;
+        private const int DEFAULT_QUANTITY = 1;
 
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
@@ -56,11 +56,11 @@ namespace MarketMinds.Services.BasketService
 
         public void AddProductToBasket(int userId, int productId, int quantity)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 throw new ArgumentException("Invalid product ID");
             }
@@ -68,7 +68,7 @@ namespace MarketMinds.Services.BasketService
             try
             {
                 // Apply the maximum quantity limit
-                int limitedQuantity = Math.Min(quantity, MaxQuantityPerItem);
+                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Make the API call to add product to basket
                 var response = httpClient.PostAsJsonAsync($"user/{userId}/product/{productId}", limitedQuantity).Result;
@@ -82,7 +82,7 @@ namespace MarketMinds.Services.BasketService
 
         public Basket GetBasketByUser(User user)
         {
-            if (user == null || user.Id <= NOUSER)
+            if (user == null || user.Id <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Valid user must be provided");
             }
@@ -141,11 +141,11 @@ namespace MarketMinds.Services.BasketService
 
         public void RemoveProductFromBasket(int userId, int productId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 throw new ArgumentException("Invalid product ID");
             }
@@ -168,15 +168,15 @@ namespace MarketMinds.Services.BasketService
 
         public void UpdateProductQuantity(int userId, int productId, int quantity)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 throw new ArgumentException("Invalid product ID");
             }
-            if (quantity < NOQUANTITY)
+            if (quantity < MINIMUM_QUANTITY)
             {
                 throw new ArgumentException("Quantity cannot be negative");
             }
@@ -184,7 +184,7 @@ namespace MarketMinds.Services.BasketService
             try
             {
                 // Apply the maximum quantity limit
-                int limitedQuantity = Math.Min(quantity, MaxQuantityPerItem);
+                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Make the API call to update product quantity
                 var response = httpClient.PutAsJsonAsync($"user/{userId}/product/{productId}", limitedQuantity).Result;
@@ -203,7 +203,7 @@ namespace MarketMinds.Services.BasketService
         public bool ValidateQuantityInput(string quantityText, out int quantity)
         {
             // Initialize output parameter
-            quantity = NOQUANTITY;
+            quantity = MINIMUM_QUANTITY;
 
             // Check if the input is empty
             if (string.IsNullOrWhiteSpace(quantityText))
@@ -218,7 +218,7 @@ namespace MarketMinds.Services.BasketService
             }
 
             // Check if quantity is non-negative
-            if (quantity < NOQUANTITY)
+            if (quantity < MINIMUM_QUANTITY)
             {
                 return false;
             }
@@ -228,12 +228,12 @@ namespace MarketMinds.Services.BasketService
 
         public int GetLimitedQuantity(int quantity)
         {
-            return Math.Min(quantity, MaxQuantityPerItem);
+            return Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
         }
 
         public void ClearBasket(int userId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
@@ -256,7 +256,7 @@ namespace MarketMinds.Services.BasketService
 
         public bool ValidateBasketBeforeCheckOut(int basketId)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 throw new ArgumentException("Invalid basket ID");
             }
@@ -297,7 +297,7 @@ namespace MarketMinds.Services.BasketService
 
         public void ApplyPromoCode(int basketId, string code)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 throw new ArgumentException("Invalid basket ID");
             }
@@ -337,7 +337,7 @@ namespace MarketMinds.Services.BasketService
         {
             if (string.IsNullOrWhiteSpace(code))
             {
-                return NODISCOUNT;
+                return MINIMUM_DISCOUNT;
             }
 
             try
@@ -353,18 +353,18 @@ namespace MarketMinds.Services.BasketService
                     return subtotal * result.DiscountRate;
                 }
 
-                return NODISCOUNT;
+                return MINIMUM_DISCOUNT;
             }
             catch
             {
-                return NODISCOUNT;
+                return MINIMUM_DISCOUNT;
             }
         }
 
         // Add a new method to calculate basket totals
         public BasketTotals CalculateBasketTotals(int basketId, string promoCode)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 throw new ArgumentException("Invalid basket ID");
             }
@@ -406,11 +406,11 @@ namespace MarketMinds.Services.BasketService
 
         public void DecreaseProductQuantity(int userId, int productId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 throw new ArgumentException("Invalid product ID");
             }
@@ -433,11 +433,11 @@ namespace MarketMinds.Services.BasketService
 
         public void IncreaseProductQuantity(int userId, int productId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 throw new ArgumentException("Invalid product ID");
             }
