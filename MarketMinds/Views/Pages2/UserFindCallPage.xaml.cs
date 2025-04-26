@@ -34,6 +34,7 @@ namespace Marketplace_SE
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            // sOMETHING
             base.OnNavigatedTo(e);
             FrameNavigation.NavigateWithConstructorParameters<ChatPage>(this.Frame, 2);
         }

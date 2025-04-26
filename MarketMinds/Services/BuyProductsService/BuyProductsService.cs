@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
+using MarketMinds.Repositories;
 
 namespace MarketMinds.Services.BuyProductsService
 {
@@ -25,6 +26,10 @@ namespace MarketMinds.Services.BuyProductsService
                 apiBaseUrl += "/";
             }
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+        }
+
+        public BuyProductsService(IProductsRepository repository) : base(repository)
+        {
         }
 
         public override List<Product> GetProducts()
