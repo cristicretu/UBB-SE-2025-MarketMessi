@@ -27,19 +27,22 @@ namespace Marketplace_SE
     /// </summary>
     public sealed partial class RegisterPage : Page
     {
-        public RegisterViewModel ViewModel { get; set; }
+        public ViewModelLayer.ViewModel.RegisterViewModel ViewModel { get; set; }
         public User NewUser { get; set; }
 
         public RegisterPage()
         {
             this.InitializeComponent();
-            ViewModel = new RegisterViewModel();
+            ViewModel = MarketMinds.App.RegisterViewModel;
             this.DataContext = ViewModel;
             NewUser = new User(0, string.Empty, string.Empty, string.Empty);
         }
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs e)
         {
+            CreateAccountButton.IsEnabled = false;
+            RegisterProgressRing.IsActive = true;
+            
             NewUser.Username = UsernameTextBox.Text;
             NewUser.Email = EmailTextBox.Text;
             NewUser.Password = PasswordBoxWithRevealMode.Password;
@@ -48,6 +51,8 @@ namespace Marketplace_SE
             if (!IsValidUsername(NewUser.Username))
             {
                 UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
+                CreateAccountButton.IsEnabled = true;
+                RegisterProgressRing.IsActive = false;
                 return;
             }
             else
@@ -58,6 +63,8 @@ namespace Marketplace_SE
             if (await IsUsernameTaken(NewUser.Username))
             {
                 await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
+                CreateAccountButton.IsEnabled = true;
+                RegisterProgressRing.IsActive = false;
                 return;
             }
 
@@ -65,12 +72,16 @@ namespace Marketplace_SE
             if (passwordStrength == "Weak")
             {
                 await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
+                CreateAccountButton.IsEnabled = true;
+                RegisterProgressRing.IsActive = false;
                 return;
             }
 
             if (NewUser.Password != confirmPassword)
             {
                 ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
+                CreateAccountButton.IsEnabled = true;
+                RegisterProgressRing.IsActive = false;
                 return;
             }
             else
@@ -79,6 +90,10 @@ namespace Marketplace_SE
             }
 
             bool result = await ViewModel.CreateNewUser(NewUser);
+            
+            CreateAccountButton.IsEnabled = true;
+            RegisterProgressRing.IsActive = false;
+            
             if (result)
             {
                 // Set current user if there's a global app state

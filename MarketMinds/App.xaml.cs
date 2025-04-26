@@ -71,6 +71,8 @@ namespace MarketMinds
         public static ChatBotViewModel ChatBotViewModel { get; private set; }
         public static ChatViewModel ChatViewModel { get; private set; }
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
+        public static LoginViewModel LoginViewModel { get; private set; }
+        public static RegisterViewModel RegisterViewModel { get; private set; }
         public static User CurrentUser { get; set; }
         public static User TestingUser { get; set; }
 
@@ -78,6 +80,8 @@ namespace MarketMinds
         private const int SELLER = 2;
 
         private static IConfiguration appConfiguration;
+        public static Window loginWindow = null!;
+        public static Window mainWindow = null!;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -107,16 +111,12 @@ namespace MarketMinds
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            // Create but don't show the main window yet
             mainWindow = new UiLayer.MainWindow();
-            mainWindow.Activate();
-            // Create test users that match the database
-            TestingUser = new User(1, "alice123", "alice@example.com");
-            TestingUser.UserType = BUYER; // Matches database value
-            CurrentUser = new User(2, "bob321", "bob@example.com");
-            CurrentUser.UserType = SELLER; // Matches database value
-
+            
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
+            
             // Instantiate repositories
             ChatBotRepository = new ChatBotRepository(DatabaseConnection);
             ChatRepository = new ChatRepository(DatabaseConnection);
@@ -134,6 +134,13 @@ namespace MarketMinds
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
+            
+            // Initialize ImageUploadService if necessary
+            if (ImageUploadService == null)
+            {
+                // Implement or use a mock service as appropriate
+                // ImageUploadService = new LocalImageUploadService();
+            }
 
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
@@ -153,7 +160,28 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+            LoginViewModel = new LoginViewModel();
+            RegisterViewModel = new RegisterViewModel();
+            
+            // Show login window first instead of main window
+            loginWindow = new LoginWindow();
+            loginWindow.Activate();
         }
-        private Window mainWindow = null!;
+        
+        // Method to be called after successful login
+        public static void ShowMainWindow()
+        {
+            if (CurrentUser != null)
+            {
+                // Close login window
+                if (loginWindow != null)
+                {
+                    loginWindow.Close();
+                }
+                
+                // Show main window
+                mainWindow.Activate();
+            }
+        }
     }
 }

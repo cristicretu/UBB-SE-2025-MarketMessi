@@ -8,11 +8,11 @@ namespace Marketplace_SE
 {
     public sealed partial class LoginPage : Page
     {
-        public LoginViewModel ViewModel { get; set; }
+        public ViewModelLayer.ViewModel.LoginViewModel ViewModel { get; set; }
         public LoginPage()
         {
             this.InitializeComponent();
-            ViewModel = new LoginViewModel();
+            ViewModel = MarketMinds.App.LoginViewModel;
             this.DataContext = ViewModel;
         }
 
@@ -26,18 +26,29 @@ namespace Marketplace_SE
             Frame.Navigate(typeof(RegisterPage));
         }
 
-        private void OnLoginButtonClick(object sender, RoutedEventArgs e)
+        private async void OnLoginButtonClick(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBoxWithRevealMode.Password;
-            Console.WriteLine(username);
-            ViewModel.AttemptLogin(username, password);
+            
+            // Set login button to loading state
+            LoginButton.IsEnabled = false;
+            LoginProgressRing.IsActive = true;
+            
+            await Task.Run(() => ViewModel.AttemptLogin(username, password));
+            
+            // Reset login button state
+            LoginButton.IsEnabled = true;
+            LoginProgressRing.IsActive = false;
+            
             if (ViewModel.LoginStatus)
             {
                 MarketMinds.App.CurrentUser = ViewModel.LoggedInUser;
                 LoginStatusMessage.Text = "You have successfully logged in!";
                 LoginStatusMessage.Visibility = Visibility.Visible;
-                // Frame.Navigate(typeof());
+                
+                // Navigate to main window
+                MarketMinds.App.ShowMainWindow();
             }
             else
             {
