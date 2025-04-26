@@ -8,289 +8,210 @@ namespace MarketMinds.Test.Services.BasketServiceTest
 {
     public class BasketRepositoryMock : IBasketRepository
     {
-        private Dictionary<int, Basket> baskets;
-        private Dictionary<int, List<BasketItem>> basketItems;
-        private int nextBasketId = 1;
-        private int nextItemId = 1;
+        private readonly Dictionary<int, Basket> _baskets = new();
+        private readonly Dictionary<int, List<BasketItem>> _basketItems = new();
+        
+        private int NEXT_BASKET_ID = 1;
+        private int NEXT_ITEM_ID = 1;
 
-        private int addItemCount;
-        private int removeItemCount;
-        private int updateItemCount;
-        private int clearBasketCount;
-        private bool throwUpdateException;
-        private bool throwRemoveException;
-        private bool throwGetBasketException;
+        private int _addItemCount;
+        private int _removeItemCount;
+        private int _updateItemCount;
+        private int _clearBasketCount;
 
-        public BasketRepositoryMock()
-        {
-            baskets = new Dictionary<int, Basket>();
-            basketItems = new Dictionary<int, List<BasketItem>>();
-            addItemCount = 0;
-            removeItemCount = 0;
-            updateItemCount = 0;
-            clearBasketCount = 0;
-            throwUpdateException = false;
-            throwRemoveException = false;
-            throwGetBasketException = false;
-        }
+        private bool _throwUpdateException;
+        private bool _throwRemoveException;
+        private bool _throwGetBasketException;
 
         public Basket GetBasketByUserId(int userId)
         {
-            if (throwGetBasketException)
-            {
+            if (_throwGetBasketException)
                 throw new Exception("Test exception for GetBasketByUserId");
-            }
 
-            if (userId <= 0)
-            {
-                throw new ArgumentException("User ID cannot be negative or zero");
-            }
+            ValidateUserId(userId);
 
-            // Return existing basket or create new one
-            if (baskets.ContainsKey(userId))
-            {
-                return baskets[userId];
-            }
+            if (_baskets.ContainsKey(userId))
+                return _baskets[userId];
 
-            var basket = new Basket(nextBasketId++);
-            baskets[userId] = basket;
-            basketItems[basket.Id] = new List<BasketItem>();
+            var basket = new Basket(NEXT_BASKET_ID++);
+            _baskets[userId] = basket;
+            _basketItems[basket.Id] = new List<BasketItem>();
             return basket;
         }
 
         public List<BasketItem> GetBasketItems(int basketId)
         {
-            if (basketItems.ContainsKey(basketId))
-            {
-                return new List<BasketItem>(basketItems[basketId]);
-            }
-            return new List<BasketItem>();
+            return _basketItems.ContainsKey(basketId) 
+                ? new List<BasketItem>(_basketItems[basketId]) 
+                : new List<BasketItem>();
         }
 
         public void AddItemToBasket(int basketId, int productId, int quantity)
         {
-            if (quantity < 0)
-            {
-                throw new ArgumentException("Quantity cannot be negative");
-            }
+            ValidateQuantity(quantity);
+            ValidateProductId(productId);
 
-            if (productId <= 0)
-            {
-                throw new ArgumentException("Product ID cannot be negative or zero");
-            }
+            EnsureBasketExists(basketId);
 
-            if (!basketItems.ContainsKey(basketId))
-            {
-                basketItems[basketId] = new List<BasketItem>();
-            }
+            var existingItem = _basketItems[basketId]
+                .FirstOrDefault(i => i.Product?.Id == productId);
 
-            var existingItem = basketItems[basketId].FirstOrDefault(i => i.Product?.Id == productId);
             if (existingItem != null)
             {
-                // Update existing item
                 existingItem.Quantity = quantity;
             }
             else
             {
-                // Create test product
-                var product = new BuyProduct(
-                    productId,
-                    "Test Product",
-                    "Test Description",
-                    new User(1, "Test Seller", "seller@test.com"),
-                    new ProductCondition(1, "New", "Brand new item"),
-                    new ProductCategory(1, "Electronics", "Electronic devices"),
-                    new List<ProductTag>(),
-                    new List<Image>(),
-                    100);
-
-                var item = new BasketItem(nextItemId++, product, quantity);
-                basketItems[basketId].Add(item);
+                var product = CreateTestProduct(productId);
+                var item = new BasketItem(NEXT_ITEM_ID++, product, quantity);
+                _basketItems[basketId].Add(item);
             }
 
-            addItemCount++;
+            _addItemCount++;
         }
 
         public void RemoveItemByProductId(int basketId, int productId)
         {
-            if (throwRemoveException)
-            {
+            if (_throwRemoveException)
                 throw new Exception("Test exception for RemoveItemByProductId");
-            }
 
-            if (basketItems.ContainsKey(basketId))
+            if (_basketItems.ContainsKey(basketId))
             {
-                basketItems[basketId].RemoveAll(i => i.Product?.Id == productId);
+                _basketItems[basketId].RemoveAll(i => i.Product?.Id == productId);
             }
 
-            removeItemCount++;
+            _removeItemCount++;
         }
 
         public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
         {
-            if (throwUpdateException)
-            {
+            if (_throwUpdateException)
                 throw new Exception("Test exception for UpdateItemQuantityByProductId");
-            }
 
-            if (quantity < 0)
-            {
-                throw new ArgumentException("Quantity cannot be negative");
-            }
+            ValidateQuantity(quantity);
 
-            if (basketItems.ContainsKey(basketId))
+            if (_basketItems.ContainsKey(basketId))
             {
-                var item = basketItems[basketId].FirstOrDefault(i => i.Product?.Id == productId);
+                var item = _basketItems[basketId]
+                    .FirstOrDefault(i => i.Product?.Id == productId);
+                
                 if (item != null)
                 {
                     item.Quantity = quantity;
-                    updateItemCount++;
+                    _updateItemCount++;
                 }
             }
             else
             {
-                // If basket doesn't exist, still increment the counter
-                // This is needed for testing purposes
-                updateItemCount++;
+                _updateItemCount++;
             }
         }
 
         public void ClearBasket(int basketId)
         {
-            if (basketItems.ContainsKey(basketId))
+            if (_basketItems.ContainsKey(basketId))
             {
-                basketItems[basketId].Clear();
+                _basketItems[basketId].Clear();
             }
-            clearBasketCount++;
+
+            _clearBasketCount++;
         }
 
-        public int GetAddItemCount()
-        {
-            return addItemCount;
-        }
-
-        public int GetRemoveItemCount()
-        {
-            return removeItemCount;
-        }
-
-        public int GetUpdateItemCount()
-        {
-            return updateItemCount;
-        }
-
-        public int GetClearBasketCount()
-        {
-            return clearBasketCount;
-        }
+        public int GetAddItemCount() => _addItemCount;
+        public int GetRemoveItemCount() => _removeItemCount;
+        public int GetUpdateItemCount() => _updateItemCount;
+        public int GetClearBasketCount() => _clearBasketCount;
 
         public void SetupInvalidItemQuantity(int basketId)
         {
-            if (!basketItems.ContainsKey(basketId))
-            {
-                basketItems[basketId] = new List<BasketItem>();
-            }
+            EnsureBasketExists(basketId);
 
-            var product = new BuyProduct(
-                1,
-                "Invalid Quantity Product",
-                "Product with invalid quantity",
-                new User(1, "Test Seller", "seller@test.com"),
-                new ProductCondition(1, "New", "Brand new item"),
-                new ProductCategory(1, "Electronics", "Electronic devices"),
-                new List<ProductTag>(),
-                new List<Image>(),
-                100);
+            var invalidProduct = CreateTestProduct(1, "Invalid Quantity Product", "Product with invalid quantity");
+            var invalidItem = new BasketItem(NEXT_ITEM_ID++, invalidProduct, 0);
 
-            var invalidItem = new BasketItem(nextItemId++, product, 0);
-            basketItems[basketId].Add(invalidItem);
+            _basketItems[basketId].Add(invalidItem);
         }
 
         public void SetupInvalidItemPrice(int basketId)
         {
-            if (!basketItems.ContainsKey(basketId))
+            EnsureBasketExists(basketId);
+
+            var invalidPriceProduct = new TestProductWithNoPrice
             {
-                basketItems[basketId] = new List<BasketItem>();
-            }
+                Id = 2,
+                Title = "Invalid Price Product",
+                Description = "Product with invalid price",
+                Seller = new User(1, "Test Seller", "seller@test.com"),
+                Condition = new ProductCondition(1, "New", "Brand new item"),
+                Category = new ProductCategory(1, "Electronics", "Electronic devices"),
+                Tags = new List<ProductTag>(),
+                Images = new List<Image>()
+            };
 
-            // Create a test product that will cause HasValidPrice to be false
-            var invalidPriceProduct = new TestProductWithNoPrice();
-            invalidPriceProduct.Id = 2;
-            invalidPriceProduct.Title = "Invalid Price Product";
-            invalidPriceProduct.Description = "Product with invalid price";
-            invalidPriceProduct.Seller = new User(1, "Test Seller", "seller@test.com");
-            invalidPriceProduct.Condition = new ProductCondition(1, "New", "Brand new item");
-            invalidPriceProduct.Category = new ProductCategory(1, "Electronics", "Electronic devices");
-            invalidPriceProduct.Tags = new List<ProductTag>();
-            invalidPriceProduct.Images = new List<Image>();
-
-            var invalidItem = new BasketItem(nextItemId++, invalidPriceProduct, 1);
-            basketItems[basketId].Add(invalidItem);
+            var invalidItem = new BasketItem(NEXT_ITEM_ID++, invalidPriceProduct, 1);
+            _basketItems[basketId].Add(invalidItem);
         }
 
         public void SetupValidBasket(int basketId)
         {
-            if (!basketItems.ContainsKey(basketId))
-            {
-                basketItems[basketId] = new List<BasketItem>();
-            }
+            if (!_basketItems.ContainsKey(basketId))
+                _basketItems[basketId] = new List<BasketItem>();
             else
-            {
-                basketItems[basketId].Clear();
-            }
+                _basketItems[basketId].Clear();
 
-            // Create a test product with price 100
-            var product = new BuyProduct(
-                3,
-                "Valid Product",
-                "Product with valid attributes",
+            var product1 = CreateTestProduct(3, "Valid Product", "Product with valid attributes", 100);
+            var product2 = CreateTestProduct(4, "Second Product", "Another product with valid attributes", 50);
+
+            _basketItems[basketId].Add(new BasketItem(NEXT_ITEM_ID++, product1, 1));
+            _basketItems[basketId].Add(new BasketItem(NEXT_ITEM_ID++, product2, 1));
+        }
+
+        public void SetupUpdateQuantityException() => _throwUpdateException = true;
+        public void SetupRemoveItemException() => _throwRemoveException = true;
+        public void SetupGetBasketException() => _throwGetBasketException = true;
+
+        private void ValidateUserId(int userId)
+        {
+            if (userId <= 0)
+                throw new ArgumentException("User ID cannot be negative or zero");
+        }
+
+        private void ValidateQuantity(int quantity)
+        {
+            if (quantity < 0)
+                throw new ArgumentException("Quantity cannot be negative");
+        }
+
+        private void ValidateProductId(int productId)
+        {
+            if (productId <= 0)
+                throw new ArgumentException("Product ID cannot be negative or zero");
+        }
+
+        private void EnsureBasketExists(int basketId)
+        {
+            if (!_basketItems.ContainsKey(basketId))
+                _basketItems[basketId] = new List<BasketItem>();
+        }
+
+        private BuyProduct CreateTestProduct(int id, string title = "Test Product", string description = "Test Description", int price = 100)
+        {
+            return new BuyProduct(
+                id,
+                title,
+                description,
                 new User(1, "Test Seller", "seller@test.com"),
                 new ProductCondition(1, "New", "Brand new item"),
                 new ProductCategory(1, "Electronics", "Electronic devices"),
                 new List<ProductTag>(),
                 new List<Image>(),
-                100);
-
-            // Create a second product with price 50
-            var product2 = new BuyProduct(
-                4,
-                "Second Product",
-                "Another product with valid attributes",
-                new User(1, "Test Seller", "seller@test.com"),
-                new ProductCondition(1, "New", "Brand new item"),
-                new ProductCategory(1, "Electronics", "Electronic devices"),
-                new List<ProductTag>(),
-                new List<Image>(),
-                50);
-
-            // Add items to the basket
-            var validItem = new BasketItem(nextItemId++, product, 1);
-            var validItem2 = new BasketItem(nextItemId++, product2, 1);
-
-            basketItems[basketId].Add(validItem);
-            basketItems[basketId].Add(validItem2);
+                price
+            );
         }
 
-        public void SetupUpdateQuantityException()
-        {
-            throwUpdateException = true;
-        }
-
-        public void SetupRemoveItemException()
-        {
-            throwRemoveException = true;
-        }
-
-        public void SetupGetBasketException()
-        {
-            throwGetBasketException = true;
-        }
-
-        // Test helper class for products with no price
         private class TestProductWithNoPrice : Product
         {
-            // This product type doesn't have a price property, so when used in BasketItem
-            // it will have HasValidPrice = false because it's not a BuyProduct
+            // Intentionally no price field
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds; // For App.CurrentUser

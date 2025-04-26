@@ -18,13 +18,30 @@ namespace MarketMinds.Controllers
     public class BasketController : ControllerBase
     {
         private readonly IBasketRepository _basketRepository;
-        private const int NOQUANTITY = 0;
-        private const int NOUSER = 0;
-        private const int NOBASKET = 0;
-        private const int NOITEM = 0;
-        private const double NODISCOUNT = 0;
-        private const int MaxQuantityPerItem = 10;
-        private const double SMALLEST_VALID_PRICE = 0;
+        private const int MINIMUM_QUANTITY = 0;
+        private const int MINIMUM_USER_ID = 0;
+        private const int MINIMUM_BASKET_ID = 0;
+        private const int MINIMUM_ITEM_ID = 0;
+        private const double MINIMUM_DISCOUNT = 0;
+        private const int MINIMUM_PRODUCT_ID = 0;
+        private const int MAXIMUM_QUANTITY_PER_ITEM = 10;
+        private const double MINIMUM_PRICE = 0;
+        // Dictionary of valid promo codes
+        private static readonly Dictionary<string, double> VALID_CODES = new Dictionary<string, double>
+        {
+            { "DISCOUNT10", 0.10 },  // 10% discount
+            { "WELCOME20", 0.20 },   // 20% discount
+            { "FLASH30", 0.30 },     // 30% discount
+        };
+
+        private static readonly Func<string, string> normalize = code =>
+        {
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return null;
+            }
+            return code.ToUpper().Trim();
+        };
 
         // Add JsonSerializerOptions that disables reference handling
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -46,7 +63,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketByUserId(int userId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
@@ -60,7 +77,7 @@ namespace MarketMinds.Controllers
                 {
                     foreach (var item in basket.Items)
                     {
-                        if (item.Product != null && item.ProductId == 0)
+                        if (item.Product != null && item.ProductId == MINIMUM_PRODUCT_ID)
                         {
                             // If ProductId is not set, set it from the Product object
                             item.ProductId = item.Product.Id;
@@ -86,7 +103,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketItems(int basketId)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 return BadRequest("Invalid basket ID");
             }
@@ -98,7 +115,7 @@ namespace MarketMinds.Controllers
                 // Ensure each item has ProductId set
                 foreach (var item in items)
                 {
-                    if (item.Product != null && item.ProductId == 0)
+                    if (item.Product != null && item.ProductId == MINIMUM_ITEM_ID)
                     {
                         // If ProductId is not set, set it from the Product object
                         item.ProductId = item.Product.Id;
@@ -123,15 +140,15 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult AddProductToBasket(int userId, int productId, [FromBody] int quantity)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 return BadRequest("Invalid product ID");
             }
-            if (quantity < NOQUANTITY)
+            if (quantity < MINIMUM_QUANTITY)
             {
                 return BadRequest("Quantity cannot be negative");
             }
@@ -139,7 +156,7 @@ namespace MarketMinds.Controllers
             try
             {
                 // Apply the maximum quantity limit
-                int limitedQuantity = Math.Min(quantity, MaxQuantityPerItem);
+                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Get the user's basket
                 Basket basket = _basketRepository.GetBasketByUserId(userId);
@@ -162,27 +179,27 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateProductQuantity(int userId, int productId, [FromBody] int quantity)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 return BadRequest("Invalid product ID");
             }
-            if (quantity < NOQUANTITY)
+            if (quantity < MINIMUM_QUANTITY)
             {
                 return BadRequest("Quantity cannot be negative");
             }
 
             try
             {
-                int limitedQuantity = Math.Min(quantity, MaxQuantityPerItem);
+                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Get the user's basket
                 Basket basket = _basketRepository.GetBasketByUserId(userId);
 
-                if (limitedQuantity == NOQUANTITY)
+                if (limitedQuantity == MINIMUM_QUANTITY)
                 {
                     // If quantity is zero, remove the item
                     _basketRepository.RemoveItemByProductId(basket.Id, productId);
@@ -209,11 +226,11 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult IncreaseProductQuantity(int userId, int productId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 return BadRequest("Invalid product ID");
             }
@@ -233,7 +250,7 @@ namespace MarketMinds.Controllers
                 }
 
                 // Calculate new quantity, ensuring it doesn't exceed the maximum
-                int newQuantity = Math.Min(targetItem.Quantity + 1, MaxQuantityPerItem);
+                int newQuantity = Math.Min(targetItem.Quantity + 1, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Update the quantity
                 _basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, newQuantity);
@@ -254,11 +271,11 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult DecreaseProductQuantity(int userId, int productId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 return BadRequest("Invalid product ID");
             }
@@ -303,11 +320,11 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult RemoveProductFromBasket(int userId, int productId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
-            if (productId <= NOITEM)
+            if (productId <= MINIMUM_ITEM_ID)
             {
                 return BadRequest("Invalid product ID");
             }
@@ -335,7 +352,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult ClearBasket(int userId)
         {
-            if (userId <= NOUSER)
+            if (userId <= MINIMUM_USER_ID)
             {
                 return BadRequest("Invalid user ID");
             }
@@ -363,7 +380,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult ApplyPromoCode(int basketId, [FromBody] string code)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 return BadRequest("Invalid basket ID");
             }
@@ -375,18 +392,10 @@ namespace MarketMinds.Controllers
             try
             {
                 // Convert to uppercase for case-insensitive comparison
-                string normalizedCode = code.ToUpper().Trim();
-
-                // Dictionary of valid promo codes
-                Dictionary<string, double> validCodes = new Dictionary<string, double>
-                {
-                    { "DISCOUNT10", 0.10 },  // 10% discount
-                    { "WELCOME20", 0.20 },   // 20% discount
-                    { "FLASH30", 0.30 },     // 30% discount
-                };
+                string normalizedCode = normalize(code);
 
                 // Check if the code exists in the valid codes
-                if (validCodes.TryGetValue(normalizedCode, out double discountRate))
+                if (VALID_CODES.TryGetValue(normalizedCode, out double discountRate))
                 {
                     return Ok(new { DiscountRate = discountRate });
                 }
@@ -406,7 +415,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CalculateBasketTotals(int basketId, [FromQuery] string promoCode = null)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 return BadRequest("Invalid basket ID");
             }
@@ -421,23 +430,15 @@ namespace MarketMinds.Controllers
                     subtotal += item.GetPrice();
                 }
 
-                double discount = NODISCOUNT;
+                double discount = MINIMUM_DISCOUNT;
 
                 if (!string.IsNullOrEmpty(promoCode))
                 {
                     // Convert to uppercase for case-insensitive comparison
-                    string normalizedCode = promoCode.ToUpper().Trim();
-
-                    // Dictionary of valid promo codes
-                    Dictionary<string, double> validCodes = new Dictionary<string, double>
-                    {
-                        { "DISCOUNT10", 0.10 },  // 10% discount
-                        { "WELCOME20", 0.20 },   // 20% discount
-                        { "FLASH30", 0.30 },     // 30% discount
-                    };
+                    string normalizedCode = normalize(promoCode);
 
                     // Check if the code exists in the valid codes
-                    if (validCodes.TryGetValue(normalizedCode, out double discountRate))
+                    if (VALID_CODES.TryGetValue(normalizedCode, out double discountRate))
                     {
                         discount = subtotal * discountRate;
                     }
@@ -470,7 +471,7 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult ValidateBasketBeforeCheckout(int basketId)
         {
-            if (basketId <= NOBASKET)
+            if (basketId <= MINIMUM_BASKET_ID)
             {
                 return BadRequest("Invalid basket ID");
             }
@@ -489,12 +490,12 @@ namespace MarketMinds.Controllers
                 // Check if all items have valid quantities
                 foreach (BasketItem item in items)
                 {
-                    if (item.Quantity <= NOQUANTITY)
+                    if (item.Quantity <= MINIMUM_QUANTITY)
                     {
                         return Ok(false);
                     }
 
-                    if (item.Price <= SMALLEST_VALID_PRICE)
+                    if (item.Price <= MINIMUM_PRICE)
                     {
                         return Ok(false);
                     }

@@ -12,16 +12,14 @@ namespace server.Models
         public double DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
         
-        // Additional ID properties used only for DTO binding
-        // These should always be NotMapped as they're duplicated in the base class
-        [NotMapped]
-        public new int SellerId { get; set; }
-        
-        [NotMapped]
-        public new int? CategoryId { get; set; }
-        
-        [NotMapped]
-        public new int? ConditionId { get; set; }
+        // [NotMapped]
+        // public new int SellerId { get; set; }
+        //
+        // [NotMapped]
+        // public new int? CategoryId { get; set; }
+        //
+        // [NotMapped]
+        // public new int? ConditionId { get; set; }
         
         // Navigation properties
         public ICollection<BorrowProductImage> Images { get; set; }

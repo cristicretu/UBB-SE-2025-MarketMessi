@@ -139,15 +139,6 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BorrowProduct>().Property(bp => bp.StartDate).HasColumnName("start_date");
             modelBuilder.Entity<BorrowProduct>().Property(bp => bp.EndDate).HasColumnName("end_date");
             modelBuilder.Entity<BorrowProduct>().Property(bp => bp.IsBorrowed).HasColumnName("is_borrowed");
-            // Explicitly map foreign key properties
-            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.SellerId).HasColumnName("seller_id");
-            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.CategoryId).HasColumnName("category_id");
-            modelBuilder.Entity<BorrowProduct>().Property(bp => bp.ConditionId).HasColumnName("condition_id");
-            
-            // Ignore NotMapped properties from derived class to avoid duplication
-            modelBuilder.Entity<BorrowProduct>().Ignore("SellerId");
-            modelBuilder.Entity<BorrowProduct>().Ignore("CategoryId");
-            modelBuilder.Entity<BorrowProduct>().Ignore("ConditionId");
 
             modelBuilder.Entity<BorrowProductImage>().ToTable("BorrowProductImages");
             modelBuilder.Entity<BorrowProductImage>().HasKey(i => i.Id);

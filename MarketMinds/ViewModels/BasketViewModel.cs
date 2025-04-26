@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Services.BasketService;
@@ -10,8 +11,8 @@ namespace ViewModelLayer.ViewModel
 {
     public class BasketViewModel
     {
-        private const int NODISCOUNT = 0;
-        private const int DEFAULTQUANTITY = 1;
+        private const int NullDiscount = 0;
+        private const int DefaultQuantity = 1;
         private User currentUser;
         private readonly BasketService basketService;
         private Basket basket;
@@ -56,7 +57,7 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                basketService.AddProductToBasket(currentUser.Id, productId, DEFAULTQUANTITY);
+                basketService.AddProductToBasket(currentUser.Id, productId, DefaultQuantity);
                 LoadBasket();
                 ErrorMessage = string.Empty;
             }
@@ -83,11 +84,11 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                if (quantity > BasketService.MaxQuantityPerItem)
+                if (quantity > BasketService.MAXIMUM_QUANTITY_PER_ITEM)
                 {
-                    ErrorMessage = $"Quantity cannot exceed {BasketService.MaxQuantityPerItem}";
+                    ErrorMessage = $"Quantity cannot exceed {BasketService.MAXIMUM_QUANTITY_PER_ITEM}";
 
-                    basketService.UpdateProductQuantity(currentUser.Id, productId, BasketService.MaxQuantityPerItem);
+                    basketService.UpdateProductQuantity(currentUser.Id, productId, BasketService.MAXIMUM_QUANTITY_PER_ITEM);
                 }
                 else
                 {
@@ -158,7 +159,7 @@ namespace ViewModelLayer.ViewModel
             catch (Exception ex)
             {
                 ErrorMessage = $"Failed to apply promo code: {ex.Message}";
-                Discount = NODISCOUNT;
+                Discount = NullDiscount;
                 TotalAmount = Subtotal;
             }
         }
@@ -276,9 +277,8 @@ namespace ViewModelLayer.ViewModel
             }
             catch (Exception ex)
             {
-                // Use safe defaults
                 Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
-                Discount = NODISCOUNT;
+                Discount = NullDiscount;
                 TotalAmount = Subtotal;
             }
         }
