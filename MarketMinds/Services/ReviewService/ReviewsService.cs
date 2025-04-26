@@ -172,7 +172,6 @@ namespace MarketMinds.Services.ReviewService
 
         public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
-
             // Ensure rating is within the expected range (0-5)
             double validRating = Math.Max(0, Math.Min(5, rating));
 

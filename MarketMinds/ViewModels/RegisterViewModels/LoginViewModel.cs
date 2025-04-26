@@ -7,7 +7,7 @@ namespace ViewModelLayer.ViewModel
 {
 	public class LoginViewModel
 	{
-		private readonly IUserService _userService;
+		private readonly IUserService userService;
 
 		public string Username { get; set; } = string.Empty;
 		public string Password { get; set; } = string.Empty;
@@ -17,22 +17,21 @@ namespace ViewModelLayer.ViewModel
 
 		public LoginViewModel()
 		{
-			_userService = MarketMinds.App.UserService;
+			userService = MarketMinds.App.UserService;
 		}
-		
 		public LoginViewModel(IUserService userService)
 		{
-			_userService = userService;
+			this.userService = userService;
 		}
 
 		public async Task AttemptLogin(string username, string password)
 		{
-			try 
+			try
 			{
 				Username = username;
 				Password = password;
 
-				LoggedInUser = await _userService.GetUserByCredentialsAsync(Username, Password);
+				LoggedInUser = await userService.GetUserByCredentialsAsync(Username, Password);
 				LoginStatus = LoggedInUser != null;
 			}
 			catch (Exception ex)

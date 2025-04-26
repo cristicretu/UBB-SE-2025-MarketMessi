@@ -84,8 +84,8 @@ namespace MarketMinds
         private const int SELLER = 2;
 
         private static IConfiguration appConfiguration;
-        public static Window loginWindow = null!;
-        public static Window mainWindow = null!;
+        public static Window LoginWindow = null!;
+        public static Window MainWindow = null!;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -116,10 +116,9 @@ namespace MarketMinds
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // Create but don't show the main window yet
-            mainWindow = new UiLayer.MainWindow();
+            MainWindow = new UiLayer.MainWindow();
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
-            
             // Instantiate repositories
             ChatBotRepository = new ChatBotRepository(DatabaseConnection);
             ChatRepository = new ChatRepository(DatabaseConnection);
@@ -139,7 +138,6 @@ namespace MarketMinds
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
-                        
             // Initialize ImageUploadService if necessary
             if (ImageUploadService == null)
             {
@@ -167,25 +165,22 @@ namespace MarketMinds
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
             LoginViewModel = new LoginViewModel(UserService);
             RegisterViewModel = new RegisterViewModel(UserService);
-            
             // Show login window first instead of main window
-            loginWindow = new LoginWindow();
-            loginWindow.Activate();
+            LoginWindow = new LoginWindow();
+            LoginWindow.Activate();
         }
-        
         // Method to be called after successful login
         public static void ShowMainWindow()
         {
             if (CurrentUser != null)
             {
                 // Close login window
-                if (loginWindow != null)
+                if (LoginWindow != null)
                 {
-                    loginWindow.Close();
+                    LoginWindow.Close();
                 }
-                
                 // Show main window
-                mainWindow.Activate();
+                MainWindow.Activate();
             }
         }
     }

@@ -16,17 +16,14 @@ namespace MarketMinds
     {
         IntPtr WindowHandle { get; }
     }
-    
     public sealed partial class LoginWindow : Window
     {
         public LoginWindow()
         {
             this.InitializeComponent();
             this.Title = "Market Messi - Login";
-            
             // Navigate to the login page first
             ContentFrame.Navigate(typeof(Marketplace_SE.LoginPage));
-            
             // Subscribe to the navigation events
             ContentFrame.Navigated += ContentFrame_Navigated;
         }
@@ -41,4 +38,4 @@ namespace MarketMinds
             }
         }
     }
-} 
+}

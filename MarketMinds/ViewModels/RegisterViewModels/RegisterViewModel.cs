@@ -7,23 +7,22 @@ namespace ViewModelLayer.ViewModel
 {
 	public class RegisterViewModel
 	{
-		private readonly IUserService _userService;
+		private readonly IUserService userService;
 
 		public RegisterViewModel()
 		{
-			_userService = MarketMinds.App.UserService;
+			userService = MarketMinds.App.UserService;
 		}
-		
 		public RegisterViewModel(IUserService userService)
 		{
-			_userService = userService;
+			this.userService = userService;
 		}
 
 		public async Task<bool> IsUsernameTaken(string username)
 		{
 			try
 			{
-				return await _userService.IsUsernameTakenAsync(username);
+				return await userService.IsUsernameTakenAsync(username);
 			}
 			catch (Exception ex)
 			{
@@ -36,7 +35,7 @@ namespace ViewModelLayer.ViewModel
 		{
 			try
 			{
-				return await _userService.RegisterUserAsync(user);
+				return await userService.RegisterUserAsync(user);
 			}
 			catch (Exception ex)
 			{

@@ -43,11 +43,9 @@ namespace Marketplace_SE
             // Clear any previous validation messages
             UsernameValidationTextBlock.Text = string.Empty;
             ConfirmPasswordValidationTextBlock.Text = string.Empty;
-            
             // Set loading state
             CreateAccountButton.IsEnabled = false;
             RegisterProgressRing.IsActive = true;
-            
             try
             {
                 NewUser.Username = UsernameTextBox.Text;
@@ -86,7 +84,6 @@ namespace Marketplace_SE
 
                 // Attempt to create the user
                 bool result = await ViewModel.CreateNewUser(NewUser);
-                
                 if (result)
                 {
                     // Store user in the app context

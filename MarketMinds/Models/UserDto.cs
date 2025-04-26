@@ -7,25 +7,18 @@ namespace MarketMinds.Models
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
-        
         [JsonPropertyName("username")]
         public string Username { get; set; } = string.Empty;
-        
         [JsonPropertyName("email")]
         public string Email { get; set; } = string.Empty;
-        
         [JsonPropertyName("password")]
         public string Password { get; set; } = string.Empty;
-        
         [JsonPropertyName("userType")]
         public int UserType { get; set; }
-        
         [JsonPropertyName("balance")]
         public float Balance { get; set; }
-        
         [JsonPropertyName("rating")]
         public float Rating { get; set; }
-        
         [JsonPropertyName("token")]
         public string Token { get; set; } = string.Empty;
 
@@ -65,8 +58,7 @@ namespace MarketMinds.Models
                 Rating = Rating,
                 Password = Password
             };
-            
             return user;
         }
     }
-} 
+}

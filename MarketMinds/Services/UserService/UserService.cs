@@ -11,8 +11,8 @@ namespace MarketMinds.Services.UserService
 {
     public class UserService : IUserService
     {
-        private readonly HttpClient _httpClient;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly HttpClient httpClient;
+        private readonly JsonSerializerOptions jsonOptions;
 
         public UserService(IConfiguration configuration)
         {
@@ -21,9 +21,8 @@ namespace MarketMinds.Services.UserService
                 throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null");
             }
 
-            _httpClient = new HttpClient();
+            httpClient = new HttpClient();
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            
             if (string.IsNullOrEmpty(apiBaseUrl))
             {
                 throw new InvalidOperationException("API base URL is null or empty");
@@ -34,10 +33,10 @@ namespace MarketMinds.Services.UserService
                 apiBaseUrl += "/";
             }
 
-            _httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
-            Console.WriteLine($"Initialized HTTP client with base address: {_httpClient.BaseAddress}");
+            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            Console.WriteLine($"Initialized HTTP client with base address: {httpClient.BaseAddress}");
 
-            _jsonOptions = new JsonSerializerOptions
+            jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
@@ -66,15 +65,13 @@ namespace MarketMinds.Services.UserService
                     Password = password
                 };
 
-                var response = await _httpClient.PostAsJsonAsync("users/login", loginRequest);
-                
+                var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
                     return userDto?.ToDomainUser();
                 }
-                
                 return null;
             }
             catch (Exception ex)
@@ -88,15 +85,13 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await _httpClient.GetAsync($"users/{username}");
-                
+                var response = await httpClient.GetAsync($"users/{username}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
                     return userDto?.ToDomainUser();
                 }
-                
                 return null;
             }
             catch (Exception ex)
@@ -110,15 +105,13 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await _httpClient.GetAsync($"users/by-email/{email}");
-                
+                var response = await httpClient.GetAsync($"users/by-email/{email}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
                     return userDto?.ToDomainUser();
                 }
-                
                 return null;
             }
             catch (Exception ex)
@@ -132,15 +125,13 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await _httpClient.GetAsync($"users/check-username/{username}");
-                
+                var response = await httpClient.GetAsync($"users/check-username/{username}");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<UsernameCheckResult>(content, _jsonOptions);
+                    var result = JsonSerializer.Deserialize<UsernameCheckResult>(content, jsonOptions);
                     return result.Exists;
                 }
-                
                 // Default to true (username taken) if there's an error
                 return true;
             }
@@ -189,7 +180,7 @@ namespace MarketMinds.Services.UserService
                     Password = password
                 };
 
-                var response = await _httpClient.PostAsJsonAsync("users/login", loginRequest);
+                var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -204,15 +195,13 @@ namespace MarketMinds.Services.UserService
             try
             {
                 var userDto = new UserDto(newUser);
-                var response = await _httpClient.PostAsJsonAsync("users/register", userDto);
-                
+                var response = await httpClient.PostAsJsonAsync("users/register", userDto);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var createdUserDto = JsonSerializer.Deserialize<UserDto>(content, _jsonOptions);
+                    var createdUserDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
                     return createdUserDto?.Id ?? -1;
                 }
-                
                 return -1;
             }
             catch (Exception ex)
@@ -221,7 +210,6 @@ namespace MarketMinds.Services.UserService
                 return -1;
             }
         }
-        
         private class UsernameCheckResult
         {
             public bool Exists { get; set; }
