@@ -88,7 +88,9 @@ namespace Marketplace_SE
 
         private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(GetHelpPage));
+            var helpWindow = new Window();
+            helpWindow.Content = new GetHelpPage();
+            helpWindow.Activate();
         }
 
         private async Task ShowNotification(string title, string message)

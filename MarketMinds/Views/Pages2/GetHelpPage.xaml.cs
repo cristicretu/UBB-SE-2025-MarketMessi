@@ -26,15 +26,21 @@ namespace Marketplace_SE
         }
         private void OnButtonClickOpenChatbotConversation(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(ChatBotPage));
+            var chatbotWindow = new Window();
+            chatbotWindow.Content = new ChatBotPage();
+            chatbotWindow.Activate();
         }
         private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(UserFindCallPage));
+            var customerSupportWindow = new Window();
+            customerSupportWindow.Content = new UserFindCallPage();
+            customerSupportWindow.Activate();
         }
         private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(MainMarketplacePage));
+            var mainMarketplaceWindow = new Window();
+            mainMarketplaceWindow.Content = new MainMarketplacePage();
+            mainMarketplaceWindow.Activate();
         }
     }
 }
