@@ -30,6 +30,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // compatibility with old API without EF, need to remove this when EF is fully implemented
 builder.Services.AddSingleton<DataBaseConnection>();
 
+builder.Services.AddHttpClient();
+
 // EntityFramework database connection setup
 var InitialCatalog = builder.Configuration["InitialCatalog"];
 var LocalDataSource = builder.Configuration["LocalDataSource"];
