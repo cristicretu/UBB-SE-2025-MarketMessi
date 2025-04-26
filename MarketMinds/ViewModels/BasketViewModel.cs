@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Services.BasketService;
+using System.Diagnostics;
 
 namespace ViewModelLayer.ViewModel
 {
@@ -20,6 +22,8 @@ namespace ViewModelLayer.ViewModel
         public double TotalAmount { get; private set; }
         public string PromoCode { get; set; }
         public string ErrorMessage { get; set; }
+        public bool IsCheckoutInProgress { get; private set; }
+        public bool CheckoutSuccess { get; private set; }
 
         public BasketViewModel(User currentUser, BasketService basketService)
         {
@@ -28,6 +32,8 @@ namespace ViewModelLayer.ViewModel
             BasketItems = new List<BasketItem>();
             PromoCode = string.Empty;
             ErrorMessage = string.Empty;
+            IsCheckoutInProgress = false;
+            CheckoutSuccess = false;
         }
 
         public void LoadBasket()
@@ -173,18 +179,60 @@ namespace ViewModelLayer.ViewModel
 
         public bool CanCheckout()
         {
-            return basket != null && basketService.ValidateBasketBeforeCheckOut(basket.Id);
+            return basket != null && BasketItems.Any() && !IsCheckoutInProgress &&
+                   basketService.ValidateBasketBeforeCheckOut(basket.Id);
         }
 
-        public void Checkout()
+        public async Task<bool> CheckoutAsync()
         {
             if (!CanCheckout())
             {
                 ErrorMessage = "Cannot checkout. Please check your basket items.";
-                return;
+                return false;
             }
 
-            ErrorMessage = string.Empty;
+            try
+            {
+                IsCheckoutInProgress = true;
+                ErrorMessage = string.Empty;
+
+                Debug.WriteLine($"Starting checkout process for user {currentUser.Id}, basket {basket.Id}");
+
+                // Call the service to process the checkout
+                CheckoutSuccess = await basketService.CheckoutBasketAsync(currentUser.Id, basket.Id);
+
+                if (CheckoutSuccess)
+                {
+                    Debug.WriteLine("Checkout completed successfully");
+                    // Clear the local basket after successful checkout
+                    BasketItems.Clear();
+                    UpdateTotals();
+                    ErrorMessage = string.Empty;
+                    return true;
+                }
+                else
+                {
+                    Debug.WriteLine("Checkout failed");
+                    ErrorMessage = "Checkout failed. Please try again later.";
+                    return false;
+                }
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Insufficient funds"))
+            {
+                Debug.WriteLine($"Insufficient funds error: {ex.Message}");
+                ErrorMessage = ex.Message;
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during checkout: {ex.Message}");
+                ErrorMessage = $"Checkout error: {ex.Message}";
+                return false;
+            }
+            finally
+            {
+                IsCheckoutInProgress = false;
+            }
         }
 
         public void DecreaseProductQuantity(int productId)

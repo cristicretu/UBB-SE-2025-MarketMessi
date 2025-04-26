@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using DomainLayer.Domain;
 
 namespace MarketMinds.Services.BasketService
@@ -105,5 +106,13 @@ namespace MarketMinds.Services.BasketService
         /// <param name="userId">The ID of the user.</param>
         /// <param name="productId">The ID of the product to increase.</param>
         void IncreaseProductQuantity(int userId, int productId);
+
+        /// <summary>
+        /// Creates an order from the user's basket items and clears the basket.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="basketId">The ID of the basket.</param>
+        /// <returns>True if checkout was successful, otherwise false.</returns>
+        Task<bool> CheckoutBasketAsync(int userId, int basketId);
     }
 }

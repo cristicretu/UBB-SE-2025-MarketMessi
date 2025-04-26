@@ -130,7 +130,9 @@ namespace MarketMinds.ViewModels
 
                     // Get user orders
                     var userOrders = await accountPageService.GetUserOrdersAsync(CurrentUser.Id);
-                    Orders.Clear();
+
+                    // Create a new collection to force UI update
+                    var newOrdersCollection = new ObservableCollection<UserOrder>();
 
                     System.Diagnostics.Debug.WriteLine($"Retrieved {userOrders?.Count ?? 0} orders for user");
 
@@ -140,9 +142,14 @@ namespace MarketMinds.ViewModels
                         {
                             // Add additional order properties if needed
                             order.OrderStatus = DetermineOrderStatus(order);
-                            Orders.Add(order);
+                            newOrdersCollection.Add(order);
+                            System.Diagnostics.Debug.WriteLine($"Added order to collection: ID={order.Id}, Name={order.Name}, Cost={order.Cost}");
                         }
                     }
+
+                    // Replace the entire collection to ensure UI update
+                    Orders = newOrdersCollection;
+                    System.Diagnostics.Debug.WriteLine($"Updated Orders collection with {Orders.Count} items");
                 }
                 else
                 {

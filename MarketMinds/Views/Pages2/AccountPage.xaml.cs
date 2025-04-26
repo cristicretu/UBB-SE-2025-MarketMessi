@@ -136,6 +136,8 @@ namespace Marketplace_SE
         {
             orderList.Children.Clear();
 
+            System.Diagnostics.Debug.WriteLine($"UpdateOrdersUI called - Orders count: {ViewModel.Orders?.Count ?? 0}");
+
             if (ViewModel.Orders == null || ViewModel.Orders.Count == 0)
             {
                 TextBlock noOrdersText = new TextBlock
@@ -147,13 +149,17 @@ namespace Marketplace_SE
                     FontSize = 16
                 };
                 orderList.Children.Add(noOrdersText);
+                System.Diagnostics.Debug.WriteLine("Added 'No orders found' text to UI");
                 return;
             }
 
             foreach (var order in ViewModel.Orders)
             {
+                System.Diagnostics.Debug.WriteLine($"Creating UI for order: ID={order.Id}, Name={order.Name}, Cost={order.Cost}");
                 CreateOrderUI(order);
             }
+
+            System.Diagnostics.Debug.WriteLine($"Added {ViewModel.Orders.Count} orders to UI");
         }
 
         private void OnButtonClickNavigateAccountPageMainPage(object sender, RoutedEventArgs e)
@@ -257,23 +263,16 @@ namespace Marketplace_SE
                 FontWeight = FontWeights.SemiBold
             };
 
-            TextBlock dateText = new TextBlock
-            {
-                Text = $"Date: {ViewModel.FormatOrderDateTime(order.Created)}",
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-
             TextBlock statusText = new TextBlock
             {
                 Text = $"Status: {order.OrderStatus}",
                 Margin = new Thickness(0, 0, 0, 5),
-                Foreground = new SolidColorBrush(Colors.DarkBlue)
+                Foreground = new SolidColorBrush(Colors.LightGreen),
             };
 
             detailsPanel.Children.Add(nameText);
             detailsPanel.Children.Add(descriptionText);
             detailsPanel.Children.Add(priceText);
-            detailsPanel.Children.Add(dateText);
             detailsPanel.Children.Add(statusText);
 
             // Buttons Panel

@@ -5,6 +5,7 @@ using server.Models; // Using server models
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace server.Controllers
 {
@@ -78,5 +79,87 @@ namespace server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred fetching user orders.");
             }
         }
+
+        // POST: api/account/{userId}/orders
+        [HttpPost("{userId}/orders")]
+        [ProducesResponseType(typeof(List<Order>), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<Order>>> CreateOrderFromBasket(int userId, [FromBody] CreateOrderRequest request)
+        {
+            _logger.LogInformation("CreateOrderFromBasket endpoint called for userId: {UserId}", userId);
+
+            if (userId <= 0)
+            {
+                _logger.LogWarning("CreateOrderFromBasket called with invalid userId: {UserId}", userId);
+                return BadRequest("User ID must be positive.");
+            }
+
+            if (request == null || request.BasketId <= 0)
+            {
+                _logger.LogWarning("CreateOrderFromBasket called with invalid basketId for userId: {UserId}", userId);
+                return BadRequest("Basket ID must be provided and positive.");
+            }
+
+            try
+            {
+                // First get the user to check their balance
+                var user = await _accountRepository.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    _logger.LogWarning("User not found for userId: {UserId}", userId);
+                    return NotFound($"User with ID {userId} not found.");
+                }
+
+                // Get the basket total cost
+                var basketTotal = await _accountRepository.GetBasketTotalAsync(userId, request.BasketId);
+
+                // Check if user has enough balance
+                if (user.Balance < basketTotal)
+                {
+                    _logger.LogWarning("User {UserId} has insufficient funds. Balance: {Balance}, Required: {Total}",
+                        userId, user.Balance, basketTotal);
+                    return BadRequest($"Insufficient funds. Your balance is ${user.Balance:F2}, but the total cost is ${basketTotal:F2}.");
+                }
+
+                // Create orders from basket
+                var createdOrders = await _accountRepository.CreateOrderFromBasketAsync(userId, request.BasketId);
+
+                // Update user's balance
+                user.Balance -= basketTotal;
+                await _accountRepository.UpdateUserAsync(user);
+
+                _logger.LogInformation("Successfully created {OrderCount} orders for userId: {UserId} from basketId: {BasketId}. New balance: {Balance}",
+                    createdOrders.Count, userId, request.BasketId, user.Balance);
+
+                return StatusCode(StatusCodes.Status201Created, createdOrders);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid argument in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
+                    userId, request.BasketId);
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Operation not valid in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
+                    userId, request.BasketId);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
+                    userId, request.BasketId);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred creating orders from basket.");
+            }
+        }
+    }
+
+    // DTO for the create order request
+    public class CreateOrderRequest
+    {
+        public int BasketId { get; set; }
     }
 }

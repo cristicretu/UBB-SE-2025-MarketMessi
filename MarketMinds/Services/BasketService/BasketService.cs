@@ -46,8 +46,8 @@ namespace MarketMinds.Services.BasketService
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                // Match server's configuration
-                ReferenceHandler = ReferenceHandler.Preserve
+                // Changed from Preserve to IgnoreCycles
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
             };
 
             // Set longer timeout for HTTP requests
@@ -107,9 +107,12 @@ namespace MarketMinds.Services.BasketService
                         ReadCommentHandling = JsonCommentHandling.Skip,
                         NumberHandling = JsonNumberHandling.AllowReadingFromString,
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        // Use Preserve for consistency
-                        ReferenceHandler = ReferenceHandler.Preserve
+                        // Use IgnoreCycles instead of Preserve
+                        ReferenceHandler = ReferenceHandler.IgnoreCycles
                     };
+
+                    // Add UserJsonConverter to handle password field type mismatch
+                    options.Converters.Add(new MarketMinds.Services.UserJsonConverter());
 
                     // Deserialize directly
                     var basket = JsonSerializer.Deserialize<Basket>(responseContent, options);
@@ -455,6 +458,77 @@ namespace MarketMinds.Services.BasketService
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Could not increase quantity: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> CheckoutBasketAsync(int userId, int basketId)
+        {
+            if (userId <= NOUSER)
+            {
+                throw new ArgumentException("Invalid user ID");
+            }
+
+            if (basketId <= NOBASKET)
+            {
+                throw new ArgumentException("Invalid basket ID");
+            }
+
+            try
+            {
+                // First, validate the basket before checkout
+                if (!ValidateBasketBeforeCheckOut(basketId))
+                {
+                    throw new InvalidOperationException("Basket validation failed");
+                }
+
+                // Create an HTTP client for account API
+                using var httpClientAccount = new HttpClient();
+                httpClientAccount.BaseAddress = new Uri(apiBaseUrl);
+                httpClientAccount.Timeout = TimeSpan.FromSeconds(30);
+
+                // Create request for the account API to create orders from the basket
+                var request = new
+                {
+                    BasketId = basketId
+                };
+
+                // Call the account API to create the order
+                var response = await httpClientAccount.PostAsJsonAsync($"api/account/{userId}/orders", request);
+
+                // Handle the response
+                if (response.IsSuccessStatusCode)
+                {
+                    // If successful order creation, the API should have cleared the basket already
+                    System.Diagnostics.Debug.WriteLine($"Successfully created order from basket {basketId} for user {userId}");
+                    return true;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Error creating order: {response.StatusCode}, Content: {errorContent}");
+
+                    // If it's a balance issue (400 status code), throw a more user-friendly message
+                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest &&
+                        errorContent.Contains("Insufficient funds"))
+                    {
+                        throw new InvalidOperationException(errorContent);
+                    }
+
+                    return false;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
+            }
+            catch (InvalidOperationException)
+            {
+                // Re-throw InvalidOperationException as-is to preserve the message
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
             }
         }
     }

@@ -185,13 +185,42 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
                     Debug.WriteLine($"Orders API response received, length: {responseContent?.Length ?? 0} chars");
+                    Debug.WriteLine($"Orders content: {responseContent}");
 
                     var orders = JsonSerializer.Deserialize<List<UserOrder>>(responseContent, _jsonOptions);
                     Debug.WriteLine($"Deserialized {orders?.Count ?? 0} orders");
 
-                    // If we got orders, return them
+                    // If we got orders, map the server model properties to client model
                     if (orders != null && orders.Any())
                     {
+                        foreach (var order in orders)
+                        {
+                            // Map ItemName to Name if needed
+                            if (!string.IsNullOrEmpty(order.ItemName) && string.IsNullOrEmpty(order.Name))
+                            {
+                                order.Name = order.ItemName;
+                            }
+
+                            // Map Price to Cost if needed
+                            if (order.Price > 0 && order.Cost <= 0)
+                            {
+                                order.Cost = order.Price;
+                            }
+
+                            // Set a default order status if not provided
+                            if (string.IsNullOrEmpty(order.OrderStatus))
+                            {
+                                order.OrderStatus = "Completed";
+                            }
+
+                            // Ensure each order has a Created timestamp
+                            if (order.Created == 0)
+                            {
+                                order.Created = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                            }
+                        }
+
+                        Debug.WriteLine($"Successfully mapped {orders.Count} orders");
                         return orders;
                     }
                     else
@@ -215,7 +244,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 Debug.WriteLine($"Error retrieving orders: {ex.GetType().Name}: {ex.Message}");
             }
 
-            // If fallback is needed for development, create test orders
+            // Return empty list if no orders found or error occurred
             Debug.WriteLine("No orders returned from API, returning empty list");
             return new List<UserOrder>();
         }
@@ -232,6 +261,85 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
 
             Debug.WriteLine($"Created user copy: ID={copy.Id}, Username={copy.Username}, Balance={copy.Balance}");
             return copy;
+        }
+
+        // Helper method to parse orders from JSON when normal deserialization fails
+        private List<UserOrder> TryParseOrdersFromJson(string json)
+        {
+            try
+            {
+                var orders = new List<UserOrder>();
+                var jsonDoc = JsonDocument.Parse(json);
+
+                if (jsonDoc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var element in jsonDoc.RootElement.EnumerateArray())
+                    {
+                        var order = new UserOrder();
+
+                        if (element.TryGetProperty("id", out var idProp) && idProp.ValueKind == JsonValueKind.Number)
+                        {
+                            order.Id = idProp.GetInt32();
+                        }
+
+                        // Try both name properties
+                        if (element.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String)
+                        {
+                            order.Name = nameProp.GetString();
+                        }
+                        else if (element.TryGetProperty("itemName", out var itemNameProp) && itemNameProp.ValueKind == JsonValueKind.String)
+                        {
+                            order.Name = itemNameProp.GetString();
+                        }
+
+                        if (element.TryGetProperty("description", out var descProp) && descProp.ValueKind == JsonValueKind.String)
+                        {
+                            order.Description = descProp.GetString();
+                        }
+
+                        // Try both cost properties
+                        if (element.TryGetProperty("cost", out var costProp) && costProp.ValueKind == JsonValueKind.Number)
+                        {
+                            order.Cost = costProp.GetSingle();
+                        }
+                        else if (element.TryGetProperty("price", out var priceProp) && priceProp.ValueKind == JsonValueKind.Number)
+                        {
+                            order.Cost = priceProp.GetSingle();
+                        }
+
+                        if (element.TryGetProperty("sellerId", out var sellerIdProp) && sellerIdProp.ValueKind == JsonValueKind.Number)
+                        {
+                            order.SellerId = sellerIdProp.GetInt32();
+                        }
+
+                        if (element.TryGetProperty("buyerId", out var buyerIdProp) && buyerIdProp.ValueKind == JsonValueKind.Number)
+                        {
+                            order.BuyerId = buyerIdProp.GetInt32();
+                        }
+
+                        if (element.TryGetProperty("created", out var createdProp))
+                        {
+                            if (createdProp.ValueKind == JsonValueKind.Number)
+                            {
+                                order.Created = (ulong)createdProp.GetInt64();
+                            }
+                        }
+
+                        // Set default status
+                        order.OrderStatus = "Completed";
+
+                        orders.Add(order);
+                    }
+                }
+
+                Debug.WriteLine($"Manually parsed {orders.Count} orders from JSON");
+                return orders;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to manually parse orders: {ex.Message}");
+                return new List<UserOrder>();
+            }
         }
 
         // Try to parse a User from JSON response if automatic deserialization fails

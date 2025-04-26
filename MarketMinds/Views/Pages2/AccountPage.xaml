@@ -105,7 +105,8 @@
                           VerticalScrollBarVisibility="Auto"
                           Padding="5">
                 <StackPanel x:Name="orderList"
-                            Spacing="10"/>
+                            Spacing="10"
+                            Visibility="Visible"/>
             </ScrollViewer>
         </Border>
 
