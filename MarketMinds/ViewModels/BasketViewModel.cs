@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Services.BasketService;
 
@@ -20,6 +23,8 @@ namespace ViewModelLayer.ViewModel
         public double TotalAmount { get; private set; }
         public string PromoCode { get; set; }
         public string ErrorMessage { get; set; }
+        public bool IsCheckoutInProgress { get; private set; }
+        public bool CheckoutSuccess { get; private set; }
 
         public BasketViewModel(User currentUser, BasketService basketService)
         {
@@ -28,6 +33,8 @@ namespace ViewModelLayer.ViewModel
             BasketItems = new List<BasketItem>();
             PromoCode = string.Empty;
             ErrorMessage = string.Empty;
+            IsCheckoutInProgress = false;
+            CheckoutSuccess = false;
         }
 
         public void LoadBasket()
@@ -173,18 +180,57 @@ namespace ViewModelLayer.ViewModel
 
         public bool CanCheckout()
         {
-            return basket != null && basketService.ValidateBasketBeforeCheckOut(basket.Id);
+            return basket != null && BasketItems.Any() && !IsCheckoutInProgress &&
+                   basketService.ValidateBasketBeforeCheckOut(basket.Id);
         }
 
-        public void Checkout()
+        public async Task<bool> CheckoutAsync()
         {
             if (!CanCheckout())
             {
                 ErrorMessage = "Cannot checkout. Please check your basket items.";
-                return;
+                return false;
             }
 
-            ErrorMessage = string.Empty;
+            try
+            {
+                IsCheckoutInProgress = true;
+                ErrorMessage = string.Empty;
+
+                // Call the service to process the checkout
+                CheckoutSuccess = await basketService.CheckoutBasketAsync(currentUser.Id, basket.Id, Discount, TotalAmount);
+
+                if (CheckoutSuccess)
+                {
+                    // Clear the local basket after successful checkout
+                    BasketItems.Clear();
+                    UpdateTotals();
+                    ErrorMessage = string.Empty;
+                    return true;
+                }
+                else
+                {
+                    Debug.WriteLine("Checkout failed");
+                    ErrorMessage = "Checkout failed. Please try again later.";
+                    return false;
+                }
+            }
+            catch (InvalidOperationException insufficientFundsCheckoutException) when (insufficientFundsCheckoutException.Message.Contains("Insufficient funds"))
+            {
+                Debug.WriteLine($"Insufficient funds error: {insufficientFundsCheckoutException.Message}");
+                ErrorMessage = insufficientFundsCheckoutException.Message;
+                return false;
+            }
+            catch (Exception checkoutException)
+            {
+                Debug.WriteLine($"Error during checkout: {checkoutException.Message}");
+                ErrorMessage = $"Checkout error: {checkoutException.Message}";
+                return false;
+            }
+            finally
+            {
+                IsCheckoutInProgress = false;
+            }
         }
 
         public void DecreaseProductQuantity(int productId)
@@ -220,17 +266,16 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                BasketTotals totals = basketService.CalculateBasketTotals(basket.Id, PromoCode);
-                Subtotal = totals.Subtotal;
-                Discount = totals.Discount;
-                TotalAmount = totals.TotalAmount;
+                Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
+
+                Discount = string.IsNullOrEmpty(PromoCode) ? NullDiscount :
+                    basketService.GetPromoCodeDiscount(PromoCode, Subtotal);
+
+                TotalAmount = Math.Max(0, Subtotal - Discount);
             }
             catch (Exception totalUpdateException)
             {
-                // Handle calculation errors
-                ErrorMessage = $"Failed to calculate totals: {totalUpdateException.Message}";
-                // Set default values
-                Subtotal = BasketItems.Sum(item => item.GetPrice());
+                Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
                 Discount = NullDiscount;
                 TotalAmount = Subtotal;
             }

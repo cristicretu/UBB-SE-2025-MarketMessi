@@ -1,29 +1,41 @@
 using System;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
-using MarketMinds.Services.RegisterService;
+using MarketMinds.Services.UserService;
 
 namespace ViewModelLayer.ViewModel
 {
 	public class RegisterViewModel
 	{
-		private readonly RegisterService registerService;
+		private readonly IUserService userService;
 
 		public RegisterViewModel()
 		{
-			registerService = new RegisterService();
+			userService = MarketMinds.App.UserService;
+		}
+		public RegisterViewModel(IUserService userService)
+		{
+			this.userService = userService;
 		}
 
 		public async Task<bool> IsUsernameTaken(string username)
 		{
-			return await registerService.IsUsernameTaken(username);
+			try
+			{
+				return await userService.IsUsernameTakenAsync(username);
+			}
+			catch (Exception usernameCheckException)
+			{
+				Console.WriteLine($"Error checking username: {usernameCheckException.Message}");
+				return true; // Assume username is taken if an error occurs
+			}
 		}
 
 		public async Task<bool> CreateNewUser(User user)
 		{
 			try
 			{
-				return await registerService.RegisterUser(user);
+				return await userService.RegisterUserAsync(user);
 			}
 			catch (Exception userCreationException)
 			{

@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Marketplace_SE;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -97,5 +98,49 @@ namespace UiLayer
         private Window leaveReviewViewWindow;
         public Window CreateListingViewWindow { get; set; }
         private Window seeReviewsWindow;
+        private Window mainMarketplacePageWindow;
+
+        private void HandleOpenMainMarketplacePageButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Check if window exists and try to access it (will throw an exception if already closed)
+                bool isWindowActive = mainMarketplacePageWindow != null && mainMarketplacePageWindow.Visible;
+
+                if (!isWindowActive)
+                {
+                    // Create a new window if one doesn't exist or the previous one was closed
+                    mainMarketplacePageWindow = new Window();
+                    mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
+
+                    // Add a closed event handler to set the reference to null when window is closed
+                    mainMarketplacePageWindow.Closed += (s, args) =>
+                    {
+                        mainMarketplacePageWindow = null;
+                    };
+
+                    mainMarketplacePageWindow.Activate();
+                }
+                else
+                {
+                    // Window exists and is visible, bring it to front
+                    mainMarketplacePageWindow.Activate();
+                }
+            }
+            catch (Exception)
+            {
+                // If any exception occurs (like the COM exception), create a new window
+                mainMarketplacePageWindow = new Window();
+                mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
+
+                // Add a closed event handler to set the reference to null when window is closed
+                mainMarketplacePageWindow.Closed += (s, args) =>
+                {
+                    mainMarketplacePageWindow = null;
+                };
+
+                mainMarketplacePageWindow.Activate();
+            }
+        }
     }
 }

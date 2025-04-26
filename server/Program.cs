@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
 using System.Text.Json.Serialization;
 using server.MarketMinds.Repositories.BorrowProductsRepository;
+using server.MarketMinds.Repositories.AccountRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +35,7 @@ builder.Services.AddSingleton<DataBaseConnection>();
 var InitialCatalog = builder.Configuration["InitialCatalog"];
 var LocalDataSource = builder.Configuration["LocalDataSource"];
 var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Register all repositories
@@ -46,6 +47,7 @@ builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository
 builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -306,13 +307,45 @@ namespace MarketMinds.Views.Pages
             });
         }
 
-        private void HandleCheckoutButton_Click(object sender, RoutedEventArgs routedEventArgs)
+        private async void HandleCheckoutButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (basketViewModel.CanCheckout())
             {
-                basketViewModel.Checkout();
-                // Navigate to checkout page
-                ShowCheckoutMessage();
+                // Show loading indicator
+                CheckoutButton.IsEnabled = false;
+                CheckoutButton.Content = "Processing...";
+
+                Debug.WriteLine($"DIAGNOSTIC: BasketView - Starting checkout with PromoCode='{basketViewModel.PromoCode}', Discount=${basketViewModel.Discount:F2}, Total=${basketViewModel.TotalAmount:F2}");
+
+                // Call async checkout method
+                bool success = await basketViewModel.CheckoutAsync();
+
+                // Reset button
+                CheckoutButton.Content = "Proceed to Checkout";
+                CheckoutButton.IsEnabled = true;
+
+                if (success)
+                {
+                    // Refresh the UI to show empty basket
+                    LoadBasketData();
+
+                    // Show success message
+                    await ShowCheckoutSuccessMessage();
+                }
+                else
+                {
+                    // Show error message
+                    if (!string.IsNullOrEmpty(basketViewModel.ErrorMessage))
+                    {
+                        ErrorMessageTextBlock.Text = basketViewModel.ErrorMessage;
+                        ErrorMessageTextBlock.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        ErrorMessageTextBlock.Text = "Unable to complete checkout. Please try again later.";
+                        ErrorMessageTextBlock.Visibility = Visibility.Visible;
+                    }
+                }
             }
             else
             {
@@ -321,12 +354,12 @@ namespace MarketMinds.Views.Pages
             }
         }
 
-        private async void ShowCheckoutMessage()
+        private async Task ShowCheckoutSuccessMessage()
         {
             ContentDialog dialog = new ContentDialog
             {
-                Title = "Checkout",
-                Content = "This would navigate to the checkout process. Checkout functionality is not yet implemented.",
+                Title = "Order Placed Successfully",
+                Content = "Your order has been placed successfully. You can view your orders in the Account page.",
                 CloseButtonText = "OK",
                 XamlRoot = Content.XamlRoot
             };

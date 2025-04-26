@@ -60,6 +60,9 @@
             <Button x:Name="BuyProductListViewButton" Content="View Buy Products"
                     Width="200" Height="50" Margin="10,10,10,10"
                     Click="HandleBuyProductListViewButton_Click"/>
+            <Button x:Name="OpenMainMarketplacePageButton" Content="Open Main Marketplace Page"
+                    Width="250" Height="50" Margin="10,10,10,10"
+                    Click="HandleOpenMainMarketplacePageButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>
