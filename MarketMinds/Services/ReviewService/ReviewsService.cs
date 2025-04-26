@@ -40,6 +40,11 @@ namespace MarketMinds.Services.ReviewService
 
         public ObservableCollection<Review> GetReviewsBySeller(User seller)
         {
+            if (seller == null)
+            {
+                return new ObservableCollection<Review>();
+            }
+
             try
             {
                 // Get the JSON response as a string first
@@ -101,6 +106,11 @@ namespace MarketMinds.Services.ReviewService
 
         public ObservableCollection<Review> GetReviewsByBuyer(User buyer)
         {
+            if (buyer == null)
+            {
+                return new ObservableCollection<Review>();
+            }
+
             try
             {
                 // Get the JSON response as a string first

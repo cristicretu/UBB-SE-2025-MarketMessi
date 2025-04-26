@@ -23,6 +23,9 @@ using MarketMinds.Services.DreamTeam.ChatService;
 using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.Services.UserService;
+using Marketplace_SE.Services.DreamTeam;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MarketMinds
 {
@@ -52,6 +55,8 @@ namespace MarketMinds
         public static ChatService ChatService;
         public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
+        public static IUserService UserService;
+        public static AccountPageService AccountPageService { get; private set; }
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -71,6 +76,8 @@ namespace MarketMinds
         public static ChatBotViewModel ChatBotViewModel { get; private set; }
         public static ChatViewModel ChatViewModel { get; private set; }
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
+        public static LoginViewModel LoginViewModel { get; private set; }
+        public static RegisterViewModel RegisterViewModel { get; private set; }
         public static User CurrentUser { get; set; }
         public static User TestingUser { get; set; }
 
@@ -78,6 +85,8 @@ namespace MarketMinds
         private const int SELLER = 2;
 
         private static IConfiguration appConfiguration;
+        public static Window LoginWindow = null!;
+        public static Window MainWindow = null!;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -107,14 +116,8 @@ namespace MarketMinds
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            mainWindow = new UiLayer.MainWindow();
-            mainWindow.Activate();
-            // Create test users that match the database
-            TestingUser = new User(1, "alice123", "alice@example.com");
-            TestingUser.UserType = BUYER; // Matches database value
-            CurrentUser = new User(2, "bob321", "bob@example.com");
-            CurrentUser.UserType = SELLER; // Matches database value
-
+            // Create but don't show the main window yet
+            MainWindow = new UiLayer.MainWindow();
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
             // Instantiate repositories
@@ -131,10 +134,11 @@ namespace MarketMinds
             ConditionService = new ProductConditionService(Configuration);
             ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(Configuration);
+            UserService = new UserService(Configuration);
+            AccountPageService = new AccountPageService(Configuration);
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
-
             // Instantiate view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -153,7 +157,25 @@ namespace MarketMinds
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+            LoginViewModel = new LoginViewModel(UserService);
+            RegisterViewModel = new RegisterViewModel(UserService);
+            // Show login window first instead of main window
+            LoginWindow = new LoginWindow();
+            LoginWindow.Activate();
         }
-        private Window mainWindow = null!;
+        // Method to be called after successful login
+        public static void ShowMainWindow()
+        {
+            if (CurrentUser != null)
+            {
+                // Close login window
+                if (LoginWindow != null)
+                {
+                    LoginWindow.Close();
+                }
+                // Show main window
+                MainWindow.Activate();
+            }
+        }
     }
 }
