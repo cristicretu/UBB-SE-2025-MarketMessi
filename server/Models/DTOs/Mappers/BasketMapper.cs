@@ -15,7 +15,9 @@ namespace server.Models.DTOs.Mappers
         public static BasketDTO ToDTO(Basket basket)
         {
             if (basket == null)
+            {
                 return null;
+            }
 
             return new BasketDTO
             {
@@ -28,7 +30,9 @@ namespace server.Models.DTOs.Mappers
         public static BasketItemDTO ToDTO(BasketItem item)
         {
             if (item == null)
+            {
                 return null;
+            }
 
             return new BasketItemDTO
             {
@@ -44,7 +48,9 @@ namespace server.Models.DTOs.Mappers
         public static ProductDTO ToProductDTO(BuyProduct product)
         {
             if (product == null)
+            {
                 return null;
+            }
 
             return new ProductDTO
             {
@@ -62,19 +68,22 @@ namespace server.Models.DTOs.Mappers
                     Balance = UNDEFINED_BALANCE,
                     Rating = UNDEFINED_RATING,
                     Password = UNDEFINED_PASSWORD
-                } : null,
+                } 
+                : null,
                 Condition = product.Condition != null ? new ConditionDTO
                 {
                     Id = product.Condition.Id,
                     DisplayTitle = product.Condition.Name,
                     Description = string.Empty  // Server-side Condition doesn't have Description
-                } : null,
+                } 
+                : null,
                 Category = product.Category != null ? new CategoryDTO
                 {
                     Id = product.Category.Id,
                     DisplayTitle = product.Category.Name,
                     Description = product.Category.Description
-                } : null,
+                } 
+                : null,
                 Tags = product.Tags?.Select(tag => new ProductTagDTO
                 {
                     Id = tag.Id,

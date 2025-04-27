@@ -12,7 +12,10 @@ namespace server.Models
         [JsonIgnore] // Break circular reference during serialization
         public BorrowProduct? Product { get; set; }
         
-        public BorrowProductImage() { }
+        public BorrowProductImage()
+        {
+            // Default constructor
+        }
         
         public BorrowProductImage(int id, string url, int productId)
         {

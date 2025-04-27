@@ -146,7 +146,7 @@ namespace server.Controllers
             using (var sha256 = SHA256.Create())
             {
                 byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+                return BitConverter.ToString(hashedBytes).Replace("-", string.Empty).ToLower();
             }
         }
 

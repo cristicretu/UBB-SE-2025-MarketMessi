@@ -51,14 +51,12 @@ namespace MarketMinds.Controllers
             {
                 var newCategory = productCategoryRepository.CreateProductCategory(
                     request.DisplayTitle,
-                    request.Description
-                );
+                    request.Description);
                 
                 return CreatedAtAction(
                     nameof(GetAllProductCategories), 
                     new { id = newCategory.Id }, 
-                    newCategory
-                );
+                    newCategory);
             }
             catch (ArgumentException argumentException)
             {

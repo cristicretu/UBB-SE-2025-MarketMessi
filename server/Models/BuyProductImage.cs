@@ -19,7 +19,10 @@ namespace server.Models
         // Navigation property
         public BuyProduct? Product { get; set; }
         
-        public BuyProductImage() { }
+        public BuyProductImage()
+        {
+            // Default constructor
+        }
 
         public BuyProductImage(int id, string url, int productId)
         {

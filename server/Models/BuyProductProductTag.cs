@@ -24,7 +24,10 @@ namespace server.Models
 
         // Navigation properties and Foreign Key relationships are configured in ApplicationDbContext
 
-        public BuyProductProductTag() { }
+        public BuyProductProductTag()
+        {
+            // Default constructor
+        }
 
         public BuyProductProductTag(int id, int productId, int tagId)
         {

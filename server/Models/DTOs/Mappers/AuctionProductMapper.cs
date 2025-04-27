@@ -13,7 +13,10 @@ namespace server.Models.DTOs.Mappers
         private static int UNDEFINED_PASSWORD = 0;
         public static AuctionProductDTO ToDTO(AuctionProduct entity)
         {
-            if (entity == null) return null;
+            if (entity == null)
+            {
+                return null;
+            }
 
             return new AuctionProductDTO
             {
@@ -38,20 +41,23 @@ namespace server.Models.DTOs.Mappers
                         Balance = UNDEFINED_BALANCE,
                         Rating = UNDEFINED_RATING,
                         Password = UNDEFINED_PASSWORD
-                    } : null
+                    } 
+                    : null
                 }).ToList() ?? new List<BidDTO>(),
                 Condition = entity.Condition != null ? new ConditionDTO
                 {
                     Id = entity.Condition.Id,
                     DisplayTitle = entity.Condition.Name,
                     Description = null 
-                } : null,
+                } 
+                : null,
                 Category = entity.Category != null ? new CategoryDTO
                 {
                     Id = entity.Category.Id,
                     DisplayTitle = entity.Category.Name,
                     Description = entity.Category.Description
-                } : null,
+                } 
+                : null,
                 Tags = new List<ProductTagDTO>(), 
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
@@ -66,7 +72,8 @@ namespace server.Models.DTOs.Mappers
                     Balance = 0,  
                     Rating = 0,  
                     Password = 0  
-                } : null
+                }
+                : null
             };
         }
 

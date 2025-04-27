@@ -47,17 +47,22 @@ namespace server.MarketMinds.Repositories.AccountRepository
         {
             // Validate parameters
             if (userId <= 0)
+            {
                 throw new ArgumentException("User ID must be a positive number", nameof(userId));
+            }
 
             if (basketId <= 0)
+            {
                 throw new ArgumentException("Basket ID must be a positive number", nameof(basketId));
-
+            }
             // Validate the basket belongs to the user
             var basket = await _context.Baskets
                 .FirstOrDefaultAsync(b => b.Id == basketId && b.BuyerId == userId);
 
             if (basket == null)
+            {
                 throw new ArgumentException($"Basket with ID {basketId} not found for user {userId}", nameof(basketId));
+            }
 
             // Calculate the total cost of all items in the basket
             var basketItems = await _context.BasketItems
@@ -65,7 +70,9 @@ namespace server.MarketMinds.Repositories.AccountRepository
                 .ToListAsync();
 
             if (basketItems == null || !basketItems.Any())
+            {
                 return 0; // Empty basket has zero cost
+            }
 
             double totalCost = basketItems.Sum(item => item.Price * item.Quantity);
             return totalCost;
@@ -74,7 +81,9 @@ namespace server.MarketMinds.Repositories.AccountRepository
         public async Task<bool> UpdateUserAsync(User user)
         {
             if (user == null || user.Id <= 0)
+            {
                 throw new ArgumentException("Valid user must be provided", nameof(user));
+            }
 
             try
             {
@@ -92,20 +101,28 @@ namespace server.MarketMinds.Repositories.AccountRepository
         {
             // Validate parameters
             if (userId <= 0)
+            {
                 throw new ArgumentException("User ID must be a positive number", nameof(userId));
+            }
 
             if (basketId <= 0)
+            {
                 throw new ArgumentException("Basket ID must be a positive number", nameof(basketId));
+            }
 
             // Get user to make sure they exist
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
+            {
                 throw new ArgumentException($"User with ID {userId} not found", nameof(userId));
+            }
 
             // Load basket first
             var basket = await _context.Baskets.FindAsync(basketId);
             if (basket == null || basket.BuyerId != userId)
+            {
                 throw new ArgumentException($"Basket with ID {basketId} not found for user {userId}", nameof(basketId));
+            }
 
             // Load basket items separately without using navigation properties
             var basketItems = await _context.BasketItems
@@ -113,7 +130,9 @@ namespace server.MarketMinds.Repositories.AccountRepository
                 .ToListAsync();
 
             if (basketItems == null || !basketItems.Any())
+            {
                 throw new InvalidOperationException("Cannot create order from empty basket");
+            }
 
             // Load the corresponding products for each basket item
             var productIds = basketItems.Select(i => i.ProductId).Distinct().ToList();
@@ -137,7 +156,9 @@ namespace server.MarketMinds.Repositories.AccountRepository
                         {
                             // Get the product for this item
                             if (productDictionary.TryGetValue(item.ProductId, out var product))
-                                return product.SellerId;
+                            {
+                                 return product.SellerId;
+                            }
                             // In case product not found, use a fallback
                             return 0; // Default seller ID if product not found
                         });
@@ -158,7 +179,9 @@ namespace server.MarketMinds.Repositories.AccountRepository
                         int sellerId = sellerGroup.Key;
                         // Skip orders for invalid seller IDs
                         if (sellerId <= 0)
+                        {
                             continue;
+                        }
 
                         var sellerItems = sellerGroup.ToList();
 
@@ -183,7 +206,7 @@ namespace server.MarketMinds.Repositories.AccountRepository
                         
                         string discountDescription = sellerDiscount > 0 
                             ? $" | Discount: ${sellerDiscount:F2}" 
-                            : "";
+                            : string.Empty;
                             
                         string detailedDescription = string.Join(", ", itemDescriptions) + discountDescription;
 

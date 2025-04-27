@@ -36,7 +36,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                
                 Console.WriteLine($"Error getting all auction products: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
@@ -78,20 +77,24 @@ namespace MarketMinds.Controllers
             {
                 // Manually remove image validation errors if they occurred before clearing
                 ModelState.Remove("Images"); 
-                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) {
+                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) 
+                {
                     // Remove potential errors like "Images[0].Product" if they exist
                     var imageKeys = ModelState.Keys.Where(k => k.StartsWith("Images[")).ToList();
-                    foreach (var key in imageKeys) {
+                    foreach (var key in imageKeys)
+                    {
                         ModelState.Remove(key);
                     }
                 }
                 // Re-check if model state is valid after potentially removing image errors
-                if (!ModelState.IsValid) {
+                if (!ModelState.IsValid) 
+                {
                     Console.WriteLine($"Model State is Invalid (after image handling): {System.Text.Json.JsonSerializer.Serialize(ModelState)}");
                     return BadRequest(ModelState);
                 }
             }
-            if (product.Id != 0) {
+            if (product.Id != 0) 
+            {
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
             try
@@ -115,10 +118,13 @@ namespace MarketMinds.Controllers
                     _auctionProductsRepository.UpdateProduct(product);
                     
                     // Verify images were saved by retrieving the product again
-                    try {
+                    try 
+                    {
                         var savedProduct = _auctionProductsRepository.GetProductByID(product.Id);
                         Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) 
+                    {
                         Console.WriteLine($"Error verifying images: {ex.Message}");
                     }
                 }
@@ -181,7 +187,6 @@ namespace MarketMinds.Controllers
             }
             catch (KeyNotFoundException knfex)
             {
-                 
                 return NotFound(knfex.Message);
             }
              catch (ArgumentException aex)

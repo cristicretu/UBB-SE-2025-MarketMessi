@@ -50,14 +50,12 @@ namespace MarketMinds.Controllers
             {
                 var newCondition = productConditionRepository.CreateProductCondition(
                     request.DisplayTitle,
-                    request.Description
-                );
+                    request.Description);
                 
                 return CreatedAtAction(
                     nameof(GetAllProductConditions),
                     new { id = newCondition.Id },
-                    newCondition
-                );
+                    newCondition);
             }
             catch (ArgumentException argumentException)
             {

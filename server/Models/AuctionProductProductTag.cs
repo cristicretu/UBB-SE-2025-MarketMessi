@@ -12,7 +12,9 @@ namespace server.Models
         // public AuctionProduct Product { get; set; }
         public ProductTag Tag { get; set; }
         
-        public AuctionProductProductTag() { }
+        public AuctionProductProductTag() 
+        {
+        }
         
         public AuctionProductProductTag(int id, int productId, int tagId)
         {

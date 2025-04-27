@@ -84,9 +84,11 @@ namespace MarketMinds.Controllers
                 // Remove the top-level image validation error key
                 ModelState.Remove("Images"); 
                 
-                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) {
+                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) 
+                {
                     var imageKeys = ModelState.Keys.Where(k => k.StartsWith("Images[")).ToList();
-                    foreach(var key in imageKeys) {
+                    foreach(var key in imageKeys)
+                    {
                         ModelState.Remove(key);
                     }
                 }
@@ -124,10 +126,13 @@ namespace MarketMinds.Controllers
                     Console.WriteLine($"Images added to repository.");
                     
                     // Verify images were saved by retrieving the product again
-                    try {
+                    try 
+                    {
                         var savedProduct = _buyProductsRepository.GetProductByID(product.Id);
                         Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
-                    } catch(Exception ex) {
+                    }
+                    catch(Exception ex) 
+                    {
                         Console.WriteLine($"Error verifying images: {ex.Message}");
                     }
                 }
