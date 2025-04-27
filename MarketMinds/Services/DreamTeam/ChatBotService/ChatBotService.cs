@@ -33,10 +33,10 @@ public class ChatBotService : IChatBotService
             isActive = true;
             return currentNode;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             // Log the exception
-            Console.WriteLine($"Error initializing chat: {ex.Message}");
+            Console.WriteLine($"Error initializing chat: {exception.Message}");
             isActive = false;
 
             // Create an error node
@@ -66,7 +66,7 @@ public class ChatBotService : IChatBotService
             return false;
         }
         // Check if the selected node is a valid child of the current node
-        if (currentNode != null && currentNode.Children.Any(c => c.Id == selectedNode.Id))
+        if (currentNode != null && currentNode.Children.Any(child => child.Id == selectedNode.Id))
         {
             currentNode = selectedNode;
 

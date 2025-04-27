@@ -12,11 +12,11 @@ namespace MarketMinds.Repositories.ChatRepository;
 
 public class ChatRepository : IChatRepository
 {
-    private readonly DataBaseConnection dbConnection;
+    private readonly DataBaseConnection dataBaseConnection;
 
     public ChatRepository(DataBaseConnection dataBaseConnection)
     {
-        dbConnection = dataBaseConnection;
+        this.dataBaseConnection = dataBaseConnection;
     }
 
     public Conversation? GetConversation(int userId1, int userId2)
@@ -30,8 +30,8 @@ public class ChatRepository : IChatRepository
 
         try
         {
-            dbConnection.OpenConnection();
-            using (SqlCommand getConversationCommand = new SqlCommand(getConversationQuery, dbConnection.GetConnection()))
+            dataBaseConnection.OpenConnection();
+            using (SqlCommand getConversationCommand = new SqlCommand(getConversationQuery, dataBaseConnection.GetConnection()))
             {
                 getConversationCommand.Parameters.AddWithValue("@UserId1", userId1);
                 getConversationCommand.Parameters.AddWithValue("@UserId2", userId2);
@@ -45,13 +45,13 @@ public class ChatRepository : IChatRepository
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error retrieving conversation: {ex.Message}");
+            throw new Exception($"Error retrieving conversation: {exception.Message}");
         }
         finally
         {
-            dbConnection.CloseConnection();
+            dataBaseConnection.CloseConnection();
         }
 
         return conversation;
@@ -65,8 +65,8 @@ public class ChatRepository : IChatRepository
         VALUES (@UserId1, @UserId2)";
         try
         {
-            dbConnection.OpenConnection();
-            using (SqlCommand createConversationCommand = new SqlCommand(createConversationQuery, dbConnection.GetConnection()))
+            dataBaseConnection.OpenConnection();
+            using (SqlCommand createConversationCommand = new SqlCommand(createConversationQuery, dataBaseConnection.GetConnection()))
             {
                 createConversationCommand.Parameters.AddWithValue("@UserId1", userId1);
                 createConversationCommand.Parameters.AddWithValue("@UserId2", userId2);
@@ -81,13 +81,13 @@ public class ChatRepository : IChatRepository
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error creating conversation: {ex.Message}");
+            throw new Exception($"Error creating conversation: {exception.Message}");
         }
         finally
         {
-            dbConnection.CloseConnection();
+            dataBaseConnection.CloseConnection();
         }
         return newConversation;
     }
@@ -109,8 +109,8 @@ public class ChatRepository : IChatRepository
 
         try
         {
-            dbConnection.OpenConnection();
-            using (SqlCommand getMessagesCommand = new SqlCommand(getMessagesQuery, dbConnection.GetConnection()))
+            dataBaseConnection.OpenConnection();
+            using (SqlCommand getMessagesCommand = new SqlCommand(getMessagesQuery, dataBaseConnection.GetConnection()))
             {
                 getMessagesCommand.Parameters.AddWithValue("@ConversationId", conversationId);
                 getMessagesCommand.Parameters.AddWithValue("@SinceTimestamp", sinceTimestamp);
@@ -124,13 +124,13 @@ public class ChatRepository : IChatRepository
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error retrieving messages: {ex.Message}");
+            throw new Exception($"Error retrieving messages: {exception.Message}");
         }
         finally
         {
-            dbConnection.CloseConnection();
+            dataBaseConnection.CloseConnection();
         }
         return messages;
     }
@@ -145,8 +145,8 @@ public class ChatRepository : IChatRepository
 
         try
         {
-            dbConnection.OpenConnection();
-            using (SqlCommand addMessageCommand = new SqlCommand(addMessageQuery, dbConnection.GetConnection()))
+            dataBaseConnection.OpenConnection();
+            using (SqlCommand addMessageCommand = new SqlCommand(addMessageQuery, dataBaseConnection.GetConnection()))
             {
                 addMessageCommand.Parameters.AddWithValue("@ConversationId", message.ConversationId);
                 addMessageCommand.Parameters.AddWithValue("@Creator", message.Creator);
@@ -157,13 +157,13 @@ public class ChatRepository : IChatRepository
                 rowsAffected = addMessageCommand.ExecuteNonQuery();
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error adding message: {ex.Message}");
+            throw new Exception($"Error adding message: {exception.Message}");
         }
         finally
         {
-            dbConnection.CloseConnection();
+            dataBaseConnection.CloseConnection();
         }
 
         return rowsAffected > 0;

@@ -76,9 +76,9 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.PostAsJsonAsync($"user/{userId}/product/{productId}", limitedQuantity).Result;
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new ApplicationException($"Failed to add product to basket: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to add product to basket: {exception.Message}", exception);
             }
         }
 
@@ -127,20 +127,20 @@ namespace MarketMinds.Services.BasketService
 
                     return basket;
                 }
-                catch (JsonException ex)
+                catch (JsonException exception)
                 {
                     // Try to fallback to a simpler deserialization
                     var fallbackBasket = new Basket { Id = user.Id, Items = new List<BasketItem>() };
                     return fallbackBasket;
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new ApplicationException($"Failed to retrieve user's basket: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to retrieve user's basket: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new ApplicationException("Failed to retrieve user's basket", ex);
+                throw new ApplicationException("Failed to retrieve user's basket", exception);
             }
         }
 
@@ -161,13 +161,13 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.DeleteAsync($"user/{userId}/product/{productId}").Result;
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new ApplicationException($"Failed to remove product from basket: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to remove product from basket: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new ApplicationException($"Failed to remove product from basket: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to remove product from basket: {exception.Message}", exception);
             }
         }
 
@@ -195,13 +195,13 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.PutAsJsonAsync($"user/{userId}/product/{productId}", limitedQuantity).Result;
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new ApplicationException($"Failed to update product quantity: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to update product quantity: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new ApplicationException($"Failed to update product quantity: {ex.Message}", ex);
+                throw new ApplicationException($"Failed to update product quantity: {exception.Message}", exception);
             }
         }
 
@@ -249,13 +249,13 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.DeleteAsync($"user/{userId}/clear").Result;
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not clear basket: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not clear basket: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not clear basket: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not clear basket: {exception.Message}", exception);
             }
         }
 
@@ -290,13 +290,13 @@ namespace MarketMinds.Services.BasketService
                     return false;
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not validate basket: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not validate basket: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not validate basket: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not validate basket: {exception.Message}", exception);
             }
         }
 
@@ -321,13 +321,13 @@ namespace MarketMinds.Services.BasketService
                     throw new InvalidOperationException("Invalid promo code");
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not apply promo code: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not apply promo code: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw ex;
+                throw exception;
             }
         }
 
@@ -360,7 +360,7 @@ namespace MarketMinds.Services.BasketService
 
                 return MINIMUM_DISCOUNT;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 return MINIMUM_DISCOUNT;
             }
@@ -399,13 +399,13 @@ namespace MarketMinds.Services.BasketService
                     return new BasketTotals();
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not calculate basket totals: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not calculate basket totals: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not calculate basket totals: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not calculate basket totals: {exception.Message}", exception);
             }
         }
 
@@ -426,13 +426,13 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.PutAsync($"user/{userId}/product/{productId}/decrease", null).Result;
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not decrease quantity: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not decrease quantity: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not decrease quantity: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not decrease quantity: {exception.Message}", exception);
             }
         }
 
@@ -453,13 +453,13 @@ namespace MarketMinds.Services.BasketService
                 var response = httpClient.PutAsync($"user/{userId}/product/{productId}/increase", null).Result;
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not increase quantity: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not increase quantity: {exception.Message}", exception);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not increase quantity: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not increase quantity: {exception.Message}", exception);
             }
         }
 
@@ -540,18 +540,18 @@ namespace MarketMinds.Services.BasketService
                     return false;
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not checkout basket: {exception.Message}", exception);
             }
             catch (InvalidOperationException)
             {
                 // Re-throw InvalidOperationException as-is to preserve the message
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
+                throw new InvalidOperationException($"Could not checkout basket: {exception.Message}", exception);
             }
         }
     }

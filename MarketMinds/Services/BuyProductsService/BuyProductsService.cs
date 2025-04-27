@@ -53,12 +53,12 @@ namespace MarketMinds.Services.BuyProductsService
                 var products = System.Text.Json.JsonSerializer.Deserialize<List<BuyProduct>>(json, serializerOptions);
                 return products?.Cast<Product>().ToList() ?? new List<Product>();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting products: {ex.Message}");
-                if (ex.InnerException != null)
+                Console.WriteLine($"Error getting products: {exception.Message}");
+                if (exception.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
                 return new List<Product>();
             }
@@ -134,14 +134,14 @@ namespace MarketMinds.Services.BuyProductsService
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
-                if (ex.InnerException != null)
+                Console.WriteLine($"Error getting product by ID {id}: {exception.Message}");
+                if (exception.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
-                throw new KeyNotFoundException($"Buy product with ID {id} not found: {ex.Message}");
+                throw new KeyNotFoundException($"Buy product with ID {id} not found: {exception.Message}");
             }
         }
     }

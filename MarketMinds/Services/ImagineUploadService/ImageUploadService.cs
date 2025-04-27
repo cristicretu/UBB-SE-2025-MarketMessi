@@ -116,7 +116,7 @@ namespace MarketMinds.Services.ImagineUploadService
                                 }
                             }
                         }
-                        catch (HttpRequestException ex)
+                        catch (HttpRequestException exception)
                         {
                             // Log exception but continue with retry
                         }
@@ -131,9 +131,9 @@ namespace MarketMinds.Services.ImagineUploadService
                     return null;
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException($"Upload failed: {ex.Message}", ex);
+                throw new InvalidOperationException($"Upload failed: {exception.Message}", exception);
             }
         }
 

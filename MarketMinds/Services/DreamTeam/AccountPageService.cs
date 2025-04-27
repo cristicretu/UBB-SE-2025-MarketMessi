@@ -103,9 +103,9 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             Debug.WriteLine("Failed to deserialize user - result was null");
                         }
                     }
-                    catch (System.Text.Json.JsonException jsonEx)
+                    catch (System.Text.Json.JsonException jsonException)
                     {
-                        Debug.WriteLine($"JSON Deserialization error: {jsonEx.Message}");
+                        Debug.WriteLine($"JSON Deserialization error: {jsonException.Message}");
 
                         // Try manual parsing as fallback
                         if (TryParseUserFromJson(responseContent, out User user))
@@ -125,20 +125,20 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                     }
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                Debug.WriteLine($"HTTP Request error: {ex.Message}");
+                Debug.WriteLine($"HTTP Request error: {exception.Message}");
                 Debug.WriteLine("Server might be down or unreachable. Verify server is running.");
 
                 // Provide diagnostic information
-                if (ex.InnerException != null)
+                if (exception.InnerException != null)
                 {
-                    Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Debug.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Debug.WriteLine($"Error retrieving user: {ex.GetType().Name}: {ex.Message}");
+                Debug.WriteLine($"Error retrieving user: {exception.GetType().Name}: {exception.Message}");
             }
 
             // If we got here, we failed to get the user from API
@@ -229,13 +229,13 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                     var errorContent = await response.Content.ReadAsStringAsync();
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException exception)
             {
-                if (ex.InnerException != null)
+                if (exception.InnerException != null)
                 {
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
             }
 
@@ -254,7 +254,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                     return (T)property.GetValue(obj);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
             }
             return default(T);
@@ -283,11 +283,11 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
             try
             {
                 var orders = new List<UserOrder>();
-                var jsonDoc = JsonDocument.Parse(json);
+                var jsonDocument = JsonDocument.Parse(json);
 
-                if (jsonDoc.RootElement.ValueKind == JsonValueKind.Array)
+                if (jsonDocument.RootElement.ValueKind == JsonValueKind.Array)
                 {
-                    foreach (var element in jsonDoc.RootElement.EnumerateArray())
+                    foreach (var element in jsonDocument.RootElement.EnumerateArray())
                     {
                         var order = new UserOrder();
 
@@ -306,9 +306,9 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                             order.Name = itemNameProp.GetString();
                         }
 
-                        if (element.TryGetProperty("description", out var descProp) && descProp.ValueKind == JsonValueKind.String)
+                        if (element.TryGetProperty("description", out var descriptionProp) && descriptionProp.ValueKind == JsonValueKind.String)
                         {
-                            order.Description = descProp.GetString();
+                            order.Description = descriptionProp.GetString();
                         }
 
                         // Try both cost properties
@@ -349,9 +349,9 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 Debug.WriteLine($"Manually parsed {orders.Count} orders from JSON");
                 return orders;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Debug.WriteLine($"Failed to manually parse orders: {ex.Message}");
+                Debug.WriteLine($"Failed to manually parse orders: {exception.Message}");
                 return new List<UserOrder>();
             }
         }
@@ -363,8 +363,8 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
 
             try
             {
-                var jsonDoc = JsonDocument.Parse(json);
-                var root = jsonDoc.RootElement;
+                var jsonDocument = JsonDocument.Parse(json);
+                var root = jsonDocument.RootElement;
 
                 user = new User();
 
@@ -415,9 +415,9 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Se
                 Debug.WriteLine($"Successfully manually parsed user: ID={user.Id}, Username={user.Username}, Balance={user.Balance}");
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Debug.WriteLine($"Error parsing user from JSON: {ex.Message}");
+                Debug.WriteLine($"Error parsing user from JSON: {exception.Message}");
                 return false;
             }
         }

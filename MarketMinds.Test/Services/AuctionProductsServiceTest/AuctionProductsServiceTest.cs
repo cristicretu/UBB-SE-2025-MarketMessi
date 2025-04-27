@@ -81,7 +81,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
 
             // Assert
             Assert.That(testAuction.CurrentPrice, Is.EqualTo(bidAmount));
-            Assert.That(testAuction.BidHistory[0].Price, Is.EqualTo(bidAmount));
+            Assert.That(testAuction.BiddingHistory[0].Price, Is.EqualTo(bidAmount));
         }
 
         [Test]
@@ -108,8 +108,8 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
 
             // Assert
-            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
-            Assert.That(testAuction.BidHistory[0].Bidder, Is.EqualTo(testBidder));
+            Assert.That(testAuction.BiddingHistory.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
+            Assert.That(testAuction.BiddingHistory[0].Bidder, Is.EqualTo(testBidder));
         }
 
         [Test]
@@ -237,7 +237,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             // Assert
             Assert.That(testBidder.Balance, Is.EqualTo(DEFAULT_BIDDER_BALANCE - SECOND_BID_AMOUNT));
             Assert.That(testAuction.CurrentPrice, Is.EqualTo(SECOND_BID_AMOUNT));
-            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(EXPECTED_DOUBLE_UPDATE));
+            Assert.That(testAuction.BiddingHistory.Count, Is.EqualTo(EXPECTED_DOUBLE_UPDATE));
         }
 
         [Test]

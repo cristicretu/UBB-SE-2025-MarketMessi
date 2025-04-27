@@ -460,7 +460,7 @@ namespace Marketplace_SE.HardwareSurvey
                 // Use safer methods that don't throw exceptions
                 hardwareData.DeviceType = GetSafeDeviceType();
                 hardwareData.OperatingSystem = GetSafeOperatingSystem();
-                hardwareData.OSVersion = GetSafeOSVersion();
+                hardwareData.OperatingSystemVersion = GetSafeOSVersion();
                 hardwareData.BrowserName = "WinUI App"; // Static value for WinUI apps
                 hardwareData.BrowserVersion = "N/A"; // Not applicable
                 hardwareData.ScreenResolution = "1920x1080"; // Default fallback
@@ -477,7 +477,7 @@ namespace Marketplace_SE.HardwareSurvey
                 // Fill in any missing values with fallbacks
                 hardwareData.DeviceType = hardwareData.DeviceType ?? "Desktop";
                 hardwareData.OperatingSystem = hardwareData.OperatingSystem ?? "Windows";
-                hardwareData.OSVersion = hardwareData.OSVersion ?? "10";
+                hardwareData.OperatingSystemVersion = hardwareData.OperatingSystemVersion ?? "10";
                 hardwareData.ScreenResolution = hardwareData.ScreenResolution ?? "1920x1080";
                 hardwareData.AvailableRAM = hardwareData.AvailableRAM ?? "8 GB";
                 hardwareData.CPUInformation = hardwareData.CPUInformation ?? "Unknown CPU";
@@ -937,7 +937,7 @@ namespace Marketplace_SE.HardwareSurvey
         /// <summary>
         /// Gets or sets the operating system version.
         /// </summary>
-        public string OSVersion { get; set; }
+        public string OperatingSystemVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the browser name.

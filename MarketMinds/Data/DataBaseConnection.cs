@@ -15,9 +15,9 @@ namespace DataAccessLayer
         private readonly string connectionString;
         private readonly IConfiguration configuration;
 
-        public DataBaseConnection(IConfiguration config)
+        public DataBaseConnection(IConfiguration currentConfiguration)
         {
-            configuration = config;
+            configuration = currentConfiguration;
             string? localDataSource = configuration["LocalDataSource"];
             string? initialCatalog = configuration["InitialCatalog"];
 
@@ -29,9 +29,9 @@ namespace DataAccessLayer
             {
                 sqlConnection = new SqlConnection(connectionString);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Error initializing SQL connection: {ex.Message}");
+                throw new Exception($"Error initializing SQL connection: {exception.Message}");
             }
         }
 

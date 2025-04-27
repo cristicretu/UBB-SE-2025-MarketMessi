@@ -42,9 +42,9 @@ namespace MarketMinds.Converters
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error converting hex to BitmapImage: {ex.Message}");
+                Console.WriteLine($"Error converting hex to BitmapImage: {exception.Message}");
             }
         }
 

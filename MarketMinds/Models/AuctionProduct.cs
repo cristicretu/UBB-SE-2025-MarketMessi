@@ -19,11 +19,11 @@ namespace DomainLayer.Domain
         public float CurrentPrice { get; set; }
 
         [JsonPropertyName("bidHistory")]
-        public List<Bid> BidHistory { get; set; }
+        public List<Bid> BiddingHistory { get; set; }
 
         public AuctionProduct() : base()
         {
-            BidHistory = new List<Bid>();
+            BiddingHistory = new List<Bid>();
             Tags = new List<ProductTag>();
             Images = new List<Image>();
         }
@@ -44,13 +44,13 @@ namespace DomainLayer.Domain
             this.EndAuctionDate = endAuctionDate;
             this.StartingPrice = startingPrice;
             this.CurrentPrice = startingPrice;
-            this.BidHistory = new List<Bid>();
+            this.BiddingHistory = new List<Bid>();
         }
 
         public void AddBid(Bid bid)
         {
             this.CurrentPrice = bid.Price;
-            this.BidHistory.Add(bid);
+            this.BiddingHistory.Add(bid);
         }
     }
 }

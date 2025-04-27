@@ -9,9 +9,9 @@ namespace Marketplace_SE.Repositories
     {
         private readonly DataBaseConnection connection;
 
-        public HardwareSurveyRepository(DataBaseConnection dbConnection)
+        public HardwareSurveyRepository(DataBaseConnection databaseConnection)
         {
-            connection = dbConnection;
+            connection = databaseConnection;
         }
 
         public void SaveHardwareData(HardwareData hardwareData)
@@ -32,7 +32,7 @@ namespace Marketplace_SE.Repositories
                         @ConnectionType, @Timestamp, @AppVersion
                     )";
 
-                string[] args =
+                string[] arguments =
                 {
                     "@DeviceID", "@DeviceType", "@OperatingSystem", "@OSVersion",
                     "@BrowserName", "@BrowserVersion", "@ScreenResolution",
@@ -45,7 +45,7 @@ namespace Marketplace_SE.Repositories
                     hardwareData.DeviceID,
                     hardwareData.DeviceType,
                     hardwareData.OperatingSystem,
-                    hardwareData.OSVersion,
+                    hardwareData.OperatingSystemVersion,
                     hardwareData.BrowserName ?? (object)DBNull.Value,
                     hardwareData.BrowserVersion ?? (object)DBNull.Value,
                     hardwareData.ScreenResolution,
@@ -60,9 +60,9 @@ namespace Marketplace_SE.Repositories
                 connection.OpenConnection();
                 using (var command = new SqlCommand(query, connection.GetConnection()))
                 {
-                    for (int i = 0; i < args.Length; i++)
+                    for (int i = 0; i < arguments.Length; i++)
                     {
-                        command.Parameters.AddWithValue(args[i], values[i]);
+                        command.Parameters.AddWithValue(arguments[i], values[i]);
                     }
 
                     command.ExecuteNonQuery();

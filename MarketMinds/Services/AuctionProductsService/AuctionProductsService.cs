@@ -54,7 +54,7 @@ namespace MarketMinds.Services.AuctionProductsService
                 CurrentPrice = auctionProduct.StartingPrice,
                 Images = auctionProduct.Images == null
                        ? new List<object>()
-                       : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+                       : auctionProduct.Images.Select(image => new { image.Url }).Cast<object>().ToList()
             };
             Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
             var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
@@ -93,9 +93,9 @@ namespace MarketMinds.Services.AuctionProductsService
                 ExtendAuctionTime(auction);
                 Console.WriteLine($"Bid of ${bidAmount} successfully placed on auction {auction.Id}");
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error placing bid: {ex.Message}");
+                Console.WriteLine($"Error placing bid: {exception.Message}");
                 throw;
             }
         }
@@ -123,11 +123,11 @@ namespace MarketMinds.Services.AuctionProductsService
 
         private void ValidateBid(AuctionProduct auction, User bidder, float bidAmount)
         {
-            float minBid = auction.BidHistory.Count == NULL_BID_AMOUNT ? auction.StartingPrice : auction.CurrentPrice + 1;
+            float minimumBid = auction.BiddingHistory.Count == NULL_BID_AMOUNT ? auction.StartingPrice : auction.CurrentPrice + 1;
 
-            if (bidAmount < minBid)
+            if (bidAmount < minimumBid)
             {
-                throw new Exception($"Bid must be at least ${minBid}");
+                throw new Exception($"Bid must be at least ${minimumBid}");
             }
 
             if (bidAmount > bidder.Balance)
@@ -176,12 +176,12 @@ namespace MarketMinds.Services.AuctionProductsService
                 var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
                 return products?.Cast<Product>().ToList() ?? new List<Product>();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting products: {ex.Message}");
-                if (ex.InnerException != null)
+                Console.WriteLine($"Error getting products: {exception.Message}");
+                if (exception.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
                 return new List<Product>();
             }
@@ -220,14 +220,14 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
-                if (ex.InnerException != null)
+                Console.WriteLine($"Error getting product by ID {id}: {exception.Message}");
+                if (exception.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
                 }
-                throw new KeyNotFoundException($"Auction product with ID {id} not found: {ex.Message}");
+                throw new KeyNotFoundException($"Auction product with ID {id} not found: {exception.Message}");
             }
         }
 

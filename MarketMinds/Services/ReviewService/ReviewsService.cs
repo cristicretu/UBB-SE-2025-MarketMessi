@@ -97,9 +97,9 @@ namespace MarketMinds.Services.ReviewService
                 // Convert to ObservableCollection
                 return new ObservableCollection<Review>(result);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error retrieving seller reviews: {ex.Message}");
+                Console.WriteLine($"Error retrieving seller reviews: {exception.Message}");
                 return new ObservableCollection<Review>();
             }
         }
@@ -163,9 +163,9 @@ namespace MarketMinds.Services.ReviewService
                 // Convert to ObservableCollection
                 return new ObservableCollection<Review>(result);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error retrieving buyer reviews: {ex.Message}");
+                Console.WriteLine($"Error retrieving buyer reviews: {exception.Message}");
                 return new ObservableCollection<Review>();
             }
         }

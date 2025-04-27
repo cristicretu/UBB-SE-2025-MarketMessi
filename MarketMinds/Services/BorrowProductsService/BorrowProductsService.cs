@@ -148,12 +148,12 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
             }
             Console.WriteLine("Successfully created borrow product listing.");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            Console.WriteLine($"Exception during API call: {ex.GetType().Name} - {ex.Message}");
-            if (ex.InnerException != null)
+            Console.WriteLine($"Exception during API call: {exception.GetType().Name} - {exception.Message}");
+            if (exception.InnerException != null)
             {
-                Console.WriteLine($"Inner exception: {ex.InnerException.GetType().Name} - {ex.InnerException.Message}");
+                Console.WriteLine($"Inner exception: {exception.InnerException.GetType().Name} - {exception.InnerException.Message}");
             }
             throw;
         }
@@ -200,12 +200,12 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
             var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
             return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            Console.WriteLine($"Error getting products: {ex.Message}");
-            if (ex.InnerException != null)
+            Console.WriteLine($"Error getting products: {exception.Message}");
+            if (exception.InnerException != null)
             {
-                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
             }
             // Return empty list instead of throwing to avoid cascading failures
             return new List<Product>();
@@ -247,14 +247,14 @@ public class BorrowProductsService : ProductService, IBorrowProductsService
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
-            if (ex.InnerException != null)
+            Console.WriteLine($"Error getting product by ID {id}: {exception.Message}");
+            if (exception.InnerException != null)
             {
-                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
             }
-            throw new KeyNotFoundException($"Borrow product with ID {id} not found: {ex.Message}");
+            throw new KeyNotFoundException($"Borrow product with ID {id} not found: {exception.Message}");
         }
     }
 }

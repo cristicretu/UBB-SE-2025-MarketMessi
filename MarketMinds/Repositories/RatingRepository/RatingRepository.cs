@@ -22,22 +22,22 @@ namespace Marketplace_SE.Repositories
                     INSERT INTO Ratings (UserID, Rating, Comment, Timestamp, AppVersion)
                     VALUES (@UserID, @Rating, @Comment, @Timestamp, @AppVersion)";
 
-                string[] args = { "@UserID", "@Rating", "@Comment", "@Timestamp", "@AppVersion" };
+                string[] arguments = { "@UserID", "@Rating", "@Comment", "@Timestamp", "@AppVersion" };
                 object[] values = { ratingData.UserID, ratingData.Rating, ratingData.Comment ?? (object)DBNull.Value, ratingData.Timestamp, ratingData.AppVersion };
 
                 connection.OpenConnection();
                 using (var command = new SqlCommand(query, connection.GetConnection()))
                 {
-                    for (int i = 0; i < args.Length; i++)
+                    for (int i = 0; i < arguments.Length; i++)
                     {
-                        command.Parameters.AddWithValue(args[i], values[i]);
+                        command.Parameters.AddWithValue(arguments[i], values[i]);
                     }
                     command.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error saving rating to database: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error saving rating to database: {exception.Message}");
                 throw;
             }
             finally

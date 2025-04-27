@@ -13,35 +13,35 @@ namespace MarketMinds.Repositories.ChatBotRepository;
 
 public class ChatBotRepository : IChatBotRepository
 {
-    private readonly DataBaseConnection dbConnection;
-    public ChatBotRepository(DataBaseConnection databaseConnection)
+    private readonly DataBaseConnection dataBaseConnection;
+    public ChatBotRepository(DataBaseConnection dataBaseConnection)
     {
-        dbConnection = databaseConnection;
+        this.dataBaseConnection = dataBaseConnection;
     }
     public Node LoadChatTree()
     {
         Dictionary<int, Node> nodes = new Dictionary<int, Node>();
         try
         {
-            dbConnection.OpenConnection();
+            dataBaseConnection.OpenConnection();
 
             nodes = FetchChatBotNodes();
 
             LoadRelationships(nodes);
         }
-        catch (SqlException ex)
+        catch (SqlException exception)
         {
-            Console.WriteLine($"SQL Error: {ex.Message}");
+            Console.WriteLine($"SQL Error: {exception.Message}");
             return CreateErrorNode("Error: Unable to load chat tree.");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {exception.Message}");
             return CreateErrorNode("Error: Unable to load chat tree.");
         }
         finally
         {
-            dbConnection.CloseConnection();
+            dataBaseConnection.CloseConnection();
         }
 
         if (nodes.TryGetValue(1, out Node rootNode))
@@ -59,7 +59,7 @@ public class ChatBotRepository : IChatBotRepository
         var nodes = new Dictionary<int, Node>();
         string? queryNodes = "SELECT pid, button_label, label_text, response_text FROM ChatBotNodes";
 
-        using (SqlCommand command = new SqlCommand(queryNodes, dbConnection.GetConnection()))
+        using (SqlCommand command = new SqlCommand(queryNodes, dataBaseConnection.GetConnection()))
         using (SqlDataAdapter adapter = new SqlDataAdapter(command))
         using (DataTable dataTable = new DataTable())
         {
@@ -87,7 +87,7 @@ public class ChatBotRepository : IChatBotRepository
     {
         string? queryRelationships = "SELECT parentID, childID FROM ChatBotChildren";
 
-        using (SqlCommand command = new SqlCommand(queryRelationships, dbConnection.GetConnection()))
+        using (SqlCommand command = new SqlCommand(queryRelationships, dataBaseConnection.GetConnection()))
         using (SqlDataAdapter adapter = new SqlDataAdapter(command))
         using (DataTable dataTable = new DataTable())
         {

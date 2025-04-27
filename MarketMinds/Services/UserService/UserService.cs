@@ -48,9 +48,9 @@ namespace MarketMinds.Services.UserService
             {
                 return await ValidateCredentialsAsync(username, password);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Authentication error: {ex.Message}");
+                Console.WriteLine($"Authentication error: {exception.Message}");
                 return false;
             }
         }
@@ -74,9 +74,9 @@ namespace MarketMinds.Services.UserService
                 }
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting user by credentials: {ex.Message}");
+                Console.WriteLine($"Error getting user by credentials: {exception.Message}");
                 return null;
             }
         }
@@ -94,9 +94,9 @@ namespace MarketMinds.Services.UserService
                 }
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting user by username: {ex.Message}");
+                Console.WriteLine($"Error getting user by username: {exception.Message}");
                 return null;
             }
         }
@@ -114,9 +114,9 @@ namespace MarketMinds.Services.UserService
                 }
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting user by email: {ex.Message}");
+                Console.WriteLine($"Error getting user by email: {exception.Message}");
                 return null;
             }
         }
@@ -135,9 +135,9 @@ namespace MarketMinds.Services.UserService
                 // Default to true (username taken) if there's an error
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error checking if username is taken: {ex.Message}");
+                Console.WriteLine($"Error checking if username is taken: {exception.Message}");
                 return true;
             }
         }
@@ -163,9 +163,9 @@ namespace MarketMinds.Services.UserService
                 int userId = await CreateUserAsync(user);
                 return userId > 0;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error registering user: {ex.Message}");
+                Console.WriteLine($"Error registering user: {exception.Message}");
                 return false;
             }
         }
@@ -183,9 +183,9 @@ namespace MarketMinds.Services.UserService
                 var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
                 return response.IsSuccessStatusCode;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error validating credentials: {ex.Message}");
+                Console.WriteLine($"Error validating credentials: {exception.Message}");
                 return false;
             }
         }
@@ -204,9 +204,9 @@ namespace MarketMinds.Services.UserService
                 }
                 return -1;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error creating user: {ex.Message}");
+                Console.WriteLine($"Error creating user: {exception.Message}");
                 return -1;
             }
         }

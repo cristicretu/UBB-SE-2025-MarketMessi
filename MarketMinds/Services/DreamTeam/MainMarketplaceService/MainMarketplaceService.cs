@@ -23,7 +23,7 @@ public class MainMarketplaceService : IMainMarketplaceService
         {
             return mainMarketplaceRepository.GetAvailableItems();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             return new List<UserNotSoldOrder>();
         }

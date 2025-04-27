@@ -49,9 +49,9 @@ namespace MarketMinds.Services.DreamTeam.ChatService
                     .DefaultIfEmpty(0)
                     .Max();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception("Error initializing chat service: " + ex.Message);
+                throw new Exception("Error initializing chat service: " + exception.Message);
             }
         }
 
@@ -81,7 +81,7 @@ namespace MarketMinds.Services.DreamTeam.ChatService
                 }
                 return success;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 return false;
             }
@@ -113,7 +113,7 @@ namespace MarketMinds.Services.DreamTeam.ChatService
                 }
                 return success;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 return false;
             }
@@ -151,7 +151,7 @@ namespace MarketMinds.Services.DreamTeam.ChatService
                     return new List<Message>();
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 return new List<Message>();
             }

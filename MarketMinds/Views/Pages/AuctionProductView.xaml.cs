@@ -107,7 +107,7 @@ namespace MarketMinds
         }
         private void LoadBidHistory()
         {
-            BidHistoryListView.ItemsSource = product.BidHistory
+            BidHistoryListView.ItemsSource = product.BiddingHistory
                 .OrderByDescending(b => b.Timestamp)
                 .ToList();
         }

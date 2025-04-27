@@ -8,9 +8,9 @@ namespace Marketplace_SE.Repositories
     {
         private readonly DataBaseConnection connection;
 
-        public LoggerRepository(DataBaseConnection dbConnection)
+        public LoggerRepository(DataBaseConnection dataBaseConnection)
         {
-            connection = dbConnection;
+            connection = dataBaseConnection;
         }
 
         public void LogInfo(string message)
@@ -41,9 +41,9 @@ namespace Marketplace_SE.Repositories
                     command.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error saving log to database: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error saving log to database: {exception.Message}");
             }
             finally
             {
