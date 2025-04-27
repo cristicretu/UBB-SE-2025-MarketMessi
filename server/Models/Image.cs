@@ -18,6 +18,9 @@ namespace server.Models
         }
 
         // Default constructor for Entity Framework
-        public Image() { }
+        public Image()
+        {
+            // Empty
+        }
     }
 }

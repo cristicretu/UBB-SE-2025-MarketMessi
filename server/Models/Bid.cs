@@ -31,7 +31,10 @@ namespace server.Models
         public User Bidder { get; set; } = null!;
 
         // Default constructor for EF Core
-        public Bid() { }
+        public Bid()
+        {
+            // Default constructor
+        }
 
         public Bid(int bidderId, int productId, double price)
         {

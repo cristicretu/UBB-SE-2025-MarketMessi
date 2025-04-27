@@ -8,7 +8,10 @@ namespace server.Models.DTOs.Mappers
     {
         public static ReviewDTO ToDto(Review review)
         {
-            if (review == null) return null;
+            if (review == null)
+            {
+                return null;
+            }
 
             return new ReviewDTO
             {
@@ -26,7 +29,10 @@ namespace server.Models.DTOs.Mappers
 
         public static Review ToModel(ReviewDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+            {
+                return null;
+            }
 
             var review = new Review
             {

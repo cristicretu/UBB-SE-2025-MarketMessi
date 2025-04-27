@@ -14,7 +14,10 @@ namespace server.Models.DTOs.Mappers
         private static int UNDEFINED_PASSWORD = 0;
         public static BuyProductDTO ToDTO(BuyProduct entity)
         {
-            if (entity == null) return null;
+            if (entity == null)
+            {
+                return null;
+            }
 
             return new BuyProductDTO
             {
@@ -27,13 +30,15 @@ namespace server.Models.DTOs.Mappers
                     Id = entity.Condition.Id,
                     DisplayTitle = entity.Condition.Name,
                     Description = null
-                } : null,
+                }
+                : null,
                 Category = entity.Category != null ? new CategoryDTO
                 {
                     Id = entity.Category.Id,
                     DisplayTitle = entity.Category.Name,
                     Description = entity.Category.Description
-                } : null,
+                }
+                : null,
                 Tags = entity.ProductTags?.Select(pt => new ProductTagDTO
                 {
                     Id = pt.Tag.Id,
@@ -42,11 +47,11 @@ namespace server.Models.DTOs.Mappers
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
                     Url = i.Url
-                }).ToList() ?? 
+                }).ToList() ??
                 entity.NonMappedImages?.Select(i => new ImageDTO
                 {
                     Url = i.Url
-                }).ToList() ?? 
+                }).ToList() ??
                 new List<ImageDTO>(),
                 Seller = entity.Seller != null ? new UserDTO
                 {
@@ -57,7 +62,8 @@ namespace server.Models.DTOs.Mappers
                     Balance = UNDEFINED_BALANCE,
                     Rating = UNDEFINED_RATING,
                     Password = UNDEFINED_PASSWORD
-                } : null
+                }
+                : null
             };
         }
 

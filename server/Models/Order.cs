@@ -3,27 +3,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models
 {
-    [Table("Orders")] 
+    [Table("Orders")]
     public class Order
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; } = null!; 
+        public string Name { get; set; } = null!;
 
-        public string? Description { get; set; } 
+        public string? Description { get; set; }
 
         [Required]
-        public double Cost { get; set; } 
+        public double Cost { get; set; }
 
         [Required]
         public int SellerId { get; set; }
 
         [Required]
         public int BuyerId { get; set; } // Required, default -1 handled by DB
-
 
         [ForeignKey("SellerId")]
         public virtual User Seller { get; set; } = null!; // Navigation property for the seller
@@ -34,4 +33,4 @@ namespace server.Models
         // Note: The 'Created' property used in the original client service is missing
         // from the DB schema. Sorting will be done by Id descending as a proxy.
     }
-} 
+}

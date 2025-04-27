@@ -22,4 +22,4 @@ namespace server.Models
         [ForeignKey("ProductId")]
         public AuctionProduct? Product { get; set; }
     }
-} 
+}

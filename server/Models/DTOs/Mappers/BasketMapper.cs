@@ -68,21 +68,21 @@ namespace server.Models.DTOs.Mappers
                     Balance = UNDEFINED_BALANCE,
                     Rating = UNDEFINED_RATING,
                     Password = UNDEFINED_PASSWORD
-                } 
+                }
                 : null,
                 Condition = product.Condition != null ? new ConditionDTO
                 {
                     Id = product.Condition.Id,
                     DisplayTitle = product.Condition.Name,
                     Description = string.Empty  // Server-side Condition doesn't have Description
-                } 
+                }
                 : null,
                 Category = product.Category != null ? new CategoryDTO
                 {
                     Id = product.Category.Id,
                     DisplayTitle = product.Category.Name,
                     Description = product.Category.Description
-                } 
+                }
                 : null,
                 Tags = product.Tags?.Select(tag => new ProductTagDTO
                 {

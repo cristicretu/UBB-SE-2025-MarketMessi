@@ -32,9 +32,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddSingleton<DataBaseConnection>();
 
 // EntityFramework database connection setup
-var InitialCatalog = builder.Configuration["InitialCatalog"];
-var LocalDataSource = builder.Configuration["LocalDataSource"];
-var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
+var initialCatalog = builder.Configuration["InitialCatalog"];
+var localDataSource = builder.Configuration["LocalDataSource"];
+var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;";
 builder.Services.AddDbContext<server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 

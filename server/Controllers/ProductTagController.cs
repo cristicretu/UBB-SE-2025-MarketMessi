@@ -53,8 +53,7 @@ namespace MarketMinds.Controllers
                 return CreatedAtAction(
                     nameof(GetAllProductTags),
                     new { id = newTag.Id },
-                    newTag
-                );
+                    newTag);
             }
             catch (ArgumentException argumentException)
             {

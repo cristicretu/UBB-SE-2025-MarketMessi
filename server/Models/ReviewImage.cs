@@ -22,7 +22,9 @@ namespace server.Models
         [ForeignKey("ReviewId")]
         public virtual Review Review { get; set; }
 
-        public ReviewImage() { }
+        public ReviewImage()
+        {
+        }
 
         public ReviewImage(int id, string url, int reviewId)
         {

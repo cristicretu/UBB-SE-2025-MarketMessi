@@ -31,6 +31,9 @@ namespace server.Models
         }
 
         // Default constructor for potential framework needs (e.g., deserialization)
-        public ProductTag() { }
+        public ProductTag()
+        {
+            // Empty
+        }
     }
 }

@@ -13,7 +13,10 @@ namespace server.Models
         public BorrowProduct Product { get; set; }
         public ProductTag Tag { get; set; }
         
-        public BorrowProductProductTag() { }
+        public BorrowProductProductTag()
+        {
+            // Default constructor
+        }
         
         public BorrowProductProductTag(int id, int productId, int tagId)
         {
