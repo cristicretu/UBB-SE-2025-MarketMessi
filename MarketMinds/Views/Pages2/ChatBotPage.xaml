@@ -43,37 +43,37 @@
                 </Border>
 
                 <!-- User Message will be added here dynamically -->
-                
+
                 <!-- Bot Response will be added here dynamically -->
             </StackPanel>
         </ScrollViewer>
 
         <!-- Text Input Area -->
         <Grid Grid.Row="2" Margin="0,15,0,15">
-            <Grid.ColumnDefinitions>
+                        <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
             <TextBox 
                 x:Name="UserMessageTextBox"
-                Grid.Column="0"
+                            Grid.Column="0"
                 PlaceholderText="Type your message here..."
                 TextWrapping="Wrap"
                 AcceptsReturn="True"
                 MinHeight="80"
                 MaxHeight="120"
-                VerticalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
                 Margin="0,0,10,0"
                 KeyDown="UserMessageTextBox_KeyDown"/>
 
             <Button 
                 x:Name="SendMessageButton"
-                Grid.Column="1"
+                            Grid.Column="1"
                 Content="Send"
                 VerticalAlignment="Bottom"
                 Click="SendMessageButton_Click"/>
-        </Grid>
+                    </Grid>
 
         <!-- Exit Button -->
         <Button

@@ -1,19 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+using MarketMinds.Services.ConversationService;
+using MarketMinds.Services.MessageService;
+using MarketMinds.Services.DreamTeam.ChatbotService;
+using MarketMinds.Views;
+using Marketplace_SE;
 
-namespace Marketplace_SE
+namespace MarketMinds.Views.Pages2
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -24,23 +18,27 @@ namespace Marketplace_SE
         {
             this.InitializeComponent();
         }
+
         private void OnButtonClickOpenChatbotConversation(object sender, RoutedEventArgs e)
         {
             var chatbotWindow = new Window();
-            chatbotWindow.Content = new ChatBotPage();
+            chatbotWindow.Title = "Chatbot Conversations";
+
+            var helpPage = new HelpPage(
+                App.ConversationService,
+                App.MessageService,
+                App.NewChatbotService);
+
+            chatbotWindow.Content = helpPage;
             chatbotWindow.Activate();
         }
+
         private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs e)
         {
-            var customerSupportWindow = new Window();
-            customerSupportWindow.Content = new UserFindCallPage();
-            customerSupportWindow.Activate();
         }
+
         private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs e)
         {
-            var mainMarketplaceWindow = new Window();
-            mainMarketplaceWindow.Content = new MainMarketplacePage();
-            mainMarketplaceWindow.Activate();
         }
     }
 }

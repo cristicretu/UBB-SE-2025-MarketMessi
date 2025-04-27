@@ -5,18 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
-using MarketMinds.Services.DreamTeam.ChatBotService;
+using MarketMinds.Services.DreamTeam.ChatbotService;
 
 namespace MarketMinds.ViewModels;
 
 public class ChatBotViewModel
 {
-    private readonly IChatBotService chatBotService;
+    private readonly IChatbotService chatBotService;
     private string currentResponse;
     private ObservableCollection<Node> currentOptions;
     private bool isActive;
 
-    public ChatBotViewModel(IChatBotService chatBotService)
+    public ChatBotViewModel(IChatbotService chatBotService)
     {
         this.chatBotService = chatBotService;
         currentOptions = new ObservableCollection<Node>();

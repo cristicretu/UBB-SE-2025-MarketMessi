@@ -50,7 +50,7 @@ namespace Marketplace_SE
             ChatListView.ItemsSource = displayedMessages;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs eventArgs)
+        protected override async void OnNavigatedTo(NavigationEventArgs eventArgs)
         {
             base.OnNavigatedTo(eventArgs);
             displayedMessages.Clear();
@@ -80,10 +80,10 @@ namespace Marketplace_SE
 
             try
             {
-                chatViewModel.InitializeChat(currentUser, targetUser);
+                await chatViewModel.InitializeAsync(currentUser.Id);
 
                 // Load initial messages
-                LoadInitialChatHistory();
+                await LoadInitialChatHistoryAsync();
                 initialLoadComplete = true;
 
                 // Start polling timer
@@ -110,10 +110,8 @@ namespace Marketplace_SE
             var selector = new ChatMessageTemplateSelector
             {
                 MyUserId = currentUser.Id,
-                MyImageMessageTemplate = this.Resources["MyImageMessageTemplate"] as DataTemplate,
-                MyTextMessageTemplate = this.Resources["MyTextMessageTemplate"] as DataTemplate,
-                TargetImageMessageTemplate = this.Resources["TargetImageMessageTemplate"] as DataTemplate,
-                TargetTextMessageTemplate = this.Resources["TargetTextMessageTemplate"] as DataTemplate
+                MyMessageTemplate = this.Resources["MyTextMessageTemplate"] as DataTemplate,
+                OtherMessageTemplate = this.Resources["TargetTextMessageTemplate"] as DataTemplate
             };
             ChatListView.ItemTemplateSelector = selector;
         }
@@ -151,7 +149,7 @@ namespace Marketplace_SE
             if (updateTimer == null)
             {
                 updateTimer = new DispatcherTimer();
-                updateTimer.Interval = TimeSpan.FromSeconds(1);
+                updateTimer.Interval = TimeSpan.FromSeconds(2);
                 updateTimer.Tick += UpdateTimer_Tick;
             }
             updateTimer.Start();
@@ -167,7 +165,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void UpdateTimer_Tick(object sender, object e)
+        private async void UpdateTimer_Tick(object sender, object e)
         {
             if (isInitializing || !initialLoadComplete)
             {
@@ -176,16 +174,16 @@ namespace Marketplace_SE
 
             try
             {
-                List<Message> newMessages = chatViewModel.CheckForNewMessages();
-                if (newMessages?.Count > 0)
+                var messages = await chatViewModel.GetMessagesAsync();
+                if (messages?.Count > 0)
                 {
-                    bool addedNew = false;
-                    foreach (var message in newMessages)
+                    var existingIds = displayedMessages.Select(m => m.Id).ToHashSet();
+
+                    foreach (var message in messages)
                     {
-                        if (!displayedMessages.Any(m => m.Id == message.Id && m.Id != 0))
+                        if (!existingIds.Contains(message.Id) && message.Id != 0)
                         {
                             AddMessageToDisplay(message);
-                            addedNew = true;
                         }
                     }
                 }
@@ -196,9 +194,9 @@ namespace Marketplace_SE
             }
         }
 
-        private void LoadInitialChatHistory()
+        private async Task LoadInitialChatHistoryAsync()
         {
-            List<Message> initialMessages = chatViewModel.GetInitialMessages();
+            var initialMessages = await chatViewModel.GetMessagesAsync();
             if (initialMessages != null)
             {
                 foreach (var message in initialMessages)
@@ -212,16 +210,16 @@ namespace Marketplace_SE
         {
             displayedMessages.Add(message);
 
-            string timeString = DateTimeOffset.FromUnixTimeMilliseconds(message.Timestamp).ToString("[HH:mm]");
-            bool isMe = message.Creator == currentUser.Id;
+            string timeString = DateTime.Now.ToString("[HH:mm]");
+            bool isMe = message.UserId == currentUser.Id;
             string prefix = isMe ? "[You]" : "[Peer]";
-            string contentForExport = message.ContentType == "text" ? message.Content : "<image>";
+            string contentForExport = message.Content;
 
             chatHistory.Add($"{timeString} {prefix}: {contentForExport}");
         }
 
         // --- Event Handlers ---
-        private void SendButton_Click(object sender, RoutedEventArgs e)
+        private async void SendButton_Click(object sender, RoutedEventArgs e)
         {
             string messageText = MessageBox.Text.Trim();
             if (string.IsNullOrEmpty(messageText) || chatViewModel == null || isInitializing)
@@ -229,34 +227,33 @@ namespace Marketplace_SE
                 return;
             }
 
-            string textToSend = messageText;
-            long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-            Message message = new Message
-            {
-                ConversationId = chatViewModel.GetConversation().Id,
-                Content = textToSend,
-                ContentType = "text",
-                Creator = currentUser.Id,
-                Timestamp = pseudoTimestamp
-            };
-            AddMessageToDisplay(message);
             MessageBox.Text = string.Empty;
-
             MessageBox.IsEnabled = false;
             SendButton.IsEnabled = false;
 
-            bool success = chatViewModel.SendTextMessage(textToSend);
-
-            if (!success)
+            try
             {
-                ShowErrorDialog("Message error", "Failed to send message.");
-                return;
-            }
+                var message = await chatViewModel.SendMessageAsync(messageText);
 
-            MessageBox.IsEnabled = true;
-            SendButton.IsEnabled = true;
-            MessageBox.Focus(FocusState.Programmatic);
+                if (message != null)
+                {
+                    AddMessageToDisplay(message);
+                }
+                else
+                {
+                    ShowErrorDialog("Message error", "Failed to send message.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog("Message error", "Failed to send message: " + ex.Message);
+            }
+            finally
+            {
+                MessageBox.IsEnabled = true;
+                SendButton.IsEnabled = true;
+                MessageBox.Focus(FocusState.Programmatic);
+            }
         }
 
         private async void AttachButton_Click(object sender, RoutedEventArgs e)
@@ -291,25 +288,24 @@ namespace Marketplace_SE
                         return;
                     }
 
-                if (bytes != null && bytes.Length > 0)
+                    if (bytes != null && bytes.Length > 0)
                     {
-                        long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-                        Message message = new Message
+                        try
                         {
-                            ConversationId = chatViewModel.GetConversation().Id,
-                            Content = DataEncoder.HexEncode(bytes),
-                            ContentType = "image",
-                            Creator = currentUser.Id,
-                            Timestamp = pseudoTimestamp
-                        };
-                        AddMessageToDisplay(message);
+                            var message = new Message
+                            {
+                                ConversationId = chatViewModel.CurrentConversationId,
+                                Content = DataEncoder.HexEncode(bytes),
+                                UserId = currentUser.Id
+                            };
 
-                        bool success = chatViewModel.SendImageMessage(bytes);
-
-                        if (!success)
+                            AddMessageToDisplay(message);
+                            // Send the image content as a message
+                            await chatViewModel.SendMessageAsync(DataEncoder.HexEncode(bytes));
+                        }
+                        catch (Exception ex)
                         {
-                            return;
+                            ShowErrorDialog("Image send error", "Failed to send image message: " + ex.Message);
                         }
                     }
                 }
@@ -395,7 +391,7 @@ namespace Marketplace_SE
         private void ShowLoadingIndicator(bool show)
         {
             LoadingIndicator.IsActive = show;
-            LoadingIndicator.Visibility = Visibility.Visible;
+            LoadingIndicator.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

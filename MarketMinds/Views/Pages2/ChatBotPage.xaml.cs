@@ -16,6 +16,8 @@ using Windows.System;
 using DomainLayer.Domain;
 using MarketMinds.ViewModels;
 using MarketMinds;
+using MarketMinds.Views.Pages2;
+
 namespace Marketplace_SE
 {
     public sealed partial class ChatBotPage : Page
@@ -36,9 +38,7 @@ namespace Marketplace_SE
 
         private void ChatBotOptionButton_Click(object sender, RoutedEventArgs eventArgs)
         {
-
         }
-
         private void OnButtonClickChatBotKill(object sender, RoutedEventArgs eventArgs)
         {
             var helpWindow = new Microsoft.UI.Xaml.Window();

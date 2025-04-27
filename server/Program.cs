@@ -11,6 +11,9 @@ using server.DataAccessLayer;
 using server.MarketMinds.Repositories.BorrowProductsRepository;
 using server.MarketMinds.Repositories.AccountRepository; // Added from main
 using System.Text.Json.Serialization;
+using MarketMinds.Repositories.ConversationRepository;
+using MarketMinds.Repositories.MessageRepository;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +53,8 @@ builder.Services.AddScoped<IProductConditionRepository, ProductConditionReposito
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>(); // Added from main
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
