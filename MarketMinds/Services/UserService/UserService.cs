@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -210,6 +211,27 @@ namespace MarketMinds.Services.UserService
                 return -1;
             }
         }
+
+        public async Task<User> GetUserByIdAsync(int userId)
+        {
+            try
+            {
+                var response = await httpClient.GetAsync($"account/{userId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
+                    return userDto?.ToDomainUser();
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user by ID: {ex.Message}");
+                return null;
+            }
+        }
+
         private class UsernameCheckResult
         {
             public bool Exists { get; set; }
