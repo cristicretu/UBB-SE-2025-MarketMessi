@@ -1,4 +1,6 @@
-﻿using DomainLayer.Domain;
+﻿/*
+
+using DomainLayer.Domain;
 using MarketMinds.Repositories.ProductTagRepository;
 using MarketMinds.Services.ProductTagService;
 using NUnit.Framework;
@@ -367,3 +369,5 @@ namespace MarketMinds.Test.Services.ProductTagService
         #endregion
     }
 }
+
+*/

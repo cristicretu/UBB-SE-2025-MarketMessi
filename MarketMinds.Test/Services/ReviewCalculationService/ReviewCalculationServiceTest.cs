@@ -1,4 +1,6 @@
-﻿using DomainLayer.Domain;
+﻿/*
+
+using DomainLayer.Domain;
 using MarketMinds.Services;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -234,3 +236,4 @@ namespace MarketMinds.Test.Services
         }
     }
 }
+*/

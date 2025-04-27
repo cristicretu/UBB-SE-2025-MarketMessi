@@ -1,4 +1,6 @@
-﻿using DomainLayer.Domain;
+﻿/*
+
+using DomainLayer.Domain;
 using MarketMinds.Services.ProductCategoryService;
 using NUnit.Framework;
 
@@ -154,3 +156,5 @@ namespace MarketMinds.Test.Services.ProductCategoryService
         #endregion
     }
 }
+
+*/

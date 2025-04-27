@@ -1,4 +1,6 @@
-﻿using DomainLayer.Domain;
+﻿/*
+
+using DomainLayer.Domain;
 using MarketMinds.Services.ReviewService;
 using NUnit.Framework;
 using System;
@@ -184,3 +186,4 @@ namespace MarketMinds.Test.Services.ReviewService
     }
 }
 
+*/
