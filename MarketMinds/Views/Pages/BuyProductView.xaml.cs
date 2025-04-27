@@ -30,6 +30,8 @@ namespace MarketMinds
         private readonly BasketViewModel priv_basketViewModel = App.BasketViewModel;
 
         private Window? seeSellerReviewsView;
+        private Window? leaveReviewWindow;
+
         public BuyProductView(BuyProduct product)
         {
             this.InitializeComponent();
@@ -105,11 +107,53 @@ namespace MarketMinds
 
         private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
         {
-            App.SeeSellerReviewsViewModel.Seller = priv_product.Seller;
-            // Create a window to host the SeeSellerReviewsView page
-            seeSellerReviewsView = new Window();
-            seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-            seeSellerReviewsView.Activate();
+            if (App.SeeSellerReviewsViewModel != null)
+            {
+                App.SeeSellerReviewsViewModel.Seller = priv_product.Seller;
+                // Create a window to host the SeeSellerReviewsView page
+                seeSellerReviewsView = new Window();
+                seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                seeSellerReviewsView.Activate();
+            }
+            else
+            {
+                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+            }
+        }
+
+        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser != null)
+            {
+                if (App.ReviewCreateViewModel != null)
+                {
+                    App.ReviewCreateViewModel.Seller = priv_product.Seller;
+
+                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                    leaveReviewWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                }
+            }
+            else
+            {
+                ShowErrorDialog("You must be logged in to leave a review.");
+            }
+        }
+
+        private async void ShowErrorDialog(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
         }
     }
 }

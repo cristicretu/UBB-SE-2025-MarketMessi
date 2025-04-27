@@ -24,6 +24,7 @@ namespace MarketMinds
     {
         public BorrowProduct Product { get; private set; }
         private Window? seeSellerReviewsView;
+        private Window? leaveReviewWindow;
         private readonly User currentUser;
         public DateTime? SelectedEndDate { get; private set; }
 
@@ -118,13 +119,55 @@ namespace MarketMinds
 
         private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
         {
-            App.SeeSellerReviewsViewModel.Seller = Product.Seller;
-            // Create a window to host the SeeSellerReviewsView page
-            var window = new Window();
-            window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-            window.Activate();
-            // Store reference to window
-            seeSellerReviewsView = window;
+            if (App.SeeSellerReviewsViewModel != null)
+            {
+                App.SeeSellerReviewsViewModel.Seller = Product.Seller;
+                // Create a window to host the SeeSellerReviewsView page
+                var window = new Window();
+                window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                window.Activate();
+                // Store reference to window
+                seeSellerReviewsView = window;
+            }
+            else
+            {
+                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+            }
+        }
+
+        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser != null)
+            {
+                if (App.ReviewCreateViewModel != null)
+                {
+                    App.ReviewCreateViewModel.Seller = Product.Seller;
+
+                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                    leaveReviewWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                }
+            }
+            else
+            {
+                ShowErrorDialog("You must be logged in to leave a review.");
+            }
+        }
+
+        private async void ShowErrorDialog(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
         }
 
         private void EndDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)

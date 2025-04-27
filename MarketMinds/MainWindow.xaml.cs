@@ -25,7 +25,7 @@ namespace UiLayer
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        private const int BUYER = 3;
+        private const int BUYER = 1;
         private const int SELLER = 2;
 
         public MainWindow()
@@ -60,12 +60,6 @@ namespace UiLayer
             basketViewWindow.Activate();
         }
 
-        private void HandleLeaveReviewButton_Click(object sender, RoutedEventArgs e)
-        {
-            leaveReviewViewWindow = new CreateReviewView(App.ReviewCreateViewModel);
-            leaveReviewViewWindow.Activate();
-        }
-
         private void HandleCreateListingButton_Click(object sender, RoutedEventArgs e)
         {
             CreateListingViewWindow = new Window();
@@ -75,19 +69,40 @@ namespace UiLayer
 
         private void HandleSeeReviewViewButton_Click(object sender, RoutedEventArgs e)
         {
-            // buyer
-            if (App.CurrentUser.UserType == BUYER)
+            // Check if user is logged in
+            if (App.CurrentUser != null)
             {
-                seeReviewsWindow = new SeeBuyerReviewsView(App.SeeBuyerReviewsViewModel);
-                seeReviewsWindow.Activate();
+                // Always show reviews that the current user left for others
+                if (App.SeeBuyerReviewsViewModel != null)
+                {
+                    // Ensure the view model has the latest data
+                    App.SeeBuyerReviewsViewModel.RefreshData();
+
+                    seeReviewsWindow = new SeeBuyerReviewsView(App.SeeBuyerReviewsViewModel);
+                    seeReviewsWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Reviews Unavailable", "The reviews view model is not initialized. Please restart the application.");
+                }
             }
-            else if (App.CurrentUser.UserType == SELLER)
+            else
             {
-                // Create a window that hosts the SeeSellerReviewsView page
-                seeReviewsWindow = new Window();
-                seeReviewsWindow.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-                seeReviewsWindow.Activate();
+                // Handle the case when no user is logged in
+                ShowErrorDialog("No User Logged In", "Please log in to view reviews.");
             }
+        }
+
+        private async void ShowErrorDialog(string title, string content)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "OK"
+            };
+            dialog.XamlRoot = this.Content.XamlRoot;
+            await dialog.ShowAsync();
         }
 
         private Window basketViewWindow;
@@ -95,7 +110,6 @@ namespace UiLayer
         private Window borrowProductListViewWindow;
         private Window buyProductListViewWindow;
         private Window adminViewWindow;
-        private Window leaveReviewViewWindow;
         public Window CreateListingViewWindow { get; set; }
         private Window seeReviewsWindow;
         private Window mainMarketplacePageWindow;

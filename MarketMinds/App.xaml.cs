@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
@@ -80,7 +81,6 @@ namespace MarketMinds
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static User CurrentUser { get; set; }
-        public static User TestingUser { get; set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -165,45 +165,30 @@ namespace MarketMinds
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
         }
+
         // Method to be called after successful login
         public static void ShowMainWindow()
         {
             if (CurrentUser != null)
             {
-                Debug.WriteLine("DEBUG: User is valid. Updating view models with CurrentUser");
-                UpdateTestingUser();
                 BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
-                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
-                Debug.WriteLine($"DEBUG: Created ReviewCreateViewModel - Buyer: {CurrentUser?.Id}, Seller: {TestingUser?.Id}");
+
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, null);
+
                 SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-                Debug.WriteLine($"DEBUG: Created SeeBuyerReviewsViewModel - User: {CurrentUser?.Id}");
-                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
-                Debug.WriteLine($"DEBUG: Created SeeSellerReviewsViewModel - Seller: {CurrentUser?.Id}, Viewer: {CurrentUser?.Id}");
+
+                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, null, CurrentUser);
+
                 if (LoginWindow != null)
                 {
                     LoginWindow.Close();
                 }
-                                MainWindow.Activate();
+
+                MainWindow.Activate();
             }
             else
             {
                 Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
-            }
-        }
-        private static void UpdateTestingUser()
-        {
-            if (CurrentUser != null && TestingUser == null)
-            {
-                TestingUser = new User(
-                    CurrentUser.Id,
-                    CurrentUser.Username,
-                    CurrentUser.Email,
-                    CurrentUser.Token);
-                TestingUser.Password = CurrentUser.Password;
-                TestingUser.UserType = CurrentUser.UserType;
-                TestingUser.Balance = CurrentUser.Balance;
-                TestingUser.Rating = CurrentUser.Rating;
-                Debug.WriteLine($"DEBUG: Created TestingUser from CurrentUser, ID: {TestingUser?.Id}, Username: {TestingUser?.Username}");
             }
         }
     }
