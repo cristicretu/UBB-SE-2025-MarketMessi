@@ -8,8 +8,9 @@ using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 using Microsoft.EntityFrameworkCore;
 using server.DataAccessLayer;
-using System.Text.Json.Serialization;
 using server.MarketMinds.Repositories.BorrowProductsRepository;
+using server.MarketMinds.Repositories.AccountRepository; // Added from main
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // compatibility with old API without EF, need to remove this when EF is fully implemented
 builder.Services.AddSingleton<DataBaseConnection>();
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(); // <-- Was missing in main, keeping from luca
 
 // EntityFramework database connection setup
 var InitialCatalog = builder.Configuration["InitialCatalog"];
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository
 builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>(); // Added from main
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

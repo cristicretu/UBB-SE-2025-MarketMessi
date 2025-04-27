@@ -16,8 +16,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Marketplace_SE;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace UiLayer
 {
     /// <summary>
@@ -32,29 +30,33 @@ namespace UiLayer
         {
             this.InitializeComponent();
         }
+
         private void HandleAuctionProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
             auctionProductListViewWindow = new AuctionProductListView();
             auctionProductListViewWindow.Activate();
         }
+
         private void HandleBorrowProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
             borrowProductListViewWindow = new BorrowProductListView();
             borrowProductListViewWindow.Activate();
         }
+
         private void HandleBuyProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
             buyProductListViewWindow = new BuyProductListView();
             buyProductListViewWindow.Activate();
         }
+
         private void HandleAdminViewButton_Click(object sender, RoutedEventArgs e)
         {
             adminViewWindow = new AdminView();
             adminViewWindow.Activate();
         }
+
         private void HandleBasketViewButton_Click(object sender, RoutedEventArgs e)
         {
-            // Create a window that hosts the BasketView page
             basketViewWindow = new Window();
             basketViewWindow.Content = new BasketView();
             basketViewWindow.Activate();
@@ -75,7 +77,6 @@ namespace UiLayer
 
         private void HandleSeeReviewViewButton_Click(object sender, RoutedEventArgs e)
         {
-            // buyer
             if (App.CurrentUser.UserType == BUYER)
             {
                 seeReviewsWindow = new SeeBuyerReviewsView(App.SeeBuyerReviewsViewModel);
@@ -83,7 +84,6 @@ namespace UiLayer
             }
             else if (App.CurrentUser.UserType == SELLER)
             {
-                // Create a window that hosts the SeeSellerReviewsView page
                 seeReviewsWindow = new Window();
                 seeReviewsWindow.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
                 seeReviewsWindow.Activate();
@@ -102,14 +102,37 @@ namespace UiLayer
 
         private void HandleOpenMainMarketplacePageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (mainMarketplacePageWindow == null || !mainMarketplacePageWindow.Visible)
+            try
+            {
+                bool isWindowActive = mainMarketplacePageWindow != null && mainMarketplacePageWindow.Visible;
+
+                if (!isWindowActive)
+                {
+                    mainMarketplacePageWindow = new Window();
+                    mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
+
+                    mainMarketplacePageWindow.Closed += (s, args) =>
+                    {
+                        mainMarketplacePageWindow = null;
+                    };
+
+                    mainMarketplacePageWindow.Activate();
+                }
+                else
+                {
+                    mainMarketplacePageWindow.Activate();
+                }
+            }
+            catch (Exception)
             {
                 mainMarketplacePageWindow = new Window();
                 mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
-                mainMarketplacePageWindow.Activate();
-            }
-            else
-            {
+
+                mainMarketplacePageWindow.Closed += (s, args) =>
+                {
+                    mainMarketplacePageWindow = null;
+                };
+
                 mainMarketplacePageWindow.Activate();
             }
         }

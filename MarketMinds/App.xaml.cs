@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.UI.Xaml;
 using BusinessLogicLayer.ViewModel;
@@ -23,6 +24,9 @@ using MarketMinds.Services.DreamTeam.ChatService;
 using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.Services.UserService;
+using Marketplace_SE.Services.DreamTeam;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MarketMinds
 {
@@ -52,6 +56,8 @@ namespace MarketMinds
         public static ChatService ChatService;
         public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
+        public static IUserService UserService;
+        public static AccountPageService AccountPageService { get; private set; }
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -71,6 +77,8 @@ namespace MarketMinds
         public static ChatBotViewModel ChatBotViewModel { get; private set; }
         public static ChatViewModel ChatViewModel { get; private set; }
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
+        public static LoginViewModel LoginViewModel { get; private set; }
+        public static RegisterViewModel RegisterViewModel { get; private set; }
         public static User CurrentUser { get; set; }
         public static User TestingUser { get; set; }
 
@@ -78,6 +86,8 @@ namespace MarketMinds
         private const int SELLER = 2;
 
         private static IConfiguration appConfiguration;
+        public static Window LoginWindow = null!;
+        public static Window MainWindow = null!;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -107,14 +117,8 @@ namespace MarketMinds
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            mainWindow = new UiLayer.MainWindow();
-            mainWindow.Activate();
-            // Create test users that match the database
-            TestingUser = new User(1, "alice123", "alice@example.com");
-            TestingUser.UserType = BUYER; // Matches database value
-            CurrentUser = new User(2, "bob321", "bob@example.com");
-            CurrentUser.UserType = SELLER; // Matches database value
-
+            // Create but don't show the main window yet
+            MainWindow = new UiLayer.MainWindow();
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
             // Instantiate repositories
@@ -131,11 +135,13 @@ namespace MarketMinds
             ConditionService = new ProductConditionService(Configuration);
             ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(Configuration);
+            UserService = new UserService(Configuration);
+            AccountPageService = new AccountPageService(Configuration);
             ChatBotService = new ChatBotService(ChatBotRepository);
             ChatService = new ChatService(ChatRepository);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
-
-            // Instantiate view models
+            Debug.WriteLine("DEBUG: CurrentUser before view model initialization: " + (CurrentUser == null ? "NULL" : CurrentUser.ToString()));
+            // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
             ProductCategoryViewModel = new ProductCategoryViewModel(CategoryService);
@@ -145,15 +151,60 @@ namespace MarketMinds
             AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel(AuctionProductsService);
             BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel(BorrowProductsService);
             BuyProductSortAndFilterViewModel = new SortAndFilterViewModel(BuyProductsService);
-            ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
-            SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, TestingUser, TestingUser);
-            SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-            BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
             MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+            LoginViewModel = new LoginViewModel(UserService);
+            RegisterViewModel = new RegisterViewModel(UserService);
+            ReviewCreateViewModel = null;
+            SeeSellerReviewsViewModel = null;
+            SeeBuyerReviewsViewModel = null;
+            BasketViewModel = null;
+            // Show login window first instead of main window
+            LoginWindow = new LoginWindow();
+            LoginWindow.Activate();
         }
-        private Window mainWindow = null!;
+        // Method to be called after successful login
+        public static void ShowMainWindow()
+        {
+            if (CurrentUser != null)
+            {
+                Debug.WriteLine("DEBUG: User is valid. Updating view models with CurrentUser");
+                UpdateTestingUser();
+                BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
+                Debug.WriteLine($"DEBUG: Created ReviewCreateViewModel - Buyer: {CurrentUser?.Id}, Seller: {TestingUser?.Id}");
+                SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
+                Debug.WriteLine($"DEBUG: Created SeeBuyerReviewsViewModel - User: {CurrentUser?.Id}");
+                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
+                Debug.WriteLine($"DEBUG: Created SeeSellerReviewsViewModel - Seller: {CurrentUser?.Id}, Viewer: {CurrentUser?.Id}");
+                if (LoginWindow != null)
+                {
+                    LoginWindow.Close();
+                }
+                                MainWindow.Activate();
+            }
+            else
+            {
+                Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
+            }
+        }
+        private static void UpdateTestingUser()
+        {
+            if (CurrentUser != null && TestingUser == null)
+            {
+                TestingUser = new User(
+                    CurrentUser.Id,
+                    CurrentUser.Username,
+                    CurrentUser.Email,
+                    CurrentUser.Token);
+                TestingUser.Password = CurrentUser.Password;
+                TestingUser.UserType = CurrentUser.UserType;
+                TestingUser.Balance = CurrentUser.Balance;
+                TestingUser.Rating = CurrentUser.Rating;
+                Debug.WriteLine($"DEBUG: Created TestingUser from CurrentUser, ID: {TestingUser?.Id}, Username: {TestingUser?.Username}");
+            }
+        }
     }
 }

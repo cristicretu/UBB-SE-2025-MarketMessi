@@ -21,6 +21,8 @@ namespace MarketMinds.Services.BasketService
         private const double MINIMUM_DISCOUNT = 0;
         private const int MINIMUM_QUANTITY = 0;
         private const int DEFAULT_QUANTITY = 1;
+        private const int INVALID_USER_ID = -1;
+        private const int INVALID_BASKET_ID = -1;
 
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
@@ -345,20 +347,20 @@ namespace MarketMinds.Services.BasketService
 
             try
             {
-                // This is just to get the discount rate, we use a temporary basket ID of 1
-                // In a real implementation, this should be changed to a dedicated endpoint
-                var response = httpClient.PostAsJsonAsync($"1/promocode", code).Result;
+                string normalizedCode = code.Trim().ToUpper();
+                var response = httpClient.PostAsJsonAsync($"1/promocode", normalizedCode).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     var result = JsonSerializer.Deserialize<DiscountResponse>(responseContent, jsonOptions);
-                    return subtotal * result.DiscountRate;
+                    double discount = subtotal * result.DiscountRate;
+                    return discount;
                 }
 
                 return MINIMUM_DISCOUNT;
             }
-            catch
+            catch (Exception ex)
             {
                 return MINIMUM_DISCOUNT;
             }
@@ -458,6 +460,98 @@ namespace MarketMinds.Services.BasketService
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Could not increase quantity: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> CheckoutBasketAsync(int userId, int basketId, double discountAmount = 0, double totalAmount = 0)
+        {
+            if (userId <= INVALID_USER_ID)
+            {
+                throw new ArgumentException("Invalid user ID");
+            }
+
+            if (basketId <= INVALID_BASKET_ID)
+            {
+                throw new ArgumentException("Invalid basket ID");
+            }
+
+            try
+            {
+                // First, validate the basket before checkout
+                if (!ValidateBasketBeforeCheckOut(basketId))
+                {
+                    throw new InvalidOperationException("Basket validation failed");
+                }
+
+                // Get the current basket totals
+                var basketTotals = CalculateBasketTotals(basketId, null);
+                System.Diagnostics.Debug.WriteLine($"DIAGNOSTIC: CheckoutBasketAsync - Raw basketTotal: {basketTotals.TotalAmount}, Provided discount: {discountAmount}, Provided total: {totalAmount}");
+
+                // Use provided values if they are valid
+                if (discountAmount > 0 && totalAmount > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"DIAGNOSTIC: Using provided discount ({discountAmount}) and total ({totalAmount})");
+                    basketTotals.Discount = discountAmount;
+                    basketTotals.TotalAmount = totalAmount;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"DIAGNOSTIC: No valid discount/total provided, using calculated totals");
+                }
+
+                // Create an HTTP client for account API
+                using var httpClientAccount = new HttpClient();
+                httpClientAccount.BaseAddress = new Uri(apiBaseUrl);
+                httpClientAccount.Timeout = TimeSpan.FromSeconds(30);
+
+                // Create request for the account API to create orders from the basket
+                // Include discount information
+                var request = new
+                {
+                    BasketId = basketId,
+                    DiscountAmount = basketTotals.Discount,
+                    TotalAmount = basketTotals.TotalAmount
+                };
+
+                System.Diagnostics.Debug.WriteLine($"Checkout request: BasketId={basketId}, Discount={basketTotals.Discount}, Total={basketTotals.TotalAmount}");
+
+                // Call the account API to create the order
+                var response = await httpClientAccount.PostAsJsonAsync($"api/account/{userId}/orders", request);
+
+                // Handle the response
+                if (response.IsSuccessStatusCode)
+                {
+                    // If successful order creation, the API should have cleared the basket already
+                    System.Diagnostics.Debug.WriteLine($"Successfully created order from basket {basketId} for user {userId}");
+                    return true;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Error creating order: {response.StatusCode}, Content: {errorContent}");
+
+                    // If it's a balance issue (400 status code), throw a more user-friendly message
+                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest &&
+                        errorContent.Contains("Insufficient funds"))
+                    {
+                        throw new InvalidOperationException(errorContent);
+                    }
+
+                    return false;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
+            }
+            catch (InvalidOperationException)
+            {
+                // Re-throw InvalidOperationException as-is to preserve the message
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
             }
         }
     }
