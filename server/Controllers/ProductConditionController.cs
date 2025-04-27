@@ -1,9 +1,9 @@
+using System;
+using System.Net;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using server.Models;
 using MarketMinds.Repositories.ProductConditionRepository;
-using System.Collections.Generic;
-using System;
-using System.Net;
 
 namespace MarketMinds.Controllers
 {

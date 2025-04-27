@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using server.Models;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using server.Models;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {

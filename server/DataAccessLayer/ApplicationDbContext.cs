@@ -1,6 +1,6 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using server.Models;
-using System;
 
 namespace server.DataAccessLayer
 {

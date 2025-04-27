@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-// using server.Services; // Removed service dependency
-using server.Models; // Using server models
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using System;
+using Microsoft.AspNetCore.Mvc;
+using server.Models;
 using server.MarketMinds.Repositories.AccountRepository;
 
 namespace server.Controllers
@@ -113,8 +112,7 @@ namespace server.Controllers
                 }
 
                 // Get the basket total cost
-                var basketTotal = await _accountRepository.GetBasketTotalAsync(userId, request.BasketId);
-                
+                var basketTotal = await _accountRepository.GetBasketTotalAsync(userId, request.BasketId);                
                 double finalTotal = basketTotal;
                 if (request.TotalAmount > 0 && request.DiscountAmount > 0)
                 {

@@ -1,11 +1,11 @@
+using System;
+using System.Net;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using server.Models;
 using server.Models.DTOs;
 using server.MarketMinds.Repositories.BorrowProductsRepository;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using System.Net;
 
 namespace server.Controllers
 {

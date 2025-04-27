@@ -1,10 +1,10 @@
+using System;
+using System.Net;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
 using server.Models;
 using MarketMinds.Repositories.ProductCategoryRepository;
-using System.Collections.Generic;
-using System;
-using System.Net;
 
 namespace MarketMinds.Controllers
 {
