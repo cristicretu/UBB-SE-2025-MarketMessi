@@ -133,8 +133,14 @@ namespace MarketMinds.Services.ReviewService
                     foreach (var review in reviews)
                     {
                         // Ensure rating is within the expected range (0-5)
-                        if (review.Rating < 0) review.Rating = 0;
-                        else if (review.Rating > 5) review.Rating = 5;
+                        if (review.Rating < 0)
+                        {
+                            review.Rating = 0;
+                        }
+                        else if (review.Rating > 5)
+                        {
+                            review.Rating = 5;
+                        }
 
                         review.SellerUsername = seller.Username;
 
@@ -188,9 +194,14 @@ namespace MarketMinds.Services.ReviewService
                     foreach (var review in reviews)
                     {
                         // Ensure rating is within the expected range (0-5)
-                        if (review.Rating < 0) review.Rating = 0;
-                        else if (review.Rating > 5) review.Rating = 5;
-
+                        if (review.Rating < 0)
+                        {
+                             review.Rating = 0;
+                        }
+                        else if (review.Rating > 5)
+                        {
+                            review.Rating = 5;
+                        }
 
                         review.BuyerUsername = buyer.Username;
 
