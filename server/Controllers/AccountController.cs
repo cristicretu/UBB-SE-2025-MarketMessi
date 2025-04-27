@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
-using server.Models;
-using server.MarketMinds.Repositories.AccountRepository;
+using Server.Models;
+using Server.MarketMinds.Repositories.AccountRepository;
 
-namespace server.Controllers
+namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")] // Route: /api/account
     public class AccountController : ControllerBase
     {
-        private readonly IAccountRepository _accountRepository; // Added repository field
-        private readonly ILogger<AccountController> _logger;
+        private readonly IAccountRepository accountRepository; // Added repository field
+        private readonly ILogger<AccountController> logger;
 
         public AccountController(IAccountRepository accountRepository, ILogger<AccountController> logger)
         {
-            _accountRepository = accountRepository;
-            _logger = logger;
+            this.accountRepository = accountRepository;
+            this.logger = logger;
         }
 
         // GET: api/account/{userId}
@@ -29,26 +29,26 @@ namespace server.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<User>> GetUser(int userId)
         {
-            _logger.LogInformation("GetUser endpoint called for userId: {UserId}", userId);
+            logger.LogInformation("GetUser endpoint called for userId: {UserId}", userId);
             if (userId <= 0)
             {
-                _logger.LogWarning("GetUser called with invalid userId: {UserId}", userId);
+                logger.LogWarning("GetUser called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");
             }
 
             try
             {
-                var user = await _accountRepository.GetUserByIdAsync(userId);
+                var user = await accountRepository.GetUserByIdAsync(userId);
                 if (user == null)
                 {
-                    _logger.LogInformation("User not found for userId: {UserId}", userId);
+                    logger.LogInformation("User not found for userId: {UserId}", userId);
                     return NotFound();
                 }
                 return Ok(user);
             }
             catch (System.Exception ex)
             {
-                _logger.LogError(ex, "Error in GetUser endpoint for userId: {UserId}", userId);
+                logger.LogError(ex, "Error in GetUser endpoint for userId: {UserId}", userId);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred fetching user data.");
             }
         }
@@ -60,21 +60,21 @@ namespace server.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<UserOrder>>> GetUserOrders(int userId)
         {
-            _logger.LogInformation("GetUserOrders endpoint called for userId: {UserId}", userId);
+            logger.LogInformation("GetUserOrders endpoint called for userId: {UserId}", userId);
             if (userId <= 0)
             {
-                _logger.LogWarning("GetUserOrders called with invalid userId: {UserId}", userId);
+                logger.LogWarning("GetUserOrders called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");
             }
 
             try
             {
-                var orders = await _accountRepository.GetUserOrdersAsync(userId);
+                var orders = await accountRepository.GetUserOrdersAsync(userId);
                 return Ok(orders);
             }
             catch (System.Exception ex)
             {
-                _logger.LogError(ex, "Error in GetUserOrders endpoint for userId: {UserId}", userId);
+                logger.LogError(ex, "Error in GetUserOrders endpoint for userId: {UserId}", userId);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred fetching user orders.");
             }
         }
@@ -87,36 +87,36 @@ namespace server.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<Order>>> CreateOrderFromBasket(int userId, [FromBody] CreateOrderRequest request)
         {
-            _logger.LogInformation("CreateOrderFromBasket endpoint called for userId: {UserId}", userId);
+            logger.LogInformation("CreateOrderFromBasket endpoint called for userId: {UserId}", userId);
 
             if (userId <= 0)
             {
-                _logger.LogWarning("CreateOrderFromBasket called with invalid userId: {UserId}", userId);
+                logger.LogWarning("CreateOrderFromBasket called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");
             }
 
             if (request == null || request.BasketId <= 0)
             {
-                _logger.LogWarning("CreateOrderFromBasket called with invalid basketId for userId: {UserId}", userId);
+                logger.LogWarning("CreateOrderFromBasket called with invalid basketId for userId: {UserId}", userId);
                 return BadRequest("Basket ID must be provided and positive.");
             }
 
             try
             {
                 // First get the user to check their balance
-                var user = await _accountRepository.GetUserByIdAsync(userId);
+                var user = await accountRepository.GetUserByIdAsync(userId);
                 if (user == null)
                 {
-                    _logger.LogWarning("User not found for userId: {UserId}", userId);
+                    logger.LogWarning("User not found for userId: {UserId}", userId);
                     return NotFound($"User with ID {userId} not found.");
                 }
 
                 // Get the basket total cost
-                var basketTotal = await _accountRepository.GetBasketTotalAsync(userId, request.BasketId);                
+                var basketTotal = await accountRepository.GetBasketTotalAsync(userId, request.BasketId);
                 double finalTotal = basketTotal;
                 if (request.TotalAmount > 0 && request.DiscountAmount > 0)
                 {
-                    _logger.LogInformation("Using provided discount amount: {DiscountAmount}, total amount: {TotalAmount}",
+                    logger.LogInformation("Using provided discount amount: {DiscountAmount}, total amount: {TotalAmount}",
                         request.DiscountAmount, request.TotalAmount);
                     finalTotal = request.TotalAmount;
                 }
@@ -124,36 +124,36 @@ namespace server.Controllers
                 // Check if user has enough balance
                 if (user.Balance < finalTotal)
                 {
-                    _logger.LogWarning("User {UserId} has insufficient funds. Balance: {Balance}, Required: {Total}",
+                    logger.LogWarning("User {UserId} has insufficient funds. Balance: {Balance}, Required: {Total}",
                         userId, user.Balance, finalTotal);
                     return BadRequest($"Insufficient funds. Your balance is ${user.Balance:F2}, but the total cost is ${finalTotal:F2}.");
                 }
 
-                var createdOrders = await _accountRepository.CreateOrderFromBasketAsync(userId, request.BasketId, request.DiscountAmount);
+                var createdOrders = await accountRepository.CreateOrderFromBasketAsync(userId, request.BasketId, request.DiscountAmount);
 
                 user.Balance -= finalTotal;
-                await _accountRepository.UpdateUserAsync(user);
+                await accountRepository.UpdateUserAsync(user);
 
-                _logger.LogInformation("Successfully created {OrderCount} orders for userId: {UserId} from basketId: {BasketId}. New balance: {Balance}",
+                logger.LogInformation("Successfully created {OrderCount} orders for userId: {UserId} from basketId: {BasketId}. New balance: {Balance}",
                     createdOrders.Count, userId, request.BasketId, user.Balance);
 
                 return StatusCode(StatusCodes.Status201Created, createdOrders);
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Invalid argument in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
+                logger.LogWarning(ex, "Invalid argument in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
                     userId, request.BasketId);
                 return BadRequest(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Operation not valid in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
+                logger.LogWarning(ex, "Operation not valid in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
                     userId, request.BasketId);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
+                logger.LogError(ex, "Error in CreateOrderFromBasket for userId: {UserId}, basketId: {BasketId}",
                     userId, request.BasketId);
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred creating orders from basket.");

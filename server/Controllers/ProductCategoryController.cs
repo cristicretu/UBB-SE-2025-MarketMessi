@@ -3,7 +3,7 @@ using System.Net;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
-using server.Models;
+using Server.Models;
 using MarketMinds.Repositories.ProductCategoryRepository;
 
 namespace MarketMinds.Controllers
@@ -52,10 +52,10 @@ namespace MarketMinds.Controllers
                 var newCategory = productCategoryRepository.CreateProductCategory(
                     request.DisplayTitle,
                     request.Description);
-                
+
                 return CreatedAtAction(
-                    nameof(GetAllProductCategories), 
-                    new { id = newCategory.Id }, 
+                    nameof(GetAllProductCategories),
+                    new { id = newCategory.Id },
                     newCategory);
             }
             catch (ArgumentException argumentException)

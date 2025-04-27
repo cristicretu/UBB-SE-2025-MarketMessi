@@ -1,23 +1,23 @@
 using System.Text.Json.Serialization;
 
-namespace server.Models
+namespace Server.Models
 {
     public class BorrowProductProductTag
     {
         public int Id { get; set; }
         public int ProductId { get; set; }
         public int TagId { get; set; }
-        
+
         // Navigation properties
         [JsonIgnore] // Break circular reference during serialization
         public BorrowProduct Product { get; set; }
         public ProductTag Tag { get; set; }
-        
+
         public BorrowProductProductTag()
         {
             // Default constructor
         }
-        
+
         public BorrowProductProductTag(int id, int productId, int tagId)
         {
             Id = id;
@@ -25,4 +25,4 @@ namespace server.Models
             TagId = tagId;
         }
     }
-} 
+}

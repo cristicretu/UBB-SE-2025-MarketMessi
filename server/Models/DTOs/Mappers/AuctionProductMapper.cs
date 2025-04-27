@@ -1,16 +1,16 @@
 using System.Linq;
 using System.Collections.Generic;
-using server.Models;
-using server.Models.DTOs;
+using Server.Models;
+using Server.Models.DTOs;
 
-namespace server.Models.DTOs.Mappers
+namespace Server.Models.DTOs.Mappers
 {
     public static class AuctionProductMapper
     {
-        private static int UNDEFINED_USER_TYPE = 0;
-        private static int UNDEFINED_BALANCE = 0;
-        private static int UNDEFINED_RATING = 0;
-        private static int UNDEFINED_PASSWORD = 0;
+        private static int undefined_user_type = 0;
+        private static int undefined_balance = 0;
+        private static int undefined_rating = 0;
+        private static int undefined_password = 0;
         public static AuctionProductDTO ToDTO(AuctionProduct entity)
         {
             if (entity == null)
@@ -37,28 +37,28 @@ namespace server.Models.DTOs.Mappers
                         Id = b.Bidder.Id,
                         Username = b.Bidder.Username,
                         Email = b.Bidder.Email,
-                        UserType = UNDEFINED_USER_TYPE,
-                        Balance = UNDEFINED_BALANCE,
-                        Rating = UNDEFINED_RATING,
-                        Password = UNDEFINED_PASSWORD
-                    } 
+                        UserType = undefined_user_type,
+                        Balance = undefined_balance,
+                        Rating = undefined_rating,
+                        Password = undefined_password
+                    }
                     : null
                 }).ToList() ?? new List<BidDTO>(),
                 Condition = entity.Condition != null ? new ConditionDTO
                 {
                     Id = entity.Condition.Id,
                     DisplayTitle = entity.Condition.Name,
-                    Description = null 
-                } 
+                    Description = null
+                }
                 : null,
                 Category = entity.Category != null ? new CategoryDTO
                 {
                     Id = entity.Category.Id,
                     DisplayTitle = entity.Category.Name,
                     Description = entity.Category.Description
-                } 
+                }
                 : null,
-                Tags = new List<ProductTagDTO>(), 
+                Tags = new List<ProductTagDTO>(),
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
                     Url = i.Url
@@ -68,10 +68,10 @@ namespace server.Models.DTOs.Mappers
                     Id = entity.Seller.Id,
                     Username = entity.Seller.Username,
                     Email = entity.Seller.Email,
-                    UserType = 0, 
-                    Balance = 0,  
-                    Rating = 0,  
-                    Password = 0  
+                    UserType = 0,
+                    Balance = 0,
+                    Rating = 0,
+                    Password = 0
                 }
                 : null
             };
@@ -82,4 +82,4 @@ namespace server.Models.DTOs.Mappers
             return entities?.Select(e => ToDTO(e)).ToList() ?? new List<AuctionProductDTO>();
         }
     }
-} 
+}

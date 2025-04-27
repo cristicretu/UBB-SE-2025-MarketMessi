@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("BuyProductProductTags")]
     public class BuyProductProductTag
@@ -21,8 +21,6 @@ namespace server.Models
 
         [ForeignKey("TagId")]
         public virtual ProductTag Tag { get; set; }
-
-        // Navigation properties and Foreign Key relationships are configured in ApplicationDbContext
 
         public BuyProductProductTag()
         {

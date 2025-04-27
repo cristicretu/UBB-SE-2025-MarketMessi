@@ -1,17 +1,16 @@
 using System.Linq;
 using System.Collections.Generic;
-using server.Models;
-using server.Models.DTOs;
+using Server.Models;
+using Server.Models.DTOs;
 
-namespace server.Models.DTOs.Mappers
+namespace Server.Models.DTOs.Mappers
 {
     public static class BuyProductMapper
     {
-
-        private static int UNDEFINED_USER_TYPE = 0;
-        private static int UNDEFINED_BALANCE = 0;
-        private static int UNDEFINED_RATING = 0;
-        private static int UNDEFINED_PASSWORD = 0;
+        private static int undefined_user_type = 0;
+        private static int undefined_balance = 0;
+        private static int undefined_rating = 0;
+        private static int undefined_password = 0;
         public static BuyProductDTO ToDTO(BuyProduct entity)
         {
             if (entity == null)
@@ -58,10 +57,10 @@ namespace server.Models.DTOs.Mappers
                     Id = entity.Seller.Id,
                     Username = entity.Seller.Username,
                     Email = entity.Seller.Email,
-                    UserType = UNDEFINED_USER_TYPE,
-                    Balance = UNDEFINED_BALANCE,
-                    Rating = UNDEFINED_RATING,
-                    Password = UNDEFINED_PASSWORD
+                    UserType = undefined_user_type,
+                    Balance = undefined_balance,
+                    Rating = undefined_rating,
+                    Password = undefined_password
                 }
                 : null
             };

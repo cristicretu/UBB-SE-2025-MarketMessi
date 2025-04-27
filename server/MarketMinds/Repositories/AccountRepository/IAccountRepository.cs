@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using server.Models;
+using Server.Models;
 
-namespace server.MarketMinds.Repositories.AccountRepository
+namespace Server.MarketMinds.Repositories.AccountRepository
 {
     public interface IAccountRepository
     {

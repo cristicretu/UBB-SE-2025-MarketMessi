@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using server.Models;
+using Server.Models;
 using MarketMinds.Repositories.ProductConditionRepository;
 
 namespace MarketMinds.Controllers
@@ -27,7 +27,7 @@ namespace MarketMinds.Controllers
             {
                 var allConditions = productConditionRepository.GetAllProductConditions();
                 return Ok(allConditions);
-            } 
+            }
             catch (Exception exception)
             {
                 Console.WriteLine($"Error getting all product conditions: {exception}");
@@ -51,7 +51,7 @@ namespace MarketMinds.Controllers
                 var newCondition = productConditionRepository.CreateProductCondition(
                     request.DisplayTitle,
                     request.Description);
-                
+
                 return CreatedAtAction(
                     nameof(GetAllProductConditions),
                     new { id = newCondition.Id },
@@ -93,12 +93,12 @@ namespace MarketMinds.Controllers
             catch (Exception exception)
             {
                 // Look for foreign key constraint errors
-                if (exception.ToString().Contains("REFERENCE constraint") || 
+                if (exception.ToString().Contains("REFERENCE constraint") ||
                     exception.ToString().Contains("FK_BorrowProducts_ProductConditions"))
                 {
                     return BadRequest($"Cannot delete condition '{title}' because it is being used by one or more products. Update or delete those products first.");
                 }
-                
+
                 Console.WriteLine($"Error deleting product condition '{title}': {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the condition.");
             }

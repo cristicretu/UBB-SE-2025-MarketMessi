@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
-using server.Models;
+using Server.Models;
 
 namespace MarketMinds.Repositories.BasketRepository
 {

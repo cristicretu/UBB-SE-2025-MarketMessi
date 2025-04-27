@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
-using server.Models;
+using Server.DataAccessLayer;
+using Server.Models;
 
 namespace MarketMinds.Repositories.ProductTagRepository
 {
@@ -52,12 +52,12 @@ namespace MarketMinds.Repositories.ProductTagRepository
             try
             {
                 var tagToDelete = databaseContext.ProductTags.FirstOrDefault(tag => tag.Title == displayTitle);
-                
+
                 if (tagToDelete == null)
                 {
                     throw new KeyNotFoundException($"Product tag with title '{displayTitle}' not found.");
                 }
-                
+
                 databaseContext.ProductTags.Remove(tagToDelete);
                 databaseContext.SaveChanges();
             }

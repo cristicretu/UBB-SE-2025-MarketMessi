@@ -1,8 +1,8 @@
 using System.Linq;
-using server.Models;
-using server.Models.DTOs;
+using Server.Models;
+using Server.Models.DTOs;
 
-namespace server.Models.DTOs.Mappers
+namespace Server.Models.DTOs.Mappers
 {
     public static class ReviewMapper
     {

@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
-using server.Models;
-using server.Models.DTOs;
-using server.Models.DTOs.Mappers;
+using Server.Models;
+using Server.Models.DTOs;
+using Server.Models.DTOs.Mappers;
 using MarketMinds.Repositories.AuctionProductsRepository;
 
 namespace MarketMinds.Controllers
@@ -16,11 +16,11 @@ namespace MarketMinds.Controllers
     [Route("api/[controller]")]
     public class AuctionProductsController : ControllerBase
     {
-        private readonly IAuctionProductsRepository _auctionProductsRepository;
+        private readonly IAuctionProductsRepository auctionProductsRepository;
 
         public AuctionProductsController(IAuctionProductsRepository auctionProductsRepository)
         {
-            _auctionProductsRepository = auctionProductsRepository;
+            this.auctionProductsRepository = auctionProductsRepository;
         }
 
         [HttpGet]
@@ -30,7 +30,7 @@ namespace MarketMinds.Controllers
         {
             try
             {
-                var products = _auctionProductsRepository.GetProducts();
+                var products = auctionProductsRepository.GetProducts();
                 var dtos = AuctionProductMapper.ToDTOList(products);
                 return Ok(dtos);
             }
@@ -47,9 +47,9 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetAuctionProductById(int id)
         {
-             try
+            try
             {
-                var product = _auctionProductsRepository.GetProductByID(id);
+                var product = auctionProductsRepository.GetProductByID(id);
                 var dto = AuctionProductMapper.ToDTO(product);
                 return Ok(dto);
             }
@@ -71,13 +71,13 @@ namespace MarketMinds.Controllers
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
             var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
-            product.Images = new List<ProductImage>(); 
+            product.Images = new List<ProductImage>();
             // Validate the main product (without images for now)
             if (product == null || !ModelState.IsValid)
             {
                 // Manually remove image validation errors if they occurred before clearing
-                ModelState.Remove("Images"); 
-                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0) 
+                ModelState.Remove("Images");
+                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0)
                 {
                     // Remove potential errors like "Images[0].Product" if they exist
                     var imageKeys = ModelState.Keys.Where(k => k.StartsWith("Images[")).ToList();
@@ -87,20 +87,20 @@ namespace MarketMinds.Controllers
                     }
                 }
                 // Re-check if model state is valid after potentially removing image errors
-                if (!ModelState.IsValid) 
+                if (!ModelState.IsValid)
                 {
                     Console.WriteLine($"Model State is Invalid (after image handling): {System.Text.Json.JsonSerializer.Serialize(ModelState)}");
                     return BadRequest(ModelState);
                 }
             }
-            if (product.Id != 0) 
+            if (product.Id != 0)
             {
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
             try
             {
                 // Add the product (without images linked yet)
-                _auctionProductsRepository.AddProduct(product); 
+                auctionProductsRepository.AddProduct(product);
                 // Now 'product' has its Id assigned by the database
 
                 // Link and add images if any were provided
@@ -113,17 +113,17 @@ namespace MarketMinds.Controllers
                         // Add the now-linked image back to the product's collection
                         product.Images.Add(img);
                     }
-                    
+
                     // Update the product to save the linked images
-                    _auctionProductsRepository.UpdateProduct(product);
-                    
+                    auctionProductsRepository.UpdateProduct(product);
+
                     // Verify images were saved by retrieving the product again
-                    try 
+                    try
                     {
-                        var savedProduct = _auctionProductsRepository.GetProductByID(product.Id);
+                        var savedProduct = auctionProductsRepository.GetProductByID(product.Id);
                         Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
                     }
-                    catch (Exception ex) 
+                    catch (Exception ex)
                     {
                         Console.WriteLine($"Error verifying images: {ex.Message}");
                     }
@@ -137,7 +137,7 @@ namespace MarketMinds.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating auction product: {ex}"); 
+                Console.WriteLine($"Error creating auction product: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
             }
         }
@@ -149,26 +149,26 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateAuctionProduct(int id, [FromBody] AuctionProduct product)
         {
-            if (product == null || id != product.Id || !ModelState.IsValid) 
+            if (product == null || id != product.Id || !ModelState.IsValid)
             {
                 return BadRequest("Product data is invalid or ID mismatch.");
             }
             try
             {
-                _auctionProductsRepository.UpdateProduct(product);                 
-                return NoContent(); 
-            } 
+                auctionProductsRepository.UpdateProduct(product);
+                return NoContent();
+            }
             catch (KeyNotFoundException knfex)
             {
                 return NotFound(knfex.Message);
             }
-            catch (ArgumentException aex) 
+            catch (ArgumentException aex)
             {
-                 return BadRequest(aex.Message);
+                return BadRequest(aex.Message);
             }
             catch (Exception ex)
-            {    
-                Console.WriteLine($"Error updating auction product ID {id}: {ex}"); 
+            {
+                Console.WriteLine($"Error updating auction product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
         }
@@ -181,21 +181,21 @@ namespace MarketMinds.Controllers
         {
             try
             {
-                 var productToDelete = _auctionProductsRepository.GetProductByID(id);     
-                 _auctionProductsRepository.DeleteProduct(productToDelete);
-                return NoContent(); 
+                var productToDelete = auctionProductsRepository.GetProductByID(id);
+                auctionProductsRepository.DeleteProduct(productToDelete);
+                return NoContent();
             }
             catch (KeyNotFoundException knfex)
             {
                 return NotFound(knfex.Message);
             }
-             catch (ArgumentException aex)
+            catch (ArgumentException aex)
             {
-                 return BadRequest(aex.Message);
+                return BadRequest(aex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting auction product ID {id}: {ex}"); 
+                Console.WriteLine($"Error deleting auction product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
         }
@@ -211,9 +211,9 @@ namespace MarketMinds.Controllers
             {
                 return BadRequest("Invalid bid data or ID mismatch.");
             }
-            try 
+            try
             {
-                var product = _auctionProductsRepository.GetProductByID(id);
+                var product = auctionProductsRepository.GetProductByID(id);
                 // Handle refund for previous bidder if any
                 if (product.Bids.Any())
                 {
@@ -241,7 +241,7 @@ namespace MarketMinds.Controllers
                 // Add bid to product and update current price
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
-                _auctionProductsRepository.UpdateProduct(product);
+                auctionProductsRepository.UpdateProduct(product);
                 return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
             }
             catch (KeyNotFoundException knfex)
@@ -255,4 +255,4 @@ namespace MarketMinds.Controllers
             }
         }
     }
-} 
+}

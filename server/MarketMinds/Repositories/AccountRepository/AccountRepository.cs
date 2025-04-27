@@ -5,28 +5,28 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer;
-using server.Models;
+using Server.Models;
 
-namespace server.MarketMinds.Repositories.AccountRepository
+namespace Server.MarketMinds.Repositories.AccountRepository
 {
     public class AccountRepository : IAccountRepository
     {
-        private readonly DataAccessLayer.ApplicationDbContext _context;
+        private readonly DataAccessLayer.ApplicationDbContext context;
 
         public AccountRepository(DataAccessLayer.ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         public async Task<User> GetUserByIdAsync(int userId)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await context.Users.FindAsync(userId);
             return user;
         }
 
         public async Task<List<UserOrder>> GetUserOrdersAsync(int userId)
         {
-            var orders = await _context.Orders
+            var orders = await context.Orders
                 .Where(o => o.SellerId == userId || o.BuyerId == userId)
                 .OrderByDescending(o => o.Id)
                 .Select(o => new UserOrder
@@ -56,7 +56,7 @@ namespace server.MarketMinds.Repositories.AccountRepository
                 throw new ArgumentException("Basket ID must be a positive number", nameof(basketId));
             }
             // Validate the basket belongs to the user
-            var basket = await _context.Baskets
+            var basket = await context.Baskets
                 .FirstOrDefaultAsync(b => b.Id == basketId && b.BuyerId == userId);
 
             if (basket == null)
@@ -65,7 +65,7 @@ namespace server.MarketMinds.Repositories.AccountRepository
             }
 
             // Calculate the total cost of all items in the basket
-            var basketItems = await _context.BasketItems
+            var basketItems = await context.BasketItems
                 .Where(i => i.BasketId == basketId)
                 .ToListAsync();
 
@@ -87,8 +87,8 @@ namespace server.MarketMinds.Repositories.AccountRepository
 
             try
             {
-                _context.Entry(user).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                context.Entry(user).State = EntityState.Modified;
+                await context.SaveChangesAsync();
                 return true;
             }
             catch (Exception)
@@ -111,21 +111,21 @@ namespace server.MarketMinds.Repositories.AccountRepository
             }
 
             // Get user to make sure they exist
-            var user = await _context.Users.FindAsync(userId);
+            var user = await context.Users.FindAsync(userId);
             if (user == null)
             {
                 throw new ArgumentException($"User with ID {userId} not found", nameof(userId));
             }
 
             // Load basket first
-            var basket = await _context.Baskets.FindAsync(basketId);
+            var basket = await context.Baskets.FindAsync(basketId);
             if (basket == null || basket.BuyerId != userId)
             {
                 throw new ArgumentException($"Basket with ID {basketId} not found for user {userId}", nameof(basketId));
             }
 
             // Load basket items separately without using navigation properties
-            var basketItems = await _context.BasketItems
+            var basketItems = await context.BasketItems
                 .Where(i => i.BasketId == basketId)
                 .ToListAsync();
 
@@ -136,7 +136,7 @@ namespace server.MarketMinds.Repositories.AccountRepository
 
             // Load the corresponding products for each basket item
             var productIds = basketItems.Select(i => i.ProductId).Distinct().ToList();
-            var products = await _context.BuyProducts
+            var products = await context.BuyProducts
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
@@ -146,7 +146,7 @@ namespace server.MarketMinds.Repositories.AccountRepository
             var createdOrders = new List<Order>();
 
             // Use a transaction to ensure all orders are created or none
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            using (var transaction = await context.Database.BeginTransactionAsync())
             {
                 try
                 {
@@ -157,14 +157,14 @@ namespace server.MarketMinds.Repositories.AccountRepository
                             // Get the product for this item
                             if (productDictionary.TryGetValue(item.ProductId, out var product))
                             {
-                                 return product.SellerId;
+                                return product.SellerId;
                             }
                             // In case product not found, use a fallback
                             return 0; // Default seller ID if product not found
                         });
 
                     double totalBasketCost = basketItems.Sum(item => item.Price * item.Quantity);
-                    
+
                     if (totalBasketCost <= 0 || discountAmount <= 0)
                     {
                         discountAmount = 0;
@@ -187,13 +187,13 @@ namespace server.MarketMinds.Repositories.AccountRepository
 
                         // Calculate total cost for this seller's items
                         double sellerTotalCost = sellerItems.Sum(item => item.Price * item.Quantity);
-                        
+
                         double sellerDiscount = 0;
                         if (totalBasketCost > 0 && discountAmount > 0)
                         {
                             sellerDiscount = (sellerTotalCost / totalBasketCost) * discountAmount;
                         }
-                        
+
                         double discountedSellerTotal = sellerTotalCost - sellerDiscount;
 
                         // Create detailed description listing all items
@@ -203,11 +203,11 @@ namespace server.MarketMinds.Repositories.AccountRepository
                             var product = productDictionary[item.ProductId];
                             itemDescriptions.Add($"{product.Title} (x{item.Quantity}) - ${item.Price * item.Quantity:F2}");
                         }
-                        
-                        string discountDescription = sellerDiscount > 0 
-                            ? $" | Discount: ${sellerDiscount:F2}" 
+
+                        string discountDescription = sellerDiscount > 0
+                            ? $" | Discount: ${sellerDiscount:F2}"
                             : string.Empty;
-                            
+
                         string detailedDescription = string.Join(", ", itemDescriptions) + discountDescription;
 
                         var order = new Order
@@ -220,15 +220,15 @@ namespace server.MarketMinds.Repositories.AccountRepository
                         };
 
                         // Add order to database
-                        _context.Orders.Add(order);
-                        await _context.SaveChangesAsync();
+                        context.Orders.Add(order);
+                        await context.SaveChangesAsync();
 
                         createdOrders.Add(order);
                     }
 
                     // Clear the basket after creating orders
-                    _context.BasketItems.RemoveRange(basketItems);
-                    await _context.SaveChangesAsync();
+                    context.BasketItems.RemoveRange(basketItems);
+                    await context.SaveChangesAsync();
 
                     // Commit transaction
                     await transaction.CommitAsync();

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("BuyProductImages")]
     public class BuyProductImage
@@ -18,7 +18,7 @@ namespace server.Models
 
         // Navigation property
         public BuyProduct? Product { get; set; }
-        
+
         public BuyProductImage()
         {
             // Default constructor

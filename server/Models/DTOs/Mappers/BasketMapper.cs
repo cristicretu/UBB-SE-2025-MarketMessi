@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using server.Models;
-using server.Models.DTOs;
+using Server.Models;
+using Server.Models.DTOs;
 using MarketMinds.Controllers;
 
-namespace server.Models.DTOs.Mappers
+namespace Server.Models.DTOs.Mappers
 {
     public static class BasketMapper
     {
-        private static int UNDEFINED_USER_TYPE = 0;
-        private static int UNDEFINED_BALANCE = 0;
-        private static int UNDEFINED_RATING = 0;
-        private static int UNDEFINED_PASSWORD = 0;
+        private static int undefined_user_type = 0;
+        private static int undefined_balance = 0;
+        private static int undefined_rating = 0;
+        private static int undefined_password = 0;
         public static BasketDTO ToDTO(Basket basket)
         {
             if (basket == null)
@@ -64,17 +64,17 @@ namespace server.Models.DTOs.Mappers
                     Username = product.Seller.Username,
                     Email = product.Seller.Email,
                     // Set default values for other UserDTO properties
-                    UserType = UNDEFINED_USER_TYPE,
-                    Balance = UNDEFINED_BALANCE,
-                    Rating = UNDEFINED_RATING,
-                    Password = UNDEFINED_PASSWORD
+                    UserType = undefined_user_type,
+                    Balance = undefined_balance,
+                    Rating = undefined_rating,
+                    Password = undefined_password
                 }
                 : null,
                 Condition = product.Condition != null ? new ConditionDTO
                 {
                     Id = product.Condition.Id,
                     DisplayTitle = product.Condition.Name,
-                    Description = string.Empty  // Server-side Condition doesn't have Description
+                    Description = string.Empty
                 }
                 : null,
                 Category = product.Category != null ? new CategoryDTO
@@ -99,7 +99,9 @@ namespace server.Models.DTOs.Mappers
         public static BasketTotalsDTO ToDTO(BasketController.BasketTotals totals)
         {
             if (totals == null)
+            {
                 return null;
+            }
 
             return new BasketTotalsDTO
             {

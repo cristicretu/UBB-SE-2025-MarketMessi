@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using server.Models;
+using Server.Models;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("BasketItemsBuyProducts")]
     public class BasketItem

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 // TODO: Define or import ProductCondition, ProductCategory, User if they are needed by the server
-namespace server.Models // Adjusted namespace to server.Models
+namespace Server.Models // Adjusted namespace to server.Models
 {
     public abstract class Product
     {

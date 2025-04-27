@@ -1,6 +1,6 @@
+using System;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration; // Required for IConfiguration
-using System;
 
 namespace DataAccessLayer // Assuming this is the correct namespace
 {
@@ -80,4 +80,4 @@ namespace DataAccessLayer // Assuming this is the correct namespace
         //     sqlConnection?.Dispose();
         // }
     }
-} 
+}
