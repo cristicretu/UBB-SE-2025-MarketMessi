@@ -27,6 +27,7 @@ using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.UserService;
 using Microsoft.Extensions.Logging.Abstractions;
+using Marketplace_SE.Services.DreamTeam;
 using MarketMinds.Services.ConversationService;
 using MarketMinds.Services.MessageService;
 using MarketMinds.Services.DreamTeam.ChatbotService;
@@ -159,10 +160,10 @@ namespace MarketMinds
                 Debug.WriteLine($"Attempting to show error dialog: {message}");
 
                 // We need to get the dispatcher queue for the UI thread
-                if (mainWindow != null)
+                if (MainWindow != null)
                 {
                     // For WinUI 3, we need to get the dispatcher from the window
-                    DispatcherQueue dispatcherQueue = mainWindow.DispatcherQueue;
+                    DispatcherQueue dispatcherQueue = MainWindow.DispatcherQueue;
 
                     if (dispatcherQueue != null)
                     {
@@ -172,7 +173,7 @@ namespace MarketMinds
                             {
                                 Debug.WriteLine("Running dialog code on UI thread");
 
-                                if (mainWindow?.Content?.XamlRoot == null)
+                                if (MainWindow?.Content?.XamlRoot == null)
                                 {
                                     Debug.WriteLine("Cannot show dialog: XamlRoot is null");
                                     return;
@@ -183,7 +184,7 @@ namespace MarketMinds
                                     Title = "Application Error",
                                     Content = message,
                                     CloseButtonText = "OK",
-                                    XamlRoot = mainWindow.Content.XamlRoot
+                                    XamlRoot = MainWindow.Content.XamlRoot
                                 };
 
                                 _ = dialog.ShowAsync();
@@ -230,8 +231,8 @@ namespace MarketMinds
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
             // Instantiate repositories
-            ChatBotRepository = new ChatBotRepository(DatabaseConnection);
-            ChatRepository = new ChatRepository(DatabaseConnection);
+            // ChatBotRepository = new ChatBotRepository(DatabaseConnection);
+            // ChatRepository = new ChatRepository(DatabaseConnection);
             MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
 
             // Instantiate services
