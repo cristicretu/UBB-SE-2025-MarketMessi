@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("ProductTags")]
     public class ProductTag
@@ -31,6 +31,9 @@ namespace server.Models
         }
 
         // Default constructor for potential framework needs (e.g., deserialization)
-        public ProductTag() { }
+        public ProductTag()
+        {
+            // Empty
+        }
     }
 }

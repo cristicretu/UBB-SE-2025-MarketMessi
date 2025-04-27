@@ -1,14 +1,17 @@
 using System.Linq;
-using server.Models;
-using server.Models.DTOs;
+using Server.Models;
+using Server.Models.DTOs;
 
-namespace server.Models.DTOs.Mappers
+namespace Server.Models.DTOs.Mappers
 {
     public static class ReviewMapper
     {
         public static ReviewDTO ToDto(Review review)
         {
-            if (review == null) return null;
+            if (review == null)
+            {
+                return null;
+            }
 
             return new ReviewDTO
             {
@@ -26,7 +29,10 @@ namespace server.Models.DTOs.Mappers
 
         public static Review ToModel(ReviewDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+            {
+                return null;
+            }
 
             var review = new Review
             {

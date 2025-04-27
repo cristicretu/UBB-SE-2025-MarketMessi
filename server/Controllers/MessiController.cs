@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace server.Controllers
+namespace Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
@@ -12,4 +12,4 @@ namespace server.Controllers
             return Ok("ornaldo");
         }
     }
-} 
+}

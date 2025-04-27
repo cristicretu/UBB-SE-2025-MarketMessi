@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-// TODO: Define or import User, ProductCondition, ProductCategory, Bid if they are needed by the server
-
-namespace server.Models // Adjusted namespace to server.Models
+namespace Server.Models // Adjusted namespace to server.Models
 {
     [Table("AuctionProducts")]
     public class AuctionProduct
@@ -52,15 +50,15 @@ namespace server.Models // Adjusted namespace to server.Models
         public Category? Category { get; set; }
 
         public ICollection<Bid> Bids { get; set; } = new List<Bid>();
-        
+
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 
         public AuctionProduct()
         {
         }
 
-        public AuctionProduct(string title, string? description, int sellerId, int? conditionId, 
-                             int? categoryId, DateTime startTime, 
+        public AuctionProduct(string title, string? description, int sellerId, int? conditionId,
+                             int? categoryId, DateTime startTime,
                              DateTime endTime, double startPrice)
         {
             Title = title;
@@ -85,4 +83,4 @@ namespace server.Models // Adjusted namespace to server.Models
             }
         }
     }
-} 
+}

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Repositories.BuyProductsRepository;
@@ -7,10 +8,9 @@ using MarketMinds.Repositories.ProductCategoryRepository;
 using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
-using System.Text.Json.Serialization;
-using server.MarketMinds.Repositories.BorrowProductsRepository;
-using server.MarketMinds.Repositories.AccountRepository;
+using Server.DataAccessLayer;
+using Server.MarketMinds.Repositories.BorrowProductsRepository;
+using Server.MarketMinds.Repositories.AccountRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,10 +32,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddSingleton<DataBaseConnection>();
 
 // EntityFramework database connection setup
-var InitialCatalog = builder.Configuration["InitialCatalog"];
-var LocalDataSource = builder.Configuration["LocalDataSource"];
-var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
-builder.Services.AddDbContext<server.DataAccessLayer.ApplicationDbContext>(options =>
+var initialCatalog = builder.Configuration["InitialCatalog"];
+var localDataSource = builder.Configuration["LocalDataSource"];
+var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;";
+builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Register all repositories

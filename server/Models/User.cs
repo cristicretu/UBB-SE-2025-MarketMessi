@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("Users")]
     public class User
@@ -11,26 +11,26 @@ namespace server.Models
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        
+
         [Column("username")]
         public string Username { get; set; }
-        
+
         [Column("email")]
         public string Email { get; set; }
-        
+
         [Column("passwordHash")]
         public string? PasswordHash { get; set; }
-        
+
         [Column("userType")]
         public int UserType { get; set; }
-        
+
         [Column("balance")]
         public double Balance { get; set; }
-        
+
         [Column("rating")]
         public double Rating { get; set; }
 
-        private const double MAX_BALANCE = 999999; 
+        private const double MAX_BALANCE = 999999;
 
         // Navigation properties
         public ICollection<AuctionProduct> SellingItems { get; set; }
@@ -51,4 +51,4 @@ namespace server.Models
             Bids = new List<Bid>();
         }
     }
-} 
+}

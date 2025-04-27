@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using server.Models;
 using System;
+using Microsoft.EntityFrameworkCore;
+using Server.Models;
 
-namespace server.DataAccessLayer
+namespace Server.DataAccessLayer
 {
     public class ApplicationDbContext : DbContext
     {
@@ -36,7 +36,6 @@ namespace server.DataAccessLayer
         public DbSet<BorrowProductImage> BorrowProductImages { get; set; }
         public DbSet<BorrowProductProductTag> BorrowProductProductTags { get; set; }
 
-        // Basket 
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketItem> BasketItems { get; set; }
 
@@ -68,7 +67,6 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<ProductTag>().Property(pt => pt.Title).IsRequired().HasColumnName("title");
             modelBuilder.Entity<ProductTag>().HasIndex(pt => pt.Title).IsUnique();
 
-            // Explicitly ignore any potential relationship properties 
             modelBuilder.Entity<ProductTag>().Ignore("BuyProductId");
             modelBuilder.Entity<ProductTag>().Ignore("BuyProductId1");
             modelBuilder.Entity<ProductTag>().Ignore("BuyProducts");
@@ -105,7 +103,7 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BuyProductImage>().ToTable("BuyProductImages");
             modelBuilder.Entity<BuyProductImage>().HasKey(i => i.Id);
             modelBuilder.Entity<BuyProductImage>().Property(i => i.ProductId).HasColumnName("product_id");
-            
+
             // Configure one-to-many relationship between BuyProduct and BuyProductImage
             modelBuilder.Entity<BuyProductImage>()
                 .HasOne(i => i.Product)
@@ -117,8 +115,7 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BuyProductProductTag>().HasKey(pt => pt.Id);
             modelBuilder.Entity<BuyProductProductTag>().Property(pt => pt.ProductId).HasColumnName("product_id");
             modelBuilder.Entity<BuyProductProductTag>().Property(pt => pt.TagId).HasColumnName("tag_id");
-            
-                
+
             modelBuilder.Entity<BuyProductProductTag>()
                 .HasOne(pt => pt.Product)
                 .WithMany(p => p.ProductTags)
@@ -143,7 +140,7 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BorrowProductImage>().ToTable("BorrowProductImages");
             modelBuilder.Entity<BorrowProductImage>().HasKey(i => i.Id);
             modelBuilder.Entity<BorrowProductImage>().Property(i => i.ProductId).HasColumnName("product_id");
-            
+
             // Configure one-to-many relationship between BorrowProduct and BorrowProductImage
             modelBuilder.Entity<BorrowProductImage>()
                 .HasOne(i => i.Product)
@@ -155,7 +152,7 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<BorrowProductProductTag>().HasKey(pt => pt.Id);
             modelBuilder.Entity<BorrowProductProductTag>().Property(pt => pt.ProductId).HasColumnName("product_id");
             modelBuilder.Entity<BorrowProductProductTag>().Property(pt => pt.TagId).HasColumnName("tag_id");
-            
+
             // Configure many-to-many relationship
             modelBuilder.Entity<BorrowProductProductTag>()
                 .HasOne(pt => pt.Product)
@@ -187,16 +184,16 @@ namespace server.DataAccessLayer
             modelBuilder.Entity<Order>().ToTable("Orders");
             modelBuilder.Entity<Order>().HasKey(o => o.Id);
             modelBuilder.Entity<Order>().Property(o => o.Name).IsRequired().HasMaxLength(100);
-            modelBuilder.Entity<Order>().Property(o => o.Description).IsRequired(false); 
+            modelBuilder.Entity<Order>().Property(o => o.Description).IsRequired(false);
             modelBuilder.Entity<Order>().Property(o => o.Cost).IsRequired();
             modelBuilder.Entity<Order>().Property(o => o.SellerId).IsRequired();
-            modelBuilder.Entity<Order>().Property(o => o.BuyerId).IsRequired(); 
+            modelBuilder.Entity<Order>().Property(o => o.BuyerId).IsRequired();
 
             modelBuilder.Entity<Order>()
-                .HasOne(o => o.Seller)       
-                .WithMany()                  
-                .HasForeignKey(o => o.SellerId) 
-                .OnDelete(DeleteBehavior.Restrict); 
+                .HasOne(o => o.Seller)
+                .WithMany()
+                .HasForeignKey(o => o.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // modelBuilder.Entity<Order>()
             //     .HasOne(o => o.Buyer)

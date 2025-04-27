@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("Reviews")]
     public class Review

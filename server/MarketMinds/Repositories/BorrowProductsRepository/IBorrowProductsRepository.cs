@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using server.Models;
+using Server.Models;
 
-namespace server.MarketMinds.Repositories.BorrowProductsRepository
+namespace Server.MarketMinds.Repositories.BorrowProductsRepository
 {
     public interface IBorrowProductsRepository
     {
@@ -46,4 +46,4 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
         /// <param name="image">The image to add</param>
         void AddImageToProduct(int productId, BorrowProductImage image);
     }
-} 
+}

@@ -1,27 +1,27 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using server.Models;
 using System.Threading.Tasks;
-using server.DataAccessLayer;
+using System.Collections.Generic;
+using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using Server.Models;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {
     public class AuctionProductsRepository : IAuctionProductsRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
 
         public AuctionProductsRepository(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         public List<AuctionProduct> GetProducts()
         {
             try
             {
-                var products = _context.AuctionProducts
+                var products = context.AuctionProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -43,8 +43,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         {
             try
             {
-                _context.AuctionProducts.Remove(product);
-                _context.SaveChanges();
+                context.AuctionProducts.Remove(product);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -57,8 +57,8 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         {
             try
             {
-                _context.AuctionProducts.Add(product);
-                _context.SaveChanges();
+                context.AuctionProducts.Add(product);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -71,30 +71,30 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         {
             try
             {
-                var existingProduct = _context.AuctionProducts.Find(product.Id);
+                var existingProduct = context.AuctionProducts.Find(product.Id);
                 if (existingProduct == null)
                 {
                     throw new KeyNotFoundException($"AuctionProduct with ID {product.Id} not found for update.");
                 }
 
-                _context.Entry(existingProduct).CurrentValues.SetValues(product);
+                context.Entry(existingProduct).CurrentValues.SetValues(product);
 
                 if (product.Images != null && product.Images.Any())
                 {
                     Console.WriteLine($"Updating product {product.Id} with {product.Images.Count} images");
-                    
+
                     foreach (var image in product.Images)
                     {
                         if (image.Id == 0)
                         {
                             Console.WriteLine($"Adding new image with URL: {image.Url} to product ID: {product.Id}");
                             image.ProductId = product.Id;
-                            _context.Set<ProductImage>().Add(image);
+                            context.Set<ProductImage>().Add(image);
                         }
                     }
                 }
 
-                _context.SaveChanges();
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -107,7 +107,7 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
         {
             try
             {
-                var product = _context.AuctionProducts
+                var product = context.AuctionProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -134,4 +134,4 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             }
         }
     }
-} 
+}

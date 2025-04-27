@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     public class BorrowProduct : Product
     {
@@ -11,7 +11,7 @@ namespace server.Models
         public DateTime? EndDate { get; set; }
         public double DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
-        
+
         // [NotMapped]
         // public new int SellerId { get; set; }
         //
@@ -20,19 +20,19 @@ namespace server.Models
         //
         // [NotMapped]
         // public new int? ConditionId { get; set; }
-        
+
         // Navigation properties
         public ICollection<BorrowProductImage> Images { get; set; }
         public ICollection<BorrowProductProductTag> ProductTags { get; set; }
-        
+
         public BorrowProduct()
         {
             Images = new List<BorrowProductImage>();
             ProductTags = new List<BorrowProductProductTag>();
         }
-        
+
         public BorrowProduct(int id, string title, string description, User seller,
-            Condition condition, Category category, DateTime timeLimit, 
+            Condition condition, Category category, DateTime timeLimit,
             double dailyRate)
         {
             Id = id;
@@ -48,4 +48,4 @@ namespace server.Models
             ProductTags = new List<BorrowProductProductTag>();
         }
     }
-} 
+}
