@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.IRepository.ConversationRepository;
+using MarketMinds.Shared.IRepository;
 using Newtonsoft.Json;
 
 namespace MarketMinds.Repositories

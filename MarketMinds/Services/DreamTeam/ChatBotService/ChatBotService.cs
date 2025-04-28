@@ -15,7 +15,7 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
         private readonly IChatbotRepository chatbotRepository;
         private Node currentNode;
         private bool isActive;
-        private static User currentUser;
+        private static MarketMinds.Shared.Models.User currentUser;
 
         public ChatbotService(IChatbotRepository chatbotRepository)
         {
@@ -32,7 +32,7 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
             };
         }
 
-        public void SetCurrentUser(User user)
+        public void SetCurrentUser(MarketMinds.Shared.Models.User user)
         {
             if (user == null)
             {

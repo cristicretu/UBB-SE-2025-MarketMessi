@@ -38,7 +38,6 @@ namespace MarketMinds
     {
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
-        
         // Repository declarations
         public static IConversationRepository ConversationRepository;
         public static IMessageRepository MessageRepository;
@@ -87,7 +86,7 @@ namespace MarketMinds
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
-        public static User CurrentUser { get; set; }
+        public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -241,7 +240,6 @@ namespace MarketMinds
             MessageRepository = new MessageRepository(httpClient);
             ChatbotRepository = new ChatbotRepository(httpClient);
             ChatRepository = new ChatRepository(httpClient);
-            
             // Instantiate repositories
             UserRepository = new UserRepository(Configuration);
             ReviewRepository = new ReviewRepository(Configuration);
@@ -263,12 +261,6 @@ namespace MarketMinds
             ChatBotService = new ChatbotService(ChatbotRepository);
             ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(ChatRepository);
             NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
-            ChatBotService = new ChatbotService(httpClient);
-            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(httpClient);
-            ConversationService = new ConversationService(httpClient);
-            MessageService = new MessageService(httpClient);
-            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
-            
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
