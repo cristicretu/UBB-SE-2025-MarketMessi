@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketMinds", "MarketMinds.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketMinds.Test", "..\MarketMinds.Test\MarketMinds.Test.csproj", "{E6E2D401-3B3A-EF34-E01E-4969A9F3A24E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "..\server\server.csproj", "{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -32,6 +34,14 @@ Global
 		{E6E2D401-3B3A-EF34-E01E-4969A9F3A24E}.Release|ARM64.Build.0 = Release|Any CPU
 		{E6E2D401-3B3A-EF34-E01E-4969A9F3A24E}.Release|x64.ActiveCfg = Release|Any CPU
 		{E6E2D401-3B3A-EF34-E01E-4969A9F3A24E}.Release|x64.Build.0 = Release|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Debug|x64.Build.0 = Debug|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Release|ARM64.Build.0 = Release|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Release|x64.ActiveCfg = Release|Any CPU
+		{9253C782-8BFB-9B50-EF5D-D0174F3C77FF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

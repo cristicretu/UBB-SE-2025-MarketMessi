@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.IRepository.ConversationRepository;
 using Server.DataAccessLayer;
 
 namespace MarketMinds.Repositories.ConversationRepository
