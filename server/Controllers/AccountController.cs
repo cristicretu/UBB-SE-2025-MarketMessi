@@ -15,6 +15,7 @@ namespace Server.Controllers
     {
         private readonly IAccountRepository accountRepository; // Added repository field
         private readonly ILogger<AccountController> logger;
+        private readonly static int MINIMUM_USER_ID = 0;
 
         public AccountController(IAccountRepository accountRepository, ILogger<AccountController> logger)
         {
@@ -31,7 +32,7 @@ namespace Server.Controllers
         public async Task<ActionResult<User>> GetUser(int userId)
         {
             logger.LogInformation("GetUser endpoint called for userId: {UserId}", userId);
-            if (userId <= 0)
+            if (userId <= MINIMUM_USER_ID)
             {
                 logger.LogWarning("GetUser called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");
@@ -62,7 +63,7 @@ namespace Server.Controllers
         public async Task<ActionResult<List<UserOrder>>> GetUserOrders(int userId)
         {
             logger.LogInformation("GetUserOrders endpoint called for userId: {UserId}", userId);
-            if (userId <= 0)
+            if (userId <= MINIMUM_USER_ID)
             {
                 logger.LogWarning("GetUserOrders called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");
@@ -90,7 +91,7 @@ namespace Server.Controllers
         {
             logger.LogInformation("CreateOrderFromBasket endpoint called for userId: {UserId}", userId);
 
-            if (userId <= 0)
+            if (userId <= MINIMUM_USER_ID)
             {
                 logger.LogWarning("CreateOrderFromBasket called with invalid userId: {UserId}", userId);
                 return BadRequest("User ID must be positive.");

@@ -72,16 +72,16 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteProductCategory(string title)
+        public IActionResult DeleteProductCategory(string productCategoryName)
         {
-            if (string.IsNullOrWhiteSpace(title))
+            if (string.IsNullOrWhiteSpace(productCategoryName))
             {
                 return BadRequest("Category title is required.");
             }
 
             try
             {
-                productCategoryRepository.DeleteProductCategory(title);
+                productCategoryRepository.DeleteProductCategory(productCategoryName);
                 return NoContent();
             }
             catch (KeyNotFoundException keyNotFoundException)

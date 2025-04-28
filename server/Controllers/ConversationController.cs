@@ -101,10 +101,10 @@ namespace Server.Controllers
             {
                 var conversations = await conversationRepository.GetConversationsByUserIdAsync(userId);
                 
-                var conversationDtos = conversations.Select(c => new ConversationDto
+                var conversationDtos = conversations.Select(conversation => new ConversationDto
                 {
-                    Id = c.Id,
-                    UserId = c.UserId
+                    Id = conversation.Id,
+                    UserId = conversation.UserId
                 }).ToList();
                 
                 return Ok(conversationDtos);

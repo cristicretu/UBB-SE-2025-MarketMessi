@@ -79,12 +79,12 @@ namespace Server.Controllers
             {
                 var messages = await messageRepository.GetMessagesByConversationIdAsync(conversationId);
                 
-                var messageDtos = messages.Select(m => new MessageDto
+                var messageDtos = messages.Select(message => new MessageDto
                 {
-                    Id = m.Id,
-                    ConversationId = m.ConversationId,
-                    UserId = m.UserId,
-                    Content = m.Content
+                    Id = message.Id,
+                    ConversationId = message.ConversationId,
+                    UserId = message.UserId,
+                    Content = message.Content
                 }).ToList();
                 
                 return Ok(messageDtos);
