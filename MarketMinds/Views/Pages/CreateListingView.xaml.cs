@@ -23,6 +23,7 @@ using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.ListingFormValidationService;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
+using MarketMinds.ViewModels;
 
 namespace UiLayer
 {
@@ -148,7 +149,7 @@ namespace UiLayer
                     AddBorrowProductFields();
                     break;
                 case "Auction":
-                    viewModel = new CreateAuctionListingViewModel { AuctionProductsService = App.AuctionProductsService };
+                    viewModel = new CreateAuctionListingViewModel(App.AuctionProductsService);
                     AddAuctionProductFields();
                     break;
             }

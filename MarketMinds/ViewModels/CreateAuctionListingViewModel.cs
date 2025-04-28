@@ -5,15 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Services.AuctionProductsService;
+using MarketMinds.Repository;
+using ViewModelLayer.ViewModel;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
     public class CreateAuctionListingViewModel : CreateListingViewModelBase
     {
-        public AuctionProductsRepository? AuctionProductsService { get; set; }
+        private readonly AuctionProductsService auctionProductsService;
+
+        public CreateAuctionListingViewModel(AuctionProductsService auctionProductsService)
+        {
+            this.auctionProductsService = auctionProductsService;
+        }
+
         public override void CreateListing(Product product)
         {
-            AuctionProductsService?.CreateListing(product);
+            auctionProductsService.CreateListing(product);
         }
     }
 }

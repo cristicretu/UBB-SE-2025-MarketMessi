@@ -60,7 +60,7 @@ namespace MarketMinds.Repository
             }
         }
 
-        public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
+        public void PlaceBid(AuctionProduct auction, User bidder, double bidAmount)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace MarketMinds.Repository
             response.EnsureSuccessStatusCode();
         }
 
-        private void ValidateBid(AuctionProduct auction, User bidder, float bidAmount)
+        public void ValidateBid(AuctionProduct auction, User bidder, double bidAmount)
         {
             double minBid = auction.Bids.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
 
@@ -128,7 +128,7 @@ namespace MarketMinds.Repository
             }
         }
 
-        private void ExtendAuctionTime(AuctionProduct auction)
+        public void ExtendAuctionTime(AuctionProduct auction)
         {
             var timeRemaining = auction.EndTime - DateTime.Now;
 

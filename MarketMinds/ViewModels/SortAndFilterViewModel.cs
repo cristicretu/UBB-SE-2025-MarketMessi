@@ -4,23 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ProductTagService;
+using MarketMinds.Services;
+using MarketMinds.Services.AuctionProductsService;
 
 namespace BusinessLogicLayer.ViewModel
 {
-    public class SortAndFilterViewModel
+    public class SortAndFilterViewModel<TService>
+        where TService : IProductService
     {
-        private ProductService productService;
+        private readonly TService productService;
 
         public List<Condition> SelectedConditions { get; set; }
         public List<Category> SelectedCategories { get; set; }
         public List<ProductTag> SelectedTags { get; set; }
         public ProductSortType? SortCondition { get; set; }
         public string SearchQuery { get; set; }
-        public SortAndFilterViewModel(ProductService productService)
+
+        public SortAndFilterViewModel(TService productService)
         {
             this.productService = productService;
-
             this.SelectedConditions = new List<Condition>();
             this.SelectedCategories = new List<Category>();
             this.SelectedTags = new List<ProductTag>();

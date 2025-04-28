@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
+using MarketMinds.Services;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Repository
 {
@@ -65,15 +67,15 @@ namespace MarketMinds.Repository
         {
             var productToSend = new
             {
-                buyProduct.Title,
-                buyProduct.Description,
-                SellerId = buyProduct.Seller?.Id ?? 0,
-                ConditionId = buyProduct.Condition?.Id,
-                CategoryId = buyProduct.Category?.Id,
-                buyProduct.Price,
-                Images = buyProduct.Images == null
+                product.Title,
+                product.Description,
+                SellerId = product.Seller?.Id ?? 0,
+                ConditionId = product.Condition?.Id,
+                CategoryId = product.Category?.Id,
+                product.Price,
+                Images = product.Images == null
                        ? new List<object>()
-                       : buyProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+                       : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
             var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
             if (!response.IsSuccessStatusCode)

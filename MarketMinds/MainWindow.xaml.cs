@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using MarketMinds;
 using MarketMinds.Views.Pages;
+using MarketMinds.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -33,19 +34,19 @@ namespace UiLayer
 
         private void HandleAuctionProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
-            auctionProductListViewWindow = new AuctionProductListView();
+            auctionProductListViewWindow = ViewFactory.CreateAuctionProductListView();
             auctionProductListViewWindow.Activate();
         }
 
         private void HandleBorrowProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
-            borrowProductListViewWindow = new BorrowProductListView();
+            borrowProductListViewWindow = ViewFactory.CreateBorrowProductListView();
             borrowProductListViewWindow.Activate();
         }
 
         private void HandleBuyProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
-            buyProductListViewWindow = new BuyProductListView();
+            buyProductListViewWindow = ViewFactory.CreateBuyProductListView();
             buyProductListViewWindow.Activate();
         }
 

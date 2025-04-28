@@ -32,6 +32,9 @@ using MarketMinds.Services.DreamTeam.ChatbotService;
 using MarketMinds.Repositories;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
+using MarketMinds.Repositories;
+using MarketMinds.Repository;
+
 namespace MarketMinds
 {
     public partial class App : Application
@@ -43,11 +46,15 @@ namespace MarketMinds
         public static UserRepository UserRepository;
         public static ReviewRepository ReviewRepository;
         public static ProductTagRepository ProductTagRepository;
+        public static AuctionProductsRepository AuctionProductsRepository;
+        public static BorrowProductsRepository BorrowProductsRepository;
+        public static BasketRepository BasketRepository;
+        public static BuyProductsRepository BuyProductsRepository;
 
         // Service declarations
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
-        public static AuctionProductsRepository AuctionProductsService;
+        public static AuctionProductsService AuctionProductsService;
         public static ProductCategoryService CategoryService;
         public static ProductTagService TagService;
         public static ProductConditionService ConditionService;
@@ -69,9 +76,9 @@ namespace MarketMinds
         public static ProductCategoryViewModel ProductCategoryViewModel { get; private set; }
         public static ProductConditionViewModel ProductConditionViewModel { get; private set; }
         public static ProductTagViewModel ProductTagViewModel { get; private set; }
-        public static SortAndFilterViewModel AuctionProductSortAndFilterViewModel { get; private set; }
-        public static SortAndFilterViewModel BorrowProductSortAndFilterViewModel { get; private set; }
-        public static SortAndFilterViewModel BuyProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<AuctionProductsService> AuctionProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<BorrowProductsService> BorrowProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<BuyProductsService> BuyProductSortAndFilterViewModel { get; private set; }
         public static ReviewCreateViewModel ReviewCreateViewModel { get; private set; }
         public static SeeBuyerReviewsViewModel SeeBuyerReviewsViewModel { get; private set; }
         public static SeeSellerReviewsViewModel SeeSellerReviewsViewModel { get; private set; }
@@ -235,16 +242,20 @@ namespace MarketMinds
             UserRepository = new UserRepository(Configuration);
             ReviewRepository = new ReviewRepository(Configuration);
             ProductTagRepository = new ProductTagRepository(Configuration);
+            AuctionProductsRepository = new AuctionProductsRepository(Configuration);
+            BorrowProductsRepository = new BorrowProductsRepository(Configuration);
+            BasketRepository = new BasketRepository(Configuration);
+            BuyProductsRepository = new BuyProductsRepository(Configuration);
 
             // Instantiate services
-            BuyProductsService = new BuyProductsService(Configuration);
-            BorrowProductsService = new BorrowProductsService(Configuration);
-            AuctionProductsService = new AuctionProductsService(Configuration);
+            BuyProductsService = new BuyProductsService(BuyProductsRepository);
+            BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
+            AuctionProductsService = new AuctionProductsService(AuctionProductsRepository);
             CategoryService = new ProductCategoryService(Configuration);
             TagService = new ProductTagService(Configuration);
             ConditionService = new ProductConditionService(Configuration);
             ReviewsService = new ReviewsService(Configuration);
-            BasketService = new BasketService(Configuration);
+            BasketService = new BasketService(BasketRepository);
             UserService = new UserService(Configuration);
             AccountPageService = new AccountPageService(Configuration);
             ChatBotService = new ChatbotService(httpClient);
@@ -260,9 +271,9 @@ namespace MarketMinds
             ProductTagViewModel = new ProductTagViewModel(TagService);
             ProductConditionViewModel = new ProductConditionViewModel(ConditionService);
             BorrowProductsViewModel = new BorrowProductsViewModel(BorrowProductsService);
-            AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel(AuctionProductsService);
-            BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel(BorrowProductsService);
-            BuyProductSortAndFilterViewModel = new SortAndFilterViewModel(BuyProductsService);
+            AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel<AuctionProductsService>(AuctionProductsService);
+            BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel<BorrowProductsService>(BorrowProductsService);
+            BuyProductSortAndFilterViewModel = new SortAndFilterViewModel<BuyProductsService>(BuyProductsService);
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);

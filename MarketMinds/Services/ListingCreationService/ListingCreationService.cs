@@ -27,7 +27,10 @@ namespace MarketMinds.Services.ListingCreationService
             switch (listingType.ToLower())
             {
                 case "buy":
-                    buyProductsService.CreateListing(product);
+                    if (product is BuyProduct buyProduct)
+                    {
+                        buyProductsService.CreateListing(buyProduct);
+                    }
                     break;
                 case "borrow":
                     borrowProductsService.CreateListing(product);

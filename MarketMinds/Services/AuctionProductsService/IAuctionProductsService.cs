@@ -48,7 +48,7 @@ namespace MarketMinds.Services.AuctionProductsService
         /// <param name="auction">The auction product.</param>
         /// <param name="bidder">The user placing the bid.</param>
         /// <param name="bidAmount">The amount of the bid.</param>
-        void ValidateBid(AuctionProduct auction, User bidder, float bidAmount);
+        void ValidateBid(AuctionProduct auction, User bidder, double bidAmount);
 
         /// <summary>
         /// Extends the auction time for a product.
