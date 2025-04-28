@@ -28,6 +28,14 @@ namespace MarketMinds.Shared.Models
             Products = new List<AuctionProduct>();
         }
 
+        public Category(int id, string name, string? description = null)
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            Products = new List<AuctionProduct>();
+        }
+
         public Category(string name, string? description = null)
         {
             Name = name;

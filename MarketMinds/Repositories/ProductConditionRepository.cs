@@ -39,7 +39,7 @@ namespace MarketMinds.Repositories
                     var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    clientConditions.Add(new Condition(name, description));
+                    clientConditions.Add(new Condition(id, name, description));
                 }
             }
             return clientConditions;
