@@ -8,7 +8,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Version>1.0.0.0</Version>
-    <OutputPath>..\server\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

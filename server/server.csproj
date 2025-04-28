@@ -26,7 +26,6 @@
     </PackageReference>
     <ProjectReference Include="..\MarketMinds.Shared\MarketMinds.Shared.csproj">
       <Private>true</Private>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <!-- StyleCop package reference, only used when StyleCopEnabled is true -->
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(StyleCopEnabled)' == 'true'">
