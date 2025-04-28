@@ -7,7 +7,8 @@ namespace MarketMinds.Shared.IRepository
 {
     public interface IMessageRepository
     {
-        Task<Message> CreateMessageAsync(Message message);
+        Task<Message> CreateMessageAsync(int conversationId, int userId, string content);
+
         Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId);
     }
 }

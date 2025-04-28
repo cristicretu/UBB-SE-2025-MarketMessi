@@ -1,4 +1,6 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.IRepository;
@@ -10,29 +12,19 @@ namespace MarketMinds.Services.MessageService
     {
         private readonly IMessageRepository messageRepository;
 
-        public MessageService(IMessageRepository messageRepository)
+        public MessageService(IMessageRepository repository)
         {
-            this.messageRepository = messageRepository;
+            messageRepository = repository;
         }
 
         public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            // Create a message object to pass to the repository
-            var messageModel = new Message
-            {
-                ConversationId = conversationId,
-                UserId = userId,
-                Content = content
-            };
-
-            var result = await messageRepository.CreateMessageAsync(messageModel);
-            return result;
+            return await messageRepository.CreateMessageAsync(conversationId, userId, content);
         }
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            var messages = await messageRepository.GetMessagesByConversationIdAsync(conversationId);
-            return messages;
+            return await messageRepository.GetMessagesByConversationIdAsync(conversationId);
         }
     }
 }

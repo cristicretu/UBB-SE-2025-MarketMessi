@@ -42,8 +42,10 @@ namespace MarketMinds
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
-        public static IConversationRepository ConversationRepository;
+        public static IProductCategoryRepository ProductCategoryRepository;
         public static IMessageRepository MessageRepository;
+        public static IProductConditionRepository ProductConditionRepository;
+        public static IConversationRepository ConversationRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
         public static UserRepository UserRepository;
@@ -241,12 +243,12 @@ namespace MarketMinds
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
 
-            // Instantiate repositories
+            ProductCategoryRepository = new ProductCategoryRepository(Configuration);
+            MessageRepository = new MessageRepository(Configuration);
+            ProductConditionRepository = new ProductConditionRepository(Configuration);
             ConversationRepository = new ConversationRepository(httpClient);
-            MessageRepository = new MessageRepository(httpClient);
             ChatbotRepository = new ChatbotRepository(httpClient);
             ChatRepository = new ChatRepository(httpClient);
-            // Instantiate repositories
             UserRepository = new UserRepository(Configuration);
             ReviewRepository = new ReviewRepository(Configuration);
             ProductTagRepository = new ProductTagRepository(Configuration);
@@ -259,9 +261,9 @@ namespace MarketMinds
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
             AuctionProductsService = new AuctionProductsService(AuctionProductsRepository);
-            CategoryService = new ProductCategoryService(Configuration);
+            CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(Configuration);
-            ConditionService = new ProductConditionService(Configuration);
+            ConditionService = new ProductConditionService(ProductConditionRepository);
             ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(BasketRepository);
             UserService = new UserService(Configuration);
@@ -271,7 +273,6 @@ namespace MarketMinds
             ChatBotService = new ChatbotService(ChatbotRepository);
             ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(ChatRepository);
             NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
-
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);

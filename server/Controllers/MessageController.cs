@@ -46,17 +46,15 @@ namespace Server.Controllers
                 }
                 catch (Exception ex)
                 {
-
+                    // Silently continue
                 }
                 
-                var message = new Message
-                {
-                    ConversationId = createMessageDto.ConversationId,
-                    UserId = createMessageDto.UserId,
-                    Content = createMessageDto.Content
-                };
+                var createdMessage = await messageRepository.CreateMessageAsync(
+                    createMessageDto.ConversationId,
+                    createMessageDto.UserId,
+                    createMessageDto.Content
+                );
                 
-                var createdMessage = await messageRepository.CreateMessageAsync(message);
                 var messageDto = new MessageDto
                 {
                     Id = createdMessage.Id,
