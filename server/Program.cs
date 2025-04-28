@@ -9,13 +9,11 @@ using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 using MarketMinds.Repositories.ConversationRepository; // Added from luca
 using MarketMinds.Repositories.MessageRepository;      // Added from luca
-using MarketMinds.Shared.IRepository.ConversationRepository; // Added for interface
 using MarketMinds.Shared.IRepository; // Added for shared interfaces
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 using Server.MarketMinds.Repositories.AccountRepository;
-using MarketMinds.Shared.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
