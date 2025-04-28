@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Repository;
@@ -15,7 +16,7 @@ namespace MarketMinds.Services.BorrowProductsService
 
         public BorrowProductsService(BorrowProductsRepository borrowProductsRepository)
         {
-           this.borrowProductsRepository = borrowProductsRepository;
+            this.borrowProductsRepository = borrowProductsRepository;
         }
 
         public void CreateListing(Product product)
@@ -30,7 +31,7 @@ namespace MarketMinds.Services.BorrowProductsService
 
         public List<Product> GetProducts()
         {
-           return borrowProductsRepository.GetProducts();
+            return borrowProductsRepository.GetProducts();
         }
 
         public Product GetProductById(int id)

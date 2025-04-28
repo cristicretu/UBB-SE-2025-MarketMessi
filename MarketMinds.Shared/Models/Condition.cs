@@ -17,6 +17,9 @@ namespace MarketMinds.Shared.Models
         [Column("description")]
         public string Description { get; set; }
 
+        [NotMapped]
+        public string DisplayTitle => Name;
+
         // Navigation property
         public ICollection<AuctionProduct> Products { get; set; }
 

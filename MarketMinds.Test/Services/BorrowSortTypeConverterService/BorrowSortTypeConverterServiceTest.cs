@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Services;
 using NUnit.Framework;
 using MarketMinds.Services.BorrowSortTypeConverterService;

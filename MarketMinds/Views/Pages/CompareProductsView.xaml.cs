@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using ViewModelLayer.ViewModel;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MarketMinds.Services;
 

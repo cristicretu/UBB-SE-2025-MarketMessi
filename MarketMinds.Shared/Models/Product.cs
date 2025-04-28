@@ -38,6 +38,14 @@ namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
 
+        // Tags property - Not mapped to a database column as each product type has its own tags relationship
+        [NotMapped]
+        public virtual IEnumerable<ProductTag> Tags { get; set; } = new List<ProductTag>();
+
+        // Images property - Will be implemented differently in each derived class
+        [NotMapped]
+        public virtual IEnumerable<Image> Images { get; set; } = new List<Image>();
+
         // Default constructor for JSON serialization/deserialization
         protected Product()
         {

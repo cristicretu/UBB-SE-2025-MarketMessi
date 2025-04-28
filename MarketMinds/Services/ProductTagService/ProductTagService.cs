@@ -1,70 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json.Nodes;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
+using MarketMinds.Repositories;
+using System.Linq;
 
 namespace MarketMinds.Services.ProductTagService
 {
     public class ProductTagService : IProductTagService
     {
-        private readonly HttpClient httpClient;
-        private readonly string apiBaseUrl;
+        private readonly ProductTagRepository repository;
 
         public ProductTagService(IConfiguration configuration)
         {
-            httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (!apiBaseUrl.EndsWith("/"))
-            {
-                apiBaseUrl += "/";
-            }
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            repository = new ProductTagRepository(configuration);
         }
 
         public virtual List<ProductTag> GetAllProductTags()
         {
-            var response = httpClient.GetAsync("ProductTag").Result;
-            response.EnsureSuccessStatusCode();
-            var responseJson = response.Content.ReadAsStringAsync().Result;
-            var clientTags = new List<ProductTag>();
-            var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
-            if (responseJsonArray != null)
+            try
             {
-                foreach (var responseJsonItem in responseJsonArray)
-                {
-                    var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
-                    var title = responseJsonItem["title"]?.GetValue<string>() ?? string.Empty;
-                    clientTags.Add(new ProductTag(id, title));
-                }
+                var sharedTags = repository.GetAllProductTags();
+                return sharedTags.Select(ConvertToDomainTag).ToList();
             }
-            return clientTags;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting all product tags: {ex.Message}");
+                return new List<ProductTag>();
+            }
         }
 
         public virtual ProductTag CreateProductTag(string displayTitle)
         {
-            var requestContent = new StringContent(
-                $"{{\"displayTitle\":\"{displayTitle}\"}}",
-                System.Text.Encoding.UTF8,
-                "application/json");
-            var response = httpClient.PostAsync("ProductTag", requestContent).Result;
-            response.EnsureSuccessStatusCode();
-            var json = response.Content.ReadAsStringAsync().Result;
-            var jsonObject = JsonNode.Parse(json);
-            if (jsonObject == null)
+            try
             {
-                throw new InvalidOperationException("Failed to parse the server response.");
+                var createdTag = repository.CreateProductTag(displayTitle);
+                return ConvertToDomainTag(createdTag);
             }
-            var id = jsonObject["id"]?.GetValue<int>() ?? 0;
-            var title = jsonObject["title"]?.GetValue<string>() ?? string.Empty;
-            return new ProductTag(id, title);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating product tag: {ex.Message}");
+                throw;
+            }
         }
 
         public virtual void DeleteProductTag(string displayTitle)
         {
-            var response = httpClient.DeleteAsync($"ProductTag/{displayTitle}").Result;
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                repository.DeleteProductTag(displayTitle);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting product tag: {ex.Message}");
+                throw;
+            }
+        }
+
+        // Helper methods to convert between domain and shared models
+        private ProductTag ConvertToDomainTag(MarketMinds.Shared.Models.ProductTag sharedTag)
+        {
+            if (sharedTag == null) return null;
+            return new ProductTag(sharedTag.Id, sharedTag.Title);
         }
     }
 }

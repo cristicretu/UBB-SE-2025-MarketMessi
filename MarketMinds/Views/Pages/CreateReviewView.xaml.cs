@@ -9,7 +9,7 @@ using Windows.Storage.Pickers;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Newtonsoft.Json;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using MarketMinds.Services;

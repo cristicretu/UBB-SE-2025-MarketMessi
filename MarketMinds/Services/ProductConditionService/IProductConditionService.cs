@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ProductConditionService
 {
@@ -12,7 +12,7 @@ namespace MarketMinds.Services.ProductConditionService
         /// Returns all the product conditions.
         /// </summary>
         /// <returns>A list of all product conditions.</returns>
-        List<ProductCondition> GetAllProductConditions();
+        List<Condition> GetAllProductConditions();
 
         /// <summary>
         /// Creates a new product condition.
@@ -20,7 +20,7 @@ namespace MarketMinds.Services.ProductConditionService
         /// <param name="displayTitle">The display title of the product condition.</param>
         /// <param name="description">The description of the product condition.</param>
         /// <returns>The created product condition.</returns>
-        ProductCondition CreateProductCondition(string displayTitle, string description);
+        Condition CreateProductCondition(string displayTitle, string description);
 
         /// <summary>
         /// Deletes a product condition by its display title.

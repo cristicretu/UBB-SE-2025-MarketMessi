@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Nodes;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.ProductConditionService
@@ -23,12 +23,12 @@ namespace MarketMinds.Services.ProductConditionService
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public List<ProductCondition> GetAllProductConditions()
+        public List<Condition> GetAllProductConditions()
         {
             var response = httpClient.GetAsync("ProductCondition").Result;
             response.EnsureSuccessStatusCode();
             var responseJson = response.Content.ReadAsStringAsync().Result;
-            var clientConditions = new List<ProductCondition>();
+            var clientConditions = new List<Condition>();
             var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
 
             if (responseJsonArray != null)
@@ -38,13 +38,16 @@ namespace MarketMinds.Services.ProductConditionService
                     var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    clientConditions.Add(new ProductCondition(id, name, description));
+                    
+                    var condition = new Condition(name, description);
+                    condition.Id = id;
+                    clientConditions.Add(condition);
                 }
             }
             return clientConditions;
         }
 
-        public ProductCondition CreateProductCondition(string displayTitle, string description)
+        public Condition CreateProductCondition(string displayTitle, string description)
         {
             var requestContent = new StringContent(
                 $"{{\"displayTitle\":\"{displayTitle}\",\"description\":\"{description}\"}}",
@@ -63,7 +66,10 @@ namespace MarketMinds.Services.ProductConditionService
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new ProductCondition(id, name, conditionDescription);
+            
+            var condition = new Condition(name, conditionDescription);
+            condition.Id = id;
+            return condition;
         }
 
         public void DeleteProductCondition(string displayTitle)

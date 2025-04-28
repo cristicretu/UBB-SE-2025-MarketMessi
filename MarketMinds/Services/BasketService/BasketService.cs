@@ -50,7 +50,7 @@ namespace MarketMinds.Services.BasketService
 
         public void UpdateProductQuantity(int userId, int productId, int quantity)
         {
-           basketRepository.UpdateProductQuantity(userId, productId, quantity);
+            basketRepository.UpdateProductQuantity(userId, productId, quantity);
         }
 
         public bool ValidateQuantityInput(string quantityText, out int quantity)
@@ -97,12 +97,12 @@ namespace MarketMinds.Services.BasketService
 
         public void IncreaseProductQuantity(int userId, int productId)
         {
-           basketRepository.IncreaseProductQuantity(userId, productId);
+            basketRepository.IncreaseProductQuantity(userId, productId);
         }
 
         public async Task<bool> CheckoutBasketAsync(int userId, int basketId, double discountAmount = 0, double totalAmount = 0)
         {
-           return await basketRepository.CheckoutBasketAsync(userId, basketId, discountAmount, totalAmount);
+            return await basketRepository.CheckoutBasketAsync(userId, basketId, discountAmount, totalAmount);
         }
     }
 }

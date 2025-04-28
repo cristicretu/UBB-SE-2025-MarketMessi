@@ -10,12 +10,13 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration; // For IConfiguration
 using MarketMinds; // For App.CurrentUser
 using MarketMinds.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using MarketMinds.Shared.Models;
 
 namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Services namespace
 {

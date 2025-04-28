@@ -10,45 +10,14 @@ using MarketMinds.Shared.Models;
 namespace MarketMinds.Shared.Models
 {
     [Table("BuyProducts")]
-    public class BuyProduct
+    public class BuyProduct : Product
     {
-        [Key]
-        [Column("id")]
-        public int Id { get; set; }
-
-        [Column("title")]
-        public string Title { get; set; }
-
-        [Column("description")]
-        public string? Description { get; set; }
-
-        [Column("seller_id")]
-        public int SellerId { get; set; }
-
-        [Column("condition_id")]
-        public int? ConditionId { get; set; }
-
-        [Column("category_id")]
-        public int? CategoryId { get; set; }
-
         [Column("price")]
         public double Price { get; set; }
 
-        // Navigation properties
-        [ForeignKey("SellerId")]
-        public User? Seller { get; set; }
-
-        [ForeignKey("ConditionId")]
-        public Condition? Condition { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public Category? Category { get; set; }
-
+        // Additional navigation properties specific to BuyProduct
         public ICollection<BuyProductImage> Images { get; set; } = new List<BuyProductImage>();
         public ICollection<BuyProductProductTag> ProductTags { get; set; } = new List<BuyProductProductTag>();
-
-        [NotMapped]
-        public List<ProductTag> Tags { get; set; }
 
         [NotMapped]
         public List<Image> NonMappedImages { get; set; }
@@ -56,35 +25,33 @@ namespace MarketMinds.Shared.Models
         public BuyProduct() : base()
         {
             Price = 0;
-            Tags = new List<ProductTag>();
             NonMappedImages = new List<Image>();
         }
 
         public BuyProduct(int id, string title, string description, User seller, Condition productCondition, Category productCategory,
-            List<ProductTag> productTags, List<Image> images, double price)
+            List<ProductTag> productTags, List<Image> images, double price) : base()
         {
-            this.Id = id;
-            this.Title = title;
-            this.Description = description;
-            this.Seller = seller;
-            this.Condition = productCondition;
-            this.Category = productCategory;
-            this.Tags = productTags ?? new List<ProductTag>();
-            this.NonMappedImages = images ?? new List<Image>();
-            this.Price = price;
+            Id = id;
+            Title = title;
+            Description = description;
+            Seller = seller;
+            Condition = productCondition;
+            Category = productCategory;
+            Tags = productTags ?? new List<ProductTag>();
+            NonMappedImages = images ?? new List<Image>();
+            Price = price;
         }
 
         public BuyProduct(string title, string? description, int sellerId, int? conditionId,
-            int? categoryId, double price)
+            int? categoryId, double price) : base()
         {
             Title = title;
-            Description = description;
+            Description = description ?? string.Empty;
             SellerId = sellerId;
-            ConditionId = conditionId;
-            CategoryId = categoryId;
+            ConditionId = conditionId ?? 0;
+            CategoryId = categoryId ?? 0;
             Price = price;
             NonMappedImages = new List<Image>();
-            Tags = new List<ProductTag>();
         }
     }
 }

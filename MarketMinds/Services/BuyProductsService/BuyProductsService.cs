@@ -36,7 +36,7 @@ namespace MarketMinds.Services.BuyProductsService
 
         public BuyProduct GetProductById(int id)
         {
-           return buyProductsRepository.GetProductById(id);
+            return buyProductsRepository.GetProductById(id);
         }
     }
 }

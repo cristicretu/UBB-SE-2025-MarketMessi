@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using MarketMinds.Repository;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
+using MarketMinds.Services.ProductTagService;
+using MarketMinds.Repositories;
 
 namespace MarketMinds.Services.AuctionProductsService
 {
@@ -22,9 +26,9 @@ namespace MarketMinds.Services.AuctionProductsService
             auctionProductsRepository.CreateListing(product);
         }
 
-        public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
+        public void PlaceBid(AuctionProduct auction, User bidder, double bidAmount)
         {
-           auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+            auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
         }
 
         public void ConcludeAuction(AuctionProduct auction)

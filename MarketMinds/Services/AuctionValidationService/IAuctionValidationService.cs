@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.AuctionValidationService
 {

@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.AuctionProductsService;
@@ -28,14 +29,20 @@ using Marketplace_SE.Services.DreamTeam;
 using MarketMinds.Services.ConversationService;
 using MarketMinds.Services.MessageService;
 using MarketMinds.Services.DreamTeam.ChatbotService;
-
+using MarketMinds.Repositories;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 namespace MarketMinds
 {
     public partial class App : Application
     {
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
+
         // Repository declarations
+        public static UserRepository UserRepository;
+        public static ReviewRepository ReviewRepository;
+        public static ProductTagRepository ProductTagRepository;
 
         // Service declarations
         public static BuyProductsService BuyProductsService;
@@ -223,9 +230,11 @@ namespace MarketMinds
             MainWindow = new UiLayer.MainWindow();
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
+
             // Instantiate repositories
-            // ChatBotRepository = new ChatBotRepository(DatabaseConnection);
-            // ChatRepository = new ChatRepository(DatabaseConnection);
+            UserRepository = new UserRepository(Configuration);
+            ReviewRepository = new ReviewRepository(Configuration);
+            ProductTagRepository = new ProductTagRepository(Configuration);
 
             // Instantiate services
             BuyProductsService = new BuyProductsService(Configuration);
@@ -243,6 +252,7 @@ namespace MarketMinds
             ConversationService = new ConversationService(httpClient);
             MessageService = new MessageService(httpClient);
             NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
+
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);

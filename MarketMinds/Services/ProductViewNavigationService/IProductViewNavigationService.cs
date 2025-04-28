@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml;
 
 namespace MarketMinds.Services

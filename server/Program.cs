@@ -9,6 +9,7 @@ using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 using MarketMinds.Repositories.ConversationRepository; // Added from luca
 using MarketMinds.Repositories.MessageRepository;      // Added from luca
+using MarketMinds.Shared.IRepository; // Add shared repository interfaces
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
