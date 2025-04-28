@@ -26,7 +26,6 @@ namespace Marketplace_SE
         {
             this.InitializeComponent();
             chatBotViewModel = App.ChatBotViewModel;
-            
             if (App.CurrentUser != null)
             {
                 chatBotViewModel.SetCurrentUser(App.CurrentUser);
@@ -41,7 +40,6 @@ namespace Marketplace_SE
         private void ChatBotOptionButton_Click(object sender, RoutedEventArgs eventArgs)
         {
         }
-        
         private void OnButtonClickChatBotKill(object sender, RoutedEventArgs eventArgs)
         {
             var helpWindow = new Microsoft.UI.Xaml.Window();
@@ -104,7 +102,6 @@ namespace Marketplace_SE
             try
             {
                 string responseText = await chatBotViewModel.SendMessageAsync(userMessage);
-                
                 Border botResponseBorder = new Border
                 {
                     Background = new SolidColorBrush(Microsoft.UI.Colors.DodgerBlue),
@@ -128,7 +125,6 @@ namespace Marketplace_SE
             catch (Exception ex)
             {
                 string errorMessage = "I'm sorry, an error occurred. Please try again.";
-                
                 Border errorBorder = new Border
                 {
                     Background = new SolidColorBrush(Microsoft.UI.Colors.DodgerBlue),

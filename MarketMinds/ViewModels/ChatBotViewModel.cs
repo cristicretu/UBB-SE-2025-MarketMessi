@@ -16,7 +16,6 @@ public class ChatBotViewModel
     private ObservableCollection<Node> currentOptions;
     private bool isActive;
     private User currentUser;
-    
     public ObservableCollection<ChatMessage> Messages { get; private set; }
 
     public ChatBotViewModel(IChatbotService chatBotService)
@@ -28,6 +27,11 @@ public class ChatBotViewModel
 
     public void SetCurrentUser(User user)
     {
+        if (user == null)
+        {
+            System.Diagnostics.Debug.WriteLine("[VIEWMODEL] WARNING: Attempted to set null user in ChatBotViewModel");
+            return;
+        }
         currentUser = user;
         chatBotService.SetCurrentUser(user);
     }
@@ -38,29 +42,24 @@ public class ChatBotViewModel
         UpdateState();
         AddBotMessage("Hello! I'm your shopping assistant. How can I help you today?");
     }
-    
     public bool SelectOption(Node selectedNode)
     {
         bool result = chatBotService.SelectOption(selectedNode);
         UpdateState();
         return result;
     }
-    
     public string GetCurrentResponse()
     {
         return currentResponse;
     }
-    
     public IEnumerable<Node> GetCurrentOptions()
     {
         return currentOptions;
     }
-    
     public bool IsChatInteractionActive()
     {
         return isActive;
     }
-    
     private void UpdateState()
     {
         currentResponse = chatBotService.GetCurrentResponse();
@@ -89,12 +88,13 @@ public class ChatBotViewModel
     public async Task<string> SendMessageAsync(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
+        {
             return null;
+        }
 
         AddUserMessage(message);
         string botResponse = await chatBotService.GetBotResponseAsync(message);
         AddBotMessage(botResponse);
-        
         return botResponse;
     }
 }

@@ -281,19 +281,14 @@ namespace MarketMinds
         {
             if (CurrentUser != null)
             {
-                Debug.WriteLine("DEBUG: User is valid. Updating view models with CurrentUser");
                 UpdateTestingUser();
                 BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
                 ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
-                Debug.WriteLine($"DEBUG: Created ReviewCreateViewModel - Buyer: {CurrentUser?.Id}, Seller: {TestingUser?.Id}");
                 SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-                Debug.WriteLine($"DEBUG: Created SeeBuyerReviewsViewModel - User: {CurrentUser?.Id}");
                 SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
-                Debug.WriteLine($"DEBUG: Created SeeSellerReviewsViewModel - Seller: {CurrentUser?.Id}, Viewer: {CurrentUser?.Id}");
-                
+                NewChatbotService.SetCurrentUser(CurrentUser);
+                ChatBotService.SetCurrentUser(CurrentUser);
                 ChatBotViewModel.SetCurrentUser(CurrentUser);
-                Debug.WriteLine($"DEBUG: Updated ChatBotViewModel with CurrentUser: {CurrentUser?.Id}");
-                
                 if (LoginWindow != null)
                 {
                     LoginWindow.Close();

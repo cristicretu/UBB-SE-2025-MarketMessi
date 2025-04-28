@@ -17,7 +17,7 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
         private readonly string baseUrl = "http://localhost:5000/api/chatbot";
         private Node currentNode;
         private bool isActive;
-        private User currentUser;
+        private static User currentUser;
 
         public ChatbotService(HttpClient httpClient)
         {
@@ -36,8 +36,12 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
 
         public void SetCurrentUser(User user)
         {
+            if (user == null)
+            {
+                Debug.WriteLine("[SERVICE] WARNING: Attempted to set null user");
+                return;
+            }
             currentUser = user;
-            Debug.WriteLine($"[SERVICE]: Current user set to: {user?.Username} (ID: {user?.Id})");
         }
 
         public Node InitializeChat()
@@ -52,7 +56,6 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                 Debug.WriteLine($"Error initializing chat: {ex.Message}");
                 isActive = false;
 
-                // Create an error node
                 currentNode = new Node
                 {
                     Id = -1,
@@ -73,7 +76,6 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
 
         public bool SelectOption(Node selectedNode)
         {
-            // Always set the current node to the selected node
             currentNode = selectedNode;
             isActive = currentNode != null;
             return true;
@@ -99,8 +101,6 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Debug.WriteLine($"GetBotResponseAsync called at {DateTime.Now:HH:mm:ss.fff}. Message: '{userMessage.Substring(0, Math.Min(30, userMessage.Length))}...'");
-            Debug.WriteLine($"Is welcome message: {isWelcomeMessage}");
             try
             {
                 if (isWelcomeMessage)
@@ -111,10 +111,11 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                     return "Hello! I'm your shopping assistant. How can I help you today?";
                 }
 
+                int? userId = currentUser?.Id;
                 var requestData = new
                 {
                     Message = userMessage,
-                    UserId = currentUser?.Id
+                    UserId = userId
                 };
 
                 var jsonContent = JsonConvert.SerializeObject(requestData);
