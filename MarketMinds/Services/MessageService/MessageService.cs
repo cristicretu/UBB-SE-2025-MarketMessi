@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -16,29 +17,14 @@ namespace MarketMinds.Services.MessageService
             _repository = repository;
         }
 
-        public List<Message> GetMessagesForConversation(int conversationId)
+        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            return _repository.GetMessagesForConversation(conversationId);
+            return await _repository.CreateMessageAsync(conversationId, userId, content);
         }
 
-        public Message SendMessage(int conversationId, string content)
+        public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            return _repository.SendMessage(conversationId, content);
-        }
-
-        public void DeleteMessage(int messageId)
-        {
-            _repository.DeleteMessage(messageId);
-        }
-
-        Task<Message> IMessageService.CreateMessageAsync(int conversationId, int userId, string content)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        Task<List<Message>> IMessageService.GetMessagesByConversationIdAsync(int conversationId)
-        {
-            throw new System.NotImplementedException();
+            return await _repository.GetMessagesByConversationIdAsync(conversationId);
         }
     }
 }

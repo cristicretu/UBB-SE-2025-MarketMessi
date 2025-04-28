@@ -1,11 +1,6 @@
-using MarketMinds.Shared.IRepository;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json.Nodes;
+﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
-using Microsoft.Extensions.Configuration;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Services.ProductCategoryService
 {
@@ -23,7 +18,7 @@ namespace MarketMinds.Services.ProductCategoryService
             return _repository.GetAllProductCategories();
         }
 
-        public ProductCategory CreateProductCategory(string name, string description)
+        public Category CreateProductCategory(string name, string description)
         {
             return _repository.CreateProductCategory(name, description);
         }

@@ -39,7 +39,7 @@ namespace MarketMinds.Repositories
                     var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    clientConditions.Add(new Condition(id, name, description));
+                    clientConditions.Add(new Condition(name, description));
                 }
             }
             return clientConditions;
@@ -64,7 +64,7 @@ namespace MarketMinds.Repositories
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new Condition(id, name, conditionDescription);
+            return new Condition(name, conditionDescription);
         }
 
         public void DeleteProductCondition(string displayTitle)

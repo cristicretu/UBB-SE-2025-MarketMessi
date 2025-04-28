@@ -29,4 +29,3 @@ namespace MarketMinds.Shared.IRepository
         void DeleteProductCondition(string displayTitle);
     }
 }
-

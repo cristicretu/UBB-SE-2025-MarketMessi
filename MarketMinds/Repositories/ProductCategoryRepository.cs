@@ -29,7 +29,7 @@ namespace MarketMinds.Repositories
             var response = httpClient.GetAsync("ProductCategory").Result;
             response.EnsureSuccessStatusCode();
             var responseJson = response.Content.ReadAsStringAsync().Result;
-            var categories = new List<ProductCategory>();
+            var categories = new List<Category>();
             var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
 
             if (responseJsonArray != null)
@@ -39,7 +39,7 @@ namespace MarketMinds.Repositories
                     var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    categories.Add(new ProductCategory(id, name, description));
+                    categories.Add(new Category(name, description));
                 }
             }
             return categories;
@@ -64,7 +64,7 @@ namespace MarketMinds.Repositories
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var categoryName = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new Category(id, categoryName, categoryDescription);
+            return new Category(categoryName, categoryDescription);
         }
 
         public void DeleteProductCategory(string name)
