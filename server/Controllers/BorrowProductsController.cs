@@ -14,6 +14,7 @@ namespace Server.Controllers
     public class BorrowProductsController : ControllerBase
     {
         private readonly IBorrowProductsRepository borrowProductsRepository;
+        private readonly static int NULL_PRODUCT_ID = 0;
 
         public BorrowProductsController(IBorrowProductsRepository borrowProductsRepository)
         {
@@ -120,8 +121,8 @@ namespace Server.Controllers
                     Title = productDTO.Title,
                     Description = productDTO.Description,
                     SellerId = productDTO.SellerId,
-                    CategoryId = productDTO.CategoryId ?? 0,
-                    ConditionId = productDTO.ConditionId ?? 0,
+                    CategoryId = productDTO.CategoryId ?? NULL_PRODUCT_ID,
+                    ConditionId = productDTO.ConditionId ?? NULL_PRODUCT_ID,
                     TimeLimit = productDTO.TimeLimit,
                     StartDate = productDTO.StartDate,
                     EndDate = productDTO.EndDate,

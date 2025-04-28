@@ -35,6 +35,8 @@ namespace Server.Models
         [InverseProperty("Review")]
         public virtual ICollection<ReviewImage> ReviewImages { get; set; } = new List<ReviewImage>();
 
+        private const int UNDEFINED_VALUE = 0;
+
         public Review(int id, string description, List<Image> images, double rating, int sellerId, int buyerId)
         {
             this.Id = id;
@@ -55,7 +57,7 @@ namespace Server.Models
         // Helper method to sync Images and ReviewImages collections before saving to DB
         public void SyncImagesBeforeSave()
         {
-            if (Images != null && Id > 0)
+            if (Images != null && Id > UNDEFINED_VALUE)
             {
                 // Clear existing ReviewImages and recreate from Images
                 ReviewImages.Clear();

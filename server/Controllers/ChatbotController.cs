@@ -23,15 +23,18 @@ namespace Server.Controllers
         private readonly string geminiApiKey;
         private readonly string geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
         private readonly ILogger<ChatbotController> _logger;
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ApplicationDbContext dbContext;
         private static bool _startupDebugComplete = false;
+        private readonly static int MINIMUM_USER_ID = 1;
+        private readonly static int FIRST = 0;
+        private readonly static int BUYER_TYPE_VALUE = 1;
 
         public ChatbotController(IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<ChatbotController> logger, ApplicationDbContext dbContext)
         {
             this.configuration = configuration;
             httpClient = httpClientFactory.CreateClient();
             geminiApiKey = this.configuration["GeminiAPI:Key"];
-            _dbContext = dbContext;
+            this.dbContext = dbContext;
             
             if (!_startupDebugComplete)
             {    
@@ -70,7 +73,7 @@ namespace Server.Controllers
                 }
 
                 string userContext = string.Empty;
-                if (request.UserId.HasValue && request.UserId.Value > 0)
+                if (request.UserId.HasValue && request.UserId.Value >= MINIMUM_USER_ID)
                 {
                     userContext = await GetUserContextAsync(request.UserId.Value);
                 }
@@ -132,7 +135,7 @@ namespace Server.Controllers
                                    
                                 if (candidates.GetArrayLength() > 0)
                                 {
-                                    var hasContent = candidates[0].TryGetProperty("content", out var contentElement);
+                                    var hasContent = candidates[FIRST].TryGetProperty("content", out var contentElement);
                                     if (!hasContent)
                                     {
                                         return Ok(new ChatbotResponse 
@@ -154,7 +157,7 @@ namespace Server.Controllers
                                         
                                     if (parts.GetArrayLength() > 0)
                                     {
-                                        var hasText = parts[0].TryGetProperty("text", out var textElement);
+                                        var hasText = parts[FIRST].TryGetProperty("text", out var textElement);
                                         if (!hasText)
                                         {
                                             return Ok(new ChatbotResponse 
@@ -233,28 +236,28 @@ namespace Server.Controllers
             try
             {
                 // Get user details
-                var user = await _dbContext.Users
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await dbContext.Users
+                    .FirstOrDefaultAsync(user => user.Id == userId);
                 
                 if (user != null)
                 {
                     contextBuilder.AppendLine($"USER INFORMATION:");
                     contextBuilder.AppendLine($"Username: {user.Username}");
                     contextBuilder.AppendLine($"Email: {user.Email}");
-                    contextBuilder.AppendLine($"User Type: {(user.UserType == 1 ? "Buyer" : "Seller")}");
+                    contextBuilder.AppendLine($"User Type: {(user.UserType == BUYER_TYPE_VALUE ? "Buyer" : "Seller")}");
                     contextBuilder.AppendLine($"Account Balance: ${user.Balance:F2}");
                     contextBuilder.AppendLine($"Rating: {user.Rating:F1}/5.0");
                     contextBuilder.AppendLine();
                 }
                 
                 // Get user's basket
-                var basket = await _dbContext.Baskets
-                    .FirstOrDefaultAsync(b => b.BuyerId == userId);
+                var basket = await dbContext.Baskets
+                    .FirstOrDefaultAsync(buyer => buyer.BuyerId == userId);
                 
                 if (basket != null)
                 {
-                    var basketItems = await _dbContext.BasketItems
-                        .Where(bi => bi.BasketId == basket.Id)
+                    var basketItems = await dbContext.BasketItems
+                        .Where(basketId => basketId.BasketId == basket.Id)
                         .ToListAsync();
                     
                     if (basketItems.Any())
@@ -264,8 +267,8 @@ namespace Server.Controllers
                         
                         foreach (var item in basketItems)
                         {
-                            var product = await _dbContext.BuyProducts
-                                .FirstOrDefaultAsync(p => p.Id == item.ProductId);
+                            var product = await dbContext.BuyProducts
+                                .FirstOrDefaultAsync(product => product.Id == item.ProductId);
                             
                             if (product != null)
                             {
@@ -286,8 +289,8 @@ namespace Server.Controllers
                 }
                 
                 // Get user's reviews
-                var reviewsGiven = await _dbContext.Reviews
-                    .Where(r => r.BuyerId == userId)
+                var reviewsGiven = await dbContext.Reviews
+                    .Where(review => review.BuyerId == userId)
                     .ToListAsync();
                 
                 if (reviewsGiven.Any())
@@ -296,15 +299,15 @@ namespace Server.Controllers
                     
                     foreach (var review in reviewsGiven)
                     {
-                        var seller = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == review.SellerId);
+                        var seller = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == review.SellerId);
                         contextBuilder.AppendLine($"- Review for {seller?.Username ?? "Unknown Seller"}: Rating: {review.Rating}/5, Comment: \"{review.Description}\"");
                     }
                     
                     contextBuilder.AppendLine();
                 }
                 
-                var reviewsReceived = await _dbContext.Reviews
-                    .Where(r => r.SellerId == userId)
+                var reviewsReceived = await dbContext.Reviews
+                    .Where(review => review.SellerId == userId)
                     .ToListAsync();
                 
                 if (reviewsReceived.Any())
@@ -313,7 +316,7 @@ namespace Server.Controllers
                     
                     foreach (var review in reviewsReceived)
                     {
-                        var buyer = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == review.BuyerId);
+                        var buyer = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == review.BuyerId);
                         contextBuilder.AppendLine($"- Review from {buyer?.Username ?? "Unknown Buyer"}: Rating: {review.Rating}/5, Comment: \"{review.Description}\"");
                     }
                     
@@ -321,9 +324,9 @@ namespace Server.Controllers
                 }
                 
                 // Get user's orders
-                var buyerOrders = await _dbContext.Orders
-                    .Where(o => o.BuyerId == userId)
-                    .OrderByDescending(o => o.Id) // Sort by newest first assuming ID increases over time
+                var buyerOrders = await dbContext.Orders
+                    .Where(order => order.BuyerId == userId)
+                    .OrderByDescending(order => order.Id) // Sort by newest first assuming ID increases over time
                     .ToListAsync();
                 
                 if (buyerOrders.Any())
@@ -332,7 +335,7 @@ namespace Server.Controllers
                     
                     foreach (var order in buyerOrders)
                     {
-                        var seller = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == order.SellerId);
+                        var seller = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == order.SellerId);
                         contextBuilder.AppendLine($"- Order #{order.Id}: {order.Name} (${order.Cost:F2}) from seller {seller?.Username ?? "Unknown"}");
                         if (!string.IsNullOrEmpty(order.Description))
                         {
@@ -343,9 +346,9 @@ namespace Server.Controllers
                     contextBuilder.AppendLine();
                 }
                 
-                var sellerOrders = await _dbContext.Orders
-                    .Where(o => o.SellerId == userId)
-                    .OrderByDescending(o => o.Id)
+                var sellerOrders = await dbContext.Orders
+                    .Where(order => order.SellerId == userId)
+                    .OrderByDescending(order => order.Id)
                     .ToListAsync();
                 
                 if (sellerOrders.Any())
@@ -354,7 +357,7 @@ namespace Server.Controllers
                     
                     foreach (var order in sellerOrders)
                     {
-                        var buyer = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == order.BuyerId);
+                        var buyer = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == order.BuyerId);
                         contextBuilder.AppendLine($"- Order #{order.Id}: {order.Name} (${order.Cost:F2}) to buyer {buyer?.Username ?? "Unknown"}");
                         if (!string.IsNullOrEmpty(order.Description))
                         {

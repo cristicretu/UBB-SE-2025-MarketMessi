@@ -17,6 +17,7 @@ namespace MarketMinds.Controllers
     public class AuctionProductsController : ControllerBase
     {
         private readonly IAuctionProductsRepository auctionProductsRepository;
+        private readonly static int NULL_PRODUCT_ID = 0;
 
         public AuctionProductsController(IAuctionProductsRepository auctionProductsRepository)
         {
@@ -50,8 +51,8 @@ namespace MarketMinds.Controllers
             try
             {
                 var product = auctionProductsRepository.GetProductByID(id);
-                var dto = AuctionProductMapper.ToDTO(product);
-                return Ok(dto);
+                var auctionProductDTO = AuctionProductMapper.ToDTO(product);
+                return Ok(auctionProductDTO);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -93,7 +94,7 @@ namespace MarketMinds.Controllers
                     return BadRequest(ModelState);
                 }
             }
-            if (product.Id != 0)
+            if (product.Id != NULL_PRODUCT_ID)
             {
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
@@ -128,8 +129,8 @@ namespace MarketMinds.Controllers
                         Console.WriteLine($"Error verifying images: {ex.Message}");
                     }
                 }
-                var dto = AuctionProductMapper.ToDTO(product);
-                return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, dto);
+                var auctionProductDTO = AuctionProductMapper.ToDTO(product);
+                return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, auctionProductDTO);
             }
             catch (ArgumentException aex)
             {

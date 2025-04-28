@@ -32,7 +32,9 @@ namespace Server.Models
         [Column("price")]
         public double Price { get; set; }
 
-        private const double DEFAULT_PRICE = 0;
+        private const int UNDEFINED_VALUE = 0;
+        private const double BASE_PRICE = 0;
+        private const int BASE_QUANTITY = 0;
 
         public BasketItem(int id, BuyProduct product, int quantity)
         {
@@ -45,11 +47,11 @@ namespace Server.Models
 
         public BasketItem()
         {
-            this.Id = 0;
+            this.Id = UNDEFINED_VALUE;
             this.Product = null;
-            this.ProductId = 0;
-            this.Quantity = 0;
-            this.Price = DEFAULT_PRICE;
+            this.ProductId = UNDEFINED_VALUE;
+            this.Quantity = BASE_QUANTITY;
+            this.Price = BASE_PRICE;
         }
 
         public double GetPrice()

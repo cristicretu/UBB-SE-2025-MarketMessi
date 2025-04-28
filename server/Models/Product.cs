@@ -38,10 +38,12 @@ namespace Server.Models // Adjusted namespace to server.Models
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
 
+        private const int UNDEFINED_VALUE = 0;
+
         // Default constructor for JSON serialization/deserialization
         protected Product()
         {
-            Id = 0;
+            Id = UNDEFINED_VALUE;
             Title = string.Empty;
             Description = string.Empty;
             Condition = null;

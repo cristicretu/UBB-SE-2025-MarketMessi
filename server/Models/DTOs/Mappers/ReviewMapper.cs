@@ -20,28 +20,28 @@ namespace Server.Models.DTOs.Mappers
                 Rating = review.Rating,
                 SellerId = review.SellerId,
                 BuyerId = review.BuyerId,
-                Images = review.Images.Select(img => new ImageDTO
+                Images = review.Images.Select(image => new ImageDTO
                 {
-                    Url = img.Url
+                    Url = image.Url
                 }).ToList()
             };
         }
 
-        public static Review ToModel(ReviewDTO dto)
+        public static Review ToModel(ReviewDTO reviewDTO)
         {
-            if (dto == null)
+            if (reviewDTO == null)
             {
                 return null;
             }
 
             var review = new Review
             {
-                Id = dto.Id,
-                Description = dto.Description,
-                Rating = dto.Rating,
-                SellerId = dto.SellerId,
-                BuyerId = dto.BuyerId,
-                Images = dto.Images.Select(img => new Image(img.Url)).ToList()
+                Id = reviewDTO.Id,
+                Description = reviewDTO.Description,
+                Rating = reviewDTO.Rating,
+                SellerId = reviewDTO.SellerId,
+                BuyerId = reviewDTO.BuyerId,
+                Images = reviewDTO.Images.Select(image => new Image(image.Url)).ToList()
             };
 
             review.SyncImagesBeforeSave();

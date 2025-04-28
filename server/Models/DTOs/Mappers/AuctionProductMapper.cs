@@ -7,79 +7,79 @@ namespace Server.Models.DTOs.Mappers
 {
     public static class AuctionProductMapper
     {
-        private static int undefined_user_type = 0;
-        private static int undefined_balance = 0;
-        private static int undefined_rating = 0;
-        private static int undefined_password = 0;
-        public static AuctionProductDTO ToDTO(AuctionProduct entity)
+        private static int UNDEFINED_USER_TYPE = 0;
+        private static int BASE_BALANCE = 0;
+        private static int BASE_RATING = 0;
+        private static int UNDEFINED_PASSWORD = 0;
+        public static AuctionProductDTO ToDTO(AuctionProduct auctionProduct)
         {
-            if (entity == null)
+            if (auctionProduct == null)
             {
                 return null;
             }
 
             return new AuctionProductDTO
             {
-                Id = entity.Id,
-                Title = entity.Title,
-                Description = entity.Description,
-                StartAuctionDate = entity.StartTime,
-                EndAuctionDate = entity.EndTime,
-                StartingPrice = entity.StartPrice,
-                CurrentPrice = entity.CurrentPrice,
-                BidHistory = entity.Bids?.Select(b => new BidDTO
+                Id = auctionProduct.Id,
+                Title = auctionProduct.Title,
+                Description = auctionProduct.Description,
+                StartAuctionDate = auctionProduct.StartTime,
+                EndAuctionDate = auctionProduct.EndTime,
+                StartingPrice = auctionProduct.StartPrice,
+                CurrentPrice = auctionProduct.CurrentPrice,
+                BidHistory = auctionProduct.Bids?.Select(bid => new BidDTO
                 {
-                    Id = b.Id,
-                    Price = b.Price,
-                    Timestamp = b.Timestamp,
-                    Bidder = b.Bidder != null ? new UserDTO
+                    Id = bid.Id,
+                    Price = bid.Price,
+                    Timestamp = bid.Timestamp,
+                    Bidder = bid.Bidder != null ? new UserDTO
                     {
-                        Id = b.Bidder.Id,
-                        Username = b.Bidder.Username,
-                        Email = b.Bidder.Email,
-                        UserType = undefined_user_type,
-                        Balance = undefined_balance,
-                        Rating = undefined_rating,
-                        Password = undefined_password
+                        Id = bid.Bidder.Id,
+                        Username = bid.Bidder.Username,
+                        Email = bid.Bidder.Email,
+                        UserType = UNDEFINED_USER_TYPE,
+                        Balance = BASE_BALANCE,
+                        Rating = BASE_RATING,
+                        Password = UNDEFINED_PASSWORD
                     }
                     : null
                 }).ToList() ?? new List<BidDTO>(),
-                Condition = entity.Condition != null ? new ConditionDTO
+                Condition = auctionProduct.Condition != null ? new ConditionDTO
                 {
-                    Id = entity.Condition.Id,
-                    DisplayTitle = entity.Condition.Name,
+                    Id = auctionProduct.Condition.Id,
+                    DisplayTitle = auctionProduct.Condition.Name,
                     Description = null
                 }
                 : null,
-                Category = entity.Category != null ? new CategoryDTO
+                Category = auctionProduct.Category != null ? new CategoryDTO
                 {
-                    Id = entity.Category.Id,
-                    DisplayTitle = entity.Category.Name,
-                    Description = entity.Category.Description
+                    Id = auctionProduct.Category.Id,
+                    DisplayTitle = auctionProduct.Category.Name,
+                    Description = auctionProduct.Category.Description
                 }
                 : null,
                 Tags = new List<ProductTagDTO>(),
-                Images = entity.Images?.Select(i => new ImageDTO
+                Images = auctionProduct.Images?.Select(i => new ImageDTO
                 {
                     Url = i.Url
                 }).ToList() ?? new List<ImageDTO>(),
-                Seller = entity.Seller != null ? new UserDTO
+                Seller = auctionProduct.Seller != null ? new UserDTO
                 {
-                    Id = entity.Seller.Id,
-                    Username = entity.Seller.Username,
-                    Email = entity.Seller.Email,
-                    UserType = 0,
-                    Balance = 0,
-                    Rating = 0,
-                    Password = 0
+                    Id = auctionProduct.Seller.Id,
+                    Username = auctionProduct.Seller.Username,
+                    Email = auctionProduct.Seller.Email,
+                    UserType = UNDEFINED_USER_TYPE,
+                    Balance = BASE_BALANCE,
+                    Rating = BASE_RATING,
+                    Password = UNDEFINED_PASSWORD
                 }
                 : null
             };
         }
 
-        public static List<AuctionProductDTO> ToDTOList(IEnumerable<AuctionProduct> entities)
+        public static List<AuctionProductDTO> ToDTOList(IEnumerable<AuctionProduct> auctionProducts)
         {
-            return entities?.Select(e => ToDTO(e)).ToList() ?? new List<AuctionProductDTO>();
+            return auctionProducts?.Select(auctionProduct => ToDTO(auctionProduct)).ToList() ?? new List<AuctionProductDTO>();
         }
     }
 }

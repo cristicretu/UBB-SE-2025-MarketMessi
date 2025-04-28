@@ -7,68 +7,68 @@ namespace Server.Models.DTOs.Mappers
 {
     public static class BuyProductMapper
     {
-        private static int undefined_user_type = 0;
-        private static int undefined_balance = 0;
-        private static int undefined_rating = 0;
-        private static int undefined_password = 0;
-        public static BuyProductDTO ToDTO(BuyProduct entity)
+        private static int UNDEFINED_USER_TYPE = 0;
+        private static int BASE_BALANCE = 0;
+        private static int BASE_RATING = 0;
+        private static int UNDEFINED_PASSWORD = 0;
+        public static BuyProductDTO ToDTO(BuyProduct buyProduct)
         {
-            if (entity == null)
+            if (buyProduct == null)
             {
                 return null;
             }
 
             return new BuyProductDTO
             {
-                Id = entity.Id,
-                Title = entity.Title,
-                Description = entity.Description,
-                Price = entity.Price,
-                Condition = entity.Condition != null ? new ConditionDTO
+                Id = buyProduct.Id,
+                Title = buyProduct.Title,
+                Description = buyProduct.Description,
+                Price = buyProduct.Price,
+                Condition = buyProduct.Condition != null ? new ConditionDTO
                 {
-                    Id = entity.Condition.Id,
-                    DisplayTitle = entity.Condition.Name,
+                    Id = buyProduct.Condition.Id,
+                    DisplayTitle = buyProduct.Condition.Name,
                     Description = null
                 }
                 : null,
-                Category = entity.Category != null ? new CategoryDTO
+                Category = buyProduct.Category != null ? new CategoryDTO
                 {
-                    Id = entity.Category.Id,
-                    DisplayTitle = entity.Category.Name,
-                    Description = entity.Category.Description
+                    Id = buyProduct.Category.Id,
+                    DisplayTitle = buyProduct.Category.Name,
+                    Description = buyProduct.Category.Description
                 }
                 : null,
-                Tags = entity.ProductTags?.Select(pt => new ProductTagDTO
+                Tags = buyProduct.ProductTags?.Select(productTag => new ProductTagDTO
                 {
-                    Id = pt.Tag.Id,
-                    DisplayTitle = pt.Tag.Title
+                    Id = productTag.Tag.Id,
+                    DisplayTitle = productTag.Tag.Title
                 }).ToList() ?? new List<ProductTagDTO>(),
-                Images = entity.Images?.Select(i => new ImageDTO
+                Images = buyProduct.Images?.Select(image => new ImageDTO
                 {
-                    Url = i.Url
+                    Url = image.Url
                 }).ToList() ??
-                entity.NonMappedImages?.Select(i => new ImageDTO
+                buyProduct.NonMappedImages?.Select(image => new ImageDTO
                 {
-                    Url = i.Url
+                    Url = image.Url
                 }).ToList() ??
                 new List<ImageDTO>(),
-                Seller = entity.Seller != null ? new UserDTO
+                Seller = buyProduct.Seller != null ? new UserDTO
                 {
-                    Id = entity.Seller.Id,
-                    Username = entity.Seller.Username,
-                    Email = entity.Seller.Email,
-                    UserType = undefined_user_type,
-                    Balance = undefined_balance,
-                    Rating = undefined_rating,
-                    Password = undefined_password
+                    Id = buyProduct.Seller.Id,
+                    Username = buyProduct.Seller.Username,
+                    Email = buyProduct.Seller.Email,
+                    UserType = UNDEFINED_USER_TYPE,
+                    Balance = BASE_BALANCE,
+                    Rating = BASE_RATING,
+                    Password = UNDEFINED_PASSWORD
                 }
                 : null
             };
         }
 
-        public static List<BuyProductDTO> ToDTOList(IEnumerable<BuyProduct> entities)
+        public static List<BuyProductDTO> ToDTOList(IEnumerable<BuyProduct> buyProducts)
         {
-            return entities?.Select(e => ToDTO(e)).ToList() ?? new List<BuyProductDTO>();
+            return buyProducts?.Select(buyProduct => ToDTO(buyProduct)).ToList() ?? new List<BuyProductDTO>();
         }
     }
 }

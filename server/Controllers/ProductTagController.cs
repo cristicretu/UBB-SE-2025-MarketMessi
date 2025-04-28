@@ -39,16 +39,16 @@ namespace MarketMinds.Controllers
         [ProducesResponseType(typeof(ProductTag), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult CreateProductTag([FromBody] ProductTagRequest request)
+        public IActionResult CreateProductTag([FromBody] ProductTagRequest productTagRequest)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.DisplayTitle) || !ModelState.IsValid)
+            if (productTagRequest == null || string.IsNullOrWhiteSpace(productTagRequest.DisplayTitle) || !ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             try
             {
-                var newTag = productTagRepository.CreateProductTag(request.DisplayTitle);
+                var newTag = productTagRepository.CreateProductTag(productTagRequest.DisplayTitle);
 
                 return CreatedAtAction(
                     nameof(GetAllProductTags),
@@ -71,16 +71,16 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteProductTag(string title)
+        public IActionResult DeleteProductTag(string productTagName)
         {
-            if (string.IsNullOrWhiteSpace(title))
+            if (string.IsNullOrWhiteSpace(productTagName))
             {
                 return BadRequest("Tag title is required.");
             }
 
             try
             {
-                productTagRepository.DeleteProductTag(title);
+                productTagRepository.DeleteProductTag(productTagName);
                 return NoContent();
             }
             catch (KeyNotFoundException keyNotFoundException)
@@ -89,7 +89,7 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error deleting product tag '{title}': {exception}");
+                Console.WriteLine($"Error deleting product tag '{productTagName}': {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the tag.");
             }
         }

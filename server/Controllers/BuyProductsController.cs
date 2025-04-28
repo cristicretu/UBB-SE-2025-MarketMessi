@@ -50,8 +50,8 @@ namespace MarketMinds.Controllers
             try
             {
                 var product = buyProductsRepository.GetProductByID(id);
-                var dto = BuyProductMapper.ToDTO(product);
-                return Ok(dto);
+                var buyProductDTO = BuyProductMapper.ToDTO(product);
+                return Ok(buyProductDTO);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -137,8 +137,8 @@ namespace MarketMinds.Controllers
                     }
                 }
 
-                var dto = BuyProductMapper.ToDTO(product);
-                return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, dto);
+                var buyProductDTO = BuyProductMapper.ToDTO(product);
+                return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, buyProductDTO);
             }
             catch (ArgumentException aex)
             {

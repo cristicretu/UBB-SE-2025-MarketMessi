@@ -16,6 +16,7 @@ namespace MarketMinds.Controllers
     public class ReviewController : ControllerBase
     {
         private readonly IReviewRepository reviewRepository;
+        private readonly static int DEFAULT_REVIEW_ID = 0;
         public ReviewController(IReviewRepository reviewRepository)
         {
             this.reviewRepository = reviewRepository;
@@ -39,7 +40,7 @@ namespace MarketMinds.Controllers
                 }
 
                 // Convert to DTOs to avoid circular references
-                var reviewDtos = reviews.Select(r => ReviewMapper.ToDto(r)).ToList();
+                var reviewDtos = reviews.Select(review => ReviewMapper.ToDto(review)).ToList();
                 return Ok(reviewDtos);
             }
             catch (KeyNotFoundException knfex)
@@ -71,7 +72,7 @@ namespace MarketMinds.Controllers
                 }
 
                 // Convert to DTOs to avoid circular references
-                var reviewDtos = reviews.Select(r => ReviewMapper.ToDto(r)).ToList();
+                var reviewDtos = reviews.Select(review => ReviewMapper.ToDto(review)).ToList();
                 return Ok(reviewDtos);
             }
             catch (KeyNotFoundException knfex)
@@ -101,7 +102,7 @@ namespace MarketMinds.Controllers
                 var review = ReviewMapper.ToModel(reviewDto);
 
                 // Set ID to 0 to ensure Entity Framework knows it's a new entity
-                review.Id = 0;
+                review.Id = DEFAULT_REVIEW_ID;
 
                 // Create the review
                 reviewRepository.CreateReview(review);
