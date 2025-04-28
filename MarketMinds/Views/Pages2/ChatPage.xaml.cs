@@ -69,7 +69,7 @@ namespace Marketplace_SE
             else
             {
                 currentUser = App.CurrentUser;
-                targetUser = App.TestingUser;
+                targetUser = CreateDefaultTargetUser();
             }
 
             SetupTemplateSelector();
@@ -97,6 +97,15 @@ namespace Marketplace_SE
             {
                 isInitializing = false;
             }
+        }
+
+        private User CreateDefaultTargetUser()
+        {
+            // Create a default target user (customer service or another default)
+            return new User(
+                99, // Use a default ID that won't conflict with real users
+                "Customer Service",
+                "support@marketplace.com");
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs eventArgs)
@@ -138,8 +147,8 @@ namespace Marketplace_SE
                     break;
                 default:
                     // Handle invalid template?
-                    currentUser = null;
-                    targetUser = null;
+                    currentUser = App.CurrentUser;
+                    targetUser = CreateDefaultTargetUser();
                     break;
             }
         }

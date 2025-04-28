@@ -3,25 +3,25 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using server.Models;
+using Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using server.DataAccessLayer;
+using Server.DataAccessLayer;
 
-namespace server.Controllers
+namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<UsersController> _logger;
+        private readonly ApplicationDbContext context;
+        private readonly ILogger<UsersController> logger;
 
         public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
         {
-            _context = context;
-            _logger = logger;
+            this.context = context;
+            this.logger = logger;
         }
 
         [HttpPost("register")]
@@ -29,20 +29,20 @@ namespace server.Controllers
         {
             try
             {
-                if (request == null || string.IsNullOrEmpty(request.Username) || 
+                if (request == null || string.IsNullOrEmpty(request.Username) ||
                     string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
                 {
                     return BadRequest("User data is incomplete");
                 }
 
                 // Check if username is taken
-                if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+                if (await context.Users.AnyAsync(u => u.Username == request.Username))
                 {
                     return Conflict("Username is already taken");
                 }
 
                 // Check if email is taken
-                if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+                if (await context.Users.AnyAsync(u => u.Email == request.Email))
                 {
                     return Conflict("Email is already registered");
                 }
@@ -52,11 +52,11 @@ namespace server.Controllers
                 {
                     Balance = 0,
                     Rating = 0,
-                    UserType = 1  // Default to buyer role
+                    UserType = 1 // Default to buyer role
                 };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
 
                 // Return user without password hash
                 var userResponse = new
@@ -73,7 +73,7 @@ namespace server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error registering user");
+                logger.LogError(ex, "Error registering user");
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -88,7 +88,7 @@ namespace server.Controllers
                     return BadRequest("Login credentials are required");
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+                var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
 
                 if (user == null)
                 {
@@ -116,7 +116,7 @@ namespace server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during login");
+                logger.LogError(ex, "Error during login");
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -131,12 +131,12 @@ namespace server.Controllers
                     return BadRequest("Username is required");
                 }
 
-                bool exists = await _context.Users.AnyAsync(u => u.Username == username);
+                bool exists = await context.Users.AnyAsync(u => u.Username == username);
                 return Ok(new { exists });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking username");
+                logger.LogError(ex, "Error checking username");
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -146,7 +146,7 @@ namespace server.Controllers
             using (var sha256 = SHA256.Create())
             {
                 byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+                return BitConverter.ToString(hashedBytes).Replace("-", string.Empty).ToLower();
             }
         }
 

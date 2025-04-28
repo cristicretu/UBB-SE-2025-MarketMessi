@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("ReviewsPictures")]
     public class ReviewImage
@@ -22,7 +22,9 @@ namespace server.Models
         [ForeignKey("ReviewId")]
         public virtual Review Review { get; set; }
 
-        public ReviewImage() { }
+        public ReviewImage()
+        {
+        }
 
         public ReviewImage(int id, string url, int reviewId)
         {

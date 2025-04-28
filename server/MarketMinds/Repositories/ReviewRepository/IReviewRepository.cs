@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using server.Models;
+using Server.Models;
 
 namespace MarketMinds.Repositories.ReviewRepository
 {

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
-using server.Models;
+using Server.DataAccessLayer;
+using Server.Models;
 
 namespace MarketMinds.Repositories.ProductConditionRepository
 {
@@ -58,14 +58,14 @@ namespace MarketMinds.Repositories.ProductConditionRepository
                     Console.WriteLine($"DEBUG: Condition ID: {condition.Id}, Name: '{condition.Name}'");
                 }
                 Console.WriteLine($"DEBUG: Looking for condition with title: '{displayTitle}'");
-                
+
                 var conditionToDelete = databaseContext.ProductConditions.FirstOrDefault(condition => condition.Name == displayTitle);
-                
+
                 if (conditionToDelete == null)
                 {
                     throw new KeyNotFoundException($"Product condition with title '{displayTitle}' not found.");
                 }
-                
+
                 databaseContext.ProductConditions.Remove(conditionToDelete);
                 databaseContext.SaveChanges();
             }

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
@@ -82,7 +82,6 @@ namespace MarketMinds
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static User CurrentUser { get; set; }
-        public static User TestingUser { get; set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -276,6 +275,7 @@ namespace MarketMinds
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
         }
+
         // Method to be called after successful login
         public static void ShowMainWindow()
         {
@@ -298,22 +298,6 @@ namespace MarketMinds
             else
             {
                 Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
-            }
-        }
-        private static void UpdateTestingUser()
-        {
-            if (CurrentUser != null && TestingUser == null)
-            {
-                TestingUser = new User(
-                    CurrentUser.Id,
-                    CurrentUser.Username,
-                    CurrentUser.Email,
-                    CurrentUser.Token);
-                TestingUser.Password = CurrentUser.Password;
-                TestingUser.UserType = CurrentUser.UserType;
-                TestingUser.Balance = CurrentUser.Balance;
-                TestingUser.Rating = CurrentUser.Rating;
-                Debug.WriteLine($"DEBUG: Created TestingUser from CurrentUser, ID: {TestingUser?.Id}, Username: {TestingUser?.Username}");
             }
         }
     }
