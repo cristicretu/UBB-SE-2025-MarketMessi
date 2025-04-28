@@ -94,6 +94,12 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Bid>().ToTable("Bids");
             modelBuilder.Entity<Bid>().HasKey(b => b.Id);
 
+            modelBuilder.Entity<Bid>()
+                .HasOne(b => b.Bidder)
+                .WithMany(u => u.Bids)
+                .HasForeignKey(b => b.BidderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Buy products
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
             modelBuilder.Entity<BuyProduct>().HasKey(bp => bp.Id);
@@ -209,6 +215,12 @@ namespace Server.DataAccessLayer
             // Messages
             modelBuilder.Entity<Message>().ToTable("Messages");
             modelBuilder.Entity<Message>().HasKey(m => m.Id);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
