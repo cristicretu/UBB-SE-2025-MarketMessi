@@ -102,7 +102,7 @@ namespace UiLayer
             ViewMoreTagsButton.Visibility = fullTags.Count > DisplayedTags.Count ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void FilterDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void FilterDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs contentDialogButtonClickEventArgs)
         {
             // Clear existing selections in the view model
             sortAndFilterViewModel.HandleClearAllFilters();
@@ -124,7 +124,7 @@ namespace UiLayer
             }
         }
 
-        private void ClearAllButton_Click(object sender, RoutedEventArgs e)
+        private void ClearAllButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Clear selections in UI and view model
             ConditionListView.SelectedItems.Clear();
@@ -134,23 +134,23 @@ namespace UiLayer
         }
 
         // Category Search handling
-        private void CategorySearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void CategorySearchBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             var query = CategorySearchBox.Text.ToLower();
-            var filtered = fullCategories.Where(c => c.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullCategories.Where(category => category.DisplayTitle.ToLower().Contains(query)).ToList();
             DisplayedCategories.Clear();
-            foreach (var cat in filtered.Take(initialDisplayCount))
+            foreach (var category in filtered.Take(initialDisplayCount))
             {
-                DisplayedCategories.Add(cat);
+                DisplayedCategories.Add(category);
             }
             UpdateViewMoreButtons();
         }
 
         // Tag Search handling
-        private void TagSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void TagSearchBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             var query = TagSearchBox.Text.ToLower();
-            var filtered = fullTags.Where(t => t.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullTags.Where(tag => tag.DisplayTitle.ToLower().Contains(query)).ToList();
             DisplayedTags.Clear();
             foreach (var tag in filtered.Take(initialDisplayCount))
             {
@@ -160,11 +160,11 @@ namespace UiLayer
         }
 
         // View More for Categories
-        private void ViewMoreCategoriesButton_Click(object sender, RoutedEventArgs e)
+        private void ViewMoreCategoriesButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var currentCount = DisplayedCategories.Count;
             var query = CategorySearchBox.Text.ToLower();
-            var filtered = fullCategories.Where(c => c.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullCategories.Where(category => category.DisplayTitle.ToLower().Contains(query)).ToList();
             foreach (var cat in filtered.Skip(currentCount).Take(additionalDisplayCount))
             {
                 DisplayedCategories.Add(cat);
@@ -173,11 +173,11 @@ namespace UiLayer
         }
 
         // View More for Tags
-        private void ViewMoreTagsButton_Click(object sender, RoutedEventArgs e)
+        private void ViewMoreTagsButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var currentCount = DisplayedTags.Count;
             var query = TagSearchBox.Text.ToLower();
-            var filtered = fullTags.Where(t => t.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullTags.Where(tag => tag.DisplayTitle.ToLower().Contains(query)).ToList();
             foreach (var tag in filtered.Skip(currentCount).Take(additionalDisplayCount))
             {
                 DisplayedTags.Add(tag);

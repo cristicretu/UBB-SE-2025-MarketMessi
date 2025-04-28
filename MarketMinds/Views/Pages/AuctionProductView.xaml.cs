@@ -33,6 +33,13 @@ namespace MarketMinds
 
         private DispatcherTimer? countdownTimer;
         private Window? seeSellerReviewsView;
+        private const int COUNTDOWN_TIMER_INTERVAL_IN_SECONDS = 1;
+        private const int IMAGE_HEIGHT = 250;
+        private const int TAG_MARGIN = 4;
+        private const int TAG_PADDING_LEFT = 8;
+        private const int TAG_PADDING_RIGHT = 8;
+        private const int TAG_PADDING_TOP = 4;
+        private const int TAG_PADDING_BOTTOM = 4;
         private Window? leaveReviewWindow;
 
         public AuctionProductView(AuctionProduct product)
@@ -50,11 +57,11 @@ namespace MarketMinds
         private void StartCountdownTimer()
         {
             countdownTimer = new DispatcherTimer();
-            countdownTimer.Interval = TimeSpan.FromSeconds(1);
+            countdownTimer.Interval = TimeSpan.FromSeconds(COUNTDOWN_TIMER_INTERVAL_IN_SECONDS);
             countdownTimer.Tick += CountdownTimer_Tick;
             countdownTimer.Start();
         }
-        private void CountdownTimer_Tick(object? sender, object e)
+        private void CountdownTimer_Tick(object? sender, object eventArgs)
         {
             string timeText = GetTimeLeft();
             TimeLeftTextBlock.Text = timeText;
@@ -84,8 +91,8 @@ namespace MarketMinds
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(4),
-                    Padding = new Thickness(8, 4, 8, 4),
+                    Margin = new Thickness(TAG_MARGIN),
+                    Padding = new Thickness(TAG_PADDING_LEFT, TAG_PADDING_TOP, TAG_PADDING_RIGHT, TAG_PADDING_BOTTOM),
                 };
             }).ToList();
         }
@@ -98,8 +105,8 @@ namespace MarketMinds
                 var img = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
-                    Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Stretch = Stretch.Uniform,
+                    Height = IMAGE_HEIGHT,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -110,14 +117,14 @@ namespace MarketMinds
         private void LoadBidHistory()
         {
             BidHistoryListView.ItemsSource = product.BidHistory
-                .OrderByDescending(b => b.Timestamp)
+                .OrderByDescending(bid => bid.Timestamp)
                 .ToList();
         }
         private string GetTimeLeft()
         {
             return auctionProductsViewModel.GetTimeLeft(product);
         }
-        private void OnPlaceBidClicked(object sender, RoutedEventArgs e)
+        private void OnPlaceBidClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
@@ -127,9 +134,9 @@ namespace MarketMinds
                 CurrentPriceTextBlock.Text = $"{product.CurrentPrice:C}";
                 LoadBidHistory(); // Refresh bid list
             }
-            catch (Exception ex)
+            catch (Exception bidClickedException)
             {
-                ShowErrorDialog(ex.Message);
+                ShowErrorDialog(bidClickedException.Message);
             }
         }
 
@@ -146,7 +153,7 @@ namespace MarketMinds
             await dialog.ShowAsync();
         }
 
-        private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
+        private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             if (App.SeeSellerReviewsViewModel != null)
             {

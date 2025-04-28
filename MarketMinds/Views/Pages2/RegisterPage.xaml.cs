@@ -30,6 +30,8 @@ namespace Marketplace_SE
         public RegisterViewModel ViewModel { get; set; }
         public User NewUser { get; set; }
 
+        private const int MINIMUM_PASSWORD_LENGTH = 6;
+
         public RegisterPage()
         {
             this.InitializeComponent();
@@ -38,7 +40,7 @@ namespace Marketplace_SE
             NewUser = new User(0, string.Empty, string.Empty, string.Empty);
         }
 
-        private async void OnCreateUserClick(object sender, RoutedEventArgs e)
+        private async void OnCreateUserClick(object sender, RoutedEventArgs routedEventArgs)
         {
             // Clear any previous validation messages
             UsernameValidationTextBlock.Text = string.Empty;
@@ -126,13 +128,13 @@ namespace Marketplace_SE
             await dialog.ShowAsync();
         }
 
-        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs routedEventArgs)
         {
             PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
             ConfirmPasswordBox.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
         }
 
-        private void NavigateToLoginPage(object sender, RoutedEventArgs e)
+        private void NavigateToLoginPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(LoginPage));
         }

@@ -50,11 +50,11 @@ namespace Marketplace_SE
                 ButtonViewHelpTicketSaveDescriptionModifications.Visibility = Visibility.Collapsed;
             }
         }
-        private void OnTextChangedTextBoxViewHelpTicketDescription(object sender, RoutedEventArgs e)
+        private void OnTextChangedTextBoxViewHelpTicketDescription(object sender, RoutedEventArgs routedEventArgs)
         {
             ButtonViewHelpTicketSaveDescriptionModifications.Visibility = Visibility.Visible;
         }
-        private void OnButtonClickViewHelpTicketCloseTicket(object sender, RoutedEventArgs e)
+        private void OnButtonClickViewHelpTicketCloseTicket(object sender, RoutedEventArgs routedEventArgs)
         {
             int successCode = BackendUserGetHelp.CloseHelpTicketInDB(loadedTicket.TicketID);
 
@@ -73,12 +73,12 @@ namespace Marketplace_SE
                 TextBlockViewHelpTicketClosed.Text = "Closed: " + loadedTicket.Closed;
             }
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs navigationEventArgs)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(navigationEventArgs);
 
             List<string> ticketID = new List<string>();
-            ticketID.Add(e.Parameter as string);
+            ticketID.Add(navigationEventArgs.Parameter as string);
             HelpTicket currentTicket = BackendUserGetHelp.LoadTicketsFromDB(ticketID)[0];
             loadedTicket = currentTicket;
 

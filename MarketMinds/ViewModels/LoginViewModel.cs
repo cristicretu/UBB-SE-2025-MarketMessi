@@ -34,9 +34,9 @@ namespace MarketMinds.ViewModels
 				LoggedInUser = await userService.GetUserByCredentialsAsync(Username, Password);
 				LoginStatus = LoggedInUser != null;
 			}
-			catch (Exception ex)
+			catch (Exception loginAttemptException)
 			{
-				Console.WriteLine($"Login error: {ex.Message}");
+				Console.WriteLine($"Login error: {loginAttemptException.Message}");
 				LoginStatus = false;
 				LoggedInUser = null;
 			}

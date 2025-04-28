@@ -47,9 +47,9 @@ namespace ViewModelLayer.ViewModel
                 // Use service to calculate totals instead of local method
                 UpdateTotals();
             }
-            catch (Exception ex)
+            catch (Exception basketLoadException)
             {
-                ErrorMessage = $"Failed to load basket: {ex.Message}";
+                ErrorMessage = $"Failed to load basket: {basketLoadException.Message}";
             }
         }
 
@@ -61,9 +61,9 @@ namespace ViewModelLayer.ViewModel
                 LoadBasket();
                 ErrorMessage = string.Empty;
             }
-            catch (Exception ex)
+            catch (Exception basketAddException)
             {
-                ErrorMessage = $"Failed to add product to basket: {ex.Message}";
+                ErrorMessage = $"Failed to add product to basket: {basketAddException.Message}";
             }
         }
 
@@ -74,9 +74,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.RemoveProductFromBasket(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception basketRemoveException)
             {
-                ErrorMessage = $"Failed to remove product: {ex.Message}";
+                ErrorMessage = $"Failed to remove product: {basketRemoveException.Message}";
             }
         }
 
@@ -97,9 +97,9 @@ namespace ViewModelLayer.ViewModel
                 }
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception productQuantityUpdateException)
             {
-                ErrorMessage = $"Failed to update quantity: {ex.Message}";
+                ErrorMessage = $"Failed to update quantity: {productQuantityUpdateException.Message}";
             }
         }
 
@@ -132,9 +132,9 @@ namespace ViewModelLayer.ViewModel
                 UpdateProductQuantity(basketItem.Product.Id, newQuantity);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception quantityUpdateException)
             {
-                errorMessage = $"Failed to update quantity: {ex.Message}";
+                errorMessage = $"Failed to update quantity: {quantityUpdateException.Message}";
                 return false;
             }
         }
@@ -156,9 +156,9 @@ namespace ViewModelLayer.ViewModel
                 UpdateTotals();
                 ErrorMessage = $"Promo code '{code}' applied successfully.";
             }
-            catch (Exception ex)
+            catch (Exception promoCodeApplicationException)
             {
-                ErrorMessage = $"Failed to apply promo code: {ex.Message}";
+                ErrorMessage = $"Failed to apply promo code: {promoCodeApplicationException.Message}";
                 Discount = NullDiscount;
                 TotalAmount = Subtotal;
             }
@@ -172,9 +172,9 @@ namespace ViewModelLayer.ViewModel
                 LoadBasket();
                 PromoCode = string.Empty;
             }
-            catch (Exception ex)
+            catch (Exception basketClearException)
             {
-                ErrorMessage = $"Failed to clear basket: {ex.Message}";
+                ErrorMessage = $"Failed to clear basket: {basketClearException.Message}";
             }
         }
 
@@ -215,16 +215,16 @@ namespace ViewModelLayer.ViewModel
                     return false;
                 }
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("Insufficient funds"))
+            catch (InvalidOperationException insufficientFundsCheckoutException) when (insufficientFundsCheckoutException.Message.Contains("Insufficient funds"))
             {
-                Debug.WriteLine($"Insufficient funds error: {ex.Message}");
-                ErrorMessage = ex.Message;
+                Debug.WriteLine($"Insufficient funds error: {insufficientFundsCheckoutException.Message}");
+                ErrorMessage = insufficientFundsCheckoutException.Message;
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception checkoutException)
             {
-                Debug.WriteLine($"Error during checkout: {ex.Message}");
-                ErrorMessage = $"Checkout error: {ex.Message}";
+                Debug.WriteLine($"Error during checkout: {checkoutException.Message}");
+                ErrorMessage = $"Checkout error: {checkoutException.Message}";
                 return false;
             }
             finally
@@ -241,9 +241,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.DecreaseProductQuantity(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception productQuantityDecreaseException)
             {
-                ErrorMessage = $"Failed to decrease quantity: {ex.Message}";
+                ErrorMessage = $"Failed to decrease quantity: {productQuantityDecreaseException.Message}";
             }
         }
 
@@ -255,9 +255,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.IncreaseProductQuantity(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception productQuantityIncreaseException)
             {
-                ErrorMessage = $"Failed to increase quantity: {ex.Message}";
+                ErrorMessage = $"Failed to increase quantity: {productQuantityIncreaseException.Message}";
             }
         }
 
@@ -273,7 +273,7 @@ namespace ViewModelLayer.ViewModel
 
                 TotalAmount = Math.Max(0, Subtotal - Discount);
             }
-            catch (Exception ex)
+            catch (Exception totalUpdateException)
             {
                 Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
                 Discount = NullDiscount;

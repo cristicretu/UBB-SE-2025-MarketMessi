@@ -25,26 +25,20 @@ using MarketMinds;
 using MarketMinds.ViewModels;
 using Windows.UI;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Marketplace_SE
 {
     public sealed partial class AccountPage : Page
     {
         public AccountPageViewModel ViewModel { get; private set; }
         private ProgressRing loadingRing;
-
+        private const double MINIMUM_BALANCE = 10.0;
         public AccountPage()
         {
             this.InitializeComponent();
 
-            // Initialize ViewModel with the service from App
             ViewModel = new AccountPageViewModel(App.AccountPageService);
-
-            // Set DataContext for bindings
             this.DataContext = ViewModel;
 
-            // Initialize loading indicator
             loadingRing = new ProgressRing
             {
                 IsActive = false,
@@ -55,13 +49,10 @@ namespace Marketplace_SE
                 Margin = new Thickness(0, 20, 0, 20)
             };
 
-            // Add the loading ring to the page
             Grid.SetRow(loadingRing, 2);
             ((Grid)this.Content).Children.Add(loadingRing);
 
-            // Subscribe to property changed events from ViewModel
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-
             this.Loaded += AccountPage_Loaded;
         }
 
@@ -89,7 +80,6 @@ namespace Marketplace_SE
 
         private async void AccountPage_Loaded(object sender, RoutedEventArgs e)
         {
-            // Execute the LoadDataCommand when the page loads
             ViewModel.LoadDataCommand.Execute(null);
         }
 
@@ -99,32 +89,16 @@ namespace Marketplace_SE
             {
                 var user = ViewModel.CurrentUser;
 
-                // Debug the user data
-                System.Diagnostics.Debug.WriteLine($"Updating UI with user data - Username: {user.Username}, Email: {user.Email}, Balance: {user.Balance}");
-
-                // Update the individual text fields
                 UserNameText.Text = user.Username;
                 UserEmailText.Text = user.Email;
 
-                // Format balance with proper decimal places and dollar sign
-                // Convert to double to ensure proper display with decimal places
                 double balance = Convert.ToDouble(user.Balance);
                 UserBalanceText.Text = $"${balance:F2}";
-                System.Diagnostics.Debug.WriteLine($"Formatted balance text: {UserBalanceText.Text}");
 
-                // Set additional styling for elements if needed
-                if (balance < 10.0)
-                {
-                    UserBalanceText.Foreground = new SolidColorBrush(Colors.Red);
-                }
-                else
-                {
-                    UserBalanceText.Foreground = new SolidColorBrush(Colors.Green);
-                }
+                UserBalanceText.Foreground = new SolidColorBrush(balance < MINIMUM_BALANCE ? Colors.Red : Colors.Green);
             }
             else
             {
-                // Set default values when user is not available
                 UserNameText.Text = "Not logged in";
                 UserEmailText.Text = "Not available";
                 UserBalanceText.Text = "$0.00";
@@ -135,8 +109,6 @@ namespace Marketplace_SE
         private void UpdateOrdersUI()
         {
             orderList.Children.Clear();
-
-            System.Diagnostics.Debug.WriteLine($"UpdateOrdersUI called - Orders count: {ViewModel.Orders?.Count ?? 0}");
 
             if (ViewModel.Orders == null || ViewModel.Orders.Count == 0)
             {
@@ -149,27 +121,23 @@ namespace Marketplace_SE
                     FontSize = 16
                 };
                 orderList.Children.Add(noOrdersText);
-                System.Diagnostics.Debug.WriteLine("Added 'No orders found' text to UI");
                 return;
             }
 
             foreach (var order in ViewModel.Orders)
             {
-                System.Diagnostics.Debug.WriteLine($"Creating UI for order: ID={order.Id}, Name={order.Name}, Cost={order.Cost}");
                 CreateOrderUI(order);
             }
-
-            System.Diagnostics.Debug.WriteLine($"Added {ViewModel.Orders.Count} orders to UI");
         }
 
         private void OnButtonClickNavigateAccountPageMainPage(object sender, RoutedEventArgs e)
         {
-            // Use the ViewModel's command instead of creating a new window directly
             ViewModel.NavigateToMainCommand.Execute(null);
 
-            // If you need to keep the direct navigation, you can do this:
-            var mainWindow = new Microsoft.UI.Xaml.Window();
-            mainWindow.Content = new MainMarketplacePage();
+            var mainWindow = new Microsoft.UI.Xaml.Window
+            {
+                Content = new MainMarketplacePage()
+            };
             mainWindow.Activate();
         }
 
@@ -182,7 +150,7 @@ namespace Marketplace_SE
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(10),
                 Margin = new Thickness(0, 5, 0, 5),
-                Background = new SolidColorBrush(Color.FromArgb(20, 0, 0, 0))
+                Background = new SolidColorBrush(Color.FromArgb(20, 0, 0, 0)) // Light grayish background
             };
 
             StackPanel contentPanel = new StackPanel
@@ -192,14 +160,13 @@ namespace Marketplace_SE
 
             bool isBuyOrder = order.BuyerId == ViewModel.CurrentUser?.Id;
 
-            // Order Header - Type and ID
             Grid orderHeader = new Grid
             {
                 Margin = new Thickness(0, 0, 0, 10)
             };
-            orderHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+            orderHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             orderHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            orderHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+            orderHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             Border typeIndicator = new Border
             {
@@ -236,44 +203,38 @@ namespace Marketplace_SE
             orderHeader.Children.Add(typeLabel);
             orderHeader.Children.Add(orderIdText);
 
-            // Order Details
             StackPanel detailsPanel = new StackPanel
             {
                 Margin = new Thickness(15, 5, 15, 10)
             };
 
-            TextBlock nameText = new TextBlock
+            detailsPanel.Children.Add(new TextBlock
             {
                 Text = $"Item: {order.Name}",
                 FontWeight = FontWeights.SemiBold,
                 Margin = new Thickness(0, 0, 0, 5)
-            };
+            });
 
-            TextBlock descriptionText = new TextBlock
+            detailsPanel.Children.Add(new TextBlock
             {
                 Text = $"Description: {order.Description}",
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(0, 0, 0, 5)
-            };
+            });
 
-            TextBlock priceText = new TextBlock
+            detailsPanel.Children.Add(new TextBlock
             {
                 Text = $"Price: ${order.Cost:F2}",
-                Margin = new Thickness(0, 0, 0, 5),
-                FontWeight = FontWeights.SemiBold
-            };
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 0, 5)
+            });
 
-            TextBlock statusText = new TextBlock
+            detailsPanel.Children.Add(new TextBlock
             {
                 Text = $"Status: {order.OrderStatus}",
-                Margin = new Thickness(0, 0, 0, 5),
                 Foreground = new SolidColorBrush(Colors.LightGreen),
-            };
-
-            detailsPanel.Children.Add(nameText);
-            detailsPanel.Children.Add(descriptionText);
-            detailsPanel.Children.Add(priceText);
-            detailsPanel.Children.Add(statusText);
+                Margin = new Thickness(0, 0, 0, 5)
+            });
 
             contentPanel.Children.Add(orderHeader);
             contentPanel.Children.Add(new Rectangle { Height = 1, Fill = new SolidColorBrush(Colors.LightGray), Margin = new Thickness(0, 0, 0, 10) });
@@ -282,7 +243,6 @@ namespace Marketplace_SE
             orderBorder.Child = contentPanel;
             orderBorder.Tag = order;
 
-            // Add to list
             orderList.Children.Add(orderBorder);
         }
 

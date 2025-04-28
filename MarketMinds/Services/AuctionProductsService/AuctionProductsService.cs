@@ -93,9 +93,9 @@ namespace MarketMinds.Services.AuctionProductsService
                 ExtendAuctionTime(auction);
                 Console.WriteLine($"Bid of ${bidAmount} successfully placed on auction {auction.Id}");
             }
-            catch (Exception ex)
+            catch (Exception bidPlacementException)
             {
-                Console.WriteLine($"Error placing bid: {ex.Message}");
+                Console.WriteLine($"Error placing bid: {bidPlacementException.Message}");
                 throw;
             }
         }
@@ -176,12 +176,12 @@ namespace MarketMinds.Services.AuctionProductsService
                 var products = System.Text.Json.JsonSerializer.Deserialize<List<AuctionProduct>>(json, serializerOptions);
                 return products?.Cast<Product>().ToList() ?? new List<Product>();
             }
-            catch (Exception ex)
+            catch (Exception getProductsException)
             {
-                Console.WriteLine($"Error getting products: {ex.Message}");
-                if (ex.InnerException != null)
+                Console.WriteLine($"Error getting products: {getProductsException.Message}");
+                if (getProductsException.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception: {getProductsException.InnerException.Message}");
                 }
                 return new List<Product>();
             }
@@ -220,14 +220,14 @@ namespace MarketMinds.Services.AuctionProductsService
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception getProductByIdException)
             {
-                Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
-                if (ex.InnerException != null)
+                Console.WriteLine($"Error getting product by ID {id}: {getProductByIdException.Message}");
+                if (getProductByIdException.InnerException != null)
                 {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception: {getProductByIdException.InnerException.Message}");
                 }
-                throw new KeyNotFoundException($"Auction product with ID {id} not found: {ex.Message}");
+                throw new KeyNotFoundException($"Auction product with ID {id} not found: {getProductByIdException.Message}");
             }
         }
 

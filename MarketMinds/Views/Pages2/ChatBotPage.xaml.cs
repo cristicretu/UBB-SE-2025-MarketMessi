@@ -32,9 +32,11 @@ namespace Marketplace_SE
             }
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs navigationEventArgs)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(navigationEventArgs);
+            chatBotViewModel.InitializeChat();
+            UpdateChatUI();
         }
 
         private void ChatBotOptionButton_Click(object sender, RoutedEventArgs eventArgs)

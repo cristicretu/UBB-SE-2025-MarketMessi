@@ -38,6 +38,8 @@ namespace MarketMinds.Views.Pages2
 
         private bool isInitializing = false;
         private bool initialLoadComplete = false;
+        private const int INVALID_MESSAGE_ID = 0;
+        private const int TIMER_SECONDS = 1;
 
         public ChatPage()
         {
@@ -82,13 +84,9 @@ namespace MarketMinds.Views.Pages2
             else
             {
                 currentUser = App.CurrentUser;
-                targetUser = CreateDefaultTargetUser();
             }
 
             SetupTemplateSelector();
-
-            TargetUserTextBlock.Text = $"Chatting with {targetUser.Username}";
-
             isInitializing = true;
 
             try
@@ -102,9 +100,9 @@ namespace MarketMinds.Views.Pages2
                 // Start polling timer
                 SetupUpdateTimer();
             }
-            catch (Exception ex)
+            catch (Exception chatInitializeException)
             {
-                ShowErrorDialog("Chat initialization error", ex.Message);
+                ShowErrorDialog("Chat initialization error", chatInitializeException.Message);
             }
             finally
             {
@@ -112,18 +110,9 @@ namespace MarketMinds.Views.Pages2
             }
         }
 
-        private User CreateDefaultTargetUser()
+        protected override void OnNavigatedFrom(NavigationEventArgs navigationEventArgs)
         {
-            // Create a default target user (customer service or another default)
-            return new User(
-                99, // Use a default ID that won't conflict with real users
-                "Customer Service",
-                "support@marketplace.com");
-        }
-
-        protected override void OnNavigatedFrom(NavigationEventArgs eventArgs)
-        {
-            base.OnNavigatedFrom(eventArgs);
+            base.OnNavigatedFrom(navigationEventArgs);
             StopUpdateTimer();
         }
 
@@ -161,7 +150,6 @@ namespace MarketMinds.Views.Pages2
                 default:
                     // Handle invalid template?
                     currentUser = App.CurrentUser;
-                    targetUser = CreateDefaultTargetUser();
                     break;
             }
         }
@@ -171,7 +159,7 @@ namespace MarketMinds.Views.Pages2
             if (updateTimer == null)
             {
                 updateTimer = new DispatcherTimer();
-                updateTimer.Interval = TimeSpan.FromSeconds(2);
+                updateTimer.Interval = TimeSpan.FromSeconds(TIMER_SECONDS);
                 updateTimer.Tick += UpdateTimer_Tick;
             }
             updateTimer.Start();
@@ -187,13 +175,12 @@ namespace MarketMinds.Views.Pages2
             }
         }
 
-        private async void UpdateTimer_Tick(object sender, object e)
+        private async void UpdateTimer_Tick(object sender, object eventArgs)
         {
             if (isInitializing || !initialLoadComplete)
             {
                 return;
             }
-
             try
             {
                 var messages = await chatViewModel.GetMessagesAsync();
@@ -203,16 +190,16 @@ namespace MarketMinds.Views.Pages2
 
                     foreach (var message in messages)
                     {
-                        if (!existingIds.Contains(message.Id) && message.Id != 0)
+                        if (!displayedMessages.Any(existingMessage => existingMessage.Id == message.Id && existingMessage.Id != INVALID_MESSAGE_ID))
                         {
                             AddMessageToDisplay(message);
                         }
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception newMessagesException)
             {
-                Debug.WriteLine($"Error checking for new messages: {ex.Message}");
+                Debug.WriteLine($"Error checking for new messages: {newMessagesException.Message}");
             }
         }
 
@@ -241,7 +228,7 @@ namespace MarketMinds.Views.Pages2
         }
 
         // --- Event Handlers ---
-        private async void SendButton_Click(object sender, RoutedEventArgs e)
+        private async void SendButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             string messageText = MessageBox.Text.Trim();
             if (string.IsNullOrEmpty(messageText) || chatViewModel == null || isInitializing)
@@ -278,7 +265,7 @@ namespace MarketMinds.Views.Pages2
             }
         }
 
-        private async void AttachButton_Click(object sender, RoutedEventArgs e)
+        private async void AttachButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (chatViewModel == null || isInitializing)
             {
@@ -304,7 +291,7 @@ namespace MarketMinds.Views.Pages2
                     {
                         bytes = DataEncoder.HexDecode(hexImageData);
                     }
-                    catch (Exception ex)
+                    catch (Exception hexDecodeException)
                     {
                         AttachButton.IsEnabled = true;
                         return;
@@ -332,7 +319,7 @@ namespace MarketMinds.Views.Pages2
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception imageUploadException)
             {
                 ShowErrorDialog("Image upload error", "Failed to upload image.");
             }
@@ -342,7 +329,7 @@ namespace MarketMinds.Views.Pages2
             }
         }
 
-        private async void ExportButton_Click(object sender, RoutedEventArgs e)
+        private async void ExportButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var currentElement = sender as UIElement;
             if (currentElement == null)
@@ -367,7 +354,7 @@ namespace MarketMinds.Views.Pages2
                 {
                     await Windows.Storage.FileIO.WriteLinesAsync(file, chatHistory);
                 }
-                catch (Exception ex)
+                catch (Exception chatHistoryExportException)
                 {
                     ShowErrorDialog("Export error", "Failed to export chat history.");
                     return;
@@ -375,7 +362,7 @@ namespace MarketMinds.Views.Pages2
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             StopUpdateTimer();
             if (Frame.CanGoBack)

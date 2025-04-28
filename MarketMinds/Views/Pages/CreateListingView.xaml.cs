@@ -59,6 +59,7 @@ namespace UiLayer
         private const int MAX_RETRY_DELAY = 2;
         private const int MAX_CLIENT_ID_LENGTH = 20;
         private const int NO_RETRY = 0;
+        private const int UPLOAD_IMAGE_BUTTON_WIDTH = 150;
         private readonly TagManagementViewModelHelper tagManagementHelper;
         private readonly ImageUploadService imageUploadService;
         private readonly ListingFormValidationService validationService;
@@ -82,7 +83,7 @@ namespace UiLayer
             conditionComboBox = new ComboBox();
             conditionErrorTextBlock = new TextBlock { Text = "Please select a condition.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
             tags = new ObservableCollection<string>();
-            uploadImageButton = new Button { Content = "Upload Image", Width = 150 };
+            uploadImageButton = new Button { Content = "Upload Image", Width = UPLOAD_IMAGE_BUTTON_WIDTH };
             uploadImageButton.Click += OnUploadImageClick;
             imagesTextBlock = new TextBlock { TextWrapping = TextWrapping.Wrap };
 
@@ -127,11 +128,11 @@ namespace UiLayer
             conditionComboBox.SelectedValuePath = "Id";
         }
 
-        private void ListingTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListingTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
         {
             listingTypeErrorTextBlock.Visibility = Visibility.Collapsed;
 
-            var selectedType = (e.AddedItems[0] as ComboBoxItem)?.Content.ToString();
+            var selectedType = (selectionChangedEventArgs.AddedItems[0] as ComboBoxItem)?.Content.ToString();
             FormContainer.Children.Clear();
 
             switch (selectedType)
@@ -202,9 +203,9 @@ namespace UiLayer
             FormContainer.Children.Add(endAuctionDatePicker);
         }
 
-        private void TagsTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void TagsTextBox_KeyDown(object sender, KeyRoutedEventArgs keyRoutedEventArgs)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if (keyRoutedEventArgs.Key == Windows.System.VirtualKey.Enter)
             {
                 string tag = tagsTextBox.Text.Trim();
                 if (tagManagementHelper.AddTagToCollection(tag, tags))
@@ -214,13 +215,13 @@ namespace UiLayer
             }
         }
 
-        private void TagsListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void TagsListView_ItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            string tag = e.ClickedItem as string;
+            string tag = itemClickEventArgs.ClickedItem as string;
             tagManagementHelper.RemoveTagFromCollection(tag, tags);
         }
 
-        private async void OnUploadImageClick(object sender, RoutedEventArgs e)
+        private async void OnUploadImageClick(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
@@ -231,9 +232,9 @@ namespace UiLayer
                     imagesTextBlock.Text = viewModel.ImagesString;
                 }
             }
-            catch (Exception ex)
+            catch (Exception imageUploadException)
             {
-                await ShowErrorDialog("Image Upload Error", ex.Message);
+                await ShowErrorDialog("Image Upload Error", imageUploadException.Message);
             }
         }
 
@@ -261,7 +262,7 @@ namespace UiLayer
             await successDialog.ShowAsync();
         }
 
-        private void CreateListingButton_Click(object sender, RoutedEventArgs e)
+        private void CreateListingButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Reset error messages
             titleErrorTextBlock.Visibility = Visibility.Collapsed;

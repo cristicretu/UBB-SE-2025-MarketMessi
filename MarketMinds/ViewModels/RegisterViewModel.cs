@@ -25,9 +25,9 @@ namespace MarketMinds.ViewModels
 			{
 				return await userService.IsUsernameTakenAsync(username);
 			}
-			catch (Exception ex)
+			catch (Exception usernameCheckException)
 			{
-				Console.WriteLine($"Error checking username: {ex.Message}");
+				Console.WriteLine($"Error checking username: {usernameCheckException.Message}");
 				return true; // Assume username is taken if an error occurs
 			}
 		}
@@ -38,9 +38,9 @@ namespace MarketMinds.ViewModels
 			{
 				return await userService.RegisterUserAsync(user);
 			}
-			catch (Exception ex)
+			catch (Exception userCreationException)
 			{
-				Console.WriteLine($"Error creating user: {ex.Message}");
+				Console.WriteLine($"Error creating user: {userCreationException.Message}");
 				return false;
 			}
 		}
