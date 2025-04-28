@@ -7,6 +7,8 @@ using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Repositories.ProductCategoryRepository;
 using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
+using MarketMinds.Repositories.ConversationRepository; // Added from luca
+using MarketMinds.Repositories.MessageRepository;      // Added from luca
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
@@ -48,6 +50,8 @@ builder.Services.AddScoped<IProductConditionRepository, ProductConditionReposito
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>(); // Added from luca
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();           // Added from luca
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,99 +1,187 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Text;
 using DomainLayer.Domain;
-using MarketMinds.Repositories.ChatBotRepository;
+using Newtonsoft.Json;
+using Windows.Storage;
 
-namespace MarketMinds.Services.DreamTeam.ChatBotService;
-
-public class ChatBotService : IChatBotService
+namespace MarketMinds.Services.DreamTeam.ChatbotService
 {
-    private readonly IChatBotRepository chatBotRepository;
-    private Node currentNode;
-    private bool isActive;
-
-    public ChatBotService(IChatBotRepository chatBotRepository)
+    public class ChatbotService : IChatbotService
     {
-        this.chatBotRepository = chatBotRepository;
-        isActive = false;
-    }
+        private readonly HttpClient httpClient;
+        private readonly string baseUrl = "http://localhost:5000/api/chatbot";
+        private Node currentNode;
+        private bool isActive;
+        private static User currentUser;
 
-    public Node InitializeChat()
-    {
-        try
+        public ChatbotService(HttpClient httpClient)
         {
-            currentNode = chatBotRepository.LoadChatTree();
-            if (currentNode == null)
-            {
-                throw new InvalidOperationException("Chat tree could not be loaded.");
-            }
-
-            isActive = true;
-            return currentNode;
-        }
-        catch (Exception ex)
-        {
-            // Log the exception
-            Console.WriteLine($"Error initializing chat: {ex.Message}");
+            this.httpClient = httpClient;
             isActive = false;
-
-            // Create an error node
+            Debug.WriteLine($"ChatbotService created with baseUrl: {baseUrl}");
             currentNode = new Node
             {
-                Id = -1,
-                Response = "Error: Unable to initialize the chat. Please try again later.",
-                ButtonLabel = "Restart",
-                LabelText = "Chat Initialization Error",
+                Id = 1,
+                Response = "Welcome to the chat bot. How can I help you?",
+                ButtonLabel = "Start Chat",
+                LabelText = "Welcome",
                 Children = new List<Node>()
             };
-
-            return currentNode;
         }
-    }
 
-    public bool IsInteractionActive()
-    {
-        return isActive && currentNode != null;
-    }
-
-    public bool SelectOption(Node selectedNode)
-    {
-        // Validate the selected node
-        if (selectedNode == null)
+        public void SetCurrentUser(User user)
         {
-            return false;
+            if (user == null)
+            {
+                Debug.WriteLine("[SERVICE] WARNING: Attempted to set null user");
+                return;
+            }
+            currentUser = user;
         }
-        // Check if the selected node is a valid child of the current node
-        if (currentNode != null && currentNode.Children.Any(c => c.Id == selectedNode.Id))
+
+        public Node InitializeChat()
+        {
+            try
+            {
+                isActive = true;
+                return currentNode;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initializing chat: {ex.Message}");
+                isActive = false;
+
+                currentNode = new Node
+                {
+                    Id = -1,
+                    Response = "Error: Unable to initialize the chat. Please try again later.",
+                    ButtonLabel = "Restart",
+                    LabelText = "Chat Initialization Error",
+                    Children = new List<Node>()
+                };
+
+                return currentNode;
+            }
+        }
+
+        public bool IsInteractionActive()
+        {
+            return isActive && currentNode != null;
+        }
+
+        public bool SelectOption(Node selectedNode)
         {
             currentNode = selectedNode;
-
-            // Determine if chat is still active based on whether there are more options
-            isActive = currentNode != null && currentNode.Children.Count != 0;
+            isActive = currentNode != null;
             return true;
         }
 
-        // Direct node assignment (for cases where we're navigating in a different way)
-        currentNode = selectedNode;
-        isActive = currentNode != null && currentNode.Children.Count != 0;
-
-        return true;
-    }
-
-    public IEnumerable<Node> GetCurrentOptions()
-    {
-        if (currentNode == null || currentNode.Children == null)
+        public IEnumerable<Node> GetCurrentOptions()
         {
-            return new List<Node>();
+            if (currentNode == null || currentNode.Children == null)
+            {
+                return new List<Node>();
+            }
+
+            return currentNode.Children;
         }
 
-        return currentNode.Children;
+        public string GetCurrentResponse()
+        {
+            return currentNode?.Response ?? "Chat not initialized. Please try again.";
+        }
+
+        public async Task<string> GetBotResponseAsync(string userMessage, bool isWelcomeMessage = false)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                if (isWelcomeMessage)
+                {
+                    Debug.WriteLine("Returning welcome message instead of API call");
+                    stopwatch.Stop();
+                    Debug.WriteLine($"GetBotResponseAsync completed in {stopwatch.ElapsedMilliseconds}ms");
+                    return "Hello! I'm your shopping assistant. How can I help you today?";
+                }
+
+                int? userId = currentUser?.Id;
+                var requestData = new
+                {
+                    Message = userMessage,
+                    UserId = userId
+                };
+
+                var jsonContent = JsonConvert.SerializeObject(requestData);
+                Debug.WriteLine($"Request JSON: {jsonContent}");
+
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var url = baseUrl;
+                Debug.WriteLine($"Preparing HTTP request to URL: {url}");
+
+                Debug.WriteLine("Sending HTTP request...");
+                var response = await httpClient.PostAsync(url, content);
+
+                Debug.WriteLine($"HTTP response received: Status {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultJson = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine($"Response JSON: {resultJson.Substring(0, Math.Min(100, resultJson.Length))}...");
+
+                    try
+                    {
+                        // Parse the response from our server - it's now a simple structure
+                        var responseObject = JsonConvert.DeserializeObject<ChatbotResponse>(resultJson);
+                        string responseText = responseObject.Message;
+
+                        Debug.WriteLine($"Successfully extracted response text: '{responseText.Substring(0, Math.Min(30, responseText.Length))}...'");
+                        stopwatch.Stop();
+                        Debug.WriteLine($"GetBotResponseAsync completed in {stopwatch.ElapsedMilliseconds}ms");
+
+                        return responseText;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error extracting text from response: {ex.Message}");
+                        Debug.WriteLine($"Response JSON: {resultJson}");
+                        return "I'm sorry, I couldn't understand my own thoughts. Please try again.";
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine($"Error response from API: {errorContent}");
+                    return $"I'm sorry, I'm having trouble thinking right now (Error: {response.StatusCode}).";
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception in GetBotResponseAsync: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return "I'm sorry, an error occurred while processing your request. Please try again later.";
+            }
+            finally
+            {
+                if (stopwatch.IsRunning)
+                {
+                    stopwatch.Stop();
+                    Debug.WriteLine($"GetBotResponseAsync completed with error in {stopwatch.ElapsedMilliseconds}ms");
+                }
+            }
+        }
     }
 
-    public string GetCurrentResponse()
+    public class ChatbotResponse
     {
-        return currentNode?.Response ?? "Chat not initialized. Please try again.";
+        public string Message { get; set; }
+        public bool Success { get; set; }
     }
 }

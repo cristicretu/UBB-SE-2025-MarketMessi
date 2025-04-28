@@ -31,7 +31,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error getting all product categories: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -64,7 +63,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error creating product category: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the category.");
             }
         }
@@ -92,7 +90,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error deleting product category '{title}': {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the category.");
             }
         }

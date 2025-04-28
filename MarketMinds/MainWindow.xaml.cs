@@ -16,8 +16,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Marketplace_SE;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace UiLayer
 {
     /// <summary>
@@ -32,29 +30,33 @@ namespace UiLayer
         {
             this.InitializeComponent();
         }
+
         private void HandleAuctionProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
             auctionProductListViewWindow = new AuctionProductListView();
             auctionProductListViewWindow.Activate();
         }
+
         private void HandleBorrowProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
             borrowProductListViewWindow = new BorrowProductListView();
             borrowProductListViewWindow.Activate();
         }
+
         private void HandleBuyProductListViewButton_Click(object sender, RoutedEventArgs e)
         {
             buyProductListViewWindow = new BuyProductListView();
             buyProductListViewWindow.Activate();
         }
+
         private void HandleAdminViewButton_Click(object sender, RoutedEventArgs e)
         {
             adminViewWindow = new AdminView();
             adminViewWindow.Activate();
         }
+
         private void HandleBasketViewButton_Click(object sender, RoutedEventArgs e)
         {
-            // Create a window that hosts the BasketView page
             basketViewWindow = new Window();
             basketViewWindow.Content = new BasketView();
             basketViewWindow.Activate();
@@ -118,16 +120,13 @@ namespace UiLayer
         {
             try
             {
-                // Check if window exists and try to access it (will throw an exception if already closed)
                 bool isWindowActive = mainMarketplacePageWindow != null && mainMarketplacePageWindow.Visible;
 
                 if (!isWindowActive)
                 {
-                    // Create a new window if one doesn't exist or the previous one was closed
                     mainMarketplacePageWindow = new Window();
                     mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
 
-                    // Add a closed event handler to set the reference to null when window is closed
                     mainMarketplacePageWindow.Closed += (s, args) =>
                     {
                         mainMarketplacePageWindow = null;
@@ -137,17 +136,14 @@ namespace UiLayer
                 }
                 else
                 {
-                    // Window exists and is visible, bring it to front
                     mainMarketplacePageWindow.Activate();
                 }
             }
             catch (Exception)
             {
-                // If any exception occurs (like the COM exception), create a new window
                 mainMarketplacePageWindow = new Window();
                 mainMarketplacePageWindow.Content = new Marketplace_SE.MainMarketplacePage();
 
-                // Add a closed event handler to set the reference to null when window is closed
                 mainMarketplacePageWindow.Closed += (s, args) =>
                 {
                     mainMarketplacePageWindow = null;

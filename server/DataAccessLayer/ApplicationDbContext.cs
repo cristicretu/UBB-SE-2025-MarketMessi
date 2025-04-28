@@ -40,6 +40,8 @@ namespace Server.DataAccessLayer
         public DbSet<BasketItem> BasketItems { get; set; }
 
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -200,6 +202,13 @@ namespace Server.DataAccessLayer
             //     .WithMany()
             //     .HasForeignKey(o => o.BuyerId)
             //     .OnDelete(DeleteBehavior.Restrict); // Would fail if BuyerId is -1
+            // Conversations
+            modelBuilder.Entity<Conversation>().ToTable("Conversations");
+            modelBuilder.Entity<Conversation>().HasKey(c => c.Id);
+
+            // Messages
+            modelBuilder.Entity<Message>().ToTable("Messages");
+            modelBuilder.Entity<Message>().HasKey(m => m.Id);
         }
     }
 }
