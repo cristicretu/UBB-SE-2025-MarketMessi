@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 using Server.MarketMinds.Repositories.AccountRepository;
+using MarketMinds.Shared.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 

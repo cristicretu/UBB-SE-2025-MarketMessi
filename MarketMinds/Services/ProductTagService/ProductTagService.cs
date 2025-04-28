@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Repositories;
-using System.Linq;
 
 namespace MarketMinds.Services.ProductTagService
 {
@@ -60,7 +60,10 @@ namespace MarketMinds.Services.ProductTagService
         // Helper methods to convert between domain and shared models
         private ProductTag ConvertToDomainTag(MarketMinds.Shared.Models.ProductTag sharedTag)
         {
-            if (sharedTag == null) return null;
+            if (sharedTag == null)
+            {
+                return null;
+            }
             return new ProductTag(sharedTag.Id, sharedTag.Title);
         }
     }

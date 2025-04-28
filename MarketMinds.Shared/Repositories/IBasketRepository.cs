@@ -1,11 +1,6 @@
-﻿using System.Text;
-using System.Data.Common;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories.BasketRepository
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Interface for BasketRepository to manage basket operations.
