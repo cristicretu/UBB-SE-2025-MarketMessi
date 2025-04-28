@@ -73,12 +73,11 @@ namespace MarketMinds.Services.ReviewService
                 {
                     var domainReview = ConvertToDomainReview(sharedReview);
                     domainReview.SellerUsername = seller.Username;
-                    
                     // Fetch buyer username asynchronously
-                    Task.Run(async () => {
+                    Task.Run(async () =>
+                    {
                         domainReview.BuyerUsername = await GetUsernameForIdAsync(domainReview.BuyerId);
                     }).Wait();
-                    
                     domainReviews.Add(domainReview);
                 }
 
@@ -108,12 +107,11 @@ namespace MarketMinds.Services.ReviewService
                 {
                     var domainReview = ConvertToDomainReview(sharedReview);
                     domainReview.BuyerUsername = buyer.Username;
-                    
                     // Fetch seller username asynchronously
-                    Task.Run(async () => {
+                    Task.Run(async () =>
+                    {
                         domainReview.SellerUsername = await GetUsernameForIdAsync(domainReview.SellerId);
                     }).Wait();
-                    
                     domainReviews.Add(domainReview);
                 }
 
@@ -207,7 +205,10 @@ namespace MarketMinds.Services.ReviewService
         // Helper methods to convert between domain and shared models
         private MarketMinds.Shared.Models.User ConvertToSharedUser(User domainUser)
         {
-            if (domainUser == null) return null;
+            if (domainUser == null)
+            {
+                return null;
+            }
 
             return new MarketMinds.Shared.Models.User
             {
@@ -223,7 +224,10 @@ namespace MarketMinds.Services.ReviewService
 
         private Review ConvertToDomainReview(MarketMinds.Shared.Models.Review sharedReview)
         {
-            if (sharedReview == null) return null;
+            if (sharedReview == null)
+            {
+                return null;
+            }
 
             return new Review
             {
@@ -234,7 +238,7 @@ namespace MarketMinds.Services.ReviewService
                 SellerId = sharedReview.SellerId,
                 BuyerId = sharedReview.BuyerId,
                 SellerUsername = string.Empty,  // Will be populated later
-                BuyerUsername = string.Empty    // Will be populated later
+                BuyerUsername = string.Empty // Will be populated later
             };
         }
 

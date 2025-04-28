@@ -1,8 +1,6 @@
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories.AuctionProductsRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface IAuctionProductsRepository
     {

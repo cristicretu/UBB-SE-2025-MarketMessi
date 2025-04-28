@@ -94,7 +94,7 @@ namespace MarketMinds.Views.Pages
             {
                 return;
             }
-            // Checks if leftProduct is auctionProduct and if it is assigns it to product
+
             if (ViewModel.LeftProduct is AuctionProduct auctionProduct)
             {
                 var detailView = new AuctionProductView(auctionProduct);
@@ -107,9 +107,8 @@ namespace MarketMinds.Views.Pages
                 detailView.Activate();
                 parentWindow.Close();
             }
-            else
+            else if (ViewModel.LeftProduct is BuyProduct buyProduct)
             {
-                BuyProduct buyProduct = (BuyProduct)ViewModel.LeftProduct;
                 var detailView = new BuyProductView(buyProduct);
                 detailView.Activate();
                 parentWindow.Close();
@@ -122,7 +121,7 @@ namespace MarketMinds.Views.Pages
             {
                 return;
             }
-            // Checks if RightProduct is auctionProduct and if it is assigns it to product
+
             if (ViewModel.RightProduct is AuctionProduct auctionProduct)
             {
                 var detailView = new AuctionProductView(auctionProduct);
@@ -135,9 +134,8 @@ namespace MarketMinds.Views.Pages
                 detailView.Activate();
                 parentWindow.Close();
             }
-            else
+            else if (ViewModel.RightProduct is BuyProduct buyProduct)
             {
-                BuyProduct buyProduct = (BuyProduct)ViewModel.RightProduct;
                 var detailView = new BuyProductView(buyProduct);
                 detailView.Activate();
                 parentWindow.Close();

@@ -116,7 +116,10 @@ namespace MarketMinds.Services.UserService
         // Helper methods to convert between domain and shared models
         private User ConvertToDomainUser(MarketMinds.Shared.Models.User sharedUser)
         {
-            if (sharedUser == null) return null;
+            if (sharedUser == null)
+            {
+                return null;
+            }
 
             return new User
             {
@@ -132,7 +135,10 @@ namespace MarketMinds.Services.UserService
 
         private MarketMinds.Shared.Models.User ConvertToSharedUser(User domainUser)
         {
-            if (domainUser == null) return null;
+            if (domainUser == null)
+            {
+                return null;
+            }
 
             return new MarketMinds.Shared.Models.User
             {

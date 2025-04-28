@@ -15,7 +15,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
     [TestFixture]
     public class AuctionProductsServiceTest
     {
-        private AuctionProductsService auctionProductsService;
+        private AuctionProductsRepository auctionProductsService;
         private AuctionProductsRepositoryMock auctionProductsRepositoryMock;
 
         // Constants to replace magic numbers

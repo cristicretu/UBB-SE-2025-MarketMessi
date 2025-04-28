@@ -59,7 +59,6 @@ namespace MarketMinds.Repositories
 
                 var jsonString = response.Content.ReadAsStringAsync().Result;
                 var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
-                
                 return reviews != null ? new ObservableCollection<Review>(reviews) : new ObservableCollection<Review>();
             }
             catch (Exception ex)
@@ -87,7 +86,6 @@ namespace MarketMinds.Repositories
 
                 var jsonString = response.Content.ReadAsStringAsync().Result;
                 var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
-                
                 return reviews != null ? new ObservableCollection<Review>(reviews) : new ObservableCollection<Review>();
             }
             catch (Exception ex)
@@ -167,4 +165,4 @@ namespace MarketMinds.Repositories
             }
         }
     }
-} 
+}
