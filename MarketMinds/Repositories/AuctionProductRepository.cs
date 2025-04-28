@@ -134,6 +134,7 @@ namespace MarketMinds.Repository
 
             if (timeRemaining.TotalMinutes < MAX_AUCTION_TIME)
             {
+                var oldEndTime = auction.EndTime;
                 auction.EndTime = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
             }
         }
