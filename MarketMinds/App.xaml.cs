@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
-using DomainLayer.Domain;
 using ViewModelLayer.ViewModel;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.AuctionProductsService;
@@ -39,7 +38,6 @@ namespace MarketMinds
         // Repository declarations
 
         // Service declarations
-        public static ProductService ProductService;
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
         public static AuctionProductsRepository AuctionProductsService;
