@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("ProductCategories")]
     public class Category
@@ -32,4 +32,4 @@ namespace server.Models
             Products = new List<AuctionProduct>();
         }
     }
-} 
+}

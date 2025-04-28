@@ -10,9 +10,7 @@ namespace DomainLayer.Domain
     {
         public int Id { get; set; }
         public int ConversationId { get; set; }
-        public int Creator { get; set; }
-        public long Timestamp { get; set; }
-        public string ContentType { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
+        public int UserId { get; set; }
+        public string Content { get; set; }
     }
 }

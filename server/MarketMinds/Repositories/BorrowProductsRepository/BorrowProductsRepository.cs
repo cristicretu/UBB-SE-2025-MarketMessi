@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using server.Models;
 using System.Threading.Tasks;
-using server.DataAccessLayer;
+using Server.Models;
+using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 
-namespace server.MarketMinds.Repositories.BorrowProductsRepository
+namespace Server.MarketMinds.Repositories.BorrowProductsRepository
 {
     public class BorrowProductsRepository : IBorrowProductsRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
 
         public BorrowProductsRepository(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         public List<BorrowProduct> GetProducts()
@@ -22,7 +22,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
             try
             {
                 // Start with a simpler query if full includes cause issues
-                var products = _context.BorrowProducts
+                var products = context.BorrowProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -33,7 +33,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
                 {
                     try
                     {
-                        _context.Entry(product)
+                        context.Entry(product)
                             .Collection(p => p.Images)
                             .Load();
                     }
@@ -44,7 +44,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
 
                     try
                     {
-                        _context.Entry(product)
+                        context.Entry(product)
                             .Collection(p => p.ProductTags)
                             .Load();
 
@@ -53,7 +53,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
                         {
                             try
                             {
-                                _context.Entry(productTag)
+                                context.Entry(productTag)
                                     .Reference(pt => pt.Tag)
                                     .Load();
                             }
@@ -83,8 +83,8 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
         {
             try
             {
-                _context.BorrowProducts.Remove(product);
-                _context.SaveChanges();
+                context.BorrowProducts.Remove(product);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -97,8 +97,8 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
         {
             try
             {
-                _context.BorrowProducts.Add(product);
-                _context.SaveChanges();
+                context.BorrowProducts.Add(product);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -111,30 +111,30 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
         {
             try
             {
-                var existingProduct = _context.BorrowProducts.Find(product.Id);
+                var existingProduct = context.BorrowProducts.Find(product.Id);
                 if (existingProduct == null)
                 {
                     throw new KeyNotFoundException($"BorrowProduct with ID {product.Id} not found for update.");
                 }
 
-                _context.Entry(existingProduct).CurrentValues.SetValues(product);
+                context.Entry(existingProduct).CurrentValues.SetValues(product);
 
                 if (product.Images != null && product.Images.Any())
                 {
                     Console.WriteLine($"Updating product {product.Id} with {product.Images.Count} images");
-                    
+
                     foreach (var image in product.Images)
                     {
                         if (image.Id == 0)
                         {
                             Console.WriteLine($"Adding new image with URL: {image.Url} to product ID: {product.Id}");
                             image.ProductId = product.Id;
-                            _context.Set<BorrowProductImage>().Add(image);
+                            context.Set<BorrowProductImage>().Add(image);
                         }
                     }
                 }
 
-                _context.SaveChanges();
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -148,7 +148,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
             try
             {
                 // Basic product query first
-                var product = _context.BorrowProducts
+                var product = context.BorrowProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -162,7 +162,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
                 // Load related entities individually
                 try
                 {
-                    _context.Entry(product)
+                    context.Entry(product)
                         .Collection(p => p.Images)
                         .Load();
                 }
@@ -175,7 +175,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
 
                 try
                 {
-                    _context.Entry(product)
+                    context.Entry(product)
                         .Collection(p => p.ProductTags)
                         .Load();
 
@@ -184,7 +184,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
                     {
                         try
                         {
-                            _context.Entry(productTag)
+                            context.Entry(productTag)
                                 .Reference(pt => pt.Tag)
                                 .Load();
                         }
@@ -219,7 +219,7 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
             try
             {
                 // Make sure the product exists
-                var product = _context.BorrowProducts.Find(productId);
+                var product = context.BorrowProducts.Find(productId);
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"BorrowProduct with ID {productId} not found.");
@@ -227,13 +227,13 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
 
                 // Set the product ID and add the image
                 image.ProductId = productId;
-                
+
                 // Add image directly to the DbSet
-                _context.BorrowProductImages.Add(image);
-                
+                context.BorrowProductImages.Add(image);
+
                 // Save changes to the database
-                _context.SaveChanges();
-                
+                context.SaveChanges();
+
                 Console.WriteLine($"Successfully added image with URL {image.Url} to product {productId}");
             }
             catch (Exception ex)
@@ -243,4 +243,4 @@ namespace server.MarketMinds.Repositories.BorrowProductsRepository
             }
         }
     }
-} 
+}

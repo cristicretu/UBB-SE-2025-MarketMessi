@@ -323,7 +323,6 @@ namespace MarketMinds.Services.BasketService
             }
             catch (HttpRequestException ex)
             {
-                throw new InvalidOperationException($"Could not apply promo code: {ex.Message}", ex);
             }
             catch (Exception ex)
             {

@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using Microsoft.Extensions.Configuration;
+using MarketMinds.Services.UserService;
 
 namespace MarketMinds.Services.ReviewService
 {
@@ -19,9 +20,13 @@ namespace MarketMinds.Services.ReviewService
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
         private readonly JsonSerializerOptions jsonOptions;
+        private Dictionary<int, string> userCache = new Dictionary<int, string>();
+        private readonly IUserService userService;
+        private readonly IConfiguration configuration;
 
         public ReviewsService(IConfiguration configuration)
         {
+            this.configuration = configuration;
             httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
             if (!apiBaseUrl.EndsWith("/"))
@@ -36,6 +41,66 @@ namespace MarketMinds.Services.ReviewService
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+        }
+
+        private async Task<string> GetUsernameForIdAsync(int userId)
+        {
+            if (App.CurrentUser != null && App.CurrentUser.Id == userId)
+            {
+                return App.CurrentUser.Username;
+            }
+
+            if (userCache.ContainsKey(userId))
+            {
+                return userCache[userId];
+            }
+
+            try
+            {
+                {
+                    try
+                    {
+                        var user = await App.UserService.GetUserByIdAsync(userId);
+
+                        if (user != null)
+                        {
+                            userCache[userId] = user.Username;
+                            return user.Username;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error using UserService: {ex.Message}. Falling back to direct API call.");
+                    }
+                }
+
+                var userResponse = httpClient.GetAsync($"users/id/{userId}").Result;
+
+                if (userResponse.IsSuccessStatusCode)
+                {
+                    var userJsonString = userResponse.Content.ReadAsStringAsync().Result;
+
+                    var userDto = JsonSerializer.Deserialize<JsonElement>(userJsonString, jsonOptions);
+
+                    if (userDto.TryGetProperty("username", out JsonElement usernameElement) &&
+                        usernameElement.ValueKind == JsonValueKind.String)
+                    {
+                        string username = usernameElement.GetString();
+                        userCache[userId] = username;
+                        return username;
+                    }
+                }
+
+                string fallbackUsername = $"User #{userId}";
+                userCache[userId] = fallbackUsername;
+                return fallbackUsername;
+            }
+            catch (Exception ex)
+            {
+                string fallbackUsername = $"User #{userId}";
+                userCache[userId] = fallbackUsername;
+                return fallbackUsername;
+            }
         }
 
         public ObservableCollection<Review> GetReviewsBySeller(User seller)
@@ -63,10 +128,11 @@ namespace MarketMinds.Services.ReviewService
 
                 if (reviews != null)
                 {
+                    var usernameTasks = new List<Task>();
+
                     foreach (var review in reviews)
                     {
                         // Ensure rating is within the expected range (0-5)
-                        // If rating is on a different scale, normalize it
                         if (review.Rating < 0)
                         {
                             review.Rating = 0;
@@ -76,30 +142,24 @@ namespace MarketMinds.Services.ReviewService
                             review.Rating = 5;
                         }
 
-                        // Set username properties for UI display
                         review.SellerUsername = seller.Username;
-                        review.BuyerUsername = $"User #{review.BuyerId}";
 
-                        // Try to find test users that match the buyer ID
-                        if (App.CurrentUser.Id == review.BuyerId)
+                        var fetchUsernameTask = Task.Run(async () =>
                         {
-                            review.BuyerUsername = App.CurrentUser.Username;
-                        }
-                        else if (App.TestingUser.Id == review.BuyerId)
-                        {
-                            review.BuyerUsername = App.TestingUser.Username;
-                        }
+                            review.BuyerUsername = await GetUsernameForIdAsync(review.BuyerId);
+                        });
 
+                        usernameTasks.Add(fetchUsernameTask);
                         result.Add(review);
                     }
+
+                    Task.WhenAll(usernameTasks).Wait();
                 }
 
-                // Convert to ObservableCollection
                 return new ObservableCollection<Review>(result);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving seller reviews: {ex.Message}");
                 return new ObservableCollection<Review>();
             }
         }
@@ -129,43 +189,38 @@ namespace MarketMinds.Services.ReviewService
 
                 if (reviews != null)
                 {
+                    var usernameTasks = new List<Task>();
+
                     foreach (var review in reviews)
                     {
                         // Ensure rating is within the expected range (0-5)
-                        // If rating is on a different scale, normalize it
                         if (review.Rating < 0)
                         {
-                            review.Rating = 0;
+                             review.Rating = 0;
                         }
                         else if (review.Rating > 5)
                         {
                             review.Rating = 5;
                         }
 
-                        // Set username properties for UI display
                         review.BuyerUsername = buyer.Username;
-                        review.SellerUsername = $"User #{review.SellerId}";
 
-                        // Try to find test users that match the seller ID
-                        if (App.CurrentUser.Id == review.SellerId)
+                        var fetchUsernameTask = Task.Run(async () =>
                         {
-                            review.SellerUsername = App.CurrentUser.Username;
-                        }
-                        else if (App.TestingUser.Id == review.SellerId)
-                        {
-                            review.SellerUsername = App.TestingUser.Username;
-                        }
+                            review.SellerUsername = await GetUsernameForIdAsync(review.SellerId);
+                        });
 
+                        usernameTasks.Add(fetchUsernameTask);
                         result.Add(review);
                     }
+
+                    Task.WhenAll(usernameTasks).Wait();
                 }
 
-                // Convert to ObservableCollection
                 return new ObservableCollection<Review>(result);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving buyer reviews: {ex.Message}");
                 return new ObservableCollection<Review>();
             }
         }
@@ -187,6 +242,8 @@ namespace MarketMinds.Services.ReviewService
 
             var response = httpClient.PostAsJsonAsync("review", review, jsonOptions).Result;
             response.EnsureSuccessStatusCode();
+
+            userCache.Clear();
         }
 
         public void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating)
@@ -206,6 +263,8 @@ namespace MarketMinds.Services.ReviewService
 
             var response = httpClient.PutAsJsonAsync("review", updatedReview, jsonOptions).Result;
             response.EnsureSuccessStatusCode();
+
+            userCache.Clear();
         }
 
         public void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid)
@@ -233,6 +292,8 @@ namespace MarketMinds.Services.ReviewService
 
             var response = httpClient.SendAsync(request).Result;
             response.EnsureSuccessStatusCode();
+
+            userCache.Clear();
         }
     }
 }

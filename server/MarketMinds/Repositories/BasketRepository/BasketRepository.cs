@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
-using server.Models;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Server.DataAccessLayer;
+using Server.Models;
 
 namespace MarketMinds.Repositories.BasketRepository
 {
@@ -16,17 +16,17 @@ namespace MarketMinds.Repositories.BasketRepository
         private const int DEFAULT_PRICE = 0;
         private const int MINIMUM_VALID_ID = 0;
         private const int ZERO_QUANTITY = 0;
-        
-        private readonly ApplicationDbContext _context;
+
+        private readonly ApplicationDbContext context;
 
         public BasketRepository(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         public Basket GetBasketByUserId(int userId)
         {
-            var basketEntity = _context.Baskets
+            var basketEntity = context.Baskets
                 .FirstOrDefault(b => b.BuyerId == userId);
 
             if (basketEntity == null)
@@ -35,8 +35,8 @@ namespace MarketMinds.Repositories.BasketRepository
                 {
                     BuyerId = userId
                 };
-                _context.Baskets.Add(basketEntity);
-                _context.SaveChanges();
+                context.Baskets.Add(basketEntity);
+                context.SaveChanges();
             }
 
             basketEntity.Items = GetBasketItems(basketEntity.Id);
@@ -46,13 +46,13 @@ namespace MarketMinds.Repositories.BasketRepository
 
         public void RemoveItemByProductId(int basketId, int productId)
         {
-            var basketItem = _context.BasketItems
+            var basketItem = context.BasketItems
                 .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
             if (basketItem != null)
             {
-                _context.BasketItems.Remove(basketItem);
-                _context.SaveChanges();
+                context.BasketItems.Remove(basketItem);
+                context.SaveChanges();
             }
         }
 
@@ -60,7 +60,7 @@ namespace MarketMinds.Repositories.BasketRepository
         {
             Debug.WriteLine($"[Repository] GetBasketItems called with basketId: {basketId}");
 
-            var basketItems = _context.BasketItems
+            var basketItems = context.BasketItems
                 .Where(bi => bi.BasketId == basketId)
                 .ToList();
 
@@ -70,7 +70,7 @@ namespace MarketMinds.Repositories.BasketRepository
             {
                 Debug.WriteLine($"[Repository] Loading product details for item {item.Id}, productId: {item.ProductId}");
 
-                var product = _context.BuyProducts
+                var product = context.BuyProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -87,19 +87,19 @@ namespace MarketMinds.Repositories.BasketRepository
                         item.ProductId = product.Id;
                     }
 
-                    var productTagIds = _context.Set<BuyProductProductTag>()
+                    var productTagIds = context.Set<BuyProductProductTag>()
                         .Where(pt => pt.ProductId == product.Id)
                         .Select(pt => pt.TagId)
                         .ToList();
 
-                    var tags = _context.Set<ProductTag>()
+                    var tags = context.Set<ProductTag>()
                         .Where(t => productTagIds.Contains(t.Id))
                         .ToList();
 
                     product.Tags = tags;
                     Debug.WriteLine($"[Repository] Loaded {tags.Count} tags for product {product.Id}");
 
-                    var productImages = _context.Set<BuyProductImage>()
+                    var productImages = context.Set<BuyProductImage>()
                         .Where(pi => pi.ProductId == product.Id)
                         .ToList();
 
@@ -121,19 +121,19 @@ namespace MarketMinds.Repositories.BasketRepository
             ValidateQuantity(quantity);
             ValidateProductId(productId);
 
-            var product = _context.BuyProducts.Find(productId);
+            var product = context.BuyProducts.Find(productId);
             if (product == null)
             {
                 throw new Exception("Product not found");
             }
 
-            var existingItem = _context.BasketItems
+            var existingItem = context.BasketItems
                 .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
             if (existingItem != null)
             {
                 existingItem.Quantity += quantity;
-                _context.BasketItems.Update(existingItem);
+                context.BasketItems.Update(existingItem);
             }
             else
             {
@@ -144,10 +144,10 @@ namespace MarketMinds.Repositories.BasketRepository
                     Quantity = quantity,
                     Price = product.Price
                 };
-                _context.BasketItems.Add(basketItem);
+                context.BasketItems.Add(basketItem);
             }
 
-            _context.SaveChanges();
+            context.SaveChanges();
         }
 
         public void UpdateProductQuantity(int basketId, int productId, int quantity)
@@ -162,18 +162,18 @@ namespace MarketMinds.Repositories.BasketRepository
                 throw new ArgumentException("Basket ID cannot be negative");
             }
 
-            var basketItems = _context.BasketItems
+            var basketItems = context.BasketItems
                 .Where(bi => bi.BasketId == basketId);
 
-            _context.BasketItems.RemoveRange(basketItems);
-            _context.SaveChanges();
+            context.BasketItems.RemoveRange(basketItems);
+            context.SaveChanges();
         }
 
         public bool RemoveProductFromBasket(int basketId, int productId)
         {
             ValidateProductId(productId);
 
-            var basketItem = _context.BasketItems
+            var basketItem = context.BasketItems
                 .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
             if (basketItem == null)
@@ -181,8 +181,8 @@ namespace MarketMinds.Repositories.BasketRepository
                 return false;
             }
 
-            _context.BasketItems.Remove(basketItem);
-            _context.SaveChanges();
+            context.BasketItems.Remove(basketItem);
+            context.SaveChanges();
 
             return true;
         }
@@ -192,7 +192,7 @@ namespace MarketMinds.Repositories.BasketRepository
             ValidateQuantity(quantity);
             ValidateProductId(productId);
 
-            var basketItem = _context.BasketItems
+            var basketItem = context.BasketItems
                 .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
             if (basketItem == null)
@@ -202,15 +202,15 @@ namespace MarketMinds.Repositories.BasketRepository
 
             if (quantity == ZERO_QUANTITY)
             {
-                _context.BasketItems.Remove(basketItem);
+                context.BasketItems.Remove(basketItem);
             }
             else
             {
                 basketItem.Quantity = quantity;
-                _context.BasketItems.Update(basketItem);
+                context.BasketItems.Update(basketItem);
             }
 
-            _context.SaveChanges();
+            context.SaveChanges();
         }
 
         private void ValidateQuantity(int quantity)

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("ProductConditions")]
     public class Condition
@@ -30,7 +30,7 @@ namespace server.Models
             Name = name;
             Products = new List<AuctionProduct>();
         }
-        
+
         public Condition(string name, string description)
         {
             Name = name;
@@ -38,4 +38,4 @@ namespace server.Models
             Products = new List<AuctionProduct>();
         }
     }
-} 
+}

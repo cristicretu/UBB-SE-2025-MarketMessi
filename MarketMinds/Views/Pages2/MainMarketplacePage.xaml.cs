@@ -9,6 +9,7 @@ using DomainLayer.Domain;
 using Marketplace_SE.Utilities; // For Notification, FrameNavigation
 using MarketMinds.ViewModels; // For MarketplaceViewModel
 using MarketMinds;
+using MarketMinds.Views.Pages2;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info
@@ -69,7 +70,9 @@ namespace Marketplace_SE
 
         private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(GetHelpPage));
+            var helpWindow = new Window();
+            helpWindow.Content = new GetHelpPage();
+            helpWindow.Activate();
         }
 
         private async Task ShowNotification(string title, string message)

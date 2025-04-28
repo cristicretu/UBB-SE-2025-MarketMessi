@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
 using DomainLayer.Domain;
@@ -17,29 +21,24 @@ using MarketMinds.Services.ReviewService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
 using MarketMinds.ViewModels;
-using MarketMinds.Services.DreamTeam.ChatBotService;
-using MarketMinds.Repositories.ChatBotRepository;
-using MarketMinds.Repositories.ChatRepository;
-using MarketMinds.Services.DreamTeam.ChatService;
+using MarketMinds.Services.DreamTeam.ChatbotService;
 using MarketMinds.Repositories.MainMarketplaceRepository;
 using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.UserService;
-using Marketplace_SE.Services.DreamTeam;
 using Microsoft.Extensions.Logging.Abstractions;
+using Marketplace_SE.Services.DreamTeam;
+using MarketMinds.Services.ConversationService;
+using MarketMinds.Services.MessageService;
+using MarketMinds.Services.DreamTeam.ChatbotService;
 
 namespace MarketMinds
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
-        public static ChatBotRepository ChatBotRepository;
-        public static ChatRepository ChatRepository;
         public static MainMarketplaceRepository MainMarketplaceRepository;
 
         // Service declarations
@@ -52,12 +51,15 @@ namespace MarketMinds
         public static ProductConditionService ConditionService;
         public static ReviewsService ReviewsService;
         public static BasketService BasketService;
-        public static ChatBotService ChatBotService;
-        public static ChatService ChatService;
+        public static MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService ChatBotService;
+        public static MarketMinds.Services.DreamTeam.ChatService.ChatService ChatService;
         public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
         public static IUserService UserService;
         public static AccountPageService AccountPageService { get; private set; }
+        public static IConversationService ConversationService;
+        public static IMessageService MessageService;
+        public static MarketMinds.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -80,7 +82,6 @@ namespace MarketMinds
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
         public static User CurrentUser { get; set; }
-        public static User TestingUser { get; set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -88,6 +89,7 @@ namespace MarketMinds
         private static IConfiguration appConfiguration;
         public static Window LoginWindow = null!;
         public static Window MainWindow = null!;
+        private static HttpClient httpClient;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -95,14 +97,120 @@ namespace MarketMinds
         /// </summary>
         public App()
         {
-            InitializeComponent();
-            // Initialize configuration
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            appConfiguration = builder.Build();
-            // Initialize API configuration
-            InitializeConfiguration();
+            try
+            {
+                Debug.WriteLine("App constructor start");
+                this.InitializeComponent();
+
+                // Set up global exception handling
+                this.UnhandledException += App_UnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+                // Initialize configuration
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                appConfiguration = builder.Build();
+                // Initialize API configuration
+                InitializeConfiguration();
+
+                // Initialize HttpClient
+                httpClient = new HttpClient();
+                string baseAddress = Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/";
+                httpClient.BaseAddress = new Uri(baseAddress);
+                Debug.WriteLine($"Initialized HTTP client with base address: {baseAddress}");
+
+                Debug.WriteLine("App constructor complete");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CRITICAL ERROR in App constructor: {ex}");
+            }
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true; // Mark as handled to prevent app termination
+
+            // Log the exception
+            Debug.WriteLine($"UNHANDLED UI EXCEPTION: {e.Message}\n{e.Exception}");
+
+            // No need to break into the debugger here as we're handling it
+            ShowErrorDialog($"An error occurred: {e.Message}. See debug output for details.");
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            // Log the exception
+            Exception ex = e.ExceptionObject as Exception;
+            Debug.WriteLine($"CRITICAL UNHANDLED EXCEPTION: {ex?.Message}\n{ex}");
+
+            // Can't show UI from this thread, just log it
+            if (e.IsTerminating)
+            {
+                Debug.WriteLine("APPLICATION IS TERMINATING DUE TO UNHANDLED EXCEPTION");
+            }
+        }
+
+        private void ShowErrorDialog(string message)
+        {
+            try
+            {
+                Debug.WriteLine($"Attempting to show error dialog: {message}");
+
+                // We need to get the dispatcher queue for the UI thread
+                if (MainWindow != null)
+                {
+                    // For WinUI 3, we need to get the dispatcher from the window
+                    DispatcherQueue dispatcherQueue = MainWindow.DispatcherQueue;
+
+                    if (dispatcherQueue != null)
+                    {
+                        bool queued = dispatcherQueue.TryEnqueue(() =>
+                        {
+                            try
+                            {
+                                Debug.WriteLine("Running dialog code on UI thread");
+
+                                if (MainWindow?.Content?.XamlRoot == null)
+                                {
+                                    Debug.WriteLine("Cannot show dialog: XamlRoot is null");
+                                    return;
+                                }
+
+                                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
+                                {
+                                    Title = "Application Error",
+                                    Content = message,
+                                    CloseButtonText = "OK",
+                                    XamlRoot = MainWindow.Content.XamlRoot
+                                };
+
+                                _ = dialog.ShowAsync();
+                                Debug.WriteLine("Error dialog queued for display");
+                            }
+                            catch (Exception dialogEx)
+                            {
+                                Debug.WriteLine($"Error showing error dialog: {dialogEx}");
+                            }
+                        });
+
+                        Debug.WriteLine($"Task queued to dispatcher: {queued}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Could not get dispatcher queue from window");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("Cannot show error dialog: main window is null");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error dispatching error dialog: {ex}");
+            }
         }
 
         private IConfiguration InitializeConfiguration()
@@ -122,8 +230,8 @@ namespace MarketMinds
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
             // Instantiate repositories
-            ChatBotRepository = new ChatBotRepository(DatabaseConnection);
-            ChatRepository = new ChatRepository(DatabaseConnection);
+            // ChatBotRepository = new ChatBotRepository(DatabaseConnection);
+            // ChatRepository = new ChatRepository(DatabaseConnection);
             MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
 
             // Instantiate services
@@ -137,10 +245,12 @@ namespace MarketMinds
             BasketService = new BasketService(Configuration);
             UserService = new UserService(Configuration);
             AccountPageService = new AccountPageService(Configuration);
-            ChatBotService = new ChatBotService(ChatBotRepository);
-            ChatService = new ChatService(ChatRepository);
+            ChatBotService = new ChatbotService(httpClient);
+            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(httpClient);
             MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
-            Debug.WriteLine("DEBUG: CurrentUser before view model initialization: " + (CurrentUser == null ? "NULL" : CurrentUser.ToString()));
+            ConversationService = new ConversationService(httpClient);
+            MessageService = new MessageService(httpClient);
+            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -165,45 +275,28 @@ namespace MarketMinds
             LoginWindow = new LoginWindow();
             LoginWindow.Activate();
         }
+
         // Method to be called after successful login
         public static void ShowMainWindow()
         {
             if (CurrentUser != null)
             {
-                Debug.WriteLine("DEBUG: User is valid. Updating view models with CurrentUser");
-                UpdateTestingUser();
                 BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
-                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
-                Debug.WriteLine($"DEBUG: Created ReviewCreateViewModel - Buyer: {CurrentUser?.Id}, Seller: {TestingUser?.Id}");
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, CurrentUser);
                 SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-                Debug.WriteLine($"DEBUG: Created SeeBuyerReviewsViewModel - User: {CurrentUser?.Id}");
                 SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
-                Debug.WriteLine($"DEBUG: Created SeeSellerReviewsViewModel - Seller: {CurrentUser?.Id}, Viewer: {CurrentUser?.Id}");
+                NewChatbotService.SetCurrentUser(CurrentUser);
+                ChatBotService.SetCurrentUser(CurrentUser);
+                ChatBotViewModel.SetCurrentUser(CurrentUser);
                 if (LoginWindow != null)
                 {
                     LoginWindow.Close();
                 }
-                                MainWindow.Activate();
+                MainWindow.Activate();
             }
             else
             {
                 Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
-            }
-        }
-        private static void UpdateTestingUser()
-        {
-            if (CurrentUser != null && TestingUser == null)
-            {
-                TestingUser = new User(
-                    CurrentUser.Id,
-                    CurrentUser.Username,
-                    CurrentUser.Email,
-                    CurrentUser.Token);
-                TestingUser.Password = CurrentUser.Password;
-                TestingUser.UserType = CurrentUser.UserType;
-                TestingUser.Balance = CurrentUser.Balance;
-                TestingUser.Rating = CurrentUser.Rating;
-                Debug.WriteLine($"DEBUG: Created TestingUser from CurrentUser, ID: {TestingUser?.Id}, Username: {TestingUser?.Username}");
             }
         }
     }

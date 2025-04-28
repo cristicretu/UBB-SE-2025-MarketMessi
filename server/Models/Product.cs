@@ -3,8 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 // TODO: Define or import ProductCondition, ProductCategory, User if they are needed by the server
-
-namespace server.Models // Adjusted namespace to server.Models
+namespace Server.Models // Adjusted namespace to server.Models
 {
     public abstract class Product
     {
@@ -18,7 +17,7 @@ namespace server.Models // Adjusted namespace to server.Models
 
         [Column("description")]
         public string Description { get; set; } = string.Empty;
-        
+
         // Foreign keys
         [Column("seller_id")]
         public int SellerId { get; set; }
@@ -28,7 +27,7 @@ namespace server.Models // Adjusted namespace to server.Models
 
         [Column("category_id")]
         public int CategoryId { get; set; }
-        
+
         // Navigation properties
         [ForeignKey("SellerId")]
         public User? Seller { get; set; }

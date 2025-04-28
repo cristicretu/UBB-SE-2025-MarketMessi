@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Services.DreamTeam.ChatService;
@@ -11,39 +9,44 @@ namespace MarketMinds.ViewModels;
 public class ChatViewModel
 {
     private readonly IChatService chatService;
+    private int currentUserId;
+    private int currentConversationId;
 
     public ChatViewModel(IChatService chatService)
     {
         this.chatService = chatService;
     }
 
-    public void InitializeChat(User currentUser, User targetUser)
+    public async Task InitializeAsync(int userId)
     {
-        chatService.Initialize(currentUser, targetUser);
+        currentUserId = userId;
+        var conversations = await chatService.GetUserConversationsAsync(userId);
+
+        if (conversations != null && conversations.Count > 0)
+        {
+            currentConversationId = conversations[0].Id;
+        }
+        else
+        {
+            var newConversation = await chatService.CreateConversationAsync(userId);
+            currentConversationId = newConversation.Id;
+        }
     }
 
-    public bool SendTextMessage(string textMessage)
+    public async Task<Message> SendMessageAsync(string content)
     {
-        return chatService.SendTextMessage(textMessage);
+        return await chatService.SendMessageAsync(currentConversationId, currentUserId, content);
     }
 
-    public bool SendImageMessage(byte[] imageData)
+    public async Task<List<Message>> GetMessagesAsync()
     {
-        return chatService.SendImageMessage(imageData);
+        return await chatService.GetMessagesAsync(currentConversationId);
+    }
+    public async Task<Conversation> GetCurrentConversationAsync()
+    {
+        return await chatService.GetConversationAsync(currentConversationId);
     }
 
-    public List<Message> GetInitialMessages()
-    {
-        return chatService.GetInitialMessages();
-    }
-
-    public List<Message> CheckForNewMessages()
-    {
-        return chatService.CheckForNewMessages();
-    }
-
-    public Conversation GetConversation()
-    {
-        return chatService.GetConversation();
-    }
+    public int CurrentConversationId => currentConversationId;
+    public int CurrentUserId => currentUserId;
 }
