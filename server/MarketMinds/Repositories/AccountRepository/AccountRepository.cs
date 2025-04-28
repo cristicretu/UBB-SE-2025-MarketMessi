@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLayer;
-using Server.Models;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace Server.MarketMinds.Repositories.AccountRepository
 {

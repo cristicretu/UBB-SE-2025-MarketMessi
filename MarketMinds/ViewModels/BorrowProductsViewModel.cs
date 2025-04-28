@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.BorrowProductsService;
 
 namespace ViewModelLayer.ViewModel;

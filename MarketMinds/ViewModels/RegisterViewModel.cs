@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using DomainLayer.Domain;
+using System.Diagnostics;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.UserService;
 
 namespace MarketMinds.ViewModels
@@ -23,11 +24,11 @@ namespace MarketMinds.ViewModels
 		{
 			try
 			{
-				return await userService.IsUsernameTakenAsync(username);
+				bool result = await userService.IsUsernameTakenAsync(username);
+				return result;
 			}
 			catch (Exception usernameCheckException)
 			{
-				Console.WriteLine($"Error checking username: {usernameCheckException.Message}");
 				return true; // Assume username is taken if an error occurs
 			}
 		}
@@ -36,23 +37,48 @@ namespace MarketMinds.ViewModels
 		{
 			try
 			{
-				return await userService.RegisterUserAsync(user);
+				if (user == null)
+				{
+					return false;
+				}
+
+				if (string.IsNullOrEmpty(user.Username))
+				{
+					return false;
+				}
+
+				if (string.IsNullOrEmpty(user.Email))
+				{
+					return false;
+				}
+
+				if (string.IsNullOrEmpty(user.Password))
+				{
+					return false;
+				}
+
+				bool result = await userService.RegisterUserAsync(user);
+				return result;
 			}
 			catch (Exception userCreationException)
 			{
-				Console.WriteLine($"Error creating user: {userCreationException.Message}");
+				if (userCreationException.InnerException != null)
+				{
+				}
 				return false;
 			}
 		}
 
 		public bool IsValidUsername(string username)
 		{
-			return Regex.IsMatch(username, "^[A-Za-z0-9_]{5,20}$");
+			bool isValid = Regex.IsMatch(username, "^[A-Za-z0-9_]{5,20}$");
+			return isValid;
 		}
 
 		public bool IsValidPassword(string password)
 		{
-			return Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,15}$");
+			bool isValid = Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,15}$");
+			return isValid;
 		}
 
 		public string GetPasswordStrength(string password)
@@ -77,7 +103,8 @@ namespace MarketMinds.ViewModels
 
 		public bool PasswordsMatch(string password, string confirmPassword)
 		{
-			return password == confirmPassword;
+			bool match = password == confirmPassword;
+			return match;
 		}
 	}
 }

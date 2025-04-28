@@ -4,20 +4,21 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;
-using MarketMinds.Helpers;
+using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Views.Pages;
 using MarketMinds.Services.BorrowSortTypeConverterService;
+using MarketMinds.Services.BorrowProductsService;
 
 namespace UiLayer
 {
     public sealed partial class BorrowProductListView : Window
     {
         private readonly BorrowProductsViewModel borrowProductsViewModel;
-        private readonly SortAndFilterViewModel sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel;
         private ObservableCollection<BorrowProduct> borrowProducts;
         private CompareProductsViewModel compareProductsViewModel;
         private readonly BorrowProductListViewModelHelper borrowProductListViewModelHelper;
@@ -29,15 +30,15 @@ namespace UiLayer
         private const int FIRST_PAGE = 1;
         private List<BorrowProduct> currentFullList;
 
-        public BorrowProductListView()
+        public BorrowProductListView(SortAndFilterViewModel<BorrowProductsService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
 
             // Initialize view models and services
             borrowProductsViewModel = MarketMinds.App.BorrowProductsViewModel;
-            sortAndFilterViewModel = MarketMinds.App.BorrowProductSortAndFilterViewModel;
+            this.sortAndFilterViewModel = sortAndFilterViewModel;
             compareProductsViewModel = MarketMinds.App.CompareProductsViewModel;
-            borrowProductListViewModelHelper = new BorrowProductListViewModelHelper();
+            borrowProductListViewModelHelper = new BorrowProductListViewModelHelper(sortAndFilterViewModel, borrowProductsViewModel);
             sortTypeConverterService = new BorrowSortTypeConverterService();
 
             borrowProducts = new ObservableCollection<BorrowProduct>();

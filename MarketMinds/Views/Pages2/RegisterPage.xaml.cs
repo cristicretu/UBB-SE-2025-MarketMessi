@@ -5,9 +5,10 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -42,18 +43,22 @@ namespace Marketplace_SE
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs routedEventArgs)
         {
+            
             // Clear any previous validation messages
             UsernameValidationTextBlock.Text = string.Empty;
             ConfirmPasswordValidationTextBlock.Text = string.Empty;
+            
             // Set loading state
             CreateAccountButton.IsEnabled = false;
             RegisterProgressRing.IsActive = true;
+            
             try
             {
                 NewUser.Username = UsernameTextBox.Text;
                 NewUser.Email = EmailTextBox.Text;
                 NewUser.Password = PasswordBoxWithRevealMode.Password;
                 string confirmPassword = ConfirmPasswordBox.Password;
+                
 
                 // Client-side validation
                 if (!ViewModel.IsValidUsername(NewUser.Username))
@@ -90,7 +95,7 @@ namespace Marketplace_SE
                 {
                     // Store user in the app context
                     MarketMinds.App.CurrentUser = NewUser;
-
+                    
                     await ShowDialog("Account Created", "Your account has been successfully created!");
                     Frame.Navigate(typeof(LoginPage));
                 }
@@ -101,6 +106,10 @@ namespace Marketplace_SE
             }
             catch (Exception ex)
             {
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[RegisterPage] Inner exception: {ex.InnerException.Message}");
+                }
                 await ShowDialog("Error", $"An error occurred: {ex.Message}");
             }
             finally

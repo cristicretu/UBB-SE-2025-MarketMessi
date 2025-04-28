@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.BasketRepository;
 
 namespace MarketMinds.Test.Services.BasketServiceTest
@@ -142,8 +142,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                 Title = "Invalid Price Product",
                 Description = "Product with invalid price",
                 Seller = new User(1, "Test Seller", "seller@test.com"),
-                Condition = new ProductCondition(1, "New", "Brand new item"),
-                Category = new ProductCategory(1, "Electronics", "Electronic devices"),
+                Condition = new Condition(1, "New", "Brand new item"),
+                Category = new Category(1, "Electronics", "Electronic devices"),
                 Tags = new List<ProductTag>(),
                 Images = new List<Image>()
             };
@@ -201,8 +201,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                 title,
                 description,
                 new User(1, "Test Seller", "seller@test.com"),
-                new ProductCondition(1, "New", "Brand new item"),
-                new ProductCategory(1, "Electronics", "Electronic devices"),
+                new Condition(1, "New", "Brand new item"),
+                new Category(1, "Electronics", "Electronic devices"),
                 new List<ProductTag>(),
                 new List<Image>(),
                 price

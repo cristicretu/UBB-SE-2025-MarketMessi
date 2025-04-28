@@ -4,21 +4,22 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;
 using MarketMinds.Services;
 using MarketMinds.Views.Pages;
-using MarketMinds.Helpers;
+using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Services.ProductPaginationService;
+using MarketMinds.Services.BuyProductsService;
 
 namespace UiLayer
 {
     public sealed partial class BuyProductListView : Window
     {
         private readonly BuyProductsViewModel buyProductsViewModel;
-        private readonly SortAndFilterViewModel sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel;
         private readonly ProductPaginationService paginationService;
         private ObservableCollection<BuyProduct> buyProducts;
         private CompareProductsViewModel compareProductsViewModel;
@@ -31,16 +32,16 @@ namespace UiLayer
 
         private const int FIRST_PAGE = 1;
 
-        public BuyProductListView()
+        public BuyProductListView(SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
 
             // Initialize services and view models
             buyProductsViewModel = MarketMinds.App.BuyProductsViewModel;
-            sortAndFilterViewModel = MarketMinds.App.BuyProductSortAndFilterViewModel;
+            this.sortAndFilterViewModel = sortAndFilterViewModel;
             compareProductsViewModel = MarketMinds.App.CompareProductsViewModel;
             paginationService = new ProductPaginationService();
-            buyProductListViewModelHelper = new BuyProductListViewModelHelper();
+            buyProductListViewModelHelper = new BuyProductListViewModelHelper(sortAndFilterViewModel, buyProductsViewModel);
 
             buyProducts = new ObservableCollection<BuyProduct>();
             BuyListView.ItemsSource = buyProducts;

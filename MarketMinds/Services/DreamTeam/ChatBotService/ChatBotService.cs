@@ -1,11 +1,10 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Text;
-using DomainLayer.Domain;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 using Newtonsoft.Json;
 using Windows.Storage;
 
@@ -13,17 +12,16 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
 {
     public class ChatbotService : IChatbotService
     {
-        private readonly HttpClient httpClient;
-        private readonly string baseUrl = "http://localhost:5000/api/chatbot";
+        private readonly IChatbotRepository chatbotRepository;
         private Node currentNode;
         private bool isActive;
-        private static User currentUser;
+        private static MarketMinds.Shared.Models.User currentUser;
 
-        public ChatbotService(HttpClient httpClient)
+        public ChatbotService(IChatbotRepository chatbotRepository)
         {
-            this.httpClient = httpClient;
+            this.chatbotRepository = chatbotRepository;
             isActive = false;
-            Debug.WriteLine($"ChatbotService created with baseUrl: {baseUrl}");
+            Debug.WriteLine("ChatbotService created using IChatbotRepository");
             currentNode = new Node
             {
                 Id = 1,
@@ -34,7 +32,7 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
             };
         }
 
-        public void SetCurrentUser(User user)
+        public void SetCurrentUser(MarketMinds.Shared.Models.User user)
         {
             if (user == null)
             {
@@ -112,55 +110,13 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                 }
 
                 int? userId = currentUser?.Id;
-                var requestData = new
-                {
-                    Message = userMessage,
-                    UserId = userId
-                };
 
-                var jsonContent = JsonConvert.SerializeObject(requestData);
-                Debug.WriteLine($"Request JSON: {jsonContent}");
+                // Use the repository instead of making HTTP calls directly
+                string response = await chatbotRepository.GetBotResponseAsync(userMessage, userId);
 
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-                var url = baseUrl;
-                Debug.WriteLine($"Preparing HTTP request to URL: {url}");
-
-                Debug.WriteLine("Sending HTTP request...");
-                var response = await httpClient.PostAsync(url, content);
-
-                Debug.WriteLine($"HTTP response received: Status {response.StatusCode}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var resultJson = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Response JSON: {resultJson.Substring(0, Math.Min(100, resultJson.Length))}...");
-
-                    try
-                    {
-                        // Parse the response from our server - it's now a simple structure
-                        var responseObject = JsonConvert.DeserializeObject<ChatbotResponse>(resultJson);
-                        string responseText = responseObject.Message;
-
-                        Debug.WriteLine($"Successfully extracted response text: '{responseText.Substring(0, Math.Min(30, responseText.Length))}...'");
-                        stopwatch.Stop();
-                        Debug.WriteLine($"GetBotResponseAsync completed in {stopwatch.ElapsedMilliseconds}ms");
-
-                        return responseText;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error extracting text from response: {ex.Message}");
-                        Debug.WriteLine($"Response JSON: {resultJson}");
-                        return "I'm sorry, I couldn't understand my own thoughts. Please try again.";
-                    }
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Error response from API: {errorContent}");
-                    return $"I'm sorry, I'm having trouble thinking right now (Error: {response.StatusCode}).";
-                }
+                stopwatch.Stop();
+                Debug.WriteLine($"GetBotResponseAsync completed in {stopwatch.ElapsedMilliseconds}ms");
+                return response;
             }
             catch (Exception ex)
             {
@@ -177,11 +133,5 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                 }
             }
         }
-    }
-
-    public class ChatbotResponse
-    {
-        public string Message { get; set; }
-        public bool Success { get; set; }
     }
 }

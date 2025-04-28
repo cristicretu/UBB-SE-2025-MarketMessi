@@ -1,14 +1,10 @@
-using System;
 using System.Net;
-using System.Linq;
 using System.Text.Json;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using DataAccessLayer;
-using Server.Models;
-using Server.Models.DTOs;
-using Server.Models.DTOs.Mappers;
-using MarketMinds.Repositories.BuyProductsRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -50,8 +46,8 @@ namespace MarketMinds.Controllers
             try
             {
                 var product = buyProductsRepository.GetProductByID(id);
-                var dto = BuyProductMapper.ToDTO(product);
-                return Ok(dto);
+                var buyProductDTO = BuyProductMapper.ToDTO(product);
+                return Ok(buyProductDTO);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -137,8 +133,8 @@ namespace MarketMinds.Controllers
                     }
                 }
 
-                var dto = BuyProductMapper.ToDTO(product);
-                return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, dto);
+                var buyProductDTO = BuyProductMapper.ToDTO(product);
+                return CreatedAtAction(nameof(GetBuyProductById), new { id = product.Id }, buyProductDTO);
             }
             catch (ArgumentException aex)
             {

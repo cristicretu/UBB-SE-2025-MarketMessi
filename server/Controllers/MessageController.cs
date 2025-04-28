@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using MarketMinds.Repositories.MessageRepository;
-using Server.Models;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 using System.Net;
 using System.Diagnostics;
 
@@ -46,17 +46,15 @@ namespace Server.Controllers
                 }
                 catch (Exception ex)
                 {
-
+                    // Silently continue
                 }
                 
-                var message = new Message
-                {
-                    ConversationId = createMessageDto.ConversationId,
-                    UserId = createMessageDto.UserId,
-                    Content = createMessageDto.Content
-                };
+                var createdMessage = await messageRepository.CreateMessageAsync(
+                    createMessageDto.ConversationId,
+                    createMessageDto.UserId,
+                    createMessageDto.Content
+                );
                 
-                var createdMessage = await messageRepository.CreateMessageAsync(message);
                 var messageDto = new MessageDto
                 {
                     Id = createdMessage.Id,
@@ -81,12 +79,12 @@ namespace Server.Controllers
             {
                 var messages = await messageRepository.GetMessagesByConversationIdAsync(conversationId);
                 
-                var messageDtos = messages.Select(m => new MessageDto
+                var messageDtos = messages.Select(message => new MessageDto
                 {
-                    Id = m.Id,
-                    ConversationId = m.ConversationId,
-                    UserId = m.UserId,
-                    Content = m.Content
+                    Id = message.Id,
+                    ConversationId = message.ConversationId,
+                    UserId = message.UserId,
+                    Content = message.Content
                 }).ToList();
                 
                 return Ok(messageDtos);

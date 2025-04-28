@@ -3,10 +3,11 @@ using System.Net;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Server.Models;
+using MarketMinds.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
-using Server.Models.DTOs;
-using Server.Models.DTOs.Mappers;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Repositories.ReviewRepository;
 
 namespace MarketMinds.Controllers
@@ -16,6 +17,7 @@ namespace MarketMinds.Controllers
     public class ReviewController : ControllerBase
     {
         private readonly IReviewRepository reviewRepository;
+        private readonly static int DEFAULT_REVIEW_ID = 0;
         public ReviewController(IReviewRepository reviewRepository)
         {
             this.reviewRepository = reviewRepository;
@@ -39,7 +41,7 @@ namespace MarketMinds.Controllers
                 }
 
                 // Convert to DTOs to avoid circular references
-                var reviewDtos = reviews.Select(r => ReviewMapper.ToDto(r)).ToList();
+                var reviewDtos = reviews.Select(review => ReviewMapper.ToDto(review)).ToList();
                 return Ok(reviewDtos);
             }
             catch (KeyNotFoundException knfex)
@@ -71,7 +73,7 @@ namespace MarketMinds.Controllers
                 }
 
                 // Convert to DTOs to avoid circular references
-                var reviewDtos = reviews.Select(r => ReviewMapper.ToDto(r)).ToList();
+                var reviewDtos = reviews.Select(review => ReviewMapper.ToDto(review)).ToList();
                 return Ok(reviewDtos);
             }
             catch (KeyNotFoundException knfex)
@@ -101,7 +103,7 @@ namespace MarketMinds.Controllers
                 var review = ReviewMapper.ToModel(reviewDto);
 
                 // Set ID to 0 to ensure Entity Framework knows it's a new entity
-                review.Id = 0;
+                review.Id = DEFAULT_REVIEW_ID;
 
                 // Create the review
                 reviewRepository.CreateReview(review);

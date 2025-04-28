@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 using Windows.System;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.ViewModels;
 using MarketMinds;
 using MarketMinds.Views.Pages2;

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Server.Models;
+using MarketMinds.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,6 +17,9 @@ namespace Server.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly ILogger<UsersController> logger;
+        private readonly static int BUYER_TYPE_VALUE = 1;
+        private readonly static int BASE_BALANCE = 0;
+        private readonly static int BASE_RATING = 0;
 
         public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
         {
@@ -36,13 +39,13 @@ namespace Server.Controllers
                 }
 
                 // Check if username is taken
-                if (await context.Users.AnyAsync(u => u.Username == request.Username))
+                if (await context.Users.AnyAsync(user => user.Username == request.Username))
                 {
                     return Conflict("Username is already taken");
                 }
 
                 // Check if email is taken
-                if (await context.Users.AnyAsync(u => u.Email == request.Email))
+                if (await context.Users.AnyAsync(user => user.Email == request.Email))
                 {
                     return Conflict("Email is already registered");
                 }
@@ -50,9 +53,9 @@ namespace Server.Controllers
                 // Create a new user with constructor
                 var user = new User(request.Username, request.Email, HashPassword(request.Password))
                 {
-                    Balance = 0,
-                    Rating = 0,
-                    UserType = 1 // Default to buyer role
+                    Balance = BASE_BALANCE,
+                    Rating = BASE_RATING,
+                    UserType = BUYER_TYPE_VALUE // Default to buyer role
                 };
 
                 context.Users.Add(user);
@@ -88,7 +91,7 @@ namespace Server.Controllers
                     return BadRequest("Login credentials are required");
                 }
 
-                var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+                var user = await context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
 
                 if (user == null)
                 {
@@ -131,7 +134,7 @@ namespace Server.Controllers
                     return BadRequest("Username is required");
                 }
 
-                bool exists = await context.Users.AnyAsync(u => u.Username == username);
+                bool exists = await context.Users.AnyAsync(user => user.Username == username);
                 return Ok(new { exists });
             }
             catch (Exception ex)

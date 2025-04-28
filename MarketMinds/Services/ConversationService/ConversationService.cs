@@ -1,46 +1,43 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ConversationService
 {
     public class ConversationService : IConversationService
     {
-        private readonly HttpClient httpClient;
-        private readonly string baseUrl = "http://localhost:5000/api/conversation";
+        private readonly IConversationRepository conversationRepository;
 
-        public ConversationService(HttpClient httpClient)
+        public ConversationService(IConversationRepository conversationRepository)
         {
-            this.httpClient = httpClient;
+            this.conversationRepository = conversationRepository;
         }
 
         public async Task<Conversation> CreateConversationAsync(int userId)
         {
-            var createDto = new { UserId = userId };
+            var conversationModel = new Conversation
+            {
+                UserId = userId
+            };
 
-            var response = await httpClient.PostAsJsonAsync(baseUrl, createDto);
-            response.EnsureSuccessStatusCode();
+            var result = await conversationRepository.CreateConversationAsync(conversationModel);
 
-            return await response.Content.ReadFromJsonAsync<Conversation>();
+            // Return the result directly
+            return result;
         }
 
         public async Task<Conversation> GetConversationByIdAsync(int conversationId)
         {
-            var response = await httpClient.GetAsync($"{baseUrl}/{conversationId}");
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<Conversation>();
+            var result = await conversationRepository.GetConversationByIdAsync(conversationId);
+            return result;
         }
 
         public async Task<List<Conversation>> GetUserConversationsAsync(int userId)
         {
-            var response = await httpClient.GetAsync($"{baseUrl}/user/{userId}");
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<List<Conversation>>();
+            var results = await conversationRepository.GetConversationsByUserIdAsync(userId);
+            return results;
         }
     }
 }

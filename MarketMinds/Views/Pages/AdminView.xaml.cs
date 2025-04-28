@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ViewModelLayer.ViewModel;
 using MarketMinds.Services;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace UiLayer
 {
@@ -16,8 +16,8 @@ namespace UiLayer
     {
         private readonly ProductCategoryViewModel productCategoryViewModel;
         private readonly ProductConditionViewModel productConditionViewModel;
-        public ObservableCollection<ProductCategory> ProductCategories { get; private set; }
-        public ObservableCollection<ProductCondition> ProductConditions { get; private set; }
+        public ObservableCollection<Category> ProductCategories { get; private set; }
+        public ObservableCollection<Condition> ProductConditions { get; private set; }
 
         public AdminView()
         {
@@ -26,8 +26,8 @@ namespace UiLayer
             productCategoryViewModel = MarketMinds.App.ProductCategoryViewModel;
             productConditionViewModel = MarketMinds.App.ProductConditionViewModel;
 
-            ProductCategories = new ObservableCollection<ProductCategory>();
-            ProductConditions = new ObservableCollection<ProductCondition>();
+            ProductCategories = new ObservableCollection<Category>();
+            ProductConditions = new ObservableCollection<Condition>();
 
             // Set up data binding for view models
             CategoryNameTextBox.SetBinding(TextBox.TextProperty,

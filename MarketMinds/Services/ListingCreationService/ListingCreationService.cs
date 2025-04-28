@@ -1,5 +1,5 @@
 using System;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.BuyProductsService;
 using MarketMinds.Services.BorrowProductsService;
 using MarketMinds.Services.AuctionProductsService;
@@ -27,7 +27,10 @@ namespace MarketMinds.Services.ListingCreationService
             switch (listingType.ToLower())
             {
                 case "buy":
-                    buyProductsService.CreateListing(product);
+                    if (product is BuyProduct buyProduct)
+                    {
+                        buyProductsService.CreateListing(buyProduct);
+                    }
                     break;
                 case "borrow":
                     borrowProductsService.CreateListing(product);
