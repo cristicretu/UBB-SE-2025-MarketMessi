@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
-using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text.Json.Nodes;
+using MarketMinds.Shared.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.ProductConditionService
 {
@@ -13,12 +17,12 @@ namespace MarketMinds.Services.ProductConditionService
             _repository = repository;
         }
 
-        public List<ProductCondition> GetAllProductConditions()
+        public List<Condition> GetAllProductConditions()
         {
             return _repository.GetAllProductConditions();
         }
 
-        public ProductCondition CreateProductCondition(string displayTitle, string description)
+        public Condition CreateProductCondition(string displayTitle, string description)
         {
             return _repository.CreateProductCondition(displayTitle, description);
         }

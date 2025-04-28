@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ViewModelLayer.ViewModel;
 using MarketMinds.Views.Pages;
@@ -50,19 +50,22 @@ namespace MarketMinds
             try
             {
                 // Ensure valid date range
-                if (Product.StartDate > Product.TimeLimit)
+                if (Product.StartDate.HasValue && Product.StartDate.Value > Product.TimeLimit)
                 {
                     Debug.WriteLine("[BorrowProductView] Warning: StartDate is after TimeLimit, swapping dates");
                     var temp = Product.StartDate;
                     Product.StartDate = Product.TimeLimit;
-                    Product.TimeLimit = temp;
+                    Product.TimeLimit = temp.Value;
                 }
 
-                StartDateTextBlock.Text = Product.StartDate.ToString("d");
+                StartDateTextBlock.Text = Product.StartDate.HasValue
+                    ? Product.StartDate.Value.ToString("d")
+                    : DateTime.Now.ToString("d");
+
                 TimeLimitTextBlock.Text = Product.TimeLimit.ToString("d");
                 // Set the DatePicker's range
-                EndDatePicker.MinDate = Product.StartDate;
-                EndDatePicker.MaxDate = Product.TimeLimit;
+                EndDatePicker.MinDate = Product.StartDate ?? DateTime.Now;
+                EndDatePicker.MaxDate = new DateTimeOffset(Product.TimeLimit);
                 Debug.WriteLine($"[BorrowProductView] Date controls initialized - StartDate: {StartDateTextBlock.Text}, TimeLimit: {TimeLimitTextBlock.Text}");
                 Debug.WriteLine($"[BorrowProductView] DatePicker range set - Min: {EndDatePicker.MinDate}, Max: {EndDatePicker.MaxDate}");
             }
@@ -98,6 +101,7 @@ namespace MarketMinds
                 };
             }).ToList();
         }
+
         private void OnJoinWaitListClicked(object sender, RoutedEventArgs routedEventArgs)
         {
         }
@@ -220,12 +224,23 @@ namespace MarketMinds
             if (SelectedEndDate.HasValue)
             {
                 // Calculate price based on days difference and daily rate
-                TimeSpan duration = SelectedEndDate.Value - Product.StartDate;
+                // Make sure StartDate is not null, default to DateTime.Now if it is
+                DateTime startDate = Product.StartDate ?? DateTime.Now;
+                TimeSpan duration = SelectedEndDate.Value - startDate;
                 int days = duration.Days + 1; // Include both start and end dates
                 double totalPrice = days * Product.DailyRate;
 
                 PriceTextBlock.Text = totalPrice.ToString("C"); // Format as currency
             }
+        }
+
+        public DateTimeOffset ConvertToDateTimeOffset(DateTime? dateTime)
+        {
+            if (dateTime.HasValue)
+            {
+                return new DateTimeOffset(dateTime.Value);
+            }
+            return DateTimeOffset.MinValue;
         }
     }
 }

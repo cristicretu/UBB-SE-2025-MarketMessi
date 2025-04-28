@@ -1,6 +1,9 @@
 using System.Collections.Generic;
-using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Repositories;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.MessageService
 {

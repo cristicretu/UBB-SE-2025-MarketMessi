@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.UserService;
 
 namespace MarketMinds.ViewModels

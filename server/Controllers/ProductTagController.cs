@@ -3,6 +3,7 @@ using System.Net;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 
 namespace MarketMinds.Controllers

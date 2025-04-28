@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services
 {
@@ -49,20 +49,6 @@ namespace MarketMinds.Services
                         break;
                     case "rating":
                         user.Rating = reader.GetSingle();
-                        break;
-                    case "password":
-                        if (reader.TokenType == JsonTokenType.Number)
-                        {
-                            user.Password = reader.GetInt32().ToString();
-                        }
-                        else if (reader.TokenType == JsonTokenType.String)
-                        {
-                            user.Password = reader.GetString();
-                        }
-                        else if (reader.TokenType == JsonTokenType.Null)
-                        {
-                            user.Password = string.Empty;
-                        }
                         break;
                     default:
                         reader.Skip();

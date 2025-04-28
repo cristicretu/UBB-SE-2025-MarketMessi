@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.ImagineUploadService;
 
 namespace ViewModelLayer.ViewModel
@@ -9,11 +9,11 @@ namespace ViewModelLayer.ViewModel
     public abstract class CreateListingViewModelBase
     {
         public string Title { get; set; }
-        public ProductCategory Category { get; set; }
+        public Category Category { get; set; }
         public List<ProductTag> Tags { get; set; }
         public string Description { get; set; }
         public List<Image> Images { get; set; }
-        public ProductCondition Condition { get; set; }
+        public Condition Condition { get; set; }
         private readonly ImageUploadService imageService;
 
         public CreateListingViewModelBase()
