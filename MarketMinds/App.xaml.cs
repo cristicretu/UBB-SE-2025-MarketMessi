@@ -252,7 +252,6 @@ namespace MarketMinds
             ConversationService = new ConversationService(httpClient);
             MessageService = new MessageService(httpClient);
             NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
-            Debug.WriteLine("DEBUG: CurrentUser before view model initialization: " + (CurrentUser == null ? "NULL" : CurrentUser.ToString()));
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
@@ -291,11 +290,15 @@ namespace MarketMinds
                 Debug.WriteLine($"DEBUG: Created SeeBuyerReviewsViewModel - User: {CurrentUser?.Id}");
                 SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
                 Debug.WriteLine($"DEBUG: Created SeeSellerReviewsViewModel - Seller: {CurrentUser?.Id}, Viewer: {CurrentUser?.Id}");
+                
+                ChatBotViewModel.SetCurrentUser(CurrentUser);
+                Debug.WriteLine($"DEBUG: Updated ChatBotViewModel with CurrentUser: {CurrentUser?.Id}");
+                
                 if (LoginWindow != null)
                 {
                     LoginWindow.Close();
                 }
-                                MainWindow.Activate();
+                MainWindow.Activate();
             }
             else
             {

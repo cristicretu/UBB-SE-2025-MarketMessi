@@ -17,13 +17,13 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
         private readonly string baseUrl = "http://localhost:5000/api/chatbot";
         private Node currentNode;
         private bool isActive;
+        private User currentUser;
 
         public ChatbotService(HttpClient httpClient)
         {
             this.httpClient = httpClient;
             isActive = false;
             Debug.WriteLine($"ChatbotService created with baseUrl: {baseUrl}");
-            // Create default node
             currentNode = new Node
             {
                 Id = 1,
@@ -32,6 +32,12 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                 LabelText = "Welcome",
                 Children = new List<Node>()
             };
+        }
+
+        public void SetCurrentUser(User user)
+        {
+            currentUser = user;
+            Debug.WriteLine($"[SERVICE]: Current user set to: {user?.Username} (ID: {user?.Id})");
         }
 
         public Node InitializeChat()
@@ -105,20 +111,10 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                     return "Hello! I'm your shopping assistant. How can I help you today?";
                 }
 
-                string apiKey = await GetApiKeyAsync();
-                if (string.IsNullOrEmpty(apiKey))
-                {
-                    Debug.WriteLine("API key is null or empty");
-                    return "I'm sorry, I'm having trouble connecting to my brain right now. Please try again later.";
-                }
-
-                Debug.WriteLine($"API key loaded successfully (length: {apiKey.Length})");
-
-                // The server-side controller expects a simple request with a Message field
-                // Not the complex Gemini API format
                 var requestData = new
                 {
-                    Message = userMessage
+                    Message = userMessage,
+                    UserId = currentUser?.Id
                 };
 
                 var jsonContent = JsonConvert.SerializeObject(requestData);
@@ -126,7 +122,6 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
 
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                // Remove the API key from the URL as it's handled on the server
                 var url = baseUrl;
                 Debug.WriteLine($"Preparing HTTP request to URL: {url}");
 
@@ -179,87 +174,6 @@ namespace MarketMinds.Services.DreamTeam.ChatbotService
                     stopwatch.Stop();
                     Debug.WriteLine($"GetBotResponseAsync completed with error in {stopwatch.ElapsedMilliseconds}ms");
                 }
-            }
-        }
-
-        private async Task<string> GetApiKeyAsync()
-        {
-            try
-            {
-                Debug.WriteLine("Getting API key from local settings...");
-
-                // Use hardcoded API key for testing if other methods fail
-                // This is a temporary fix to prevent the app from crashing
-                const string fallbackApiKey = "AIzaSyDdvtwFYdF_Aqy8UpH0zrfQEzoCpg_KoPc";
-
-                try
-                {
-                    // Make sure we don't access ApplicationData.Current properties when not on UI thread
-                    // or when the application isn't fully initialized
-                    if (ApplicationData.Current != null)
-                    {
-                        ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-                        if (localSettings != null && localSettings.Values.TryGetValue("GeminiApiKey", out object value))
-                        {
-                            string apiKey = value.ToString();
-                            Debug.WriteLine($"API key found in settings (length: {apiKey.Length})");
-                            return apiKey;
-                        }
-
-                        Debug.WriteLine("API key not found in local settings, trying to load from file");
-
-                        try
-                        {
-                            StorageFolder appFolder = ApplicationData.Current.LocalFolder;
-                            if (appFolder != null)
-                            {
-                                try
-                                {
-                                    StorageFile apiKeyFile = await appFolder.GetFileAsync("gemini_api_key.txt");
-                                    string apiKey = await FileIO.ReadTextAsync(apiKeyFile);
-
-                                    if (!string.IsNullOrWhiteSpace(apiKey))
-                                    {
-                                        apiKey = apiKey.Trim();
-                                        Debug.WriteLine($"API key loaded from file (length: {apiKey.Length})");
-
-                                        // Save to settings for next time
-                                        localSettings.Values["GeminiApiKey"] = apiKey;
-
-                                        return apiKey;
-                                    }
-                                    else
-                                    {
-                                        Debug.WriteLine("API key file exists but is empty");
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Debug.WriteLine($"Error loading API key from file: {ex.Message}");
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Error accessing application folder: {ex.Message}");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Exception in ApplicationData access: {ex.Message}");
-                }
-
-                // Return fallback API key if we couldn't get one from settings or file
-                Debug.WriteLine("Using fallback API key");
-                return fallbackApiKey;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception in GetApiKeyAsync: {ex.Message}");
-                // Use the hardcoded fallback API key as a last resort
-                Debug.WriteLine("Using fallback API key after exception");
-                return "AIzaSyDdvtwFYdF_Aqy8UpH0zrfQEzoCpg_KoPc";
             }
         }
     }
