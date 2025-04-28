@@ -38,12 +38,14 @@ namespace MarketMinds.Services.AuctionProductsService
         public string GetTimeLeft(AuctionProduct auction)
         {
             var timeLeft = auction.EndTime - DateTime.Now;
-            return timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
+            string result = timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
+            return result;
         }
 
         public bool IsAuctionEnded(AuctionProduct auction)
         {
-            return DateTime.Now >= auction.EndTime;
+            bool isEnded = DateTime.Now >= auction.EndTime;
+            return isEnded;
         }
 
         public void ValidateBid(AuctionProduct auction, User bidder, double bidAmount)

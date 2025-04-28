@@ -23,6 +23,12 @@ namespace MarketMinds.Services.ReviewService
             repository = new ReviewRepository(configuration);
             // We'll need the user service to get usernames
             userService = App.UserService;
+
+            // If userService is null, create a new instance with the configuration
+            if (userService == null)
+            {
+                userService = new UserService.UserService(configuration);
+            }
         }
 
         private async Task<string> GetUsernameForIdAsync(int userId)
@@ -39,6 +45,14 @@ namespace MarketMinds.Services.ReviewService
 
             try
             {
+                // Ensure userService is not null before calling it
+                if (userService == null)
+                {
+                    string fallbackUsernameLocal = $"User #{userId}"; // Renamed to avoid conflict
+                    userCache[userId] = fallbackUsernameLocal;
+                    return fallbackUsernameLocal;
+                }
+
                 var user = await userService.GetUserByIdAsync(userId);
                 if (user != null)
                 {

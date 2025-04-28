@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace MarketMinds.Shared.Models
 {
@@ -48,7 +49,7 @@ namespace MarketMinds.Shared.Models
         }
 
         public BorrowProduct(int id, string title, string description, User seller,
-            Condition condition, Category category, List<ProductTag> productTags, 
+            Condition condition, Category category, List<ProductTag> productTags,
             List<Image> images, DateTime timeLimit, DateTime startDate, DateTime endDate,
             double dailyRate, bool isBorrowed) : base()
         {
