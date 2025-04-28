@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Services.ProductCategoryService
+namespace MarketMinds.Shared.Repositories
 {
     /// <summary>
     /// Interface for ProductCategoryService to manage product category operations.
     /// </summary>
-    public interface IProductCategoryService
+    public interface IProductCategoryRepository
     {
         /// <summary>
         /// Returns all the product categories.

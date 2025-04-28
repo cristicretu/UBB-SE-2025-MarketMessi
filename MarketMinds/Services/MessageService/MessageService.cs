@@ -1,43 +1,31 @@
-using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Repositories;
 
 namespace MarketMinds.Services.MessageService
 {
     public class MessageService : IMessageService
     {
-        private readonly HttpClient httpClient;
-        private readonly string baseUrl = "http://localhost:5000/api/message";
+        private readonly IMessageRepository _repository;
 
-        public MessageService(HttpClient httpClient)
+        public MessageService(IMessageRepository repository)
         {
-            this.httpClient = httpClient;
+            _repository = repository;
         }
 
-        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        public List<Message> GetMessagesForConversation(int conversationId)
         {
-            var createDto = new
-            {
-                ConversationId = conversationId,
-                UserId = userId,
-                Content = content
-            };
-
-            var response = await httpClient.PostAsJsonAsync(baseUrl, createDto);
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<Message>();
+            return _repository.GetMessagesForConversation(conversationId);
         }
 
-        public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
+        public Message SendMessage(int conversationId, string content)
         {
-            var response = await httpClient.GetAsync($"{baseUrl}/conversation/{conversationId}");
-            response.EnsureSuccessStatusCode();
+            return _repository.SendMessage(conversationId, content);
+        }
 
-            return await response.Content.ReadFromJsonAsync<List<Message>>();
+        public void DeleteMessage(int messageId)
+        {
+            _repository.DeleteMessage(messageId);
         }
     }
 }

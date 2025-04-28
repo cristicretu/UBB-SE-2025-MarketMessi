@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Services.MessageService
+namespace MarketMinds.Shared.Repositories
 {
-    public interface IMessageService
+    public interface IMessageRepository
     {
         Task<Message> CreateMessageAsync(int conversationId, int userId, string content);
         Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId);

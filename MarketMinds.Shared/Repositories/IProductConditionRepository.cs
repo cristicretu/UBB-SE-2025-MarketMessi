@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Services.ProductConditionService
+namespace MarketMinds.Shared.Repositories
 {
     /// <summary>
     /// Interface for ProductConditionService to manage product condition operations.
     /// </summary>
-    public interface IProductConditionService
+    public interface IProductConditionRepository
     {
         /// <summary>
         /// Returns all the product conditions.
