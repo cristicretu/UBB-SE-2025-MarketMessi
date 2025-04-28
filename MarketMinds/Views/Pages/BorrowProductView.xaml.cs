@@ -58,10 +58,10 @@ namespace MarketMinds
                     Product.TimeLimit = temp.Value;
                 }
 
-                StartDateTextBlock.Text = Product.StartDate.HasValue 
-                    ? Product.StartDate.Value.ToString("d") 
+                StartDateTextBlock.Text = Product.StartDate.HasValue
+                    ? Product.StartDate.Value.ToString("d")
                     : DateTime.Now.ToString("d");
-                    
+
                 TimeLimitTextBlock.Text = Product.TimeLimit.ToString("d");
                 // Set the DatePicker's range
                 EndDatePicker.MinDate = Product.StartDate ?? DateTime.Now;
@@ -101,6 +101,7 @@ namespace MarketMinds
                 };
             }).ToList();
         }
+
         private void OnJoinWaitListClicked(object sender, RoutedEventArgs routedEventArgs)
         {
         }
@@ -231,6 +232,15 @@ namespace MarketMinds
 
                 PriceTextBlock.Text = totalPrice.ToString("C"); // Format as currency
             }
+        }
+
+        public DateTimeOffset ConvertToDateTimeOffset(DateTime? dateTime)
+        {
+            if (dateTime.HasValue)
+            {
+                return new DateTimeOffset(dateTime.Value);
+            }
+            return DateTimeOffset.MinValue;
         }
     }
 }
