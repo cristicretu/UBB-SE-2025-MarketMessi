@@ -24,19 +24,19 @@ namespace Marketplace_SE
     {
         private AdminFindHelpTicketViewModel viewModel;
 
-        private const int BorderThicknessValue = 2;  // magic numbers removal
-        private const int BorderCornerRadius = 5;
-        private const int BorderPadding = 10;
-        private const int BorderMargin = 5;
-        private const int TicketFontSize = 16;
-        private const int TextBlockBottomMargin = 10;
-        private const int TextBlockLeftMargin = 0;
-        private const int TextBlockTopMargin = 0;
-        private const int TextBlockRightMargin = 0;
-        private const byte BorderBrushAlpha = 255;
-        private const byte BorderBrushRed = 130;
-        private const byte BorderBrushGreen = 130;
-        private const byte BorderBrushBlue = 130;
+        private const int BORDER_THICKNESS = 2;
+        private const int BORDER_CORNER_RADIUS = 5;
+        private const int BORDER_PADDING = 10;
+        private const int BORDER_MARGIN = 5;
+        private const int TEXT_BLOCK_FONT_SIZE = 16;
+        private const int TEXT_BLOCK_MARGIN_BOTTOM = 10;
+        private const int TEXT_BLOCK_MARGIN_LEFT = 0;
+        private const int TEXT_BLOCK_MARGIN_TOP = 0;
+        private const int TEXT_BLOCK_MARGIN_RIGHT = 0;
+        private const byte BORDER_BRUSH_ALPHA = 255;
+        private const byte BORDER_BRUSH_RED = 130;
+        private const byte BORDER_BRUSH_GREEN = 130;
+        private const byte BORDER_BRUSH_BLUE = 130;
 
         public AdminFindHelpTicket()
         {
@@ -68,11 +68,11 @@ namespace Marketplace_SE
         {
             Border border = new Border
             {
-                BorderThickness = new Thickness(BorderThicknessValue),
-                CornerRadius = new CornerRadius(BorderCornerRadius),
-                BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(BorderBrushAlpha, BorderBrushRed, BorderBrushGreen, BorderBrushBlue)),
-                Padding = new Thickness(BorderPadding),
-                Margin = new Thickness(BorderMargin),
+                BorderThickness = new Thickness(BORDER_THICKNESS),
+                CornerRadius = new CornerRadius(BORDER_CORNER_RADIUS),
+                BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(BORDER_BRUSH_ALPHA, BORDER_BRUSH_RED, BORDER_BRUSH_GREEN, BORDER_BRUSH_BLUE)),
+                Padding = new Thickness(BORDER_PADDING),
+                Margin = new Thickness(BORDER_MARGIN),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
@@ -85,8 +85,8 @@ namespace Marketplace_SE
             TextBlock textBlock = new TextBlock
             {
                 Text = ticket.ToStringExceptDescription(),
-                Margin = new Thickness(TextBlockLeftMargin, TextBlockTopMargin, TextBlockRightMargin, TextBlockBottomMargin),
-                FontSize = TicketFontSize,
+                Margin = new Thickness(TEXT_BLOCK_MARGIN_LEFT, TEXT_BLOCK_MARGIN_TOP, TEXT_BLOCK_MARGIN_RIGHT, TEXT_BLOCK_MARGIN_BOTTOM),
+                FontSize = TEXT_BLOCK_FONT_SIZE,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left
             };

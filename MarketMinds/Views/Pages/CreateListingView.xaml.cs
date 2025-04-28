@@ -59,7 +59,7 @@ namespace UiLayer
         private const int MAX_RETRY_DELAY = 2;
         private const int MAX_CLIENT_ID_LENGTH = 20;
         private const int NO_RETRY = 0;
-        private const int UploadImageButtonWidth = 150;
+        private const int UPLOAD_IMAGE_BUTTON_WIDTH = 150;
         private readonly TagManagementViewModelHelper tagManagementHelper;
         private readonly ImageUploadService imageUploadService;
         private readonly ListingFormValidationService validationService;
@@ -83,7 +83,7 @@ namespace UiLayer
             conditionComboBox = new ComboBox();
             conditionErrorTextBlock = new TextBlock { Text = "Please select a condition.", Foreground = new SolidColorBrush(Colors.Red), Visibility = Visibility.Collapsed };
             tags = new ObservableCollection<string>();
-            uploadImageButton = new Button { Content = "Upload Image", Width = UploadImageButtonWidth };
+            uploadImageButton = new Button { Content = "Upload Image", Width = UPLOAD_IMAGE_BUTTON_WIDTH };
             uploadImageButton.Click += OnUploadImageClick;
             imagesTextBlock = new TextBlock { TextWrapping = TextWrapping.Wrap };
 

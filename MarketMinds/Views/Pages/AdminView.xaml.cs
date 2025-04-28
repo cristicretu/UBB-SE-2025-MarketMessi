@@ -40,15 +40,15 @@ namespace UiLayer
                 new Microsoft.UI.Xaml.Data.Binding() { Path = new PropertyPath("ConditionDescription"), Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay, Source = productConditionViewModel });
 
             // Register for property changed events to show dialogs
-            productCategoryViewModel.PropertyChanged += ViewModelPropertyChanged;
-            productConditionViewModel.PropertyChanged += ViewModelPropertyChanged;
+            productCategoryViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            productConditionViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             // Load existing data
             LoadCategories();
             LoadConditions();
         }
 
-        private async void ViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs propertyChangedEventArgs)
+        private async void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs propertyChangedEventArgs)
         {
             if (propertyChangedEventArgs.PropertyName == "IsDialogOpen" && sender is INotifyPropertyChanged viewModel)
             {

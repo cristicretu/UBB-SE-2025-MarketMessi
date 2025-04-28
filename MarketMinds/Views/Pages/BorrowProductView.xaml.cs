@@ -27,12 +27,12 @@ namespace MarketMinds
         private readonly User currentUser;
         public DateTime? SelectedEndDate { get; private set; }
 
-        private const int ImageHeight = 250;  // magic numbers removal
-        private const int TextBlockMargin = 4;
-        private const int TextBlockPaddingLeft = 8;
-        private const int TextBlockPaddingTop = 4;
-        private const int TextBlockPaddingRight = 8;
-        private const int TextBlockPaddingBottom = 4;
+        private const int IMAGE_HEIGHT = 250;  // magic numbers removal
+        private const int TEXT_BLOCK_MARGIN = 4;
+        private const int TEXT_BLOCK_PADDING_LEFT = 8;
+        private const int TEXT_BLOCK_PADDING_TOP = 4;
+        private const int TEXT_BLOCK_PADDING_RIGHT = 8;
+        private const int TEXT_BLOCK_PADDING_BOTTOM = 4;
 
         public BorrowProductView(BorrowProduct product)
         {
@@ -65,10 +65,10 @@ namespace MarketMinds
                 Debug.WriteLine($"[BorrowProductView] Date controls initialized - StartDate: {StartDateTextBlock.Text}, TimeLimit: {TimeLimitTextBlock.Text}");
                 Debug.WriteLine($"[BorrowProductView] DatePicker range set - Min: {EndDatePicker.MinDate}, Max: {EndDatePicker.MaxDate}");
             }
-            catch (Exception productBurrowViewException)
+            catch (Exception borrowProductViewException)
             {
-                Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {productBurrowViewException.Message}");
-                Debug.WriteLine($"[BorrowProductView] Stack trace: {productBurrowViewException.StackTrace}");
+                Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {borrowProductViewException.Message}");
+                Debug.WriteLine($"[BorrowProductView] Stack trace: {borrowProductViewException.StackTrace}");
             }
 
             LoadProductDetails();
@@ -92,8 +92,8 @@ namespace MarketMinds
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(TextBlockMargin),
-                    Padding = new Thickness(TextBlockPaddingLeft, TextBlockPaddingTop, TextBlockPaddingRight, TextBlockPaddingBottom)
+                    Margin = new Thickness(TEXT_BLOCK_MARGIN),
+                    Padding = new Thickness(TEXT_BLOCK_PADDING_LEFT, TEXT_BLOCK_PADDING_TOP, TEXT_BLOCK_PADDING_RIGHT, TEXT_BLOCK_PADDING_BOTTOM)
                 };
             }).ToList();
         }
@@ -113,8 +113,8 @@ namespace MarketMinds
                 var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
-                    Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = ImageHeight,
+                    Stretch = Stretch.Uniform,
+                    Height = IMAGE_HEIGHT,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };

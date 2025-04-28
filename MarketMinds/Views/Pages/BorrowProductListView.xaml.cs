@@ -24,12 +24,9 @@ namespace UiLayer
         private readonly BorrowSortTypeConverterService sortTypeConverterService;
 
         // Pagination variables
-        private int currentPage = 1;
-        private int totalPages = 1;
-
-        private const int FirstPageNumber = 1;  // magic numbers removal
-        private const int EmptyCollectionCount = 0;
-
+        private int CURRENT_PAGE = 1; // Current page number, default to 1
+        private int TOTAL_PAGE_COUNT = 1;
+        private const int FIRST_PAGE = 1;
         private List<BorrowProduct> currentFullList;
 
         public BorrowProductListView()
@@ -62,42 +59,42 @@ namespace UiLayer
         private void RefreshProductList()
         {
             var (pageItems, newTotalPages, fullList) = borrowProductListViewModelHelper.GetBorrowProductsPage(
-                borrowProductsViewModel, sortAndFilterViewModel, currentPage);
+                borrowProductsViewModel, sortAndFilterViewModel, CURRENT_PAGE);
             currentFullList = fullList;
-            totalPages = newTotalPages;
+            TOTAL_PAGE_COUNT = newTotalPages;
             borrowProducts.Clear();
             foreach (var item in pageItems)
             {
                 borrowProducts.Add(item);
             }
             // Update UI elements
-            EmptyMessageTextBlock.Visibility = borrowProducts.Count == EmptyCollectionCount ?
+            EmptyMessageTextBlock.Visibility = borrowProducts.Count == 0 ?
                 Visibility.Visible : Visibility.Collapsed;
             UpdatePaginationDisplay();
         }
 
         private void UpdatePaginationDisplay()
         {
-            PaginationTextBlock.Text = borrowProductListViewModelHelper.GetPaginationText(currentPage, totalPages);
-            var (hasPrevious, hasNext) = borrowProductListViewModelHelper.GetPaginationState(currentPage, totalPages);
+            PaginationTextBlock.Text = borrowProductListViewModelHelper.GetPaginationText(CURRENT_PAGE, TOTAL_PAGE_COUNT);
+            var (hasPrevious, hasNext) = borrowProductListViewModelHelper.GetPaginationState(CURRENT_PAGE, TOTAL_PAGE_COUNT);
             PreviousButton.IsEnabled = hasPrevious;
             NextButton.IsEnabled = hasNext;
         }
 
         private void PreviousButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > FirstPageNumber)
+            if (CURRENT_PAGE > FIRST_PAGE)
             {
-                currentPage--;
+                CURRENT_PAGE--;
                 RefreshProductList();
             }
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage < totalPages)
+            if (CURRENT_PAGE < TOTAL_PAGE_COUNT)
             {
-                currentPage++;
+                CURRENT_PAGE++;
                 RefreshProductList();
             }
         }
@@ -105,7 +102,7 @@ namespace UiLayer
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs routedEventArgs)
         {
             sortAndFilterViewModel.HandleSearchQueryChange(SearchTextBox.Text);
-            currentPage = FirstPageNumber; // Reset to first page on new search
+            CURRENT_PAGE = FIRST_PAGE; // Reset to first page on new search
             RefreshProductList();
         }
 
@@ -116,7 +113,7 @@ namespace UiLayer
             var result = await filterDialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                currentPage = FirstPageNumber; // Reset to first page on new filter
+                CURRENT_PAGE = FIRST_PAGE; // Reset to first page on new filter
                 RefreshProductList();
             }
         }
@@ -136,7 +133,7 @@ namespace UiLayer
                 if (sortType != null)
                 {
                     sortAndFilterViewModel.HandleSortChange(sortType);
-                    currentPage = FirstPageNumber; // Reset to first page on new sort
+                    CURRENT_PAGE = FIRST_PAGE; // Reset to first page on new sort
                     RefreshProductList();
                 }
             }

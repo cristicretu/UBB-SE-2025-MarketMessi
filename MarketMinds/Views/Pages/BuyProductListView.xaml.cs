@@ -25,11 +25,11 @@ namespace UiLayer
         private readonly BuyProductListViewModelHelper buyProductListViewModelHelper;
 
         // Pagination variables
-        private int currentPage = 1;
-        private int totalPages = 1;
+        private int CURRENT_PAGE = 1; // Current page number, default to 1
+        private int TOTAL_PAGE_COUNT = 1;
         private List<BuyProduct> currentFullList;
 
-        private const int FirstPageNumber = 1;  // magic numbers removal
+        private const int FIRST_PAGE = 1;
 
         public BuyProductListView()
         {
@@ -59,9 +59,9 @@ namespace UiLayer
 
         private void ApplyFiltersAndPagination()
         {
-            var (currentPageProducts, newTotalPages, fullList) = buyProductListViewModelHelper.GetBuyProductsPage(buyProductsViewModel, sortAndFilterViewModel, currentPage);
+            var (currentPageProducts, newTotalPages, fullList) = buyProductListViewModelHelper.GetBuyProductsPage(buyProductsViewModel, sortAndFilterViewModel, CURRENT_PAGE);
             currentFullList = fullList;
-            totalPages = newTotalPages;
+            TOTAL_PAGE_COUNT = newTotalPages;
             buyProducts.Clear();
             foreach (var product in currentPageProducts)
             {
@@ -71,36 +71,36 @@ namespace UiLayer
 
         private void NextPageButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage < totalPages)
+            if (CURRENT_PAGE < TOTAL_PAGE_COUNT)
             {
-                currentPage++;
+                CURRENT_PAGE++;
                 ApplyFiltersAndPagination();
             }
         }
 
         private void PreviousPageButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > FirstPageNumber)
+            if (CURRENT_PAGE > FIRST_PAGE)
             {
-                currentPage--;
+                CURRENT_PAGE--;
                 ApplyFiltersAndPagination();
             }
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage < totalPages)
+            if (CURRENT_PAGE < TOTAL_PAGE_COUNT)
             {
-                currentPage++;
+                CURRENT_PAGE++;
                 ApplyFiltersAndPagination();
             }
         }
 
         private void PreviousButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > FirstPageNumber)
+            if (CURRENT_PAGE > FIRST_PAGE)
             {
-                currentPage--;
+                CURRENT_PAGE--;
                 ApplyFiltersAndPagination();
             }
         }

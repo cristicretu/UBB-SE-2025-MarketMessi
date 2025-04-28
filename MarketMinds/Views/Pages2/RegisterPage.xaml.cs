@@ -30,7 +30,7 @@ namespace Marketplace_SE
         public ViewModelLayer.ViewModel.RegisterViewModel ViewModel { get; set; }
         public User NewUser { get; set; }
 
-        private const int MinimumPasswordLength = 6;
+        private const int MINIMUM_PASSWORD_LENGTH = 6;
 
         public RegisterPage()
         {
@@ -128,7 +128,7 @@ namespace Marketplace_SE
 
         private string GetPasswordStrength(string password)
         {
-            if (password.Length < MinimumPasswordLength)
+            if (password.Length < MINIMUM_PASSWORD_LENGTH)
             {
                 return "Weak";
             }

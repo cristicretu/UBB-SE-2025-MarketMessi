@@ -51,7 +51,7 @@
                                 <TextBlock x:Name="PriceTextBlock" />
                             </StackPanel>
                             <Button Content="Add to basket" 
-                Click="OnAddtoBascketClicked" 
+                Click="OnAddToBasketClicked" 
                 Width="120"
                 HorizontalAlignment="Left"/>
                         </StackPanel>

@@ -61,9 +61,9 @@ namespace ViewModelLayer.ViewModel
                 LoadBasket();
                 ErrorMessage = string.Empty;
             }
-            catch (Exception basketAddingException)
+            catch (Exception basketAddException)
             {
-                ErrorMessage = $"Failed to add product to basket: {basketAddingException.Message}";
+                ErrorMessage = $"Failed to add product to basket: {basketAddException.Message}";
             }
         }
 
@@ -74,9 +74,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.RemoveProductFromBasket(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception basketRemovalException)
+            catch (Exception basketRemoveException)
             {
-                ErrorMessage = $"Failed to remove product: {basketRemovalException.Message}";
+                ErrorMessage = $"Failed to remove product: {basketRemoveException.Message}";
             }
         }
 
@@ -132,9 +132,9 @@ namespace ViewModelLayer.ViewModel
                 UpdateProductQuantity(basketItem.Product.Id, newQuantity);
                 return true;
             }
-            catch (Exception textQuantityUpdateException)
+            catch (Exception quantityUpdateException)
             {
-                errorMessage = $"Failed to update quantity: {textQuantityUpdateException.Message}";
+                errorMessage = $"Failed to update quantity: {quantityUpdateException.Message}";
                 return false;
             }
         }

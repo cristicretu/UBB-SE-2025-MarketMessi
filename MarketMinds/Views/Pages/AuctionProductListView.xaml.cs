@@ -98,7 +98,7 @@ namespace UiLayer
             }
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs routedEventArgse)
+        private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (currentPage < totalPages)
             {

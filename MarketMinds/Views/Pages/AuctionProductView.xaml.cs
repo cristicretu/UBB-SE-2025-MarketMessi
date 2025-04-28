@@ -34,13 +34,13 @@ namespace MarketMinds
         private DispatcherTimer? countdownTimer;
         private Window? seeSellerReviewsView;
 
-        private const int CountdownTimerIntervalInSeconds = 1;  // magic numbers removal
-        private const int ImageHeight = 250;
-        private const int TagMargin = 4;
-        private const int TagPaddingLeft = 8;
-        private const int TagPaddingRight = 8;
-        private const int TagPaddingTop = 4;
-        private const int TagPaddingBottom = 4;
+        private const int COUNTDOWN_TIMER_INTERVAL_IN_SECONDS = 1;
+        private const int IMAGE_HEIGHT = 250;
+        private const int TAG_MARGIN = 4;
+        private const int TAG_PADDING_LEFT = 8;
+        private const int TAG_PADDING_RIGHT = 8;
+        private const int TAG_PADDING_TOP = 4;
+        private const int TAG_PADDING_BOTTOM = 4;
 
         public AuctionProductView(AuctionProduct product)
         {
@@ -57,7 +57,7 @@ namespace MarketMinds
         private void StartCountdownTimer()
         {
             countdownTimer = new DispatcherTimer();
-            countdownTimer.Interval = TimeSpan.FromSeconds(CountdownTimerIntervalInSeconds);
+            countdownTimer.Interval = TimeSpan.FromSeconds(COUNTDOWN_TIMER_INTERVAL_IN_SECONDS);
             countdownTimer.Tick += CountdownTimer_Tick;
             countdownTimer.Start();
         }
@@ -91,8 +91,8 @@ namespace MarketMinds
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(TagMargin),
-                    Padding = new Thickness(TagPaddingLeft, TagPaddingTop, TagPaddingRight, TagPaddingBottom),
+                    Margin = new Thickness(TAG_MARGIN),
+                    Padding = new Thickness(TAG_PADDING_LEFT, TAG_PADDING_TOP, TAG_PADDING_RIGHT, TAG_PADDING_BOTTOM),
                 };
             }).ToList();
         }
@@ -105,8 +105,8 @@ namespace MarketMinds
                 var img = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
-                    Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = ImageHeight,
+                    Stretch = Stretch.Uniform,
+                    Height = IMAGE_HEIGHT,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };

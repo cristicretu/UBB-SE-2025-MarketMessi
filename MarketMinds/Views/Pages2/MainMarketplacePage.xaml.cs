@@ -17,19 +17,19 @@ namespace Marketplace_SE
     public sealed partial class MainMarketplacePage : Page
     {
         private readonly MainMarketplaceViewModel mainMarketplaceViewModel;
-        private User me;
+        private User currentUser;
 
         public MainMarketplacePage()
         {
             this.InitializeComponent();
 
             mainMarketplaceViewModel = App.MainMarketplaceViewModel;
-            me = App.CurrentUser;
+            currentUser = App.CurrentUser;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs routedEventArgs)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(routedEventArgs);
             LoadAvailableItems();
         }
 
@@ -50,9 +50,9 @@ namespace Marketplace_SE
                     ShowNotification("Error", "Failed to load items.");
                 }
             }
-            catch (Exception itemsLoadingException)
+            catch (Exception itemsLoadException)
             {
-                ShowNotification("Error", $"An error occurred while loading items: {itemsLoadingException.Message}");
+                ShowNotification("Error", $"An error occurred while loading items: {itemsLoadException.Message}");
             }
             finally
             {

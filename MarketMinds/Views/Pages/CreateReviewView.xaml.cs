@@ -21,8 +21,8 @@ namespace MarketMinds
         public ReviewCreateViewModel ViewModel { get; set; }
         private readonly bool isEditing;
 
-        private const int CloseDelayMilliseconds = 1000;  // magic numbers removal
-        private const int DefaultRating = 0;
+        private const int CLOSE_DELAY_MILLISECONDS = 1000;
+        private const int DEFAULT_RATING = 0;
 
         public CreateReviewView(ReviewCreateViewModel viewModel, Review? review = null)
         {
@@ -76,7 +76,7 @@ namespace MarketMinds
             UpdateStatusMessage();
 
             // Allow a moment to see the status message before closing
-            Task.Delay(CloseDelayMilliseconds).ContinueWith(_ => this.DispatcherQueue.TryEnqueue(() => this.Close()));
+            Task.Delay(CLOSE_DELAY_MILLISECONDS).ContinueWith(_ => this.DispatcherQueue.TryEnqueue(() => this.Close()));
         }
 
         private void OnWindowClosed(object sender, Microsoft.UI.Xaml.WindowEventArgs windowEventArgs)
@@ -84,7 +84,7 @@ namespace MarketMinds
             // Clear ViewModel properties when the window is closed
             ViewModel.Description = string.Empty;
             ViewModel.ImagesString = string.Empty;
-            ViewModel.Rating = DefaultRating;
+            ViewModel.Rating = DEFAULT_RATING;
         }
 
         private async void OnUploadImageClick(object sender, RoutedEventArgs routedEventArgs)

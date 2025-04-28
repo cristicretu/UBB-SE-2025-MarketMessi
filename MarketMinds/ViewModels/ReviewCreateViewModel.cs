@@ -96,9 +96,9 @@ namespace ViewModelLayer.ViewModel
                 reviewCreationService.UpdateReview(CurrentReview, Description, Rating);
                 StatusMessage = "Review updated successfully";
             }
-            catch (Exception reviewUpateException)
+            catch (Exception reviewUpdateException)
             {
-                StatusMessage = $"Error updating review: {reviewUpateException.Message}";
+                StatusMessage = $"Error updating review: {reviewUpdateException.Message}";
             }
         }
     }

@@ -39,11 +39,8 @@ namespace Marketplace_SE
 
         private bool isInitializing = false;
         private bool initialLoadComplete = false;
-
-        private const int ZeroBytes = 0;  // magic numbers removal
-        private const int ZeroMessages = 0;
-        private const int ZeroMessageId = 0;
-        private const int TimerOneSecond = 1;
+        private const int INVALID_MESSAGE_ID = 0;
+        private const int TIMER_SECONDS = 1;
 
         public ChatPage()
         {
@@ -156,7 +153,7 @@ namespace Marketplace_SE
             if (updateTimer == null)
             {
                 updateTimer = new DispatcherTimer();
-                updateTimer.Interval = TimeSpan.FromSeconds(TimerOneSecond);
+                updateTimer.Interval = TimeSpan.FromSeconds(TIMER_SECONDS);
                 updateTimer.Tick += UpdateTimer_Tick;
             }
             updateTimer.Start();
@@ -182,12 +179,12 @@ namespace Marketplace_SE
             try
             {
                 List<Message> newMessages = chatViewModel.CheckForNewMessages();
-                if (newMessages?.Count > ZeroMessages)
+                if (newMessages?.Count > 0)
                 {
                     bool addedNew = false;
                     foreach (var message in newMessages)
                     {
-                        if (!displayedMessages.Any(existingMessage => existingMessage.Id == message.Id && existingMessage.Id != ZeroMessageId))
+                        if (!displayedMessages.Any(existingMessage => existingMessage.Id == message.Id && existingMessage.Id != INVALID_MESSAGE_ID))
                         {
                             AddMessageToDisplay(message);
                             addedNew = true;
@@ -296,7 +293,7 @@ namespace Marketplace_SE
                         return;
                     }
 
-                if (bytes != null && bytes.Length > ZeroBytes)
+                if (bytes != null && bytes.Length > 0)
                     {
                         long pseudoTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
@@ -319,7 +316,7 @@ namespace Marketplace_SE
                     }
                 }
             }
-            catch (Exception imageUploadingException)
+            catch (Exception imageUploadException)
             {
                 ShowErrorDialog("Image upload error", "Failed to upload image.");
             }

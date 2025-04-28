@@ -144,9 +144,9 @@ namespace MarketMinds.Views.Pages
                     LoadBasketData();
                 }
             }
-            catch (Exception itemRemovalButtonClickException)
+            catch (Exception itemRemovalException)
             {
-                ShowErrorMessage($"Failed to remove item: {itemRemovalButtonClickException.Message}");
+                ShowErrorMessage($"Failed to remove item: {itemRemovalException.Message}");
             }
         }
 
