@@ -89,12 +89,38 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
+                if (user == null)
+                {
+                    return false;
+                }
+                
+                if (string.IsNullOrEmpty(user.Username))
+                {
+                    return false;
+                }
+                
+                if (string.IsNullOrEmpty(user.Email))
+                {
+                    return false;
+                }
+                
+                if (string.IsNullOrEmpty(user.Password))
+                {
+                    return false;
+                }
+                
                 var sharedUser = ConvertToSharedUser(user);
-                return await repository.RegisterUserAsync(sharedUser);
+                
+                bool result = await repository.RegisterUserAsync(sharedUser);
+                
+                return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error registering user: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[UserService] Inner exception: {ex.InnerException.Message}");
+                }
                 return false;
             }
         }
@@ -127,6 +153,7 @@ namespace MarketMinds.Services.UserService
                 Username = sharedUser.Username,
                 Email = sharedUser.Email,
                 PasswordHash = sharedUser.PasswordHash,
+                Password = sharedUser.Password,
                 UserType = sharedUser.UserType,
                 Balance = sharedUser.Balance,
                 Rating = sharedUser.Rating
@@ -140,12 +167,14 @@ namespace MarketMinds.Services.UserService
                 return null;
             }
 
+            
             return new MarketMinds.Shared.Models.User
             {
                 Id = domainUser.Id,
                 Username = domainUser.Username,
                 Email = domainUser.Email,
                 PasswordHash = domainUser.PasswordHash,
+                Password = domainUser.Password,
                 UserType = domainUser.UserType,
                 Balance = domainUser.Balance,
                 Rating = domainUser.Rating

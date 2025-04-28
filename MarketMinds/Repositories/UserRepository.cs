@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
 
 namespace MarketMinds.Repositories
 {
@@ -245,7 +246,6 @@ namespace MarketMinds.Repositories
         {
             try
             {
-                // Check if email exists
                 var existingUserByEmail = await GetUserByEmailAsync(user.Email);
                 if (existingUserByEmail != null)
                 {
@@ -253,18 +253,40 @@ namespace MarketMinds.Repositories
                 }
 
                 // Check if username exists
-                if (await IsUsernameTakenAsync(user.Username))
+                bool usernameTaken = await IsUsernameTakenAsync(user.Username);
+                if (usernameTaken)
                 {
                     return false;
                 }
 
                 // Create user and return success if Id > 0
-                var response = await httpClient.PostAsJsonAsync("users/register", user);
+                var registerRequest = new 
+                // Verify we're sending all required fields
+                var registerRequest = new 
+                {
+                    Username = user.Username,
+                    Email = user.Email,
+                    Password = user.Password
+                };
+                
+                
+                var response = await httpClient.PostAsJsonAsync("users/register", registerRequest);
+                
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine($"[UserRepository] Register API error response: {responseBody}");
+                }
+                
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error registering user: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[UserRepository] Inner exception: {ex.InnerException.Message}");
+                }
                 return false;
             }
         }
