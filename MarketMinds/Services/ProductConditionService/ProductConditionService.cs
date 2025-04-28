@@ -38,7 +38,6 @@ namespace MarketMinds.Services.ProductConditionService
                     var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    
                     var condition = new Condition(name, description);
                     condition.Id = id;
                     clientConditions.Add(condition);
@@ -66,7 +65,6 @@ namespace MarketMinds.Services.ProductConditionService
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            
             var condition = new Condition(name, conditionDescription);
             condition.Id = id;
             return condition;

@@ -274,4 +274,4 @@ namespace MarketMinds.Repositories
             public bool Exists { get; set; }
         }
     }
-} 
+}
