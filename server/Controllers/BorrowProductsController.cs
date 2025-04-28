@@ -3,8 +3,8 @@ using System.Net;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Server.Models;
-using Server.Models.DTOs;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 
 namespace Server.Controllers

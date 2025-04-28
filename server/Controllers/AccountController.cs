@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
-using Server.Models;
+using MarketMinds.Shared.Models;
 using Server.MarketMinds.Repositories.AccountRepository;
 
 namespace Server.Controllers

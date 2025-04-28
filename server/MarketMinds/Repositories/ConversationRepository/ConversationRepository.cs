@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Server.Models;
+using MarketMinds.Shared.Models;
 using Server.DataAccessLayer;
 
 namespace MarketMinds.Repositories.ConversationRepository

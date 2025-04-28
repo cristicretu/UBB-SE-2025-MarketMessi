@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Server.Models;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {

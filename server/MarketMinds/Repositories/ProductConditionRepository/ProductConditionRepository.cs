@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
-using Server.Models;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Repositories.ProductConditionRepository
 {

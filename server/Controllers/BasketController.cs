@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
-using Server.Models;
-using Server.Models.DTOs;
-using Server.Models.DTOs.Mappers;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
 using MarketMinds.Repositories.BasketRepository;
 
 namespace MarketMinds.Controllers
@@ -453,7 +453,7 @@ namespace MarketMinds.Controllers
                     TotalAmount = totalAmount
                 };
 
-                var totalsDto = BasketMapper.ToDTO(basketTotals);
+                var totalsDto = 0; // fix vasile te pup
 
                 // Use the custom serializer settings
                 return new JsonResult(totalsDto, jsonOptions);

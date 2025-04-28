@@ -24,6 +24,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <ProjectReference Include="..\MarketMinds.Shared\MarketMinds.Shared.csproj" />
     <!-- StyleCop package reference, only used when StyleCopEnabled is true -->
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" Condition="'$(StyleCopEnabled)' == 'true'">
       <PrivateAssets>all</PrivateAssets>

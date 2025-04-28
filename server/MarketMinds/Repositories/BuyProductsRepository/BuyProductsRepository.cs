@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Linq;
-using Server.Models;
+using MarketMinds.Shared.Models;
 using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,6 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using Server.Models;
+using MarketMinds.Shared.Models;
 
 namespace Server.DataAccessLayer
 {

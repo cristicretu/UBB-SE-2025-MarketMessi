@@ -5,9 +5,10 @@ using System.Text.Json;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
-using Server.Models;
-using Server.Models.DTOs;
-using Server.Models.DTOs.Mappers;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
 using MarketMinds.Repositories.BuyProductsRepository;
 
 namespace MarketMinds.Controllers

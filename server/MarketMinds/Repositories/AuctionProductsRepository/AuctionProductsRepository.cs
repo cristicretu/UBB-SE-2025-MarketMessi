@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
-using Server.Models;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Repositories.AuctionProductsRepository
 {
