@@ -14,7 +14,7 @@ namespace Server.Controllers
     {
         private readonly IAccountRepository accountRepository; // Added repository field
         private readonly ILogger<AccountController> logger;
-        private readonly static int MINIMUM_USER_ID = 1;
+        private readonly static int MINIMUM_USER_ID = 0;
 
         public AccountController(IAccountRepository accountRepository, ILogger<AccountController> logger)
         {

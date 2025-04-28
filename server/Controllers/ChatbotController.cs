@@ -257,7 +257,7 @@ namespace Server.Controllers
                 if (basket != null)
                 {
                     var basketItems = await dbContext.BasketItems
-                        .Where(basketId => basketId.BasketId == basket.Id)
+                        .Where(basketItem => basketItem.BasketId == basket.Id)
                         .ToListAsync();
                     
                     if (basketItems.Any())
