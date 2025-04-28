@@ -4,15 +4,17 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
+using MarketMinds.Shared.Models;
+using MarketMinds.Services;
 
-namespace MarketMinds.Services.BorrowProductsService
+namespace MarketMinds.Repository
 {
-    public class BorrowProductsService : IBorrowProductsService
+    public class BorrowProductsRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public BorrowProductsService(IConfiguration configuration) : base(null)
+        public BorrowProductsRepository(IConfiguration configuration)
         {
             if (configuration == null)
             {
@@ -32,15 +34,6 @@ namespace MarketMinds.Services.BorrowProductsService
             Console.WriteLine($"Initialized HTTP client with base address: {httpClient.BaseAddress}");
         }
 
-        public BorrowProductsService(IProductsRepository repository) : base(repository)
-        {
-            // This constructor doesn't initialize httpClient and shouldn't be used for API calls
-            httpClient = new HttpClient();
-            apiBaseUrl = "http://localhost:5000/";
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
-            Console.WriteLine("Warning: Using repository constructor but initializing HTTP client with default values");
-        }
-
         public void CreateListing(Product product)
         {
             if (!(product is BorrowProduct borrowProduct))
@@ -53,25 +46,7 @@ namespace MarketMinds.Services.BorrowProductsService
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
 
-            // Creating a proper DTO for sending to the API
-            var productDTO = new CreateBorrowProductDTO
-            {
-                Title = borrowProduct.Title,
-                Description = borrowProduct.Description,
-                SellerId = borrowProduct.Seller?.Id ?? 0,
-                ConditionId = borrowProduct.Condition?.Id ?? 0,
-                CategoryId = borrowProduct.Category?.Id ?? 0,
-                TimeLimit = borrowProduct.TimeLimit,
-                StartDate = borrowProduct.StartDate,
-                EndDate = borrowProduct.EndDate,
-                DailyRate = borrowProduct.DailyRate,
-                IsBorrowed = borrowProduct.IsBorrowed,
-                Images = borrowProduct.Images == null
-                    ? new List<CreateBorrowProductDTO.ImageInfo>()
-                    : borrowProduct.Images.Select(img => new CreateBorrowProductDTO.ImageInfo { Url = img.Url }).ToList()
-            };
-
-            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productDTO)}");
+            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(product)}");
             Console.WriteLine($"Sending to URL: {httpClient.BaseAddress}borrowproducts");
             try
             {
@@ -86,12 +61,12 @@ namespace MarketMinds.Services.BorrowProductsService
                     PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
                 };
                 // Diagnose the exact payload we're trying to send
-                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(productDTO, serializerOptions);
+                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(product, serializerOptions);
                 Console.WriteLine("Actual JSON payload being sent:");
                 Console.WriteLine(jsonPayload);
                 Console.WriteLine("===========================");
                 // Use JsonContent instead of PostAsJsonAsync to have more control over serialization
-                var content = System.Net.Http.Json.JsonContent.Create(productDTO, null, serializerOptions);
+                var content = System.Net.Http.Json.JsonContent.Create(product, null, serializerOptions);
                 var response = httpClient.PostAsync("borrowproducts", content).Result;
                 if (!response.IsSuccessStatusCode)
                 {
@@ -133,7 +108,7 @@ namespace MarketMinds.Services.BorrowProductsService
             response.EnsureSuccessStatusCode();
         }
 
-        public override List<Product> GetProducts()
+        public List<Product> GetProducts()
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {
@@ -172,7 +147,7 @@ namespace MarketMinds.Services.BorrowProductsService
             }
         }
 
-        public override Product GetProductById(int id)
+        public Product GetProductById(int id)
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {

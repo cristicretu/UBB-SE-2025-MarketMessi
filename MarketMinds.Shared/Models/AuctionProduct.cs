@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace MarketMinds.Shared.Models // Adjusted namespace to server.Models
 {
     [Table("AuctionProducts")]
-    public class AuctionProduct
+    public class AuctionProduct : Product
     {
         [Key]
         [Column("id")]

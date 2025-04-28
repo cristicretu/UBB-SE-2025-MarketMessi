@@ -9,10 +9,10 @@ namespace ViewModelLayer.ViewModel;
 
 public class AuctionProductsViewModel
 {
-    private readonly IProductService auctionProductsService;
+    private readonly IAuctionProductsService auctionProductsService;
     private readonly AuctionValidationService auctionValidationService;
 
-    public AuctionProductsViewModel(IProductService auctionProductsService)
+    public AuctionProductsViewModel(IAuctionProductsService auctionProductsService)
     {
         this.auctionProductsService = auctionProductsService;
         this.auctionValidationService = new AuctionValidationService((IAuctionProductsService)auctionProductsService);

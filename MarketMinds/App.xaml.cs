@@ -42,7 +42,7 @@ namespace MarketMinds
         public static ProductService ProductService;
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
-        public static AuctionProductsService AuctionProductsService;
+        public static AuctionProductsRepository AuctionProductsService;
         public static ProductCategoryService CategoryService;
         public static ProductTagService TagService;
         public static ProductConditionService ConditionService;
