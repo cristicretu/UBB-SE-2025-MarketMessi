@@ -21,11 +21,6 @@
                     Height="50"
                     Click="OnButtonClickOpenChatbotConversation"/>
             
-            <Button Content="Customer Support" 
-                    HorizontalAlignment="Stretch" 
-                    Height="50"
-                    Click="OnButtonClickOpenCSConversation"/>
-            
             <Button Content="Back to Main" 
                     HorizontalAlignment="Stretch" 
                     Height="50"
