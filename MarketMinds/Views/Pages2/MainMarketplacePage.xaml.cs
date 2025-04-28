@@ -60,27 +60,6 @@ namespace Marketplace_SE
             }
         }
 
-        private void BuyItemButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItem = (sender as Button)?.DataContext as UserNotSoldOrder;
-            if (selectedItem != null)
-            {
-                Frame.Navigate(typeof(FinalizeOrderPage), selectedItem);
-            }
-        }
-
-        private void ChatWithSellerButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.Tag is UserNotSoldOrder selectedOrder)
-            {
-                Frame.Navigate(typeof(ChatPage), selectedOrder);
-            }
-            else
-            {
-                ShowNotification("Error", "Failed to navigate to chat.");
-            }
-        }
-
         private void OpenAccountButton_Click(object sender, RoutedEventArgs e)
         {
             var accountWindow = new Window();

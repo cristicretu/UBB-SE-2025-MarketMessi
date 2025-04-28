@@ -28,10 +28,7 @@ namespace Marketplace_SE
         {
             Frame.Navigate(typeof(ChatBotPage));
         }
-        private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(UserFindCallPage));
-        }
+
         private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(MainMarketplacePage));

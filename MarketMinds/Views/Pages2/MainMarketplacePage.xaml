@@ -13,22 +13,29 @@
 
     <Page.Resources>
         <!-- Optional: Define reusable styles for buttons/text if needed -->
-        <Style x:Key="MarketplaceButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-            <Setter Property="Padding" Value="15,8,15,8"/>
-            <Setter Property="Margin" Value="0,5,0,0"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Style x:Key="MarketplaceButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Padding"
+                    Value="15,8,15,8"/>
+            <Setter Property="Margin"
+                    Value="0,5,0,0"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
         </Style>
     </Page.Resources>
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*" />
-            <ColumnDefinition Width="Auto" MinWidth="250" />
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="Auto"
+                              MinWidth="250"/>
             <!-- Adjust width for right panel -->
         </Grid.ColumnDefinitions>
 
         <!-- Left Panel - Items List -->
-        <Grid Grid.Column="0" Margin="0,0,20,0">
+        <Grid Grid.Column="0"
+              Margin="0,0,20,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -36,45 +43,57 @@
 
             <!-- Items Header -->
             <Border Grid.Row="0"
-                BorderBrush="{ThemeResource SystemAccentColor}" BorderThickness="1"
-                CornerRadius="8" Padding="20" Margin="0,0,0,15"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                <TextBlock Text="Available Items" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Left"/>
+                    BorderBrush="{ThemeResource SystemAccentColor}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,0,0,15"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <TextBlock Text="Available Items"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           HorizontalAlignment="Left"/>
             </Border>
 
             <!-- Items List - Use ListView -->
-            <ListView x:Name="ItemsListView" Grid.Row="1"
-                      SelectionMode="None" IsItemClickEnabled="False"
-                      ShowsScrollingPlaceholders="False" >
+            <ListView x:Name="ItemsListView"
+                      Grid.Row="1"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False"
+                      ShowsScrollingPlaceholders="False">
                 <ListView.ItemTemplate>
                     <!-- DataTemplate defines UI for ONE UserNotSoldOrder -->
                     <!-- Ensure x:DataType is correct and points to your domain object -->
                     <DataTemplate x:DataType="domain:UserNotSoldOrder">
-                        <Border BorderBrush="{ThemeResource SystemAccentColorLight2}" BorderThickness="1"
-                                CornerRadius="6" Padding="15" Margin="0,0,0,10"
+                        <Border BorderBrush="{ThemeResource SystemAccentColorLight2}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="15"
+                                Margin="0,0,0,10"
                                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
                             <!-- Use Tag on Border to easily get item in handlers -->
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <TextBlock FontWeight="SemiBold" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Vertical"
+                                        Spacing="8">
+                                <TextBlock FontWeight="SemiBold"
+                                           HorizontalAlignment="Left">
                                     <!-- Use x:Bind for simple properties too for consistency, or keep Binding -->
                                     <Run Text="{x:Bind Name}"/> - <Run Text="{x:Bind Description}"/> -
                                     <!-- Format 'cost' using x:Bind and string formatting -->
                                     <Run Text="{x:Bind system:String.Format('{0:C2}', Cost)}"/>
                                 </TextBlock>
-                                <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap"
-                                           FontStyle="Italic" Margin="0,0,0,10">
+                                <TextBlock HorizontalAlignment="Left"
+                                           TextWrapping="Wrap"
+                                           FontStyle="Italic"
+                                           Margin="0,0,0,10">
                                     <Run Text="Seller Id:"/> <Run Text="{x:Bind SellerId}"/>
                                 </TextBlock>
                                 <Button Content="Buy item"
                                         Style="{StaticResource MarketplaceButtonStyle}"
                                         Background="{ThemeResource SystemAccentColor}"
                                         Foreground="White"
-                                        Tag="{x:Bind}"
-                                    Click="BuyItemButton_Click"/>
-                                    <Button Content="Chat with seller"
+                                        Tag="{x:Bind}"/>
+                                <Button Content="Chat with seller"
                                         Style="{StaticResource MarketplaceButtonStyle}"
-                                        Tag="{x:Bind}" 
-                                        Click="ChatWithSellerButton_Click"/>
+                                        Tag="{x:Bind}"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -82,32 +101,65 @@
 
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding"
+                                Value="0"/>
+                        <Setter Property="Margin"
+                                Value="0"/>
+                        <Setter Property="HorizontalContentAlignment"
+                                Value="Stretch"/>
                     </Style>
                 </ListView.ItemContainerStyle>
             </ListView>
 
             <!-- Optional: Loading Indicator -->
-            <ProgressRing x:Name="LoadingIndicator" Grid.Row="1" IsActive="False" HorizontalAlignment="Center" VerticalAlignment="Center" Height="50" Width="50"/>
+            <ProgressRing x:Name="LoadingIndicator"
+                          Grid.Row="1"
+                          IsActive="False"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Height="50"
+                          Width="50"/>
 
         </Grid>
 
         <!-- Right Panel - Account and Help -->
         <Grid Grid.Column="1">
             <!-- Content remains the same as original -->
-            <StackPanel Spacing="15" Margin="0,0,0,0">
-                <Border BorderBrush="{ThemeResource SystemAccentColor}" BorderThickness="1" CornerRadius="8" Padding="20" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel Spacing="15"
+                        Margin="0,0,0,0">
+                <Border BorderBrush="{ThemeResource SystemAccentColor}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
-                        <TextBlock Text="Account" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Margin="0,0,0,15"/>
-                        <Button Content="Open Account" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Padding="15,10" Click="OpenAccountButton_Click" x:Name="ButtonOpenAccount"/>
+                        <TextBlock Text="Account"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   HorizontalAlignment="Left"
+                                   Margin="0,0,0,15"/>
+                        <Button Content="Open Account"
+                                Style="{StaticResource AccentButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Padding="15,10"
+                                Click="OpenAccountButton_Click"
+                                x:Name="ButtonOpenAccount"/>
                     </StackPanel>
                 </Border>
-                <Border BorderBrush="{ThemeResource SystemAccentColorLight2}" BorderThickness="1" CornerRadius="8" Padding="20" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Border BorderBrush="{ThemeResource SystemAccentColorLight2}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
-                        <TextBlock Text="Support" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Left" Margin="0,0,0,15"/>
-                        <Button Content="Open Help" HorizontalAlignment="Stretch" Padding="15,10" Click="OpenHelpButton_Click" x:Name="ButtonOpenHelp"/>
+                        <TextBlock Text="Support"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   HorizontalAlignment="Left"
+                                   Margin="0,0,0,15"/>
+                        <Button Content="Open Help"
+                                HorizontalAlignment="Stretch"
+                                Padding="15,10"
+                                Click="OpenHelpButton_Click"
+                                x:Name="ButtonOpenHelp"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

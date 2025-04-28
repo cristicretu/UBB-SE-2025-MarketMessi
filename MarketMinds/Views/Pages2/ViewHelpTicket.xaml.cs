@@ -35,10 +35,7 @@ namespace Marketplace_SE
             TextBlockViewHelpTicketTicketClosureFailed.Visibility = Visibility.Collapsed;
             TextBlockViewHelpTicketTicketClosureSucceeded.Visibility = Visibility.Collapsed;
         }
-        private void OnButtonClickNavigateViewHelpTicketPageAdminAccountPage(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(AdminAccountPage));
-        }
+
         private void OnButtonClickViewHelpTicketSaveDescriptionModifications(object sender, RoutedEventArgs e)
         {
             int successCode = BackendUserGetHelp.UpdateHelpTicketDescriptionInDB(loadedTicket.TicketID, TextBoxViewHelpTicketDescription.Text);

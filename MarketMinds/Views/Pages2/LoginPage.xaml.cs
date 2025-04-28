@@ -1,14 +1,14 @@
 using System;
 using System.Threading.Tasks;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ViewModelLayer.ViewModel;
 
 namespace Marketplace_SE
 {
     public sealed partial class LoginPage : Page
     {
-        public ViewModelLayer.ViewModel.LoginViewModel ViewModel { get; set; }
+        public LoginViewModel ViewModel { get; set; }
         public LoginPage()
         {
             this.InitializeComponent();

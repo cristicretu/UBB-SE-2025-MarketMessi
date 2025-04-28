@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using DomainLayer.Domain;
 using MarketMinds.Services.UserService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
 	public class LoginViewModel
 	{
@@ -17,7 +17,7 @@ namespace ViewModelLayer.ViewModel
 
 		public LoginViewModel()
 		{
-			userService = MarketMinds.App.UserService;
+			userService = App.UserService;
 		}
 		public LoginViewModel(IUserService userService)
 		{

@@ -11,45 +11,71 @@
 
     <Grid>
         <StackPanel>
-            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketNumber"/>
-            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketUserID"/>
-            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketUserName"/>
-            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketDateAndTime"/>
-            <TextBlock Text="Description:" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <TextBox Text="" 
-             HorizontalAlignment="Center" 
-             VerticalAlignment="Center" 
-             Width="250"
-             TextChanged="OnTextChangedTextBoxViewHelpTicketDescription"
-             x:Name="TextBoxViewHelpTicketDescription"/>
-            <TextBlock Text="" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="TextBlockViewHelpTicketClosed"/>
-            <TextBlock Text="Description modification failed! Retry" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketDescriptionModificationFailed"/>
-            <TextBlock Text="Description modification succeeded!" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketDescriptionModificationSucceeded"/>
-            <TextBlock Text="Ticket closure failed! Retry" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketTicketClosureFailed"/>
-            <TextBlock Text="Ticket closure succeeded!" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" x:Name="TextBlockViewHelpTicketTicketClosureSucceeded"/>
-            <Button Content="Close ticket" 
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Center" 
-                            Width="250" 
-                            Height="50" 
-                            Visibility="Collapsed"
-                            Click="OnButtonClickViewHelpTicketCloseTicket"
-                            x:Name="ButtonViewHelpTicketCloseTicket"/>
-            <Button Content="Save description modifications" 
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Center" 
-                            Width="250" 
-                            Height="50" 
-                            Visibility="Collapsed"
-                            Click="OnButtonClickViewHelpTicketSaveDescriptionModifications"
-                            x:Name="ButtonViewHelpTicketSaveDescriptionModifications"/>
-            <Button Content="Return" 
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Center" 
-                            Width="250" 
-                            Height="50" 
-                            Click="OnButtonClickNavigateViewHelpTicketPageAdminAccountPage"
-                            x:Name="ButtonNavigateViewHelpTicketPageAdminAccountPage"/>
+            <TextBlock Text=""
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:Name="TextBlockViewHelpTicketNumber"/>
+            <TextBlock Text=""
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:Name="TextBlockViewHelpTicketUserID"/>
+            <TextBlock Text=""
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:Name="TextBlockViewHelpTicketUserName"/>
+            <TextBlock Text=""
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:Name="TextBlockViewHelpTicketDateAndTime"/>
+            <TextBlock Text="Description:"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+            <TextBox Text=""
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Width="250"
+                     TextChanged="OnTextChangedTextBoxViewHelpTicketDescription"
+                     x:Name="TextBoxViewHelpTicketDescription"/>
+            <TextBlock Text=""
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:Name="TextBlockViewHelpTicketClosed"/>
+            <TextBlock Text="Description modification failed! Retry"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed"
+                    x:Name="TextBlockViewHelpTicketDescriptionModificationFailed"/>
+            <TextBlock Text="Description modification succeeded!"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed"
+                    x:Name="TextBlockViewHelpTicketDescriptionModificationSucceeded"/>
+            <TextBlock Text="Ticket closure failed! Retry"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed"
+                    x:Name="TextBlockViewHelpTicketTicketClosureFailed"/>
+            <TextBlock Text="Ticket closure succeeded!"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed"
+                    x:Name="TextBlockViewHelpTicketTicketClosureSucceeded"/>
+            <Button Content="Close ticket"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="250"
+                    Height="50"
+                    Visibility="Collapsed"
+                    Click="OnButtonClickViewHelpTicketCloseTicket"
+                    x:Name="ButtonViewHelpTicketCloseTicket"/>
+            <Button Content="Save description modifications"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="250"
+                    Height="50"
+                    Visibility="Collapsed"
+                    Click="OnButtonClickViewHelpTicketSaveDescriptionModifications"
+                    x:Name="ButtonViewHelpTicketSaveDescriptionModifications"/>
         </StackPanel>
     </Grid>
 </Page>

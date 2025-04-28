@@ -11,27 +11,26 @@
 
     <Grid>
         <StackPanel>
-            <Button Content="Ask our chatbot for help" 
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center" 
-            Width="300" 
-            Height="50" 
-            Click="OnButtonClickOpenChatbotConversation"
-            x:Name="ButtonOpenChatbotConversation"/>
-            <Button Content="Get in touch with Customer Support" 
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center" 
-            Width="300" 
-            Height="50" 
-            Click="OnButtonClickOpenCSConversation"
-            x:Name="ButtonOpenCSConversation"/>
-            <Button Content="Return to marketplace" 
-            HorizontalAlignment="Center" 
-            VerticalAlignment="Center" 
-            Width="300" 
-            Height="50" 
-            Click="OnButtonClickNavigateGetHelpPageMainMarketplacePage"
-            x:Name="ButtonNavigateGetHelpPageMainMarketplacePage"/>
+            <Button Content="Ask our chatbot for help"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="300"
+                    Height="50"
+                    Click="OnButtonClickOpenChatbotConversation"
+                    x:Name="ButtonOpenChatbotConversation"/>
+            <Button Content="Get in touch with Customer Support"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="300"
+                    Height="50"
+                    x:Name="ButtonOpenCSConversation"/>
+            <Button Content="Return to marketplace"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="300"
+                    Height="50"
+                    Click="OnButtonClickNavigateGetHelpPageMainMarketplacePage"
+                    x:Name="ButtonNavigateGetHelpPageMainMarketplacePage"/>
         </StackPanel>
     </Grid>
 </Page>

@@ -83,10 +83,6 @@
 		</Compile>
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Repositories\ProductsRepository\" />
-	</ItemGroup>
-
 	<!-- Enable Package and Publish Menu -->
 	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
 		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
