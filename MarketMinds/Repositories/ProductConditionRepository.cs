@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories
 {
@@ -24,12 +24,12 @@ namespace MarketMinds.Repositories
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public List<ProductCondition> GetAllProductConditions()
+        public List<Condition> GetAllProductConditions()
         {
             var response = httpClient.GetAsync("ProductCondition").Result;
             response.EnsureSuccessStatusCode();
             var responseJson = response.Content.ReadAsStringAsync().Result;
-            var clientConditions = new List<ProductCondition>();
+            var clientConditions = new List<Condition>();
             var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
 
             if (responseJsonArray != null)
@@ -39,13 +39,13 @@ namespace MarketMinds.Repositories
                     var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    clientConditions.Add(new ProductCondition(id, name, description));
+                    clientConditions.Add(new Condition(id, name, description));
                 }
             }
             return clientConditions;
         }
 
-        public ProductCondition CreateProductCondition(string displayTitle, string description)
+        public Condition CreateProductCondition(string displayTitle, string description)
         {
             var requestContent = new StringContent(
                 $"{{\"displayTitle\":\"{displayTitle}\",\"description\":\"{description}\"}}",
@@ -64,7 +64,7 @@ namespace MarketMinds.Repositories
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new ProductCondition(id, name, conditionDescription);
+            return new Condition(id, name, conditionDescription);
         }
 
         public void DeleteProductCondition(string displayTitle)

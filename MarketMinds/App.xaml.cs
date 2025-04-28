@@ -38,7 +38,6 @@ namespace MarketMinds
     {
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
-        
         // Repository declarations
         public static IProductCategoryRepository ProductCategoryRepository;
         public static IMessageRepository MessageRepository;
@@ -258,7 +257,6 @@ namespace MarketMinds
             ConversationService = new ConversationService(httpClient);
             MessageService = new MessageService(MessageRepository);
             NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
-            
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);

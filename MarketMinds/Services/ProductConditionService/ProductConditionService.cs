@@ -1,4 +1,4 @@
-using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;

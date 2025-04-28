@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using MarketMinds.Shared.Repositories;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.MessageService
@@ -29,6 +29,16 @@ namespace MarketMinds.Services.MessageService
         public void DeleteMessage(int messageId)
         {
             _repository.DeleteMessage(messageId);
+        }
+
+        Task<Message> IMessageService.CreateMessageAsync(int conversationId, int userId, string content)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        Task<List<Message>> IMessageService.GetMessagesByConversationIdAsync(int conversationId)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

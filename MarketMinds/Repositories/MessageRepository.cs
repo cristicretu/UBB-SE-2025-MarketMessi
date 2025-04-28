@@ -1,10 +1,11 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories
 {
@@ -73,6 +74,16 @@ namespace MarketMinds.Repositories
         {
             var response = httpClient.DeleteAsync($"Message/{messageId}").Result;
             response.EnsureSuccessStatusCode();
+        }
+
+        Task<Message> IMessageRepository.CreateMessageAsync(int conversationId, int userId, string content)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<Message>> IMessageRepository.GetMessagesByConversationIdAsync(int conversationId)
+        {
+            throw new NotImplementedException();
         }
     }
 } 

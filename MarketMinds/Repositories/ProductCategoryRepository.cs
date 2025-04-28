@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Repositories;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories
 {
@@ -24,7 +24,7 @@ namespace MarketMinds.Repositories
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public List<ProductCategory> GetAllProductCategories()
+        public List<Category> GetAllProductCategories()
         {
             var response = httpClient.GetAsync("ProductCategory").Result;
             response.EnsureSuccessStatusCode();
@@ -45,7 +45,7 @@ namespace MarketMinds.Repositories
             return categories;
         }
 
-        public ProductCategory CreateProductCategory(string name, string description)
+        public Category CreateProductCategory(string name, string description)
         {
             var requestContent = new StringContent(
                 $"{{\"name\":\"{name}\",\"description\":\"{description}\"}}",
@@ -64,7 +64,7 @@ namespace MarketMinds.Repositories
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var categoryName = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new ProductCategory(id, categoryName, categoryDescription);
+            return new Category(id, categoryName, categoryDescription);
         }
 
         public void DeleteProductCategory(string name)

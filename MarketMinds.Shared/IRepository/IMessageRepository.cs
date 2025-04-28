@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Shared.Repositories
+namespace MarketMinds.Shared.IRepository
 {
     public interface IMessageRepository
     {
