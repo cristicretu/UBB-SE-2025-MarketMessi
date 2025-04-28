@@ -46,7 +46,6 @@ namespace MarketMinds
         public static IMessageRepository MessageRepository;
         public static IProductConditionRepository ProductConditionRepository;
         public static IConversationRepository ConversationRepository;
-        public static IMessageRepository MessageRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
         public static UserRepository UserRepository;
