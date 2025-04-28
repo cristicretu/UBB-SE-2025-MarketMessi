@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 
-namespace Server.MarketMinds.Repositories.BorrowProductsRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface IBorrowProductsRepository
     {

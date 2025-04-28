@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories.BuyProductsRepository
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Interface for managing buy products in the repository.
