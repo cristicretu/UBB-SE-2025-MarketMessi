@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using DataAccessLayer;
-using server.Models;
-using MarketMinds.Repositories.ProductCategoryRepository;
-using System.Collections.Generic;
 using System;
 using System.Net;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using DataAccessLayer;
+using Server.Models;
+using MarketMinds.Repositories.ProductCategoryRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -31,7 +31,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error getting all product categories: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -51,14 +50,12 @@ namespace MarketMinds.Controllers
             {
                 var newCategory = productCategoryRepository.CreateProductCategory(
                     request.DisplayTitle,
-                    request.Description
-                );
-                
+                    request.Description);
+
                 return CreatedAtAction(
-                    nameof(GetAllProductCategories), 
-                    new { id = newCategory.Id }, 
-                    newCategory
-                );
+                    nameof(GetAllProductCategories),
+                    new { id = newCategory.Id },
+                    newCategory);
             }
             catch (ArgumentException argumentException)
             {
@@ -66,7 +63,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error creating product category: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the category.");
             }
         }
@@ -94,7 +90,6 @@ namespace MarketMinds.Controllers
             }
             catch (Exception exception)
             {
-                Console.WriteLine($"Error deleting product category '{title}': {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the category.");
             }
         }

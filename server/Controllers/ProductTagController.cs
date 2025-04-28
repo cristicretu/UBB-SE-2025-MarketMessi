@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using server.Models;
-using MarketMinds.Repositories.ProductTagRepository;
-using System.Collections.Generic;
 using System;
 using System.Net;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Server.Models;
+using MarketMinds.Repositories.ProductTagRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -49,12 +49,11 @@ namespace MarketMinds.Controllers
             try
             {
                 var newTag = productTagRepository.CreateProductTag(request.DisplayTitle);
-                
+
                 return CreatedAtAction(
                     nameof(GetAllProductTags),
                     new { id = newTag.Id },
-                    newTag
-                );
+                    newTag);
             }
             catch (ArgumentException argumentException)
             {

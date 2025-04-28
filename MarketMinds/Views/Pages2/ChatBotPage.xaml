@@ -10,93 +10,80 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid Padding="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Chat Interface -->
-        <RichEditBox
-            x:Name="ChatBotChatInterface"
-            IsReadOnly="False"
-            IsHitTestVisible="False"
-            FontSize="18"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            IsTabStop="False"
-            Padding="10"
-            Margin="12,12,12,0"
-            Grid.Row="0"/>
+        <!-- Page Title -->
+        <TextBlock 
+            Grid.Row="0"
+            Text="Technical Support Chat" 
+            FontSize="24" 
+            FontWeight="SemiBold"
+            Margin="0,0,0,15"/>
 
-        <!-- Options Panel - Will be populated manually from code-behind -->
-        <ItemsControl
-            x:Name="ChatBotOptionsItemsControl" 
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Top"
-            Margin="12,12,12,0"
-            Grid.Row="1">
-            <!-- Visibility still managed in code-behind -->
+        <!-- Chat Messages Area -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ChatMessagesPanel" Spacing="12">
+                <!-- Initial Welcome Message -->
+                <Border 
+                    Background="{ThemeResource SystemControlBackgroundAccentBrush}" 
+                    CornerRadius="8" 
+                    Padding="15,10" 
+                    HorizontalAlignment="Left"
+                    MaxWidth="500">
+                    <TextBlock 
+                        Text="Hi, this is the technical chatbot - I will take your ticket and will pass it down the line, so that someone can fix the issue you're having. What is it that I can help you with today? Please describe your issue in detail so our team can assist you better."
+                        TextWrapping="Wrap"
+                        Foreground="White"/>
+                </Border>
 
-            <ItemsControl.ItemTemplate>
-                <!-- DataTemplate defines the UI for ONE Node object -->
-                <DataTemplate x:DataType="models:Node">
-                    <Grid
-                        Margin="0,0,0,8" 
-                        MinHeight="40"
-                        HorizontalAlignment="Stretch">
+                <!-- User Message will be added here dynamically -->
 
+                <!-- Bot Response will be added here dynamically -->
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Text Input Area -->
+        <Grid Grid.Row="2" Margin="0,15,0,15">
                         <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
-                            <!-- Auto size for button -->
-                            <ColumnDefinition Width="*"/>
-                            <!-- Star for textblock -->
                         </Grid.ColumnDefinitions>
 
-                        <Button
+            <TextBox 
+                x:Name="UserMessageTextBox"
                             Grid.Column="0"
-                            Content="{Binding ButtonLabel}"
-                            Tag="{Binding}" 
-                            Click="ChatBotOptionButton_Click"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            HorizontalAlignment="Left"
+                PlaceholderText="Type your message here..."
+                TextWrapping="Wrap"
+                AcceptsReturn="True"
+                MinHeight="80"
+                MaxHeight="120"
                             VerticalAlignment="Stretch"
-                            Padding="15, 5, 15, 5"
-                            MinWidth="100"/>
+                Margin="0,0,10,0"
+                KeyDown="UserMessageTextBox_KeyDown"/>
 
-                            <TextBlock
+            <Button 
+                x:Name="SendMessageButton"
                             Grid.Column="1"
-                            Text="{Binding LabelText}"
-                            FontSize="16"
-                            Padding="10, 0, 0, 0"
-                            VerticalAlignment="Center"
-                            TextWrapping="Wrap"/>
+                Content="Send"
+                VerticalAlignment="Bottom"
+                Click="SendMessageButton_Click"/>
                     </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-
-            <!-- Optional: Define how items are arranged (StackPanel is default for ItemsControl) -->
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" Spacing="8"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-
-        </ItemsControl>
 
         <!-- Exit Button -->
         <Button
+            Grid.Row="3"
             x:Name="ChatBotKill"
             Height="40"
             Content="Exit conversation"
             FontSize="16"
-            FontWeight="Bold"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Margin="12"
-            Grid.Row="2"
             Click="OnButtonClickChatBotKill"/>
     </Grid>
 </Page>

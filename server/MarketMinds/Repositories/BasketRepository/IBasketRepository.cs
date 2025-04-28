@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using server.Models;
+﻿using System.Text;
 using System.Data.Common;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
+using Server.Models;
 
 namespace MarketMinds.Repositories.BasketRepository
 {

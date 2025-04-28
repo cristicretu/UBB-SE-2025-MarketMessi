@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
-using server.Models;
+using Server.DataAccessLayer;
+using Server.Models;
 
 namespace MarketMinds.Repositories.ProductCategoryRepository
 {
@@ -54,12 +54,12 @@ namespace MarketMinds.Repositories.ProductCategoryRepository
             try
             {
                 var categoryToDelete = databaseContext.ProductCategories.FirstOrDefault(category => category.Name == displayTitle);
-                
+
                 if (categoryToDelete == null)
                 {
                     throw new KeyNotFoundException($"Category with title '{displayTitle}' not found.");
                 }
-                
+
                 databaseContext.ProductCategories.Remove(categoryToDelete);
                 databaseContext.SaveChanges();
             }

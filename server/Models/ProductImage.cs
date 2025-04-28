@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     [Table("AuctionProductsImages")]
     public class ProductImage
@@ -22,4 +22,4 @@ namespace server.Models
         [ForeignKey("ProductId")]
         public AuctionProduct? Product { get; set; }
     }
-} 
+}

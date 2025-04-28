@@ -1,15 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using server.Models;
-using System.Collections.Generic;
 using System;
 using System.Net;
-using MarketMinds.Repositories.BasketRepository;
-using server.DataAccessLayer;
 using System.Linq;
-using server.Models.DTOs;
-using server.Models.DTOs.Mappers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using DataAccessLayer;
+using Server.Models;
+using Server.Models.DTOs;
+using Server.Models.DTOs.Mappers;
+using MarketMinds.Repositories.BasketRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -17,7 +17,7 @@ namespace MarketMinds.Controllers
     [Route("api/[controller]")]
     public class BasketController : ControllerBase
     {
-        private readonly IBasketRepository _basketRepository;
+        private readonly IBasketRepository basketRepository;
         private const int MINIMUM_QUANTITY = 0;
         private const int MINIMUM_USER_ID = 0;
         private const int MINIMUM_BASKET_ID = 0;
@@ -34,7 +34,7 @@ namespace MarketMinds.Controllers
             { "FLASH30", 0.30 },     // 30% discount
         };
 
-        private static readonly Func<string, string> normalize = code =>
+        private static readonly Func<string, string> Normalize = code =>
         {
             if (string.IsNullOrWhiteSpace(code))
             {
@@ -44,7 +44,7 @@ namespace MarketMinds.Controllers
         };
 
         // Add JsonSerializerOptions that disables reference handling
-        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        private readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
@@ -53,7 +53,7 @@ namespace MarketMinds.Controllers
 
         public BasketController(IBasketRepository basketRepository)
         {
-            _basketRepository = basketRepository;
+            this.basketRepository = basketRepository;
         }
 
         [HttpGet("user/{userId}")]
@@ -70,7 +70,7 @@ namespace MarketMinds.Controllers
 
             try
             {
-                var basket = _basketRepository.GetBasketByUserId(userId);
+                var basket = basketRepository.GetBasketByUserId(userId);
 
                 // Ensure all basket items have ProductId set
                 if (basket.Items != null)
@@ -88,7 +88,7 @@ namespace MarketMinds.Controllers
                 var basketDto = BasketMapper.ToDTO(basket);
 
                 // Use the custom serializer settings and return the serialized JSON directly
-                return new JsonResult(basketDto, _jsonOptions);
+                return new JsonResult(basketDto, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -110,7 +110,7 @@ namespace MarketMinds.Controllers
 
             try
             {
-                var items = _basketRepository.GetBasketItems(basketId);
+                var items = basketRepository.GetBasketItems(basketId);
 
                 // Ensure each item has ProductId set
                 foreach (var item in items)
@@ -125,7 +125,7 @@ namespace MarketMinds.Controllers
                 var itemDtos = items.Select(item => BasketMapper.ToDTO(item)).ToList();
 
                 // Use the custom serializer settings
-                return new JsonResult(itemDtos, _jsonOptions);
+                return new JsonResult(itemDtos, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -159,10 +159,10 @@ namespace MarketMinds.Controllers
                 int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Get the user's basket
-                Basket basket = _basketRepository.GetBasketByUserId(userId);
+                Basket basket = basketRepository.GetBasketByUserId(userId);
 
                 // Add the item with the limited quantity
-                _basketRepository.AddItemToBasket(basket.Id, productId, limitedQuantity);
+                basketRepository.AddItemToBasket(basket.Id, productId, limitedQuantity);
 
                 return Ok();
             }
@@ -197,17 +197,17 @@ namespace MarketMinds.Controllers
                 int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Get the user's basket
-                Basket basket = _basketRepository.GetBasketByUserId(userId);
+                Basket basket = basketRepository.GetBasketByUserId(userId);
 
                 if (limitedQuantity == MINIMUM_QUANTITY)
                 {
                     // If quantity is zero, remove the item
-                    _basketRepository.RemoveItemByProductId(basket.Id, productId);
+                    basketRepository.RemoveItemByProductId(basket.Id, productId);
                 }
                 else
                 {
                     // Update the quantity
-                    _basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, limitedQuantity);
+                    basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, limitedQuantity);
                 }
 
                 return Ok();
@@ -238,10 +238,10 @@ namespace MarketMinds.Controllers
             try
             {
                 // Get the user's basket
-                Basket basket = _basketRepository.GetBasketByUserId(userId);
+                Basket basket = basketRepository.GetBasketByUserId(userId);
 
                 // Get the current quantity of the item
-                List<BasketItem> items = _basketRepository.GetBasketItems(basket.Id);
+                List<BasketItem> items = basketRepository.GetBasketItems(basket.Id);
                 BasketItem targetItem = items.FirstOrDefault(item => item.Product.Id == productId);
 
                 if (targetItem == null)
@@ -253,7 +253,7 @@ namespace MarketMinds.Controllers
                 int newQuantity = Math.Min(targetItem.Quantity + 1, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Update the quantity
-                _basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, newQuantity);
+                basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, newQuantity);
 
                 return Ok();
             }
@@ -283,10 +283,10 @@ namespace MarketMinds.Controllers
             try
             {
                 // Get the user's basket
-                Basket basket = _basketRepository.GetBasketByUserId(userId);
+                Basket basket = basketRepository.GetBasketByUserId(userId);
 
                 // Get the current quantity of the item
-                List<BasketItem> items = _basketRepository.GetBasketItems(basket.Id);
+                List<BasketItem> items = basketRepository.GetBasketItems(basket.Id);
                 BasketItem targetItem = items.FirstOrDefault(item => item.Product.Id == productId);
 
                 if (targetItem == null)
@@ -297,12 +297,12 @@ namespace MarketMinds.Controllers
                 if (targetItem.Quantity > 1)
                 {
                     // Decrease quantity by 1
-                    _basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, targetItem.Quantity - 1);
+                    basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, targetItem.Quantity - 1);
                 }
                 else
                 {
                     // Remove item if quantity would be 0
-                    _basketRepository.RemoveItemByProductId(basket.Id, productId);
+                    basketRepository.RemoveItemByProductId(basket.Id, productId);
                 }
 
                 return Ok();
@@ -332,10 +332,10 @@ namespace MarketMinds.Controllers
             try
             {
                 // Get the user's basket
-                Basket basket = _basketRepository.GetBasketByUserId(userId);
+                Basket basket = basketRepository.GetBasketByUserId(userId);
 
                 // Remove the product
-                _basketRepository.RemoveItemByProductId(basket.Id, productId);
+                basketRepository.RemoveItemByProductId(basket.Id, productId);
 
                 return Ok();
             }
@@ -360,10 +360,10 @@ namespace MarketMinds.Controllers
             try
             {
                 // Get the user's basket
-                Basket basket = _basketRepository.GetBasketByUserId(userId);
+                Basket basket = basketRepository.GetBasketByUserId(userId);
 
                 // Clear the basket
-                _basketRepository.ClearBasket(basket.Id);
+                basketRepository.ClearBasket(basket.Id);
 
                 return Ok();
             }
@@ -392,7 +392,7 @@ namespace MarketMinds.Controllers
             try
             {
                 // Convert to uppercase for case-insensitive comparison
-                string normalizedCode = normalize(code);
+                string normalizedCode = Normalize(code);
 
                 // Check if the code exists in the valid codes
                 if (VALID_CODES.TryGetValue(normalizedCode, out double discountRate))
@@ -422,7 +422,7 @@ namespace MarketMinds.Controllers
 
             try
             {
-                List<BasketItem> items = _basketRepository.GetBasketItems(basketId);
+                List<BasketItem> items = basketRepository.GetBasketItems(basketId);
                 double subtotal = 0;
 
                 foreach (var item in items)
@@ -435,7 +435,7 @@ namespace MarketMinds.Controllers
                 if (!string.IsNullOrEmpty(promoCode))
                 {
                     // Convert to uppercase for case-insensitive comparison
-                    string normalizedCode = normalize(promoCode);
+                    string normalizedCode = Normalize(promoCode);
 
                     // Check if the code exists in the valid codes
                     if (VALID_CODES.TryGetValue(normalizedCode, out double discountRate))
@@ -456,7 +456,7 @@ namespace MarketMinds.Controllers
                 var totalsDto = BasketMapper.ToDTO(basketTotals);
 
                 // Use the custom serializer settings
-                return new JsonResult(totalsDto, _jsonOptions);
+                return new JsonResult(totalsDto, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -479,7 +479,7 @@ namespace MarketMinds.Controllers
             try
             {
                 // Get the basket items
-                List<BasketItem> items = _basketRepository.GetBasketItems(basketId);
+                List<BasketItem> items = basketRepository.GetBasketItems(basketId);
 
                 // Check if the basket is empty
                 if (items.Count == 0)

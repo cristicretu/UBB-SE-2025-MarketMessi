@@ -1,13 +1,13 @@
 using System;
-using MarketMinds.Repositories.ReviewRepository;
-using server.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
-using server.Models.DTOs;
-using server.Models.DTOs.Mappers;
+using System.Collections.ObjectModel;
+using Server.Models;
+using Microsoft.AspNetCore.Mvc;
+using Server.Models.DTOs;
+using Server.Models.DTOs.Mappers;
+using MarketMinds.Repositories.ReviewRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -15,10 +15,10 @@ namespace MarketMinds.Controllers
     [Route("api/[controller]")]
     public class ReviewController : ControllerBase
     {
-        private readonly IReviewRepository _reviewRepository;
+        private readonly IReviewRepository reviewRepository;
         public ReviewController(IReviewRepository reviewRepository)
         {
-            _reviewRepository = reviewRepository;
+            this.reviewRepository = reviewRepository;
         }
 
         [HttpGet("buyer/{buyerId}")]
@@ -30,7 +30,7 @@ namespace MarketMinds.Controllers
             try
             {
                 var buyer = new User { Id = buyerId };
-                var reviews = _reviewRepository.GetAllReviewsByBuyer(buyer);
+                var reviews = reviewRepository.GetAllReviewsByBuyer(buyer);
 
                 // Convert ReviewImages to generic Images for each review
                 foreach (var review in reviews)
@@ -62,7 +62,7 @@ namespace MarketMinds.Controllers
             try
             {
                 var seller = new User { Id = sellerId };
-                var reviews = _reviewRepository.GetAllReviewsBySeller(seller);
+                var reviews = reviewRepository.GetAllReviewsBySeller(seller);
 
                 // Convert ReviewImages to generic Images for each review
                 foreach (var review in reviews)
@@ -104,7 +104,7 @@ namespace MarketMinds.Controllers
                 review.Id = 0;
 
                 // Create the review
-                _reviewRepository.CreateReview(review);
+                reviewRepository.CreateReview(review);
 
                 // Convert back to DTO for response
                 var createdReviewDto = ReviewMapper.ToDto(review);
@@ -139,7 +139,7 @@ namespace MarketMinds.Controllers
                 // Sync images with ReviewImages for DB storage
                 review.SyncImagesBeforeSave();
 
-                _reviewRepository.EditReview(review, review.Rating, review.Description);
+                reviewRepository.EditReview(review, review.Rating, review.Description);
 
                 // Convert back to DTO for response
                 var updatedReviewDto = ReviewMapper.ToDto(review);
@@ -172,7 +172,7 @@ namespace MarketMinds.Controllers
                 // Convert DTO to model
                 var review = ReviewMapper.ToModel(reviewDto);
 
-                _reviewRepository.DeleteReview(review);
+                reviewRepository.DeleteReview(review);
                 return NoContent();
             }
             catch (KeyNotFoundException knfex)

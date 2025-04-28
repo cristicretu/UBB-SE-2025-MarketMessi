@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace server.Models
+namespace Server.Models
 {
     /// <summary>
     /// Generic Image class used across multiple parts of the application
@@ -18,6 +18,9 @@ namespace server.Models
         }
 
         // Default constructor for Entity Framework
-        public Image() { }
+        public Image()
+        {
+            // Empty
+        }
     }
 }

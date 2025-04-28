@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace server.Models.DTOs
+namespace Server.Models.DTOs
 {
     public class BuyProductDTO
     {

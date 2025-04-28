@@ -33,7 +33,6 @@ namespace MarketMinds
 
         private DispatcherTimer? countdownTimer;
         private Window? seeSellerReviewsView;
-
         private const int COUNTDOWN_TIMER_INTERVAL_IN_SECONDS = 1;
         private const int IMAGE_HEIGHT = 250;
         private const int TAG_MARGIN = 4;
@@ -41,6 +40,7 @@ namespace MarketMinds
         private const int TAG_PADDING_RIGHT = 8;
         private const int TAG_PADDING_TOP = 4;
         private const int TAG_PADDING_BOTTOM = 4;
+        private Window? leaveReviewWindow;
 
         public AuctionProductView(AuctionProduct product)
         {
@@ -155,13 +155,42 @@ namespace MarketMinds
 
         private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            App.SeeSellerReviewsViewModel.Seller = product.Seller;
-            // Create a window to host the SeeSellerReviewsView page
-            var window = new Window();
-            window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-            window.Activate();
-            // Store reference to window
-            seeSellerReviewsView = window;
+            if (App.SeeSellerReviewsViewModel != null)
+            {
+                App.SeeSellerReviewsViewModel.Seller = product.Seller;
+                // Create a window to host the SeeSellerReviewsView page
+                var window = new Window();
+                window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                window.Activate();
+                // Store reference to window
+                seeSellerReviewsView = window;
+            }
+            else
+            {
+                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+            }
+        }
+
+        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser != null)
+            {
+                if (App.ReviewCreateViewModel != null)
+                {
+                    App.ReviewCreateViewModel.Seller = product.Seller;
+
+                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                    leaveReviewWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                }
+            }
+            else
+            {
+                ShowErrorDialog("You must be logged in to leave a review.");
+            }
         }
     }
 }

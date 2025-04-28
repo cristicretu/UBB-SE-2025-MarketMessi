@@ -8,8 +8,7 @@ namespace DomainLayer.Domain
 {
     public class Conversation
     {
-        public int Id;
-        public int UserId1;
-        public int UserId2;
+        public int Id { get; set; }
+        public int UserId { get; set; }
     }
 }

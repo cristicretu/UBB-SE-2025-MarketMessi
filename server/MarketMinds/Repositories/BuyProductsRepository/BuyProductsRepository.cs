@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Linq;
-using server.Models;
-using server.DataAccessLayer;
+using Server.Models;
+using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 
 namespace MarketMinds.Repositories.BuyProductsRepository
 {
-    public class BuyProductsRepository: IBuyProductsRepository
+    public class BuyProductsRepository : IBuyProductsRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
 
         public BuyProductsRepository(ApplicationDbContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            this.context = context;
         }
 
         public void AddProduct(BuyProduct product)
@@ -25,8 +25,8 @@ namespace MarketMinds.Repositories.BuyProductsRepository
 
             try
             {
-                _context.BuyProducts.Add(product);
-                _context.SaveChanges();
+                context.BuyProducts.Add(product);
+                context.SaveChanges();
             }
             catch (DbUpdateException ex)
             {
@@ -49,13 +49,13 @@ namespace MarketMinds.Repositories.BuyProductsRepository
 
             try
             {
-                var productToDelete = _context.BuyProducts.Find(product.Id);
+                var productToDelete = context.BuyProducts.Find(product.Id);
                 if (productToDelete == null)
                 {
                     throw new KeyNotFoundException($"Product with ID {product.Id} not found for deletion.");
                 }
-                _context.BuyProducts.Remove(productToDelete);
-                _context.SaveChanges();
+                context.BuyProducts.Remove(productToDelete);
+                context.SaveChanges();
             }
             catch (DbUpdateException ex)
             {
@@ -73,7 +73,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
         {
             try
             {
-                return _context.BuyProducts
+                return context.BuyProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -93,7 +93,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
         {
             try
             {
-                var product = _context.BuyProducts
+                var product = context.BuyProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
                     .Include(p => p.Category)
@@ -128,7 +128,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
 
             try
             {
-                var existingProduct = _context.BuyProducts
+                var existingProduct = context.BuyProducts
                     .Include(p => p.Images)
                     .Include(p => p.ProductTags)
                     .FirstOrDefault(p => p.Id == product.Id);
@@ -138,12 +138,12 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     throw new KeyNotFoundException($"Product with ID {product.Id} not found for update.");
                 }
 
-                _context.Entry(existingProduct).CurrentValues.SetValues(product);
+                context.Entry(existingProduct).CurrentValues.SetValues(product);
 
                 var imagesToRemove = existingProduct.Images
                     .Where(dbImg => !product.Images.Any(pImg => pImg.Id == dbImg.Id && pImg.Id != 0))
                     .ToList();
-                _context.Set<BuyProductImage>().RemoveRange(imagesToRemove);
+                context.Set<BuyProductImage>().RemoveRange(imagesToRemove);
 
                 foreach (var image in product.Images)
                 {
@@ -151,7 +151,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     if (existingImage == null)
                     {
                         image.ProductId = existingProduct.Id;
-                        _context.BuyProductImages.Add(image);
+                        context.BuyProductImages.Add(image);
                         Console.WriteLine($"Added image with URL {image.Url} to product {existingProduct.Id}");
                     }
                 }
@@ -159,14 +159,14 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                 var tagsToRemove = existingProduct.ProductTags
                     .Where(dbPt => !product.ProductTags.Any(pPt => pPt.TagId == dbPt.TagId))
                     .ToList();
-                _context.Set<BuyProductProductTag>().RemoveRange(tagsToRemove);
+                context.Set<BuyProductProductTag>().RemoveRange(tagsToRemove);
 
                 foreach (var productTag in product.ProductTags)
                 {
                     var existingLink = existingProduct.ProductTags.FirstOrDefault(pt => pt.TagId == productTag.TagId);
                     if (existingLink == null)
                     {
-                        _context.Set<BuyProductProductTag>().Add(new BuyProductProductTag
+                        context.Set<BuyProductProductTag>().Add(new BuyProductProductTag
                         {
                             ProductId = existingProduct.Id,
                             TagId = productTag.TagId
@@ -174,7 +174,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
                     }
                 }
 
-                _context.SaveChanges();
+                context.SaveChanges();
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -198,7 +198,7 @@ namespace MarketMinds.Repositories.BuyProductsRepository
             try
             {
                 // Make sure the product exists
-                var product = _context.BuyProducts.Find(productId);
+                var product = context.BuyProducts.Find(productId);
                 if (product == null)
                 {
                     throw new KeyNotFoundException($"Product with ID {productId} not found.");
@@ -206,13 +206,13 @@ namespace MarketMinds.Repositories.BuyProductsRepository
 
                 // Set the product ID and add the image
                 image.ProductId = productId;
-                
+
                 // Add image directly to the DbSet
-                _context.BuyProductImages.Add(image);
-                
+                context.BuyProductImages.Add(image);
+
                 // Save changes to the database
-                _context.SaveChanges();
-                
+                context.SaveChanges();
+
                 Console.WriteLine($"Successfully added image with URL {image.Url} to product {productId}");
             }
             catch (Exception ex)

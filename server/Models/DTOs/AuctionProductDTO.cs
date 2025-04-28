@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace server.Models.DTOs
+namespace Server.Models.DTOs
 {
     public class AuctionProductDTO
     {
@@ -61,7 +61,7 @@ namespace server.Models.DTOs
         public int UserType { get; set; }
         public double Balance { get; set; }
         public double Rating { get; set; }
-        public int Password { get; set; } 
+        public int Password { get; set; }
     }
 
     public class CreateBidDTO
@@ -71,4 +71,4 @@ namespace server.Models.DTOs
         public float Amount { get; set; }
         public DateTime Timestamp { get; set; }
     }
-} 
+}

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using server.Models;
+using Server.Models;
 
 namespace MarketMinds.Repositories.ProductConditionRepository
 {

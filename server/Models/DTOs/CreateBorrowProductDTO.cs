@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace server.Models.DTOs
+namespace Server.Models.DTOs
 {
     public class CreateBorrowProductDTO
     {
@@ -16,11 +16,11 @@ namespace server.Models.DTOs
         public DateTime? EndDate { get; set; }
         public double DailyRate { get; set; }
         public bool IsBorrowed { get; set; }
-        
+
         // Serialize images as simple objects with URL property
         [JsonPropertyName("images")]
         public List<ImageInfo> Images { get; set; } = new List<ImageInfo>();
-        
+
         // Simple class for image URLs - matches anonymous type in service
         public class ImageInfo
         {
@@ -28,4 +28,4 @@ namespace server.Models.DTOs
             public string Url { get; set; }
         }
     }
-} 
+}
