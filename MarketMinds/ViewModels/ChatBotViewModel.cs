@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.DreamTeam.ChatbotService;
 
 namespace MarketMinds.ViewModels;
@@ -15,7 +15,7 @@ public class ChatBotViewModel
     private string currentResponse;
     private ObservableCollection<Node> currentOptions;
     private bool isActive;
-    private User currentUser;
+    private MarketMinds.Shared.Models.User currentUser;
     public ObservableCollection<ChatMessage> Messages { get; private set; }
 
     public ChatBotViewModel(IChatbotService chatBotService)
@@ -25,7 +25,7 @@ public class ChatBotViewModel
         Messages = new ObservableCollection<ChatMessage>();
     }
 
-    public void SetCurrentUser(User user)
+    public void SetCurrentUser(MarketMinds.Shared.Models.User user)
     {
         if (user == null)
         {

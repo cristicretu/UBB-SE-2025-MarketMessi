@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using MarketMinds.Repositories.ConversationRepository;
-using Server.Models;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 using System.Net;
 using System.Diagnostics;
 

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.BorrowProductsService
 {
@@ -19,11 +19,13 @@ namespace MarketMinds.Services.BorrowProductsService
         /// </summary>
         /// <param name="product">The product to delete.</param>
         void DeleteListing(Product product);
+
         /// <summary>
         /// Gets all products.
         /// </summary>
         /// <returns>A list of all products.</returns>
         List<Product> GetProducts();
+
         /// <summary>
         /// Gets a product by ID.
         /// </summary>

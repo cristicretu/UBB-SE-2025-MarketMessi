@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ProductCategoryService
 {
@@ -12,7 +12,7 @@ namespace MarketMinds.Services.ProductCategoryService
         /// Returns all the product categories.
         /// </summary>
         /// <returns>A list of all product categories.</returns>
-        List<ProductCategory> GetAllProductCategories();
+        List<Category> GetAllProductCategories();
 
         /// <summary>
         /// Creates a new product category.
@@ -20,7 +20,7 @@ namespace MarketMinds.Services.ProductCategoryService
         /// <param name="displayTitle">The display title of the product category.</param>
         /// <param name="description">The description of the product category.</param>
         /// <returns>The created product category.</returns>
-        ProductCategory CreateProductCategory(string displayTitle, string? description);
+        Category CreateProductCategory(string displayTitle, string? description);
 
         /// <summary>
         /// Deletes a product category by its display title.

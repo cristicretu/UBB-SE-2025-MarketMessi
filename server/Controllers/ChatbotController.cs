@@ -10,7 +10,7 @@ using System.Diagnostics;
 using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using Server.Models;
+using MarketMinds.Shared.Models;
 
 namespace Server.Controllers
 {

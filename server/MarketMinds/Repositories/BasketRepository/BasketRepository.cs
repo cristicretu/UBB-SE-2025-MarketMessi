@@ -1,11 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
-using Server.Models;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.BasketRepository
 {

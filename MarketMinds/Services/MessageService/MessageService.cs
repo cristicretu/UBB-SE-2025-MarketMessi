@@ -1,43 +1,30 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.MessageService
 {
     public class MessageService : IMessageService
     {
-        private readonly HttpClient httpClient;
-        private readonly string baseUrl = "http://localhost:5000/api/message";
+        private readonly IMessageRepository messageRepository;
 
-        public MessageService(HttpClient httpClient)
+        public MessageService(IMessageRepository repository)
         {
-            this.httpClient = httpClient;
+            messageRepository = repository;
         }
 
         public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            var createDto = new
-            {
-                ConversationId = conversationId,
-                UserId = userId,
-                Content = content
-            };
-
-            var response = await httpClient.PostAsJsonAsync(baseUrl, createDto);
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<Message>();
+            return await messageRepository.CreateMessageAsync(conversationId, userId, content);
         }
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            var response = await httpClient.GetAsync($"{baseUrl}/conversation/{conversationId}");
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<List<Message>>();
+            return await messageRepository.GetMessagesByConversationIdAsync(conversationId);
         }
     }
 }

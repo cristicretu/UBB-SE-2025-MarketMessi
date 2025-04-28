@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Services;
 using MarketMinds.Services.AuctionProductsService;
 using MarketMinds.Services.BorrowProductsService;

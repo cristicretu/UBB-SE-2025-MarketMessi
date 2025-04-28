@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.AuctionProductsService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services.AuctionValidationService;
@@ -9,10 +9,10 @@ namespace ViewModelLayer.ViewModel;
 
 public class AuctionProductsViewModel
 {
-    private readonly IProductService auctionProductsService;
+    private readonly IAuctionProductsService auctionProductsService;
     private readonly AuctionValidationService auctionValidationService;
 
-    public AuctionProductsViewModel(IProductService auctionProductsService)
+    public AuctionProductsViewModel(IAuctionProductsService auctionProductsService)
     {
         this.auctionProductsService = auctionProductsService;
         this.auctionValidationService = new AuctionValidationService((IAuctionProductsService)auctionProductsService);

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.Helpers.Selectors;
 using MarketMinds.Services.ImagineUploadService;
@@ -74,7 +74,7 @@ namespace MarketMinds.Views.Pages2
             if (eventArgs.Parameter is UserNotSoldOrder selectedOrder)
             {
                 currentUser = App.CurrentUser;
-                targetUser = new User(selectedOrder.SellerId, "Seller", string.Empty);
+                targetUser = new User { Id = selectedOrder.SellerId, Username = "Seller", Email = string.Empty };
             }
             else if (eventArgs.Parameter is User user)
             {
@@ -91,7 +91,7 @@ namespace MarketMinds.Views.Pages2
 
             try
             {
-                await chatViewModel.InitializeAsync(currentUser.Id);
+                await chatViewModel.InitializeAsync(currentUser.Id.ToString());
 
                 // Load initial messages
                 await LoadInitialChatHistoryAsync();
@@ -132,20 +132,20 @@ namespace MarketMinds.Views.Pages2
             switch (template)
             {
                 case 0:
-                    currentUser = new User(0, "test1", string.Empty);
-                    targetUser = new User(1, "test2", string.Empty);
+                    currentUser = new User { Id = 0, Username = "test1", Email = string.Empty };
+                    targetUser = new User { Id = 1, Username = "test2", Email = string.Empty };
                     break;
                 case 1:
-                    currentUser = new User(1, "test2", string.Empty);
-                    targetUser = new User(0, "test1", string.Empty);
+                    currentUser = new User { Id = 1, Username = "test2", Email = string.Empty };
+                    targetUser = new User { Id = 0, Username = "test1", Email = string.Empty };
                     break;
                 case 2:
-                    currentUser = new User(2, "test3", string.Empty);
-                    targetUser = new User(3, "test4", string.Empty);
+                    currentUser = new User { Id = 2, Username = "test3", Email = string.Empty };
+                    targetUser = new User { Id = 3, Username = "test4", Email = string.Empty };
                     break;
                 case 3: // Admin case
-                    currentUser = new User(3, "test4", string.Empty); // Assuming ID 3 is admin
-                    targetUser = new User(2, "test3", string.Empty);
+                    currentUser = new User { Id = 3, Username = "test4", Email = string.Empty }; // Assuming ID 3 is admin
+                    targetUser = new User { Id = 2, Username = "test3", Email = string.Empty };
                     break;
                 default:
                     // Handle invalid template?

@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
-using Server.Models;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.ProductTagRepository
 {

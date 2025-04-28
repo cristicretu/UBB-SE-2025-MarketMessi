@@ -1,55 +1,27 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
-using MarketMinds.Models;
+using MarketMinds.Shared.Models;
+using MarketMinds.Repositories;
+using MarketMinds.Shared.IRepository;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.UserService
 {
     public class UserService : IUserService
     {
-        private static readonly int MINIMUM_USER_ID = 0;
-        private static readonly int ERROR_CODE = -1;
-        private readonly HttpClient httpClient;
-        private readonly JsonSerializerOptions jsonOptions;
+        private readonly UserRepository repository;
 
         public UserService(IConfiguration configuration)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null");
-            }
-
-            httpClient = new HttpClient();
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (string.IsNullOrEmpty(apiBaseUrl))
-            {
-                throw new InvalidOperationException("API base URL is null or empty");
-            }
-
-            if (!apiBaseUrl.EndsWith("/"))
-            {
-                apiBaseUrl += "/";
-            }
-
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
-            Console.WriteLine($"Initialized HTTP client with base address: {httpClient.BaseAddress}");
-
-            jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
+            repository = new UserRepository(configuration);
         }
 
         public async Task<bool> AuthenticateUserAsync(string username, string password)
         {
             try
             {
-                return await ValidateCredentialsAsync(username, password);
+                return await repository.AuthenticateUserAsync(username, password);
             }
             catch (Exception ex)
             {
@@ -62,20 +34,8 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var loginRequest = new
-                {
-                    Username = username,
-                    Password = password
-                };
-
-                var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
-                    return userDto?.ToDomainUser();
-                }
-                return null;
+                var sharedUser = await repository.GetUserByCredentialsAsync(username, password);
+                return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
             {
@@ -88,14 +48,8 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await httpClient.GetAsync($"users/{username}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
-                    return userDto?.ToDomainUser();
-                }
-                return null;
+                var sharedUser = await repository.GetUserByUsernameAsync(username);
+                return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
             {
@@ -108,14 +62,8 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await httpClient.GetAsync($"users/by-email/{email}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
-                    return userDto?.ToDomainUser();
-                }
-                return null;
+                var sharedUser = await repository.GetUserByEmailAsync(email);
+                return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
             {
@@ -128,15 +76,7 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await httpClient.GetAsync($"users/check-username/{username}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<UsernameCheckResult>(content, jsonOptions);
-                    return result.Exists;
-                }
-                // Default to true (username taken) if there's an error
-                return true;
+                return await repository.IsUsernameTakenAsync(username);
             }
             catch (Exception ex)
             {
@@ -149,68 +89,39 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                // Check if email exists
-                var existingUserByEmail = await GetUserByEmailAsync(user.Email);
-                if (existingUserByEmail != null)
+                if (user == null)
                 {
                     return false;
                 }
-
-                // Check if username exists
-                if (await IsUsernameTakenAsync(user.Username))
+                
+                if (string.IsNullOrEmpty(user.Username))
                 {
                     return false;
                 }
-
-                // Create user and return success if Id > 0
-                int userId = await CreateUserAsync(user);
-                return userId > MINIMUM_USER_ID;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error registering user: {ex.Message}");
-                return false;
-            }
-        }
-
-        private async Task<bool> ValidateCredentialsAsync(string username, string password)
-        {
-            try
-            {
-                var loginRequest = new
+                
+                if (string.IsNullOrEmpty(user.Email))
                 {
-                    Username = username,
-                    Password = password
-                };
-
-                var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error validating credentials: {ex.Message}");
-                return false;
-            }
-        }
-
-        private async Task<int> CreateUserAsync(User newUser)
-        {
-            try
-            {
-                var userDto = new UserDto(newUser);
-                var response = await httpClient.PostAsJsonAsync("users/register", userDto);
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var createdUserDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
-                    return createdUserDto?.Id ?? ERROR_CODE;
+                    return false;
                 }
-                return ERROR_CODE;
+                
+                if (string.IsNullOrEmpty(user.Password))
+                {
+                    return false;
+                }
+                
+                var sharedUser = ConvertToSharedUser(user);
+                
+                bool result = await repository.RegisterUserAsync(sharedUser);
+                
+                return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating user: {ex.Message}");
-                return ERROR_CODE;
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[UserService] Inner exception: {ex.InnerException.Message}");
+                }
+                return false;
             }
         }
 
@@ -218,14 +129,8 @@ namespace MarketMinds.Services.UserService
         {
             try
             {
-                var response = await httpClient.GetAsync($"account/{userId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var userDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
-                    return userDto?.ToDomainUser();
-                }
-                return null;
+                var sharedUser = await repository.GetUserByIdAsync(userId);
+                return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
             {
@@ -234,9 +139,46 @@ namespace MarketMinds.Services.UserService
             }
         }
 
-        private class UsernameCheckResult
+        // Helper methods to convert between domain and shared models
+        private User ConvertToDomainUser(MarketMinds.Shared.Models.User sharedUser)
         {
-            public bool Exists { get; set; }
+            if (sharedUser == null)
+            {
+                return null;
+            }
+
+            return new User
+            {
+                Id = sharedUser.Id,
+                Username = sharedUser.Username,
+                Email = sharedUser.Email,
+                PasswordHash = sharedUser.PasswordHash,
+                Password = sharedUser.Password,
+                UserType = sharedUser.UserType,
+                Balance = sharedUser.Balance,
+                Rating = sharedUser.Rating
+            };
+        }
+
+        private MarketMinds.Shared.Models.User ConvertToSharedUser(User domainUser)
+        {
+            if (domainUser == null)
+            {
+                return null;
+            }
+
+            
+            return new MarketMinds.Shared.Models.User
+            {
+                Id = domainUser.Id,
+                Username = domainUser.Username,
+                Email = domainUser.Email,
+                PasswordHash = domainUser.PasswordHash,
+                Password = domainUser.Password,
+                UserType = domainUser.UserType,
+                Balance = domainUser.Balance,
+                Rating = domainUser.Rating
+            };
         }
     }
 }

@@ -1,26 +1,87 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DomainLayer.Domain;
-using ViewModelLayer.ViewModel;
+using System.Text;
+using System.Threading.Tasks;
+using MarketMinds.Shared.Models;
+using MarketMinds.Services.AuctionProductsService;
 using BusinessLogicLayer.ViewModel;
+using ViewModelLayer.ViewModel;
 
-namespace MarketMinds.Helpers
+namespace MarketMinds.Helpers.ViewModelHelpers
 {
     public class AuctionProductListViewModelHelper
     {
         private const int NO_ITEMS = 0;
+        private readonly SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel;
+        private readonly AuctionProductsViewModel auctionProductsViewModel;
+
+        public AuctionProductListViewModelHelper(SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel, AuctionProductsViewModel auctionProductsViewModel)
+        {
+            this.sortAndFilterViewModel = sortAndFilterViewModel;
+            this.auctionProductsViewModel = auctionProductsViewModel;
+        }
+
+        public List<Product> GetFilteredProducts()
+        {
+            return sortAndFilterViewModel.HandleSearch();
+        }
+
+        public void ClearAllFilters()
+        {
+            sortAndFilterViewModel.HandleClearAllFilters();
+        }
+
+        public void UpdateSortCondition(ProductSortType sortCondition)
+        {
+            sortAndFilterViewModel.HandleSortChange(sortCondition);
+        }
+
+        public void UpdateSearchQuery(string searchQuery)
+        {
+            sortAndFilterViewModel.HandleSearchQueryChange(searchQuery);
+        }
+
+        public void AddProductCondition(Condition condition)
+        {
+            sortAndFilterViewModel.HandleAddProductCondition(condition);
+        }
+
+        public void RemoveProductCondition(Condition condition)
+        {
+            sortAndFilterViewModel.HandleRemoveProductCondition(condition);
+        }
+
+        public void AddProductCategory(Category category)
+        {
+            sortAndFilterViewModel.HandleAddProductCategory(category);
+        }
+
+        public void RemoveProductCategory(Category category)
+        {
+            sortAndFilterViewModel.HandleRemoveProductCategory(category);
+        }
+
+        public void AddProductTag(ProductTag tag)
+        {
+            sortAndFilterViewModel.HandleAddProductTag(tag);
+        }
+
+        public void RemoveProductTag(ProductTag tag)
+        {
+            sortAndFilterViewModel.HandleRemoveProductTag(tag);
+        }
 
         public (List<AuctionProduct> pageItems, int totalPages, List<AuctionProduct> fullList) GetAuctionProductsPage(
-            ViewModelLayer.ViewModel.AuctionProductsViewModel auctionProductsViewModel,
-            BusinessLogicLayer.ViewModel.SortAndFilterViewModel sortAndFilterViewModel,
+            AuctionProductsViewModel auctionProductsViewModel,
+            SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel,
             int currentPage,
             int itemsPerPage)
         {
             var filteredProducts = sortAndFilterViewModel.HandleSearch().Cast<AuctionProduct>().ToList();
             var fullList = filteredProducts;
 
-            int totalPages = (int)Math.Ceiling(fullList.Count / (double)itemsPerPage);
+            int totalPages = (int)Math.Ceiling((double)fullList.Count / itemsPerPage);
 
             var pageItems = fullList
                 .Skip((currentPage - 1) * itemsPerPage)

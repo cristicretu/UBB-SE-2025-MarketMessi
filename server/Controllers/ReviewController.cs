@@ -3,10 +3,11 @@ using System.Net;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Server.Models;
+using MarketMinds.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
-using Server.Models.DTOs;
-using Server.Models.DTOs.Mappers;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Repositories.ReviewRepository;
 
 namespace MarketMinds.Controllers

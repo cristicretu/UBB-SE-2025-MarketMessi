@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.ReviewService;
 using Microsoft.UI.Xaml;
 using MarketMinds.Services.ImagineUploadService;

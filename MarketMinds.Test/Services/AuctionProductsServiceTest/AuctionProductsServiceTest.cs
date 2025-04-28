@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.AuctionProductsService;
 using MarketMinds.Repositories;
 using MarketMinds.Repositories.AuctionProductsRepository;
@@ -15,7 +15,7 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
     [TestFixture]
     public class AuctionProductsServiceTest
     {
-        private AuctionProductsService auctionProductsService;
+        private AuctionProductsRepository auctionProductsService;
         private AuctionProductsRepositoryMock auctionProductsRepositoryMock;
 
         // Constants to replace magic numbers
@@ -38,8 +38,8 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
 
         User testSeller;
         User testBidder;
-        ProductCondition testProductCondition;
-        ProductCategory testProductCategory;
+        Condition testProductCondition;
+        Category testProductCategory;
         List<ProductTag> testProductTags;
         AuctionProduct testAuction;
 
@@ -52,8 +52,8 @@ namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
             testSeller = new User(SELLER_ID, "test seller", "seller@test.com");
             testBidder = new User(BIDDER_ID, "test bidder", "bidder@test.com");
             testBidder.Balance = DEFAULT_BIDDER_BALANCE;
-            testProductCondition = new ProductCondition(1, "Test", "Test");
-            testProductCategory = new ProductCategory(1, "test", "test");
+            testProductCondition = new Condition(1, "Test", "Test");
+            testProductCategory = new Category(1, "test", "test");
             testProductTags = new List<ProductTag>();
 
             testAuction = new AuctionProduct(

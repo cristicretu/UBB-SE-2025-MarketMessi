@@ -1,6 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using Server.Models;
+using MarketMinds.Shared.Models;
 
 namespace Server.DataAccessLayer
 {
@@ -93,6 +93,12 @@ namespace Server.DataAccessLayer
 
             modelBuilder.Entity<Bid>().ToTable("Bids");
             modelBuilder.Entity<Bid>().HasKey(bid => bid.Id);
+
+            modelBuilder.Entity<Bid>()
+                .HasOne(b => b.Bidder)
+                .WithMany(u => u.Bids)
+                .HasForeignKey(b => b.BidderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Buy products
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
@@ -208,7 +214,14 @@ namespace Server.DataAccessLayer
 
             // Messages
             modelBuilder.Entity<Message>().ToTable("Messages");
+
             modelBuilder.Entity<Message>().HasKey(message => message.Id);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(message => message.User)
+                .WithMany()
+                .HasForeignKey(message => message.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

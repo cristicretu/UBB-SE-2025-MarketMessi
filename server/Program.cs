@@ -9,6 +9,7 @@ using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 using MarketMinds.Repositories.ConversationRepository; // Added from luca
 using MarketMinds.Repositories.MessageRepository;      // Added from luca
+using MarketMinds.Shared.IRepository; // Added for shared interfaces
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
@@ -46,8 +47,8 @@ builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository
 builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
-builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
+builder.Services.AddScoped<MarketMinds.Repositories.ProductCategoryRepository.IProductCategoryRepository, ProductCategoryRepository>();
+builder.Services.AddScoped<MarketMinds.Repositories.ProductConditionRepository.IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

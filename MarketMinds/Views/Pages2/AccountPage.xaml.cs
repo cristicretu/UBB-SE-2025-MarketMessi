@@ -20,7 +20,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.ViewModels;
 using Windows.UI;
