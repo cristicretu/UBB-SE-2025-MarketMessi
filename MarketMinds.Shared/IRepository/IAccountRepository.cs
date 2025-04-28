@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
-namespace Server.MarketMinds.Repositories.AccountRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface IAccountRepository
     {

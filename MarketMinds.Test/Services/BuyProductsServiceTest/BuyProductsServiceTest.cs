@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.BuyProductsService;
 using MarketMinds.Repositories.BuyProductsRepository;
 using MarketMinds.Test.Services.BuyProductsServiceTest;
@@ -36,8 +36,8 @@ namespace MarketMinds.Tests.Services.BuyProductsServiceTest
 
             testSeller = new User(TEST_SELLER_ID, "Test Seller", "seller@test.com");
 
-            var testCondition = new ProductCondition(1, "New", "Brand new item");
-            var testCategory = new ProductCategory(1, "Electronics", "Electronic devices");
+            var testCondition = new Condition(1, "New", "Brand new item");
+            var testCategory = new Category(1, "Electronics", "Electronic devices");
             var testTags = new List<ProductTag>();
             var testImages = new List<Image>();
 

@@ -9,7 +9,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using Microsoft.UI.Xaml;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Newtonsoft.Json;
 using Windows.Storage.Streams;
 

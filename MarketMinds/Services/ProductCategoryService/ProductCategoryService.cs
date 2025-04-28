@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Services.ProductCategoryService
@@ -25,13 +25,13 @@ namespace MarketMinds.Services.ProductCategoryService
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public List<ProductCategory> GetAllProductCategories()
+        public List<Category> GetAllProductCategories()
         {
             var response = httpClient.GetAsync("ProductCategory").Result;
             response.EnsureSuccessStatusCode();
             var responseJson = response.Content.ReadAsStringAsync().Result;
 
-            var clientCategories = new List<ProductCategory>();
+            var clientCategories = new List<Category>();
             var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
 
             if (responseJsonArray != null)
@@ -42,14 +42,16 @@ namespace MarketMinds.Services.ProductCategoryService
                     var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
                     var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
 
-                    clientCategories.Add(new ProductCategory(id, name, description));
+                    var category = new Category(name, description);
+                    category.Id = id;
+                    clientCategories.Add(category);
                 }
             }
 
             return clientCategories;
         }
 
-        public ProductCategory CreateProductCategory(string displayTitle, string description)
+        public Category CreateProductCategory(string displayTitle, string description)
         {
             var requestContent = new StringContent(
                 $"{{\"displayTitle\":\"{displayTitle}\",\"description\":\"{description}\"}}",
@@ -71,7 +73,9 @@ namespace MarketMinds.Services.ProductCategoryService
             var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
 
-            return new ProductCategory(id, name, categoryDescription);
+            var category = new Category(name, categoryDescription);
+            category.Id = id;
+            return category;
         }
 
         public void DeleteProductCategory(string displayTitle)

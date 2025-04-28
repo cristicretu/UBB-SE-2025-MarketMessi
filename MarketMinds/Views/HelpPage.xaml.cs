@@ -14,7 +14,7 @@ using Microsoft.UI.Dispatching;
 using MarketMinds.Services.DreamTeam.ChatbotService;
 using MarketMinds.Services.ConversationService;
 using MarketMinds.Services.MessageService;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Windows.UI;
 using Windows.System;
 

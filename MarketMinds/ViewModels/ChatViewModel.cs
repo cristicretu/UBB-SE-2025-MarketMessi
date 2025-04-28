@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.DreamTeam.ChatService;
 
 namespace MarketMinds.ViewModels;
@@ -15,6 +15,19 @@ public class ChatViewModel
     public ChatViewModel(IChatService chatService)
     {
         this.chatService = chatService;
+    }
+
+    public async Task InitializeAsync(string userId)
+    {
+        // Try to parse the string ID to int
+        if (int.TryParse(userId, out int userIdInt))
+        {
+            await InitializeAsync(userIdInt);
+        }
+        else
+        {
+            throw new ArgumentException("Invalid user ID format. The user ID must be a valid integer.", nameof(userId));
+        }
     }
 
     public async Task InitializeAsync(int userId)

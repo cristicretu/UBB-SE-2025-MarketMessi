@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Text;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Newtonsoft.Json;
 using Windows.Storage;
 

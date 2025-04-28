@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories.ReviewRepository
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Interface for ReviewRepository to manage review operations.

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Repositories;
 
 namespace MarketMinds.Services.ProductTagService
@@ -64,7 +64,7 @@ namespace MarketMinds.Services.ProductTagService
             productRepository.DeleteProduct(product);
         }
 
-        public List<Product> GetSortedFilteredProducts(List<ProductCondition> selectedConditions, List<ProductCategory> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
             List<Product> products = GetProducts();
             List<Product> productResultSet = new List<Product>();
@@ -105,7 +105,7 @@ namespace MarketMinds.Services.ProductTagService
             return productResultSet;
         }
 
-        public static List<Product> GetSortedFilteredProducts(List<Product> products, List<ProductCondition> selectedConditions, List<ProductCategory> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        public static List<Product> GetSortedFilteredProducts(List<Product> products, List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
         {
             var tempService = new ProductService(null);
             List<Product> filteredProducts = new List<Product>();

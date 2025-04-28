@@ -1,5 +1,5 @@
 using System;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Views.Pages;
 using Microsoft.UI.Xaml;
 
@@ -16,15 +16,19 @@ namespace MarketMinds.Services
 
             Window detailView;
 
-            if (product is AuctionProduct auctionProduct)
+            var auctionProduct = product as AuctionProduct;
+            var borrowProduct = product as BorrowProduct;
+            var buyProduct = product as BuyProduct;
+
+            if (auctionProduct != null)
             {
                 detailView = new AuctionProductView(auctionProduct);
             }
-            else if (product is BorrowProduct borrowProduct)
+            else if (borrowProduct != null)
             {
                 detailView = new BorrowProductView(borrowProduct);
             }
-            else if (product is BuyProduct buyProduct)
+            else if (buyProduct != null)
             {
                 detailView = new BuyProductView(buyProduct);
             }

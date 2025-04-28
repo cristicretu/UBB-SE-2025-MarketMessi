@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Services.ProductConditionService;
 using NUnit.Framework;
 
@@ -166,13 +166,13 @@ namespace MarketMinds.Test.Services.ProductConditionService
 
         private void AddTestConditions()
         {
-            _mockRepository.Conditions.Add(new ProductCondition(FIRST_CONDITION_ID, NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION));
-            _mockRepository.Conditions.Add(new ProductCondition(SECOND_CONDITION_ID, USED_CONDITION_TITLE, USED_CONDITION_DESCRIPTION));
+            _mockRepository.Conditions.Add(new Condition(FIRST_CONDITION_ID, NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION));
+            _mockRepository.Conditions.Add(new Condition(SECOND_CONDITION_ID, USED_CONDITION_TITLE, USED_CONDITION_DESCRIPTION));
         }
 
         private void AddConditionToDelete()
         {
-            _mockRepository.Conditions.Add(new ProductCondition(FIRST_CONDITION_ID, CONDITION_TO_DELETE_TITLE, CONDITION_TO_DELETE_DESCRIPTION));
+            _mockRepository.Conditions.Add(new Condition(FIRST_CONDITION_ID, CONDITION_TO_DELETE_TITLE, CONDITION_TO_DELETE_DESCRIPTION));
         }
 
         #endregion

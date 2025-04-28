@@ -22,18 +22,19 @@ namespace MarketMinds.Shared.Models
         // public new int? ConditionId { get; set; }
 
         // Navigation properties
-        public ICollection<BorrowProductImage> Images { get; set; }
-        public ICollection<BorrowProductProductTag> ProductTags { get; set; }
+        public ICollection<BorrowProductImage> Images { get; set; } = new List<BorrowProductImage>();
+        public ICollection<BorrowProductProductTag> ProductTags { get; set; } = new List<BorrowProductProductTag>();
 
-        public BorrowProduct()
+        [NotMapped]
+        public List<Image> NonMappedImages { get; set; } = new List<Image>();
+
+        public BorrowProduct() : base()
         {
-            Images = new List<BorrowProductImage>();
-            ProductTags = new List<BorrowProductProductTag>();
         }
 
         public BorrowProduct(int id, string title, string description, User seller,
             Condition condition, Category category, DateTime timeLimit,
-            double dailyRate)
+            double dailyRate) : base()
         {
             Id = id;
             Title = title;
@@ -44,8 +45,26 @@ namespace MarketMinds.Shared.Models
             TimeLimit = timeLimit;
             DailyRate = dailyRate;
             IsBorrowed = false;
-            Images = new List<BorrowProductImage>();
-            ProductTags = new List<BorrowProductProductTag>();
+        }
+
+        public BorrowProduct(int id, string title, string description, User seller,
+            Condition condition, Category category, List<ProductTag> productTags, 
+            List<Image> images, DateTime timeLimit, DateTime startDate, DateTime endDate,
+            double dailyRate, bool isBorrowed) : base()
+        {
+            Id = id;
+            Title = title;
+            Description = description;
+            Seller = seller;
+            Condition = condition;
+            Category = category;
+            TimeLimit = timeLimit;
+            StartDate = startDate;
+            EndDate = endDate;
+            DailyRate = dailyRate;
+            IsBorrowed = isBorrowed;
+            Tags = productTags ?? new List<ProductTag>();
+            NonMappedImages = images ?? new List<Image>();
         }
     }
 }

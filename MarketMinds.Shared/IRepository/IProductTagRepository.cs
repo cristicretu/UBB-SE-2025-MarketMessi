@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories.ProductTagRepository
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Interface for ProductTagRepository to manage product tag operations.

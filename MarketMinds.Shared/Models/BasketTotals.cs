@@ -1,6 +1,6 @@
 using System;
 
-namespace DomainLayer.Domain
+namespace MarketMinds.Shared.Models
 {
     public class BasketTotals
     {

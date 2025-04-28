@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 /// <summary>
 /// Interface for managing products in the service layer.
@@ -46,6 +46,6 @@ public interface IProductService
     /// <param name="sortCondition">How to sort the results.</param>
     /// <param name="searchQuery">Optional search term to filter by.</param>
     /// <returns>A filtered and sorted list of products.</returns>
-    List<Product> GetSortedFilteredProducts(List<ProductCondition> selectedConditions, List<ProductCategory> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery);
+    List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery);
 }
 
