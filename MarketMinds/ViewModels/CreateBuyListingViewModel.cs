@@ -13,7 +13,10 @@ namespace ViewModelLayer.ViewModel
         public BuyProductsService BuyProductsService { get; set; }
         public override void CreateListing(Product product)
         {
-            BuyProductsService.CreateListing(product);
+            if (product is BuyProduct buyProduct)
+            {
+                BuyProductsService.CreateListing(buyProduct);
+            }
         }
     }
 }

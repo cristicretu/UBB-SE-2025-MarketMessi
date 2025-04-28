@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Linq;
-using MarketMinds.Shared.Models;
+﻿using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 

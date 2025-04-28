@@ -44,10 +44,8 @@ namespace MarketMinds.Repositories
             {
                 var response = httpClient.GetAsync("ProductTag").Result;
                 response.EnsureSuccessStatusCode();
-                
                 var responseJson = response.Content.ReadAsStringAsync().Result;
                 var tags = JsonSerializer.Deserialize<List<ProductTag>>(responseJson, jsonOptions);
-                
                 return tags ?? new List<ProductTag>();
             }
             catch (Exception ex)
@@ -65,18 +63,14 @@ namespace MarketMinds.Repositories
                     $"{{\"displayTitle\":\"{displayTitle}\"}}",
                     System.Text.Encoding.UTF8,
                     "application/json");
-                
                 var response = httpClient.PostAsync("ProductTag", requestContent).Result;
                 response.EnsureSuccessStatusCode();
-                
                 var json = response.Content.ReadAsStringAsync().Result;
                 var tag = JsonSerializer.Deserialize<ProductTag>(json, jsonOptions);
-                
                 if (tag == null)
                 {
                     throw new InvalidOperationException("Failed to parse the server response.");
                 }
-                
                 return tag;
             }
             catch (Exception ex)
@@ -100,4 +94,4 @@ namespace MarketMinds.Repositories
             }
         }
     }
-} 
+}

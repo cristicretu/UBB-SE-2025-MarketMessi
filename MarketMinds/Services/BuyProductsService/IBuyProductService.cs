@@ -11,7 +11,7 @@ namespace MarketMinds.Services.BuyProductsService
         /// Creates a new product listing.
         /// </summary>
         /// <param name="product">The product to add.</param>
-        void CreateListing(Product product);
+        void CreateListing(BuyProduct product);
 
         /// <summary>
         /// Deletes an existing product listing.

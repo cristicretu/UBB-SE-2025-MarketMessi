@@ -6,7 +6,6 @@
     xmlns:xaml="using:Microsoft.UI.Xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:MarketMinds.Shared.Models"
     mc:Ignorable="d"
     Title="Product Details">
 
@@ -128,8 +127,6 @@
                         <CalendarDatePicker x:Name="EndDatePicker"
                                             Width="300"
                                             HorizontalAlignment="Left"
-                                            MinDate="{x:Bind ConvertToDateTimeOffset(Product.StartDate), Mode=OneWay}"
-                                            MaxDate="{x:Bind ConvertToDateTimeOffset(Product.TimeLimit), Mode=OneWay}"
                                             DateChanged="EndDatePicker_DateChanged"/>
                     </StackPanel>
 

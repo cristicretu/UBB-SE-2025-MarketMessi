@@ -16,19 +16,15 @@ namespace MarketMinds.Services
 
             Window detailView;
 
-            var auctionProduct = product as AuctionProduct;
-            var borrowProduct = product as BorrowProduct;
-            var buyProduct = product as BuyProduct;
-
-            if (auctionProduct != null)
+            if (product is AuctionProduct auctionProduct)
             {
                 detailView = new AuctionProductView(auctionProduct);
             }
-            else if (borrowProduct != null)
+            else if (product is BorrowProduct borrowProduct)
             {
                 detailView = new BorrowProductView(borrowProduct);
             }
-            else if (buyProduct != null)
+            else if (product is BuyProduct buyProduct)
             {
                 detailView = new BuyProductView(buyProduct);
             }

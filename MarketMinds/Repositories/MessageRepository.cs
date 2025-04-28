@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
+using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
-using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace MarketMinds.Repositories
 {
@@ -42,6 +45,7 @@ namespace MarketMinds.Repositories
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<Message>();
+
         }
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.Shared.IRepository
 {
     /// <summary>
     /// Repository interface for managing products.

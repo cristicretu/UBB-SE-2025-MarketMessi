@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repositories.ConversationRepository
+namespace MarketMinds.Shared.IRepository
 {
     public interface IConversationRepository
     {

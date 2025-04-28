@@ -1,15 +1,11 @@
-using System;
 using System.Net;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using DataAccessLayer;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Models.DTOs;
 using MarketMinds.Shared.Models.DTOs.Mappers;
-using MarketMinds.Repositories.BasketRepository;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Controllers
 {

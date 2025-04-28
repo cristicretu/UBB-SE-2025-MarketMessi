@@ -1,8 +1,8 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 
@@ -15,6 +15,7 @@ namespace MarketMinds.Services.MessageService
         public MessageService(IMessageRepository repository)
         {
             _repository = repository;
+
         }
 
         public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
