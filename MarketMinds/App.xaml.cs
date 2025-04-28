@@ -41,8 +41,11 @@ namespace MarketMinds
     {
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
-
         // Repository declarations
+        public static IConversationRepository ConversationRepository;
+        public static IMessageRepository MessageRepository;
+        public static IChatRepository ChatRepository;
+        public static IChatbotRepository ChatbotRepository;
         public static UserRepository UserRepository;
         public static ReviewRepository ReviewRepository;
         public static ProductTagRepository ProductTagRepository;
@@ -89,7 +92,7 @@ namespace MarketMinds
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
         public static LoginViewModel LoginViewModel { get; private set; }
         public static RegisterViewModel RegisterViewModel { get; private set; }
-        public static User CurrentUser { get; set; }
+        public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
@@ -239,6 +242,11 @@ namespace MarketMinds
             DatabaseConnection = new DataBaseConnection(Configuration);
 
             // Instantiate repositories
+            ConversationRepository = new ConversationRepository(httpClient);
+            MessageRepository = new MessageRepository(httpClient);
+            ChatbotRepository = new ChatbotRepository(httpClient);
+            ChatRepository = new ChatRepository(httpClient);
+            // Instantiate repositories
             UserRepository = new UserRepository(Configuration);
             ReviewRepository = new ReviewRepository(Configuration);
             ProductTagRepository = new ProductTagRepository(Configuration);
@@ -258,11 +266,11 @@ namespace MarketMinds
             BasketService = new BasketService(BasketRepository);
             UserService = new UserService(Configuration);
             AccountPageService = new AccountPageService(Configuration);
-            ChatBotService = new ChatbotService(httpClient);
-            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(httpClient);
-            ConversationService = new ConversationService(httpClient);
-            MessageService = new MessageService(httpClient);
-            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
+            ConversationService = new ConversationService(ConversationRepository);
+            MessageService = new MessageService(MessageRepository);
+            ChatBotService = new ChatbotService(ChatbotRepository);
+            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(ChatRepository);
+            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
 
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);

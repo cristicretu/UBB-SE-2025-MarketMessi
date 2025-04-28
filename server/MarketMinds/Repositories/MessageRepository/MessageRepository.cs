@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using MarketMinds.Shared.Models;
 using Server.DataAccessLayer;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.MessageRepository
 {

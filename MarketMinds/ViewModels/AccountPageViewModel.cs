@@ -9,6 +9,7 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Services;
 using Marketplace_SE.Utilities;
 using MarketMinds.Shared.Models;
+
 namespace MarketMinds.ViewModels
 {
     public class AccountPageViewModel : INotifyPropertyChanged
