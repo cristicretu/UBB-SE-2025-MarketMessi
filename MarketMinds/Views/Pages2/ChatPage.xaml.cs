@@ -71,13 +71,9 @@ namespace Marketplace_SE
             else
             {
                 currentUser = App.CurrentUser;
-                targetUser = CreateDefaultTargetUser();
             }
 
             SetupTemplateSelector();
-
-            TargetUserTextBlock.Text = $"Chatting with {targetUser.Username}";
-
             isInitializing = true;
 
             try
@@ -141,7 +137,6 @@ namespace Marketplace_SE
                 default:
                     // Handle invalid template?
                     currentUser = App.CurrentUser;
-                    targetUser = CreateDefaultTargetUser();
                     break;
             }
         }

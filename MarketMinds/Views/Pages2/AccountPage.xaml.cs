@@ -32,7 +32,6 @@ namespace Marketplace_SE
         public AccountPageViewModel ViewModel { get; private set; }
         private ProgressRing loadingRing;
         private const double MINIMUM_BALANCE = 10.0;
-        
         public AccountPage()
         {
             this.InitializeComponent();
@@ -72,7 +71,9 @@ namespace Marketplace_SE
                     break;
                 case nameof(ViewModel.ErrorMessage):
                     if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+                    {
                         ShowError(ViewModel.ErrorMessage);
+                    }
                     break;
             }
         }

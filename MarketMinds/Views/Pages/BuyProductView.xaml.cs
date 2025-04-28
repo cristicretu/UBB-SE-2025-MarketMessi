@@ -115,7 +115,7 @@ namespace MarketMinds
           {
               if (App.SeeSellerReviewsViewModel != null)
               {
-                  App.SeeSellerReviewsViewModel.Seller = priv_product.Seller;
+                  App.SeeSellerReviewsViewModel.Seller = buyProduct.Seller;
                   // Create a window to host the SeeSellerReviewsView page
                   seeSellerReviewsView = new Window();
                   seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
@@ -133,7 +133,7 @@ namespace MarketMinds
               {
                   if (App.ReviewCreateViewModel != null)
                   {
-                      App.ReviewCreateViewModel.Seller = priv_product.Seller;
+                      App.ReviewCreateViewModel.Seller = buyProduct.Seller;
 
                       leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
                       leaveReviewWindow.Activate();
@@ -163,4 +163,3 @@ namespace MarketMinds
           }
         }
     }
-}
