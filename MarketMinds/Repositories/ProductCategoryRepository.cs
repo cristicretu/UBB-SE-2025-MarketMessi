@@ -48,7 +48,7 @@ namespace MarketMinds.Repositories
         public Category CreateProductCategory(string name, string description)
         {
             var requestContent = new StringContent(
-                $"{{\"name\":\"{name}\",\"description\":\"{description}\"}}",
+                $"{{\"DisplayTitle\":\"{name}\",\"Description\":\"{description}\"}}",
                 System.Text.Encoding.UTF8,
                 "application/json");
             var response = httpClient.PostAsync("ProductCategory", requestContent).Result;
