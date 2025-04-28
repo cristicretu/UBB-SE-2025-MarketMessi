@@ -16,7 +16,8 @@ using Server.MarketMinds.Repositories.AccountRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddHttpClient();
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     // Do not use ReferenceHandler.Preserve as requested by the user
