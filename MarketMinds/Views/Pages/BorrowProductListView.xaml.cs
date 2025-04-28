@@ -24,8 +24,9 @@ namespace UiLayer
         private readonly BorrowSortTypeConverterService sortTypeConverterService;
 
         // Pagination variables
-        private int currentPage = 1;
-        private int totalPages = 1;
+        private int current_page = 1; // Current page number, default to 1
+        private int total_page_count = 1;
+        private const int FIRST_PAGE = 1;
         private List<BorrowProduct> currentFullList;
 
         public BorrowProductListView()
@@ -44,9 +45,9 @@ namespace UiLayer
             RefreshProductList();
         }
 
-        private void BorrowListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void BorrowListView_ItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            var selectedProduct = e.ClickedItem as BorrowProduct;
+            var selectedProduct = itemClickEventArgs.ClickedItem as BorrowProduct;
             if (selectedProduct != null)
             {
                 // Create and show the detail view
@@ -58,9 +59,9 @@ namespace UiLayer
         private void RefreshProductList()
         {
             var (pageItems, newTotalPages, fullList) = borrowProductListViewModelHelper.GetBorrowProductsPage(
-                borrowProductsViewModel, sortAndFilterViewModel, currentPage);
+                borrowProductsViewModel, sortAndFilterViewModel, current_page);
             currentFullList = fullList;
-            totalPages = newTotalPages;
+            total_page_count = newTotalPages;
             borrowProducts.Clear();
             foreach (var item in pageItems)
             {
@@ -74,56 +75,56 @@ namespace UiLayer
 
         private void UpdatePaginationDisplay()
         {
-            PaginationTextBlock.Text = borrowProductListViewModelHelper.GetPaginationText(currentPage, totalPages);
-            var (hasPrevious, hasNext) = borrowProductListViewModelHelper.GetPaginationState(currentPage, totalPages);
+            PaginationTextBlock.Text = borrowProductListViewModelHelper.GetPaginationText(current_page, total_page_count);
+            var (hasPrevious, hasNext) = borrowProductListViewModelHelper.GetPaginationState(current_page, total_page_count);
             PreviousButton.IsEnabled = hasPrevious;
             NextButton.IsEnabled = hasNext;
         }
 
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > 1)
+            if (current_page > FIRST_PAGE)
             {
-                currentPage--;
+                current_page--;
                 RefreshProductList();
             }
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage < totalPages)
+            if (current_page < total_page_count)
             {
-                currentPage++;
+                current_page++;
                 RefreshProductList();
             }
         }
 
-        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs routedEventArgs)
         {
             sortAndFilterViewModel.HandleSearchQueryChange(SearchTextBox.Text);
-            currentPage = 1; // Reset to first page on new search
+            current_page = FIRST_PAGE; // Reset to first page on new search
             RefreshProductList();
         }
 
-        private async void FilterButton_Click(object sender, RoutedEventArgs e)
+        private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
             filterDialog.XamlRoot = Content.XamlRoot;
             var result = await filterDialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                currentPage = 1; // Reset to first page on new filter
+                current_page = FIRST_PAGE; // Reset to first page on new filter
                 RefreshProductList();
             }
         }
 
-        private void SortButton_Click(object sender, RoutedEventArgs e)
+        private void SortButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             SortingComboBox.Visibility = SortingComboBox.Visibility == Visibility.Visible ?
                                          Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
         {
             if (SortingComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
@@ -132,13 +133,13 @@ namespace UiLayer
                 if (sortType != null)
                 {
                     sortAndFilterViewModel.HandleSortChange(sortType);
-                    currentPage = 1; // Reset to first page on new sort
+                    current_page = FIRST_PAGE; // Reset to first page on new sort
                     RefreshProductList();
                 }
             }
         }
 
-        private void AddToCompare_Click(object sender, RoutedEventArgs e)
+        private void AddToCompare_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var button = sender as Button;
             var selectedProduct = button.DataContext as Product;

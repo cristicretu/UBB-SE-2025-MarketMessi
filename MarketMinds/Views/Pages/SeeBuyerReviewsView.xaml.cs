@@ -40,7 +40,7 @@ namespace MarketMinds
             EmptyMessageTextBlock.Visibility = ViewModel.Reviews.Count == NO_REVIEWS ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public void DeleteReviewButton_Click(object sender, RoutedEventArgs e)
+        public void DeleteReviewButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is Button button && button.DataContext is Review review)
             {
@@ -53,7 +53,7 @@ namespace MarketMinds
             }
         }
 
-        public void EditReviewButton_Click(object sender, RoutedEventArgs e)
+        public void EditReviewButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is Button button && button.DataContext is Review review)
             {

@@ -18,19 +18,19 @@ namespace Marketplace_SE
     public sealed partial class MainMarketplacePage : Page
     {
         private readonly MainMarketplaceViewModel mainMarketplaceViewModel;
-        private User me;
+        private User currentUser;
 
         public MainMarketplacePage()
         {
             this.InitializeComponent();
 
             mainMarketplaceViewModel = App.MainMarketplaceViewModel;
-            me = App.CurrentUser;
+            currentUser = App.CurrentUser;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs routedEventArgs)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(routedEventArgs);
             LoadAvailableItems();
         }
 
@@ -51,9 +51,9 @@ namespace Marketplace_SE
                     ShowNotification("Error", "Failed to load items.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception itemsLoadException)
             {
-                ShowNotification("Error", $"An error occurred while loading items: {ex.Message}");
+                ShowNotification("Error", $"An error occurred while loading items: {itemsLoadException.Message}");
             }
             finally
             {
@@ -61,7 +61,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void BuyItemButton_Click(object sender, RoutedEventArgs e)
+        private void BuyItemButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var selectedItem = (sender as Button)?.DataContext as UserNotSoldOrder;
             if (selectedItem != null)
@@ -70,7 +70,7 @@ namespace Marketplace_SE
             }
         }
 
-        private void ChatWithSellerButton_Click(object sender, RoutedEventArgs e)
+        private void ChatWithSellerButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is FrameworkElement element && element.Tag is UserNotSoldOrder selectedOrder)
             {
@@ -82,14 +82,14 @@ namespace Marketplace_SE
             }
         }
 
-        private void OpenAccountButton_Click(object sender, RoutedEventArgs e)
+        private void OpenAccountButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var accountWindow = new Window();
             accountWindow.Content = new AccountPage();
             accountWindow.Activate();
         }
 
-        private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
+        private void OpenHelpButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var helpWindow = new Window();
             helpWindow.Content = new GetHelpPage();

@@ -27,15 +27,15 @@ namespace Marketplace_SE
         {
             this.InitializeComponent();
         }
-        private void OnButtonClickAdminAnswerCall(object sender, RoutedEventArgs e)
+        private void OnButtonClickAdminAnswerCall(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AdminFindCallPage));
         }
-        private void OnButtonClickAdminOpenHelpTicket(object sender, RoutedEventArgs e)
+        private void OnButtonClickAdminOpenHelpTicket(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(OpenHelpTicketPage));
         }
-        private void OnButtonClickAdminFindHelpTicket(object sender, RoutedEventArgs e)
+        private void OnButtonClickAdminFindHelpTicket(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AdminFindHelpTicket));
         }

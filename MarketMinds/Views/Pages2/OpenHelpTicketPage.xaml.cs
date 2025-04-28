@@ -26,7 +26,7 @@ namespace Marketplace_SE.Views.Pages2
             this.DataContext = ViewModel;
         }
 
-        private void OnButtonClickAdminOpenHelpTicket(object sender, RoutedEventArgs e)
+        private void OnButtonClickAdminOpenHelpTicket(object sender, RoutedEventArgs routedEventArgs)
         {
             // Reset visibility of status messages
             TextBlockOpenTicketEmptyFields.Visibility = Visibility.Collapsed;
@@ -72,7 +72,7 @@ namespace Marketplace_SE.Views.Pages2
             }
         }
 
-        private void OnButtonClickAdminNavigateOpenHelpTicketPageAdminAccountPage(object sender, RoutedEventArgs e)
+        private void OnButtonClickAdminNavigateOpenHelpTicketPageAdminAccountPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(AdminAccountPage));
         }

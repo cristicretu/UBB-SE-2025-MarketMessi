@@ -25,40 +25,46 @@ namespace MarketMinds
     /// </summary>
     public sealed partial class BuyProductView : Window
     {
-        private readonly BuyProduct priv_product;
-        private readonly User priv_currentUser;
-        private readonly BasketViewModel priv_basketViewModel = App.BasketViewModel;
+        private readonly BuyProduct buyProduct;
+        private readonly User currentUser;
+        private readonly BasketViewModel basketViewModel = App.BasketViewModel;
 
         private Window? seeSellerReviewsView;
+        private const int IMAGE_HEIGHT = 250;
+        private const int TEXT_BLOCK_MARGIN = 4;
+        private const int TEXT_BLOCK_PADDING_LEFT = 8;
+        private const int TEXT_BLOCK_PADDING_TOP = 4;
+        private const int TEXT_BLOCK_PADDING_RIGHT = 8;
+        private const int TEXT_BLOCK_PADDING_BOTTOM = 4;
         private Window? leaveReviewWindow;
 
         public BuyProductView(BuyProduct product)
         {
             this.InitializeComponent();
-            priv_product = product;
-            priv_currentUser = MarketMinds.App.CurrentUser;
+            buyProduct = product;
+            currentUser = MarketMinds.App.CurrentUser;
             LoadProductDetails();
             LoadImages();
         }
         private void LoadProductDetails()
         {
             // Basic Info
-            TitleTextBlock.Text = priv_product.Title;
-            CategoryTextBlock.Text = priv_product.Category.DisplayTitle;
-            ConditionTextBlock.Text = priv_product.Condition.DisplayTitle;
-            PriceTextBlock.Text = $"{priv_product.Price:C}";
+            TitleTextBlock.Text = buyProduct.Title;
+            CategoryTextBlock.Text = buyProduct.Category.DisplayTitle;
+            ConditionTextBlock.Text = buyProduct.Condition.DisplayTitle;
+            PriceTextBlock.Text = $"{buyProduct.Price:C}";
 
             // Seller Info
-            SellerTextBlock.Text = priv_product.Seller.Username;
-            DescriptionTextBox.Text = priv_product.Description;
+            SellerTextBlock.Text = buyProduct.Seller.Username;
+            DescriptionTextBox.Text = buyProduct.Description;
 
-            TagsItemsControl.ItemsSource = priv_product.Tags.Select(tag =>
+            TagsItemsControl.ItemsSource = buyProduct.Tags.Select(tag =>
             {
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(4),
-                    Padding = new Thickness(8, 4, 8, 4),
+                    Margin = new Thickness(TEXT_BLOCK_MARGIN),
+                    Padding = new Thickness(TEXT_BLOCK_PADDING_LEFT, TEXT_BLOCK_PADDING_TOP, TEXT_BLOCK_PADDING_RIGHT, TEXT_BLOCK_PADDING_BOTTOM),
                 };
             }).ToList();
         }
@@ -66,26 +72,26 @@ namespace MarketMinds
         private void LoadImages()
         {
             ImageCarousel.Items.Clear();
-            foreach (var image in priv_product.Images)
+            foreach (var image in buyProduct.Images)
             {
-                var img = new Microsoft.UI.Xaml.Controls.Image
+                var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
-                    Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Stretch = Stretch.Uniform,
+                    Height = IMAGE_HEIGHT,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                ImageCarousel.Items.Add(img);
+                ImageCarousel.Items.Add(newImage);
             }
         }
 
-        private void OnAddtoBascketClicked(object sender, RoutedEventArgs e)
+        private void OnAddToBasketClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
-                priv_basketViewModel.AddToBasket(priv_product.Id);
+                basketViewModel.AddToBasket(buyProduct.Id);
 
                 // Show success notification
                 BasketNotificationTip.Title = "Success";
@@ -93,67 +99,67 @@ namespace MarketMinds
                 BasketNotificationTip.IconSource = new SymbolIconSource() { Symbol = Symbol.Accept };
                 BasketNotificationTip.IsOpen = true;
             }
-            catch (Exception ex)
+            catch (Exception basketAdditionException)
             {
-                Debug.WriteLine($"Failed to add product to basket: {ex.Message}");
+                Debug.WriteLine($"Failed to add product to basket: {basketAdditionException.Message}");
 
                 // Show error notification
                 BasketNotificationTip.Title = "Error";
-                BasketNotificationTip.Subtitle = $"Failed to add product: {ex.Message}";
+                BasketNotificationTip.Subtitle = $"Failed to add product: {basketAdditionException.Message}";
                 BasketNotificationTip.IconSource = new SymbolIconSource() { Symbol = Symbol.Accept };
                 BasketNotificationTip.IsOpen = true;
             }
         }
 
-        private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
-        {
-            if (App.SeeSellerReviewsViewModel != null)
-            {
-                App.SeeSellerReviewsViewModel.Seller = priv_product.Seller;
-                // Create a window to host the SeeSellerReviewsView page
-                seeSellerReviewsView = new Window();
-                seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-                seeSellerReviewsView.Activate();
-            }
-            else
-            {
-                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
-            }
-        }
+          private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
+          {
+              if (App.SeeSellerReviewsViewModel != null)
+              {
+                  App.SeeSellerReviewsViewModel.Seller = buyProduct.Seller;
+                  // Create a window to host the SeeSellerReviewsView page
+                  seeSellerReviewsView = new Window();
+                  seeSellerReviewsView.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                  seeSellerReviewsView.Activate();
+              }
+              else
+              {
+                  ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+              }
+          }
 
-        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
-        {
-            if (App.CurrentUser != null)
-            {
-                if (App.ReviewCreateViewModel != null)
-                {
-                    App.ReviewCreateViewModel.Seller = priv_product.Seller;
+          private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+          {
+              if (App.CurrentUser != null)
+              {
+                  if (App.ReviewCreateViewModel != null)
+                  {
+                      App.ReviewCreateViewModel.Seller = buyProduct.Seller;
 
-                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
-                    leaveReviewWindow.Activate();
-                }
-                else
-                {
-                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
-                }
-            }
-            else
-            {
-                ShowErrorDialog("You must be logged in to leave a review.");
-            }
-        }
+                      leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                      leaveReviewWindow.Activate();
+                  }
+                  else
+                  {
+                      ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                  }
+              }
+              else
+              {
+                  ShowErrorDialog("You must be logged in to leave a review.");
+              }
+          }
 
-        private async void ShowErrorDialog(string message)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "Error",
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
-            };
+          private async void ShowErrorDialog(string message)
+          {
+              var dialog = new ContentDialog
+              {
+                  Title = "Error",
+                  Content = message,
+                  CloseButtonText = "OK",
+                  XamlRoot = this.Content.XamlRoot
+              };
 
-            await dialog.ShowAsync();
+              await dialog.ShowAsync();
+          }
         }
     }
-}

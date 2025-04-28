@@ -35,21 +35,21 @@ namespace Marketplace_SE
             this.DataContext = ViewModel;
         }
 
-        private void OnButtonClickNavigateFinalizeOrderPageAccountPage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigateFinalizeOrderPageAccountPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(MainMarketplacePage));
         }
 
-        private async void OnButtonClickFinalizeOrder(object sender, RoutedEventArgs e)
+        private async void OnButtonClickFinalizeOrder(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
                 ViewModel.FinalizeOrder();
                 Frame.Navigate(typeof(MainMarketplacePage));
             }
-            catch (Exception ex)
+            catch (Exception orderFinalizationException)
             {
-                System.Diagnostics.Debug.WriteLine($"Error finalizing order: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error finalizing order: {orderFinalizationException.Message}");
                 // Handle navigation or error display as needed
             }
         }

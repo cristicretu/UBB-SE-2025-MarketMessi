@@ -157,17 +157,17 @@ namespace MarketMinds.ViewModels
                     ErrorMessage = "Unable to load user data";
                 }
             }
-            catch (Exception ex)
+            catch (Exception userDataLoadException)
             {
-                System.Diagnostics.Debug.WriteLine($"ERROR in LoadUserDataAsync: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"ERROR in LoadUserDataAsync: {userDataLoadException.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {userDataLoadException.StackTrace}");
 
-                if (ex.InnerException != null)
+                if (userDataLoadException.InnerException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Inner exception: {userDataLoadException.InnerException.Message}");
                 }
 
-                ErrorMessage = $"Error loading account data: {ex.Message}";
+                ErrorMessage = $"Error loading account data: {userDataLoadException.Message}";
             }
             finally
             {
@@ -218,9 +218,9 @@ namespace MarketMinds.ViewModels
             {
                 return DataEncoder.ConvertTimestampToLocalDateTime(timestamp);
             }
-            catch (Exception ex)
+            catch (Exception formatOrderDateException)
             {
-                System.Diagnostics.Debug.WriteLine($"Error formatting timestamp: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error formatting timestamp: {formatOrderDateException.Message}");
                 return DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss");
             }
         }

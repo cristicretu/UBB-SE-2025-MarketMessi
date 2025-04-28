@@ -38,9 +38,9 @@ namespace Marketplace_SE.ViewModels
 
                 loggerService.LogInfo("Order finalized successfully.");
             }
-            catch (Exception ex)
+            catch (Exception orderFinalizationException)
             {
-                loggerService.LogError($"Error finalizing order: {ex.Message}");
+                loggerService.LogError($"Error finalizing order: {orderFinalizationException.Message}");
                 throw;
             }
         }

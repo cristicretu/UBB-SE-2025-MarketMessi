@@ -18,8 +18,7 @@ namespace MarketMinds.Views.Pages2
         {
             this.InitializeComponent();
         }
-
-        private void OnButtonClickOpenChatbotConversation(object sender, RoutedEventArgs e)
+        private void OnButtonClickOpenChatbotConversation(object sender, RoutedEventArgs routedEventArgs)
         {
             var chatbotWindow = new Window();
             chatbotWindow.Title = "Chatbot Conversations";
@@ -32,12 +31,10 @@ namespace MarketMinds.Views.Pages2
             chatbotWindow.Content = helpPage;
             chatbotWindow.Activate();
         }
-
-        private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs e)
+        private void OnButtonClickOpenCSConversation(object sender, RoutedEventArgs routedEventArgs)
         {
         }
-
-        private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs e)
+        private void OnButtonClickNavigateGetHelpPageMainMarketplacePage(object sender, RoutedEventArgs routedEventArgs)
         {
         }
     }
