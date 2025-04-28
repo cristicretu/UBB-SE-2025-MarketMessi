@@ -10,22 +10,21 @@ namespace MarketMinds.Services.MessageService
 {
     public class MessageService : IMessageService
     {
-        private readonly IMessageRepository _repository;
+        private readonly IMessageRepository messageRepository;
 
         public MessageService(IMessageRepository repository)
         {
-            _repository = repository;
-
+            messageRepository = repository;
         }
 
         public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            return await _repository.CreateMessageAsync(conversationId, userId, content);
+            return await messageRepository.CreateMessageAsync(conversationId, userId, content);
         }
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            return await _repository.GetMessagesByConversationIdAsync(conversationId);
+            return await messageRepository.GetMessagesByConversationIdAsync(conversationId);
         }
     }
 }

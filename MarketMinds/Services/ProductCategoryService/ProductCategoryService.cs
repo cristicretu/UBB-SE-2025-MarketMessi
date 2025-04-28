@@ -6,26 +6,26 @@ namespace MarketMinds.Services.ProductCategoryService
 {
     public class ProductCategoryService : IProductCategoryService
     {
-        private readonly IProductCategoryRepository _repository;
+        private readonly IProductCategoryRepository productCategoryRepository;
 
         public ProductCategoryService(IProductCategoryRepository repository)
         {
-            _repository = repository;
+            productCategoryRepository = repository;
         }
 
         public List<Category> GetAllProductCategories()
         {
-            return _repository.GetAllProductCategories();
+            return productCategoryRepository.GetAllProductCategories();
         }
 
         public Category CreateProductCategory(string name, string description)
         {
-            return _repository.CreateProductCategory(name, description);
+            return productCategoryRepository.CreateProductCategory(name, description);
         }
 
         public void DeleteProductCategory(string name)
         {
-            _repository.DeleteProductCategory(name);
+            productCategoryRepository.DeleteProductCategory(name);
         }
     }
 

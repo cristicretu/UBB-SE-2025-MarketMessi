@@ -1,8 +1,8 @@
-using MarketMinds.Shared.IRepository;
+﻿using System.Net.Http;
+using System.Text.Json.Nodes;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json.Nodes;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -10,26 +10,26 @@ namespace MarketMinds.Services.ProductConditionService
 {
     public class ProductConditionService : IProductConditionService
     {
-        private readonly IProductConditionRepository _repository;
+        private readonly IProductConditionRepository productConditionRepository;
 
         public ProductConditionService(IProductConditionRepository repository)
         {
-            _repository = repository;
+            productConditionRepository = repository;
         }
 
         public List<Condition> GetAllProductConditions()
         {
-            return _repository.GetAllProductConditions();
+            return productConditionRepository.GetAllProductConditions();
         }
 
         public Condition CreateProductCondition(string displayTitle, string description)
         {
-            return _repository.CreateProductCondition(displayTitle, description);
+            return productConditionRepository.CreateProductCondition(displayTitle, description);
         }
 
         public void DeleteProductCondition(string displayTitle)
         {
-            _repository.DeleteProductCondition(displayTitle);
+            productConditionRepository.DeleteProductCondition(displayTitle);
         }
     }
 

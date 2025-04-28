@@ -73,4 +73,4 @@ namespace MarketMinds.Repositories
             response.EnsureSuccessStatusCode();
         }
     }
-} 
+}
