@@ -12,6 +12,8 @@ namespace MarketMinds.Services.UserService
 {
     public class UserService : IUserService
     {
+        private static readonly int MINIMUM_USER_ID = 0;
+        private static readonly int ERROR_CODE = -1;
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
 
@@ -162,7 +164,7 @@ namespace MarketMinds.Services.UserService
 
                 // Create user and return success if Id > 0
                 int userId = await CreateUserAsync(user);
-                return userId > 0;
+                return userId > MINIMUM_USER_ID;
             }
             catch (Exception ex)
             {
@@ -201,14 +203,14 @@ namespace MarketMinds.Services.UserService
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var createdUserDto = JsonSerializer.Deserialize<UserDto>(content, jsonOptions);
-                    return createdUserDto?.Id ?? -1;
+                    return createdUserDto?.Id ?? ERROR_CODE;
                 }
-                return -1;
+                return ERROR_CODE;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error creating user: {ex.Message}");
-                return -1;
+                return ERROR_CODE;
             }
         }
 

@@ -22,8 +22,6 @@ using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
 using MarketMinds.ViewModels;
 using MarketMinds.Services.DreamTeam.ChatbotService;
-using MarketMinds.Repositories.MainMarketplaceRepository;
-using MarketMinds.Services.DreamTeam.MainMarketplaceService;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.UserService;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -39,7 +37,6 @@ namespace MarketMinds
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
-        public static MainMarketplaceRepository MainMarketplaceRepository;
 
         // Service declarations
         public static ProductService ProductService;
@@ -53,7 +50,6 @@ namespace MarketMinds
         public static BasketService BasketService;
         public static MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService ChatBotService;
         public static MarketMinds.Services.DreamTeam.ChatService.ChatService ChatService;
-        public static MainMarketplaceService MainMarketplaceService;
         public static IImageUploadService ImageUploadService;
         public static IUserService UserService;
         public static AccountPageService AccountPageService { get; private set; }
@@ -232,7 +228,6 @@ namespace MarketMinds
             // Instantiate repositories
             // ChatBotRepository = new ChatBotRepository(DatabaseConnection);
             // ChatRepository = new ChatRepository(DatabaseConnection);
-            MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
 
             // Instantiate services
             BuyProductsService = new BuyProductsService(Configuration);
@@ -247,7 +242,6 @@ namespace MarketMinds
             AccountPageService = new AccountPageService(Configuration);
             ChatBotService = new ChatbotService(httpClient);
             ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(httpClient);
-            MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
             ConversationService = new ConversationService(httpClient);
             MessageService = new MessageService(httpClient);
             NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
@@ -264,7 +258,7 @@ namespace MarketMinds
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
-            MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+            MainMarketplaceViewModel = new MainMarketplaceViewModel();
             LoginViewModel = new LoginViewModel(UserService);
             RegisterViewModel = new RegisterViewModel(UserService);
             ReviewCreateViewModel = null;

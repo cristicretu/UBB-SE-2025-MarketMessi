@@ -1,9 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using DomainLayer.Domain;
 using MarketMinds.Services.UserService;
 
-namespace ViewModelLayer.ViewModel
+namespace MarketMinds.ViewModels
 {
 	public class RegisterViewModel
 	{
@@ -11,7 +12,7 @@ namespace ViewModelLayer.ViewModel
 
 		public RegisterViewModel()
 		{
-			userService = MarketMinds.App.UserService;
+			userService = App.UserService;
 		}
 		public RegisterViewModel(IUserService userService)
 		{
@@ -42,6 +43,41 @@ namespace ViewModelLayer.ViewModel
 				Console.WriteLine($"Error creating user: {userCreationException.Message}");
 				return false;
 			}
+		}
+
+		public bool IsValidUsername(string username)
+		{
+			return Regex.IsMatch(username, "^[A-Za-z0-9_]{5,20}$");
+		}
+
+		public bool IsValidPassword(string password)
+		{
+			return Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,15}$");
+		}
+
+		public string GetPasswordStrength(string password)
+		{
+			if (password.Length < 6)
+			{
+				return "Weak";
+			}
+
+			if (Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{6,15}$"))
+			{
+				return "Strong";
+			}
+
+			if (Regex.IsMatch(password, "^(?=.*[A-Z])|(?=.*\\d)|(?=.*[@$!%*?&]).{6,15}$"))
+			{
+				return "Medium";
+			}
+
+			return "Weak";
+		}
+
+		public bool PasswordsMatch(string password, string confirmPassword)
+		{
+			return password == confirmPassword;
 		}
 	}
 }
