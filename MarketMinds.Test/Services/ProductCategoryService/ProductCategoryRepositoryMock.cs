@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ProductCategoryRepository;
 using System.Collections.Generic;
 
@@ -6,22 +6,22 @@ namespace MarketMinds.Test.Services.ProductCategoryService
 {
     internal class ProductCategoryRepositoryMock : IProductCategoryRepository
     {
-        public List<ProductCategory> Categories { get; set; } = new List<ProductCategory>();
+        public List<Category> Categories { get; set; } = new List<Category>();
         private int currentIndex = 0;
 
         public ProductCategoryRepositoryMock()
         {
-            Categories = new List<ProductCategory>();
+            Categories = new List<Category>();
         }
 
-        public List<ProductCategory> GetAllProductCategories()
+        public List<Category> GetAllProductCategories()
         {
             return Categories;
         }
 
-        public ProductCategory CreateProductCategory(string displayTitle, string description)
+        public Category CreateProductCategory(string displayTitle, string description)
         {
-            var newCategory = new ProductCategory(
+            var newCategory = new Category(
                 id: ++currentIndex,
                 displayTitle: displayTitle,
                 description: description

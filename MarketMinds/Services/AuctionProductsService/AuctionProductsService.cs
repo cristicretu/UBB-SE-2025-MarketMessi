@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Repositories;
@@ -37,7 +37,8 @@ namespace MarketMinds.Services.AuctionProductsService
 
         public void CreateListing(Product product)
         {
-            if (!(product is AuctionProduct auctionProduct))
+            var auctionProduct = product as AuctionProduct;
+            if (auctionProduct == null)
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
@@ -48,10 +49,10 @@ namespace MarketMinds.Services.AuctionProductsService
                 SellerId = auctionProduct.Seller?.Id ?? 0,
                 ConditionId = auctionProduct.Condition?.Id,
                 CategoryId = auctionProduct.Category?.Id,
-                StartTime = auctionProduct.StartAuctionDate,
-                EndTime = auctionProduct.EndAuctionDate,
-                StartPrice = auctionProduct.StartingPrice,
-                CurrentPrice = auctionProduct.StartingPrice,
+                StartTime = auctionProduct.StartTime,
+                EndTime = auctionProduct.EndTime,
+                StartPrice = auctionProduct.StartPrice,
+                CurrentPrice = auctionProduct.CurrentPrice,
                 Images = auctionProduct.Images == null
                        ? new List<object>()
                        : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
@@ -66,7 +67,7 @@ namespace MarketMinds.Services.AuctionProductsService
             }
         }
 
-        public void PlaceBid(AuctionProduct auction, User bidder, float bidAmount)
+        public void PlaceBid(AuctionProduct auction, User bidder, double bidAmount)
         {
             try
             {
@@ -87,7 +88,13 @@ namespace MarketMinds.Services.AuctionProductsService
                     return;
                 }
                 bidder.Balance -= bidAmount;
-                var bid = new Bid(bidder, bidAmount, DateTime.Now);
+                var bid = new Bid 
+                { 
+                    BidderId = bidder.Id,
+                    Bidder = bidder,
+                    Price = bidAmount,
+                    Timestamp = DateTime.Now
+                };
                 auction.AddBid(bid);
                 auction.CurrentPrice = bidAmount;
                 ExtendAuctionTime(auction);
@@ -112,18 +119,18 @@ namespace MarketMinds.Services.AuctionProductsService
 
         public string GetTimeLeft(AuctionProduct auction)
         {
-            var timeLeft = auction.EndAuctionDate - DateTime.Now;
+            var timeLeft = auction.EndTime - DateTime.Now;
             return timeLeft > TimeSpan.Zero ? timeLeft.ToString(@"dd\:hh\:mm\:ss") : "Auction Ended";
         }
 
         public bool IsAuctionEnded(AuctionProduct auction)
         {
-            return DateTime.Now >= auction.EndAuctionDate;
+            return DateTime.Now >= auction.EndTime;
         }
 
-        private void ValidateBid(AuctionProduct auction, User bidder, float bidAmount)
+        private void ValidateBid(AuctionProduct auction, User bidder, double bidAmount)
         {
-            float minBid = auction.BidHistory.Count == NULL_BID_AMOUNT ? auction.StartingPrice : auction.CurrentPrice + 1;
+            double minBid = auction.Bids.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
 
             if (bidAmount < minBid)
             {
@@ -135,7 +142,7 @@ namespace MarketMinds.Services.AuctionProductsService
                 throw new Exception("Insufficient balance");
             }
 
-            if (DateTime.Now > auction.EndAuctionDate)
+            if (DateTime.Now > auction.EndTime)
             {
                 throw new Exception("Auction already ended");
             }
@@ -143,11 +150,11 @@ namespace MarketMinds.Services.AuctionProductsService
 
         private void ExtendAuctionTime(AuctionProduct auction)
         {
-            var timeRemaining = auction.EndAuctionDate - DateTime.Now;
+            var timeRemaining = auction.EndTime - DateTime.Now;
 
             if (timeRemaining.TotalMinutes < MAX_AUCTION_TIME)
             {
-                auction.EndAuctionDate = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
+                auction.EndTime = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
             }
         }
 
@@ -214,7 +221,7 @@ namespace MarketMinds.Services.AuctionProductsService
                 {
                     throw new KeyNotFoundException($"Auction product with ID {id} not found.");
                 }
-                return product;
+                return (Product)product;
             }
             catch (KeyNotFoundException)
             {

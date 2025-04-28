@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using Server.MarketMinds.Repositories.AccountRepository;
 
 namespace Server.Controllers

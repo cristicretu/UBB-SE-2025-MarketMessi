@@ -7,6 +7,7 @@ using MarketMinds.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models.DTOs;
 using MarketMinds.Shared.Models.DTOs.Mappers;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Repositories.ReviewRepository;
 
 namespace MarketMinds.Controllers

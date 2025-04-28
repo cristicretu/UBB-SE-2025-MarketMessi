@@ -31,6 +31,12 @@ namespace MarketMinds.Shared.Models
         [Column("reviewer_id")]
         public int BuyerId { get; set; }
 
+        [NotMapped]
+        public string SellerUsername { get; set; } = string.Empty;
+
+        [NotMapped]
+        public string BuyerUsername { get; set; } = string.Empty;
+
         // Navigation property for the join table
         [InverseProperty("Review")]
         public virtual ICollection<ReviewImage> ReviewImages { get; set; } = new List<ReviewImage>();
@@ -43,6 +49,8 @@ namespace MarketMinds.Shared.Models
             this.Rating = rating;
             this.SellerId = sellerId;
             this.BuyerId = buyerId;
+            this.SellerUsername = string.Empty;
+            this.BuyerUsername = string.Empty;
         }
 
         // Default constructor for Entity Framework
@@ -50,6 +58,8 @@ namespace MarketMinds.Shared.Models
         {
             Images = new List<Image>();
             ReviewImages = new List<ReviewImage>();
+            SellerUsername = string.Empty;
+            BuyerUsername = string.Empty;
         }
 
         // Helper method to sync Images and ReviewImages collections before saving to DB

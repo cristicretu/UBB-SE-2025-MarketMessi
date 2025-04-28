@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ProductTagRepository;
 using System.Collections.Generic;
 using System.Linq;

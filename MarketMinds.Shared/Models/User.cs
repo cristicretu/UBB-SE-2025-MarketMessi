@@ -21,6 +21,9 @@ namespace MarketMinds.Shared.Models
         [Column("passwordHash")]
         public string? PasswordHash { get; set; }
 
+        [NotMapped]
+        public string Password { get; set; } = string.Empty;
+
         [Column("userType")]
         public int UserType { get; set; }
 
@@ -30,6 +33,9 @@ namespace MarketMinds.Shared.Models
         [Column("rating")]
         public double Rating { get; set; }
 
+        [NotMapped]
+        public string Token { get; set; } = string.Empty;
+
         private const double MAX_BALANCE = 999999;
 
         // Navigation properties
@@ -38,6 +44,10 @@ namespace MarketMinds.Shared.Models
 
         public User()
         {
+            Username = string.Empty;
+            Email = string.Empty;
+            Token = string.Empty;
+            Password = string.Empty;
             SellingItems = new List<AuctionProduct>();
             Bids = new List<Bid>();
         }
@@ -47,6 +57,19 @@ namespace MarketMinds.Shared.Models
             Username = username;
             Email = email;
             PasswordHash = passwordHash;
+            Token = string.Empty;
+            Password = string.Empty;
+            SellingItems = new List<AuctionProduct>();
+            Bids = new List<Bid>();
+        }
+
+        public User(int id, string username, string email, string token)
+        {
+            Id = id;
+            Username = username;
+            Email = email;
+            Token = token;
+            Password = string.Empty;
             SellingItems = new List<AuctionProduct>();
             Bids = new List<Bid>();
         }

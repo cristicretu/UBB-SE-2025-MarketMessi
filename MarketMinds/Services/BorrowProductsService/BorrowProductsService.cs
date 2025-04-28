@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Repositories;
 using MarketMinds.Services.ProductTagService;

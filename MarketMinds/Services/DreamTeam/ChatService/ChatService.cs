@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.DreamTeam.ChatService
 {

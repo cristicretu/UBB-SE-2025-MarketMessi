@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
+using ProductCategory = MarketMinds.Shared.Models.Category;
+using ProductCondition = MarketMinds.Shared.Models.Condition;
 
 namespace UiLayer
 {
@@ -18,12 +20,12 @@ namespace UiLayer
         private readonly ProductCategoryViewModel productCategoryViewModel;
 
         // Full lists
-        private List<ProductCategory> fullCategories;
+        private List<Category> fullCategories;
         private List<ProductTag> fullTags;
 
         // Displayed lists for filtering with pagination
-        public ObservableCollection<ProductCondition> ProductConditions { get; set; }
-        public ObservableCollection<ProductCategory> DisplayedCategories { get; set; }
+        public ObservableCollection<Condition> ProductConditions { get; set; }
+        public ObservableCollection<Category> DisplayedCategories { get; set; }
         public ObservableCollection<ProductTag> DisplayedTags { get; set; }
 
         // Pagination counts
@@ -41,12 +43,12 @@ namespace UiLayer
             productTagViewModel = MarketMinds.App.ProductTagViewModel;
 
             // Initialize full lists
-            ProductConditions = new ObservableCollection<ProductCondition>(productConditionViewModel.GetAllProductConditions());
+            ProductConditions = new ObservableCollection<Condition>(productConditionViewModel.GetAllProductConditions());
             fullCategories = productCategoryViewModel.GetAllProductCategories();
             fullTags = productTagViewModel.GetAllProductTags();
 
             // Initialize displayed lists (with pagination)
-            DisplayedCategories = new ObservableCollection<ProductCategory>(fullCategories.Take(initialDisplayCount));
+            DisplayedCategories = new ObservableCollection<Category>(fullCategories.Take(initialDisplayCount));
             DisplayedTags = new ObservableCollection<ProductTag>(fullTags.Take(initialDisplayCount));
 
             // Bind to ListViews

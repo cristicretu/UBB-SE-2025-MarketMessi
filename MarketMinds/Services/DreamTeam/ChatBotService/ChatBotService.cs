@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using DomainLayer.Domain;
 using MarketMinds.Shared.IRepository;
+using System.Text;
+using MarketMinds.Shared.Models;
+using Newtonsoft.Json;
+using Windows.Storage;
 
 namespace MarketMinds.Services.DreamTeam.ChatbotService
 {

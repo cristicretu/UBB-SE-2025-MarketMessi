@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DomainLayer.Domain;
+namespace MarketMinds.Shared.Models;
 
 public class Node()
 {

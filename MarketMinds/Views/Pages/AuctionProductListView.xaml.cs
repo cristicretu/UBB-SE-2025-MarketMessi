@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.ProductTagService;
 
 namespace BusinessLogicLayer.ViewModel
@@ -12,8 +12,8 @@ namespace BusinessLogicLayer.ViewModel
     {
         private ProductService productService;
 
-        public List<ProductCondition> SelectedConditions { get; set; }
-        public List<ProductCategory> SelectedCategories { get; set; }
+        public List<Condition> SelectedConditions { get; set; }
+        public List<Category> SelectedCategories { get; set; }
         public List<ProductTag> SelectedTags { get; set; }
         public ProductSortType? SortCondition { get; set; }
         public string SearchQuery { get; set; }
@@ -21,8 +21,8 @@ namespace BusinessLogicLayer.ViewModel
         {
             this.productService = productService;
 
-            this.SelectedConditions = new List<ProductCondition>();
-            this.SelectedCategories = new List<ProductCategory>();
+            this.SelectedConditions = new List<Condition>();
+            this.SelectedCategories = new List<Category>();
             this.SelectedTags = new List<ProductTag>();
             this.SortCondition = null;
             this.SearchQuery = string.Empty;
@@ -57,22 +57,22 @@ namespace BusinessLogicLayer.ViewModel
             this.SearchQuery = searchQuery;
         }
 
-        public void HandleAddProductCondition(ProductCondition condition)
+        public void HandleAddProductCondition(Condition condition)
         {
             this.SelectedConditions.Add(condition);
         }
 
-        public void HandleRemoveProductCondition(ProductCondition condition)
+        public void HandleRemoveProductCondition(Condition condition)
         {
             this.SelectedConditions.Remove(condition);
         }
 
-        public void HandleAddProductCategory(ProductCategory category)
+        public void HandleAddProductCategory(Category category)
         {
             this.SelectedCategories.Add(category);
         }
 
-        public void HandleRemoveProductCategory(ProductCategory category)
+        public void HandleRemoveProductCategory(Category category)
         {
             this.SelectedCategories.Remove(category);
         }

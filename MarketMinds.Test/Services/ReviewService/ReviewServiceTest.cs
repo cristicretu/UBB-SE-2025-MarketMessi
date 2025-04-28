@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Services.ReviewService;
 using NUnit.Framework;
 using System;

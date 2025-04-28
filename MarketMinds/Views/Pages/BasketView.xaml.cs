@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ViewModelLayer.ViewModel;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Views.Pages
 {

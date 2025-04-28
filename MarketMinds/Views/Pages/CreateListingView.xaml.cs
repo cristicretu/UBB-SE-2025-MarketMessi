@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ViewModelLayer.ViewModel;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.Helpers;
 using Microsoft.UI.Xaml.Media;
@@ -21,6 +21,8 @@ using Windows.Storage;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.ListingFormValidationService;
+using ProductCategory = MarketMinds.Shared.Models.Category;
+using ProductCondition = MarketMinds.Shared.Models.Condition;
 
 namespace UiLayer
 {
@@ -114,7 +116,7 @@ namespace UiLayer
 
         private void LoadCategories()
         {
-            List<ProductCategory> categories = productCategoryViewModel.GetAllProductCategories();
+            List<Category> categories = productCategoryViewModel.GetAllProductCategories();
             categoryComboBox.ItemsSource = categories;
             categoryComboBox.DisplayMemberPath = "DisplayTitle";
             categoryComboBox.SelectedValuePath = "Id";
@@ -122,7 +124,7 @@ namespace UiLayer
 
         private void LoadConditions()
         {
-            List<ProductCondition> conditions = productConditionViewModel.GetAllProductConditions();
+            List<Condition> conditions = productConditionViewModel.GetAllProductConditions();
             conditionComboBox.ItemsSource = conditions;
             conditionComboBox.DisplayMemberPath = "DisplayTitle";
             conditionComboBox.SelectedValuePath = "Id";
@@ -281,9 +283,9 @@ namespace UiLayer
 
             // Collect common data
             string title = titleTextBox.Text;
-            ProductCategory category = (ProductCategory)categoryComboBox.SelectedItem;
+            Category category = (ProductCategory)categoryComboBox.SelectedItem;
             string description = descriptionTextBox.Text;
-            ProductCondition condition = (ProductCondition)conditionComboBox.SelectedItem;
+            Condition condition = (ProductCondition)conditionComboBox.SelectedItem;
 
             // Validate common fields
             if (!validationService.ValidateCommonFields(title, category, description, tags, condition, out string errorMessage, out string errorField))
