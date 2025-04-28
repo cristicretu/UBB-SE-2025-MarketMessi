@@ -13,9 +13,8 @@ using MarketMinds;
 using MarketMinds.Helpers.Selectors;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.ViewModels;
-using Marketplace_SE.Data;
 using Marketplace_SE.Utilities;
-using Microsoft.IdentityModel.Tokens;
+using Marketplace_SE;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -23,7 +22,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-namespace Marketplace_SE
+namespace MarketMinds.Views.Pages2
 {
     public sealed partial class ChatPage : Page
     {
@@ -47,7 +46,21 @@ namespace Marketplace_SE
             chatViewModel = App.ChatViewModel;
             imageUploadService = App.ImageUploadService;
 
+            // Initialize UI elements
             ChatListView.ItemsSource = displayedMessages;
+            LoadingIndicator.IsActive = false;
+            LoadingIndicator.Visibility = Visibility.Collapsed;
+
+            // Set up event handlers
+            SendButton.Click += SendButton_Click;
+            AttachButton.Click += AttachButton_Click;
+            BackButton.Click += BackButton_Click;
+            ExportButton.Click += ExportButton_Click;
+
+            // Set up message box
+            MessageBox.AcceptsReturn = true;
+            MessageBox.TextWrapping = TextWrapping.Wrap;
+            MessageBox.PlaceholderText = "Type a message...";
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs eventArgs)
