@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using server.Models;
-using server.DataAccessLayer;
+using Server.Models;
+using Server.DataAccessLayer;
 
 namespace MarketMinds.Repositories.MessageRepository
 {

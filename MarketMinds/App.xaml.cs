@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -281,9 +281,8 @@ namespace MarketMinds
         {
             if (CurrentUser != null)
             {
-                UpdateTestingUser();
                 BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
-                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, CurrentUser);
                 SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
                 SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
                 NewChatbotService.SetCurrentUser(CurrentUser);

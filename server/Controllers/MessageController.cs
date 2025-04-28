@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Repositories.MessageRepository;
-using server.Models;
+using Server.Models;
 using System.Net;
 using System.Diagnostics;
 
-namespace server.Controllers
+namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -20,14 +20,12 @@ namespace server.Controllers
         {
             this.messageRepository = messageRepository;
         }
-        
         [HttpPost]
         [ProducesResponseType(typeof(MessageDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateMessage([FromBody] CreateMessageDto createMessageDto)
         {
             var sw = Stopwatch.StartNew();
-            
             if (createMessageDto == null)
             {
                 return BadRequest("Request body cannot be null");

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Repositories.ConversationRepository;
-using server.Models;
+using Server.Models;
 using System.Net;
 using System.Diagnostics;
 
-namespace server.Controllers
+namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -64,7 +64,6 @@ namespace server.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-        
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ConversationDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]

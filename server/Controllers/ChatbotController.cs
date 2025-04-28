@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using server.DataAccessLayer;
+using Server.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using server.Models;
+using Server.Models;
 
-namespace server.Controllers
+namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -105,17 +105,14 @@ namespace server.Controllers
                 {
                     var response = await httpClient.PostAsync(url, content);
                     var responseBody = await response.Content.ReadAsStringAsync();
-                    
                     if (!string.IsNullOrEmpty(responseBody))
                     {
                         int previewLength = Math.Min(300, responseBody.Length);
                     }
-                    
                     if (!response.IsSuccessStatusCode)
                     {
                         return StatusCode((int)response.StatusCode, new { error = $"API Error: {responseBody}" });
                     }
-
                     try
                     {
                         using (JsonDocument document = JsonDocument.Parse(responseBody))
@@ -166,9 +163,7 @@ namespace server.Controllers
                                                 Success = true
                                             });
                                         }
-                                        
                                         var text = textElement.GetString();
-                                        
                                         if (!string.IsNullOrEmpty(text))
                                         {
                                             return Ok(new ChatbotResponse
