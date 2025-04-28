@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.ProductTagService;
 
@@ -66,7 +66,8 @@ namespace MarketMinds.Services.BuyProductsService
 
         public void CreateListing(Product product)
         {
-            if (!(product is BuyProduct buyProduct))
+            var buyProduct = product as BuyProduct;
+            if (buyProduct == null)
             {
                 throw new ArgumentException("Product must be a BuyProduct.", nameof(product));
             }
@@ -128,7 +129,7 @@ namespace MarketMinds.Services.BuyProductsService
                 {
                     throw new KeyNotFoundException($"Buy product with ID {id} not found.");
                 }
-                return product;
+                return (Product)product;
             }
             catch (KeyNotFoundException)
             {

@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ReviewRepository;
 using System;
 using System.Collections.Generic;

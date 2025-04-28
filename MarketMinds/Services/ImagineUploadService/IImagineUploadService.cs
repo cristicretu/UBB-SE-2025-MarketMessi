@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ImagineUploadService
 {

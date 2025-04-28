@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.AuctionProductsService
 {
@@ -19,7 +19,7 @@ namespace MarketMinds.Services.AuctionProductsService
         /// <param name="auction">The auction product.</param>
         /// <param name="bidder">The user placing the bid.</param>
         /// <param name="bidAmount">The amount of the bid.</param>
-        void PlaceBid(AuctionProduct auction, User bidder, float bidAmount);
+        void PlaceBid(AuctionProduct auction, User bidder, double bidAmount);
 
         /// <summary>
         /// Concludes an auction.

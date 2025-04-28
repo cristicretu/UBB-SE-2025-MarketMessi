@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.ImagineUploadService;
 using MarketMinds.Services.ReviewService;
 

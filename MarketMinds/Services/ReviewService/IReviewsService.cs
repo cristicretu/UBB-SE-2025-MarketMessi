@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ReviewService
 {

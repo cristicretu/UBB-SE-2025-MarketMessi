@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.UserService;
 
 namespace MarketMinds.ViewModels

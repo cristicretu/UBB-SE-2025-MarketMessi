@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.BasketService;
 
 namespace ViewModelLayer.ViewModel

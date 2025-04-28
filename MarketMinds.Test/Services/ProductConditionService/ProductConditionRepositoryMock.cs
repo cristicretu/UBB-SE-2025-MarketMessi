@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ProductConditionRepository;
 using System.Collections.Generic;
 
@@ -6,17 +6,17 @@ namespace MarketMinds.Test.Services.ProductConditionService
 {
     internal class ProductConditionRepositoryMock : IProductConditionRepository
     {
-        public List<ProductCondition> Conditions { get; set; } = new List<ProductCondition>();
+        public List<Condition> Conditions { get; set; } = new List<Condition>();
         private int currentIndex = 0;
 
         public ProductConditionRepositoryMock() 
         { 
-            Conditions = new List<ProductCondition>();
+            Conditions = new List<Condition>();
         }
 
-        ProductCondition IProductConditionRepository.CreateProductCondition(string displayTitle, string description)
+        Condition IProductConditionRepository.CreateProductCondition(string displayTitle, string description)
         {
-            var newCondition = new ProductCondition(
+            var newCondition = new Condition(
                 id: ++currentIndex,
                 displayTitle: displayTitle,
                 description: description
@@ -31,7 +31,7 @@ namespace MarketMinds.Test.Services.ProductConditionService
             Conditions.RemoveAll(cond => cond.DisplayTitle == displayTitle);
         }
 
-        List<ProductCondition> IProductConditionRepository.GetAllProductConditions()
+        List<Condition> IProductConditionRepository.GetAllProductConditions()
         {
             return Conditions;
         }

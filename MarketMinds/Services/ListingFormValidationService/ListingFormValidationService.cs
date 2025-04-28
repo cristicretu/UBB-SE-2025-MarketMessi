@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ListingFormValidationService
 {
     public class ListingFormValidationService : IListingFormValidationService
     {
-        public bool ValidateCommonFields(string title, ProductCategory category, string description, ObservableCollection<string> tags, ProductCondition condition, out string errorMessage, out string errorField)
+        public bool ValidateCommonFields(string title, Category category, string description, ObservableCollection<string> tags, Condition condition, out string errorMessage, out string errorField)
         {
             if (string.IsNullOrWhiteSpace(title))
             {
