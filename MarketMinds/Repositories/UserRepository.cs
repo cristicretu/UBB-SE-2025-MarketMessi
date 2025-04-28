@@ -259,26 +259,19 @@ namespace MarketMinds.Repositories
                     return false;
                 }
 
-                // Create user and return success if Id > 0
-                var registerRequest = new 
                 // Verify we're sending all required fields
-                var registerRequest = new 
+                var registerRequest = new
                 {
                     Username = user.Username,
                     Email = user.Email,
                     Password = user.Password
                 };
-                
-                
                 var response = await httpClient.PostAsJsonAsync("users/register", registerRequest);
-                
-                
                 if (!response.IsSuccessStatusCode)
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
                     Debug.WriteLine($"[UserRepository] Register API error response: {responseBody}");
                 }
-                
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
