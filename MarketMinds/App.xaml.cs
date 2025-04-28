@@ -29,6 +29,9 @@ using Marketplace_SE.Services.DreamTeam;
 using MarketMinds.Services.ConversationService;
 using MarketMinds.Services.MessageService;
 using MarketMinds.Services.DreamTeam.ChatbotService;
+using MarketMinds.Repositories;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.IRepository.ConversationRepository;
 
 namespace MarketMinds
 {
@@ -37,6 +40,10 @@ namespace MarketMinds
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
+        public static IConversationRepository ConversationRepository;
+        public static IMessageRepository MessageRepository;
+        public static IChatRepository ChatRepository;
+        public static IChatbotRepository ChatbotRepository;
 
         // Service declarations
         public static ProductService ProductService;
@@ -225,9 +232,12 @@ namespace MarketMinds
             MainWindow = new UiLayer.MainWindow();
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
+
             // Instantiate repositories
-            // ChatBotRepository = new ChatBotRepository(DatabaseConnection);
-            // ChatRepository = new ChatRepository(DatabaseConnection);
+            ConversationRepository = new ConversationRepository(httpClient);
+            MessageRepository = new MessageRepository(httpClient);
+            ChatbotRepository = new ChatbotRepository(httpClient);
+            ChatRepository = new ChatRepository(httpClient);
 
             // Instantiate services
             BuyProductsService = new BuyProductsService(Configuration);
@@ -240,11 +250,11 @@ namespace MarketMinds
             BasketService = new BasketService(Configuration);
             UserService = new UserService(Configuration);
             AccountPageService = new AccountPageService(Configuration);
-            ChatBotService = new ChatbotService(httpClient);
-            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(httpClient);
-            ConversationService = new ConversationService(httpClient);
-            MessageService = new MessageService(httpClient);
-            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(httpClient);
+            ConversationService = new ConversationService(ConversationRepository);
+            MessageService = new MessageService(MessageRepository);
+            ChatBotService = new ChatbotService(ChatbotRepository);
+            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(ChatRepository);
+            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);

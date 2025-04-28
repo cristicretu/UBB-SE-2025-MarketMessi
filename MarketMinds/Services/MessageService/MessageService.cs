@@ -1,43 +1,64 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using DomainLayer.Domain;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.MessageService
 {
     public class MessageService : IMessageService
     {
-        private readonly HttpClient httpClient;
-        private readonly string baseUrl = "http://localhost:5000/api/message";
+        private readonly IMessageRepository messageRepository;
 
-        public MessageService(HttpClient httpClient)
+        public MessageService(IMessageRepository messageRepository)
         {
-            this.httpClient = httpClient;
+            this.messageRepository = messageRepository;
         }
 
-        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        public async Task<DomainLayer.Domain.Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            var createDto = new
+            // Create a message object to pass to the repository
+            var messageModel = new MarketMinds.Shared.Models.Message
             {
                 ConversationId = conversationId,
                 UserId = userId,
                 Content = content
+                // No ContentType or Timestamp in the shared model
             };
 
-            var response = await httpClient.PostAsJsonAsync(baseUrl, createDto);
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<Message>();
+            var result = await messageRepository.CreateMessageAsync(messageModel);
+            return ConvertToDomainModel(result);
         }
 
-        public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
+        public async Task<List<DomainLayer.Domain.Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            var response = await httpClient.GetAsync($"{baseUrl}/conversation/{conversationId}");
-            response.EnsureSuccessStatusCode();
+            var messages = await messageRepository.GetMessagesByConversationIdAsync(conversationId);
 
-            return await response.Content.ReadFromJsonAsync<List<Message>>();
+            var domainMessages = new List<DomainLayer.Domain.Message>();
+            foreach (var msg in messages)
+            {
+                domainMessages.Add(ConvertToDomainModel(msg));
+            }
+
+            return domainMessages;
+        }
+
+        // Helper method to convert between model types
+        private DomainLayer.Domain.Message ConvertToDomainModel(MarketMinds.Shared.Models.Message sharedModel)
+        {
+            if (sharedModel == null)
+            {
+                return null;
+            }
+            return new DomainLayer.Domain.Message
+            {
+                Id = sharedModel.Id,
+                ConversationId = sharedModel.ConversationId,
+                UserId = sharedModel.UserId,
+                Content = sharedModel.Content
+                // No ContentType or Timestamp to map
+            };
         }
     }
 }
