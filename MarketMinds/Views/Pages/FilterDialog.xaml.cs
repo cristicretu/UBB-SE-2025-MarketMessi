@@ -2,35 +2,43 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
+using ProductCategory = MarketMinds.Shared.Models.Category;
+using ProductCondition = MarketMinds.Shared.Models.Condition;
+using MarketMinds.Services;
+using MarketMinds.Services.AuctionProductsService;
+using MarketMinds.Services.BorrowProductsService;
+using MarketMinds.Services.BuyProductsService;
 
 namespace UiLayer
 {
     public partial class FilterDialog : ContentDialog
     {
-        private readonly SortAndFilterViewModel sortAndFilterViewModel;
+        private readonly dynamic sortAndFilterViewModel;
         private readonly ProductTagViewModel productTagViewModel;
         private readonly ProductConditionViewModel productConditionViewModel;
         private readonly ProductCategoryViewModel productCategoryViewModel;
 
         // Full lists
-        private List<ProductCategory> fullCategories;
+        private List<Category> fullCategories;
         private List<ProductTag> fullTags;
 
         // Displayed lists for filtering with pagination
-        public ObservableCollection<ProductCondition> ProductConditions { get; set; }
-        public ObservableCollection<ProductCategory> DisplayedCategories { get; set; }
+        public ObservableCollection<Condition> ProductConditions { get; set; }
+        public ObservableCollection<Category> DisplayedCategories { get; set; }
         public ObservableCollection<ProductTag> DisplayedTags { get; set; }
 
         // Pagination counts
         private int initialDisplayCount = 5;
         private int additionalDisplayCount = 10;
 
-        public FilterDialog(SortAndFilterViewModel sortAndFilterViewModel)
+        public FilterDialog(object sortAndFilterViewModel)
         {
             this.InitializeComponent();
             this.sortAndFilterViewModel = sortAndFilterViewModel;
@@ -41,12 +49,12 @@ namespace UiLayer
             productTagViewModel = MarketMinds.App.ProductTagViewModel;
 
             // Initialize full lists
-            ProductConditions = new ObservableCollection<ProductCondition>(productConditionViewModel.GetAllProductConditions());
+            ProductConditions = new ObservableCollection<Condition>(productConditionViewModel.GetAllProductConditions());
             fullCategories = productCategoryViewModel.GetAllProductCategories();
             fullTags = productTagViewModel.GetAllProductTags();
 
             // Initialize displayed lists (with pagination)
-            DisplayedCategories = new ObservableCollection<ProductCategory>(fullCategories.Take(initialDisplayCount));
+            DisplayedCategories = new ObservableCollection<Category>(fullCategories.Take(initialDisplayCount));
             DisplayedTags = new ObservableCollection<ProductTag>(fullTags.Take(initialDisplayCount));
 
             // Bind to ListViews
@@ -102,7 +110,7 @@ namespace UiLayer
             ViewMoreTagsButton.Visibility = fullTags.Count > DisplayedTags.Count ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void FilterDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void FilterDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs contentDialogButtonClickEventArgs)
         {
             // Clear existing selections in the view model
             sortAndFilterViewModel.HandleClearAllFilters();
@@ -124,7 +132,7 @@ namespace UiLayer
             }
         }
 
-        private void ClearAllButton_Click(object sender, RoutedEventArgs e)
+        private void ClearAllButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Clear selections in UI and view model
             ConditionListView.SelectedItems.Clear();
@@ -134,23 +142,23 @@ namespace UiLayer
         }
 
         // Category Search handling
-        private void CategorySearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void CategorySearchBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             var query = CategorySearchBox.Text.ToLower();
-            var filtered = fullCategories.Where(c => c.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullCategories.Where(category => category.DisplayTitle.ToLower().Contains(query)).ToList();
             DisplayedCategories.Clear();
-            foreach (var cat in filtered.Take(initialDisplayCount))
+            foreach (var category in filtered.Take(initialDisplayCount))
             {
-                DisplayedCategories.Add(cat);
+                DisplayedCategories.Add(category);
             }
             UpdateViewMoreButtons();
         }
 
         // Tag Search handling
-        private void TagSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void TagSearchBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             var query = TagSearchBox.Text.ToLower();
-            var filtered = fullTags.Where(t => t.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullTags.Where(tag => tag.DisplayTitle.ToLower().Contains(query)).ToList();
             DisplayedTags.Clear();
             foreach (var tag in filtered.Take(initialDisplayCount))
             {
@@ -160,11 +168,11 @@ namespace UiLayer
         }
 
         // View More for Categories
-        private void ViewMoreCategoriesButton_Click(object sender, RoutedEventArgs e)
+        private void ViewMoreCategoriesButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var currentCount = DisplayedCategories.Count;
             var query = CategorySearchBox.Text.ToLower();
-            var filtered = fullCategories.Where(c => c.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullCategories.Where(category => category.DisplayTitle.ToLower().Contains(query)).ToList();
             foreach (var cat in filtered.Skip(currentCount).Take(additionalDisplayCount))
             {
                 DisplayedCategories.Add(cat);
@@ -173,11 +181,11 @@ namespace UiLayer
         }
 
         // View More for Tags
-        private void ViewMoreTagsButton_Click(object sender, RoutedEventArgs e)
+        private void ViewMoreTagsButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var currentCount = DisplayedTags.Count;
             var query = TagSearchBox.Text.ToLower();
-            var filtered = fullTags.Where(t => t.DisplayTitle.ToLower().Contains(query)).ToList();
+            var filtered = fullTags.Where(tag => tag.DisplayTitle.ToLower().Contains(query)).ToList();
             foreach (var tag in filtered.Skip(currentCount).Take(additionalDisplayCount))
             {
                 DisplayedTags.Add(tag);

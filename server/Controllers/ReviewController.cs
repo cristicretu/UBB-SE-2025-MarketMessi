@@ -1,11 +1,14 @@
 using System;
-using MarketMinds.Repositories.ReviewRepository;
-using server.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using MarketMinds.Shared.Models;
+using Microsoft.AspNetCore.Mvc;
+using MarketMinds.Shared.Models.DTOs;
+using MarketMinds.Shared.Models.DTOs.Mappers;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Repositories.ReviewRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -13,14 +16,15 @@ namespace MarketMinds.Controllers
     [Route("api/[controller]")]
     public class ReviewController : ControllerBase
     {
-        private readonly IReviewRepository _reviewRepository;
+        private readonly IReviewRepository reviewRepository;
+        private readonly static int DEFAULT_REVIEW_ID = 0;
         public ReviewController(IReviewRepository reviewRepository)
         {
-            _reviewRepository = reviewRepository;
+            this.reviewRepository = reviewRepository;
         }
 
         [HttpGet("buyer/{buyerId}")]
-        [ProducesResponseType(typeof(ObservableCollection<Review>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<ReviewDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetReviewsByBuyer(int buyerId)
@@ -28,7 +32,7 @@ namespace MarketMinds.Controllers
             try
             {
                 var buyer = new User { Id = buyerId };
-                var reviews = _reviewRepository.GetAllReviewsByBuyer(buyer);
+                var reviews = reviewRepository.GetAllReviewsByBuyer(buyer);
 
                 // Convert ReviewImages to generic Images for each review
                 foreach (var review in reviews)
@@ -36,7 +40,9 @@ namespace MarketMinds.Controllers
                     review.LoadGenericImages();
                 }
 
-                return Ok(reviews);
+                // Convert to DTOs to avoid circular references
+                var reviewDtos = reviews.Select(review => ReviewMapper.ToDto(review)).ToList();
+                return Ok(reviewDtos);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -50,7 +56,7 @@ namespace MarketMinds.Controllers
         }
 
         [HttpGet("seller/{sellerId}")]
-        [ProducesResponseType(typeof(ObservableCollection<Review>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<ReviewDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetReviewsBySeller(int sellerId)
@@ -58,7 +64,7 @@ namespace MarketMinds.Controllers
             try
             {
                 var seller = new User { Id = sellerId };
-                var reviews = _reviewRepository.GetAllReviewsBySeller(seller);
+                var reviews = reviewRepository.GetAllReviewsBySeller(seller);
 
                 // Convert ReviewImages to generic Images for each review
                 foreach (var review in reviews)
@@ -66,7 +72,9 @@ namespace MarketMinds.Controllers
                     review.LoadGenericImages();
                 }
 
-                return Ok(reviews);
+                // Convert to DTOs to avoid circular references
+                var reviewDtos = reviews.Select(review => ReviewMapper.ToDto(review)).ToList();
+                return Ok(reviewDtos);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -80,25 +88,31 @@ namespace MarketMinds.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Review), (int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(ReviewDTO), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult CreateReview([FromBody] Review review)
+        public IActionResult CreateReview([FromBody] ReviewDTO reviewDto)
         {
-            if (review == null)
+            if (reviewDto == null)
             {
                 return BadRequest("Review cannot be null.");
             }
             try
             {
-                // Set ID to 0 to ensure Entity Framework knows it's a new entity
-                review.Id = 0;
+                // Convert DTO to model
+                var review = ReviewMapper.ToModel(reviewDto);
 
-                // Create the review first to get an ID
-                _reviewRepository.CreateReview(review);
+                // Set ID to 0 to ensure Entity Framework knows it's a new entity
+                review.Id = DEFAULT_REVIEW_ID;
+
+                // Create the review
+                reviewRepository.CreateReview(review);
+
+                // Convert back to DTO for response
+                var createdReviewDto = ReviewMapper.ToDto(review);
 
                 // Return the created review with its new ID
-                return CreatedAtAction(nameof(GetReviewsByBuyer), new { buyerId = review.BuyerId }, review);
+                return CreatedAtAction(nameof(GetReviewsByBuyer), new { buyerId = review.BuyerId }, createdReviewDto);
             }
             catch (Exception ex)
             {
@@ -108,24 +122,30 @@ namespace MarketMinds.Controllers
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(Review), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ReviewDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult EditReview([FromBody] Review review)
+        public IActionResult EditReview([FromBody] ReviewDTO reviewDto)
         {
-            if (review == null)
+            if (reviewDto == null)
             {
                 return BadRequest("Review cannot be null.");
             }
 
             try
             {
+                // Convert DTO to model
+                var review = ReviewMapper.ToModel(reviewDto);
+
                 // Sync images with ReviewImages for DB storage
                 review.SyncImagesBeforeSave();
 
-                _reviewRepository.EditReview(review, review.Rating, review.Description);
-                return Ok(review);
+                reviewRepository.EditReview(review, review.Rating, review.Description);
+
+                // Convert back to DTO for response
+                var updatedReviewDto = ReviewMapper.ToDto(review);
+                return Ok(updatedReviewDto);
             }
             catch (KeyNotFoundException knfex)
             {
@@ -142,15 +162,19 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteReview([FromBody] Review review)
+        public IActionResult DeleteReview([FromBody] ReviewDTO reviewDto)
         {
             try
             {
-                if (review == null)
+                if (reviewDto == null)
                 {
                     return BadRequest("Review cannot be null.");
                 }
-                _reviewRepository.DeleteReview(review);
+
+                // Convert DTO to model
+                var review = ReviewMapper.ToModel(reviewDto);
+
+                reviewRepository.DeleteReview(review);
                 return NoContent();
             }
             catch (KeyNotFoundException knfex)

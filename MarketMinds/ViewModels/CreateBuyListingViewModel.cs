@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.BuyProductsService;
 
 namespace ViewModelLayer.ViewModel
@@ -13,7 +13,10 @@ namespace ViewModelLayer.ViewModel
         public BuyProductsService BuyProductsService { get; set; }
         public override void CreateListing(Product product)
         {
-            BuyProductsService.CreateListing(product);
+            if (product is BuyProduct buyProduct)
+            {
+                BuyProductsService.CreateListing(buyProduct);
+            }
         }
     }
 }

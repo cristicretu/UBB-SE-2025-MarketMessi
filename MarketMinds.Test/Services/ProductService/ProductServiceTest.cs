@@ -113,7 +113,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             return new MarketMinds.Services.ProductTagService.ProductService(repository);
         }
 
-        private Product CreateSampleProduct(int id, string title, ProductCategory category = null, ProductCondition condition = null)
+        private Product CreateSampleProduct(int id, string title, Category category = null, Condition condition = null)
         {
             return new TestProduct
             {
@@ -412,7 +412,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var condition1 = new Condition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
             var condition2 = new Condition(CONDITION_ID2, CONDITION_USER_TITLE, CONDITION_USED_ITEM);
             var products = CreateProductsWithDifferentConditions(condition1, condition2);
-            var selectedConditions = new List<ProductCondition> { condition1, condition2 };
+            var selectedConditions = new List<Condition> { condition1, condition2 };
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
@@ -423,7 +423,7 @@ namespace MarketMinds.Test.Services.ProductTagService
         }
 
         private List<Product> CreateProductsWithDifferentConditions(
-            ProductCondition condition1, ProductCondition condition2)
+            Condition condition1, Condition condition2)
         {
             var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT1, condition: condition1);
             var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT2, condition: condition2);
@@ -443,7 +443,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var category1 = new Category(CATEGORY_ID1, CATEGORY_ELECTRONICS_TITLE, CATEGORY_ELECTRONICS_DESCRIPTION);
             var category2 = new Category(CATEGORY_ID2, CATEGORY_CLOTHING_TITLE, CATEGORY_CLOTHING_DESCRIPTION);
             var products = CreateProductsWithDifferentCategories(category1, category2);
-            var selectedCategories = new List<ProductCategory> { category1, category2 };
+            var selectedCategories = new List<Category> { category1, category2 };
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
@@ -454,7 +454,7 @@ namespace MarketMinds.Test.Services.ProductTagService
         }
 
         private List<Product> CreateProductsWithDifferentCategories(
-            ProductCategory category1, ProductCategory category2)
+            Category category1, Category category2)
         {
             var product1 = CreateSampleProduct(PRODUCT_ID1, PRODUCT_TITLE_PRODUCT1, category: category1);
             var product2 = CreateSampleProduct(PRODUCT_ID2, PRODUCT_TITLE_PRODUCT2, category: category2);
@@ -592,8 +592,8 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products,
-                new List<ProductCondition> { condition },
-                new List<ProductCategory> { category },
+                new List<Condition> { condition },
+                new List<Category> { category },
                 new List<ProductTag> { tag },
                 null,
                 SEARCH_QUERY_WIRELESS
@@ -612,8 +612,8 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products,
-                new List<ProductCondition> { condition },
-                new List<ProductCategory> { category },
+                new List<Condition> { condition },
+                new List<Category> { category },
                 new List<ProductTag> { tag },
                 null,
                 SEARCH_QUERY_WIRELESS
@@ -652,7 +652,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var condition = new Condition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
             var products = CreateProductsForFilteringTest(condition);
-            var selectedConditions = new List<ProductCondition> { condition };
+            var selectedConditions = new List<Condition> { condition };
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
@@ -668,7 +668,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             // Arrange
             var condition = new Condition(CONDITION_ID1, CONDITION_NEW_TITLE, CONDITION_NEW_DESCRIPTION);
             var products = CreateProductsForFilteringTest(condition);
-            var selectedConditions = new List<ProductCondition> { condition };
+            var selectedConditions = new List<Condition> { condition };
 
             // Act
             var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(

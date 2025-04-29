@@ -1,19 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Dispatching;
 using BusinessLogicLayer.ViewModel;
 using DataAccessLayer;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Repositories.AuctionProductsRepository;
-using MarketMinds.Repositories.BasketRepository;
-using MarketMinds.Repositories.BorrowProductsRepository;
-using MarketMinds.Repositories.BuyProductsRepository;
-using MarketMinds.Repositories.ProductCategoryRepository;
-using MarketMinds.Repositories.ProductConditionRepository;
-using MarketMinds.Repositories.ProductTagRepository;
-using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Services.AuctionProductsService;
 using MarketMinds.Services.BorrowProductsService;
 using MarketMinds.Services.BasketService;
@@ -24,38 +21,42 @@ using MarketMinds.Services.ReviewService;
 using MarketMinds.Services.ProductTagService;
 using MarketMinds.Services;
 using MarketMinds.ViewModels;
-using MarketMinds.Services.DreamTeam.ChatBotService;
-using MarketMinds.Repositories.ChatBotRepository;
-using MarketMinds.Repositories.ChatRepository;
-using MarketMinds.Services.DreamTeam.ChatService;
-using MarketMinds.Repositories.MainMarketplaceRepository;
-using MarketMinds.Services.DreamTeam.MainMarketplaceService;
+using MarketMinds.Services.DreamTeam.ChatbotService;
 using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.Services.UserService;
+using Microsoft.Extensions.Logging.Abstractions;
+using Marketplace_SE.Services.DreamTeam;
+using MarketMinds.Services.ConversationService;
+using MarketMinds.Services.MessageService;
+using MarketMinds.Services.DreamTeam.ChatbotService;
+using MarketMinds.Repositories;
+using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.Models;
+using MarketMinds.Repositories;
+using MarketMinds.Repository;
 
 namespace MarketMinds
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         public static IConfiguration Configuration;
         public static DataBaseConnection DatabaseConnection;
         // Repository declarations
-        public static ProductCategoryRepository ProductCategoryRepository;
-        public static ProductConditionRepository ProductConditionRepository;
+        public static IProductCategoryRepository ProductCategoryRepository;
+        public static IMessageRepository MessageRepository;
+        public static IProductConditionRepository ProductConditionRepository;
+        public static IConversationRepository ConversationRepository;
+        public static IChatRepository ChatRepository;
+        public static IChatbotRepository ChatbotRepository;
+        public static UserRepository UserRepository;
+        public static ReviewRepository ReviewRepository;
         public static ProductTagRepository ProductTagRepository;
         public static AuctionProductsRepository AuctionProductsRepository;
         public static BorrowProductsRepository BorrowProductsRepository;
-        public static BuyProductsRepository BuyProductsRepository;
-        public static ReviewRepository ReviewRepository;
         public static BasketRepository BasketRepository;
-        public static ChatBotRepository ChatBotRepository;
-        public static ChatRepository ChatRepository;
-        public static MainMarketplaceRepository MainMarketplaceRepository;
+        public static BuyProductsRepository BuyProductsRepository;
 
         // Service declarations
-        public static ProductService ProductService;
         public static BuyProductsService BuyProductsService;
         public static BorrowProductsService BorrowProductsService;
         public static AuctionProductsService AuctionProductsService;
@@ -64,10 +65,14 @@ namespace MarketMinds
         public static ProductConditionService ConditionService;
         public static ReviewsService ReviewsService;
         public static BasketService BasketService;
-        public static ChatBotService ChatBotService;
-        public static ChatService ChatService;
-        public static MainMarketplaceService MainMarketplaceService;
+        public static MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService ChatBotService;
+        public static MarketMinds.Services.DreamTeam.ChatService.ChatService ChatService;
         public static IImageUploadService ImageUploadService;
+        public static IUserService UserService;
+        public static AccountPageService AccountPageService { get; private set; }
+        public static IConversationService ConversationService;
+        public static IMessageService MessageService;
+        public static MarketMinds.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -76,9 +81,9 @@ namespace MarketMinds
         public static ProductCategoryViewModel ProductCategoryViewModel { get; private set; }
         public static ProductConditionViewModel ProductConditionViewModel { get; private set; }
         public static ProductTagViewModel ProductTagViewModel { get; private set; }
-        public static SortAndFilterViewModel AuctionProductSortAndFilterViewModel { get; private set; }
-        public static SortAndFilterViewModel BorrowProductSortAndFilterViewModel { get; private set; }
-        public static SortAndFilterViewModel BuyProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<AuctionProductsService> AuctionProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<BorrowProductsService> BorrowProductSortAndFilterViewModel { get; private set; }
+        public static SortAndFilterViewModel<BuyProductsService> BuyProductSortAndFilterViewModel { get; private set; }
         public static ReviewCreateViewModel ReviewCreateViewModel { get; private set; }
         public static SeeBuyerReviewsViewModel SeeBuyerReviewsViewModel { get; private set; }
         public static SeeSellerReviewsViewModel SeeSellerReviewsViewModel { get; private set; }
@@ -87,13 +92,17 @@ namespace MarketMinds
         public static ChatBotViewModel ChatBotViewModel { get; private set; }
         public static ChatViewModel ChatViewModel { get; private set; }
         public static MainMarketplaceViewModel MainMarketplaceViewModel { get; private set; }
-        public static User CurrentUser { get; set; }
-        public static User TestingUser { get; set; }
+        public static LoginViewModel LoginViewModel { get; private set; }
+        public static RegisterViewModel RegisterViewModel { get; private set; }
+        public static MarketMinds.Shared.Models.User CurrentUser { get; set; }
 
         private const int BUYER = 1;
         private const int SELLER = 2;
 
         private static IConfiguration appConfiguration;
+        public static Window LoginWindow = null!;
+        public static Window MainWindow = null!;
+        private static HttpClient httpClient;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -101,14 +110,120 @@ namespace MarketMinds
         /// </summary>
         public App()
         {
-            InitializeComponent();
-            // Initialize configuration
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            appConfiguration = builder.Build();
-            // Initialize API configuration
-            InitializeConfiguration();
+            try
+            {
+                Debug.WriteLine("App constructor start");
+                this.InitializeComponent();
+
+                // Set up global exception handling
+                this.UnhandledException += App_UnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+                // Initialize configuration
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                appConfiguration = builder.Build();
+                // Initialize API configuration
+                InitializeConfiguration();
+
+                // Initialize HttpClient
+                httpClient = new HttpClient();
+                string baseAddress = Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/";
+                httpClient.BaseAddress = new Uri(baseAddress);
+                Debug.WriteLine($"Initialized HTTP client with base address: {baseAddress}");
+
+                Debug.WriteLine("App constructor complete");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CRITICAL ERROR in App constructor: {ex}");
+            }
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true; // Mark as handled to prevent app termination
+
+            // Log the exception
+            Debug.WriteLine($"UNHANDLED UI EXCEPTION: {e.Message}\n{e.Exception}");
+
+            // No need to break into the debugger here as we're handling it
+            ShowErrorDialog($"An error occurred: {e.Message}. See debug output for details.");
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            // Log the exception
+            Exception ex = e.ExceptionObject as Exception;
+            Debug.WriteLine($"CRITICAL UNHANDLED EXCEPTION: {ex?.Message}\n{ex}");
+
+            // Can't show UI from this thread, just log it
+            if (e.IsTerminating)
+            {
+                Debug.WriteLine("APPLICATION IS TERMINATING DUE TO UNHANDLED EXCEPTION");
+            }
+        }
+
+        private void ShowErrorDialog(string message)
+        {
+            try
+            {
+                Debug.WriteLine($"Attempting to show error dialog: {message}");
+
+                // We need to get the dispatcher queue for the UI thread
+                if (MainWindow != null)
+                {
+                    // For WinUI 3, we need to get the dispatcher from the window
+                    DispatcherQueue dispatcherQueue = MainWindow.DispatcherQueue;
+
+                    if (dispatcherQueue != null)
+                    {
+                        bool queued = dispatcherQueue.TryEnqueue(() =>
+                        {
+                            try
+                            {
+                                Debug.WriteLine("Running dialog code on UI thread");
+
+                                if (MainWindow?.Content?.XamlRoot == null)
+                                {
+                                    Debug.WriteLine("Cannot show dialog: XamlRoot is null");
+                                    return;
+                                }
+
+                                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
+                                {
+                                    Title = "Application Error",
+                                    Content = message,
+                                    CloseButtonText = "OK",
+                                    XamlRoot = MainWindow.Content.XamlRoot
+                                };
+
+                                _ = dialog.ShowAsync();
+                                Debug.WriteLine("Error dialog queued for display");
+                            }
+                            catch (Exception dialogEx)
+                            {
+                                Debug.WriteLine($"Error showing error dialog: {dialogEx}");
+                            }
+                        });
+
+                        Debug.WriteLine($"Task queued to dispatcher: {queued}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Could not get dispatcher queue from window");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("Cannot show error dialog: main window is null");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error dispatching error dialog: {ex}");
+            }
         }
 
         private IConfiguration InitializeConfiguration()
@@ -123,62 +238,88 @@ namespace MarketMinds
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            mainWindow = new UiLayer.MainWindow();
-            mainWindow.Activate();
-            // Create test users that match the database
-            TestingUser = new User(1, "alice123", "alice@example.com");
-            TestingUser.UserType = BUYER; // Matches database value
-            CurrentUser = new User(2, "bob321", "bob@example.com");
-            CurrentUser.UserType = SELLER; // Matches database value
-
+            // Create but don't show the main window yet
+            MainWindow = new UiLayer.MainWindow();
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
-            // Instantiate repositories
-            ProductCategoryRepository = new ProductCategoryRepository(DatabaseConnection);
-            ProductConditionRepository = new ProductConditionRepository(DatabaseConnection);
-            ProductTagRepository = new ProductTagRepository(DatabaseConnection);
-            AuctionProductsRepository = new AuctionProductsRepository(DatabaseConnection);
-            BorrowProductsRepository = new BorrowProductsRepository(DatabaseConnection);
-            BuyProductsRepository = new BuyProductsRepository(DatabaseConnection);
-            ReviewRepository = new ReviewRepository(DatabaseConnection);
-            BasketRepository = new BasketRepository(DatabaseConnection);
-            ChatBotRepository = new ChatBotRepository(DatabaseConnection);
-            ChatRepository = new ChatRepository(DatabaseConnection);
-            MainMarketplaceRepository = new MainMarketplaceRepository(DatabaseConnection);
+
+            ProductCategoryRepository = new ProductCategoryRepository(Configuration);
+            MessageRepository = new MessageRepository(Configuration);
+            ProductConditionRepository = new ProductConditionRepository(Configuration);
+            ConversationRepository = new ConversationRepository(httpClient);
+            ChatbotRepository = new ChatbotRepository(httpClient);
+            ChatRepository = new ChatRepository(httpClient);
+            UserRepository = new UserRepository(Configuration);
+            ReviewRepository = new ReviewRepository(Configuration);
+            ProductTagRepository = new ProductTagRepository(Configuration);
+            AuctionProductsRepository = new AuctionProductsRepository(Configuration);
+            BorrowProductsRepository = new BorrowProductsRepository(Configuration);
+            BasketRepository = new BasketRepository(Configuration);
+            BuyProductsRepository = new BuyProductsRepository(Configuration);
 
             // Instantiate services
-            ProductService = new ProductService(BorrowProductsRepository);
-            BuyProductsService = new BuyProductsService(Configuration);
+            BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
-            AuctionProductsService = new AuctionProductsService(Configuration);
-            CategoryService = new ProductCategoryService(Configuration);
+            AuctionProductsService = new AuctionProductsService(AuctionProductsRepository);
+            CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(Configuration);
-            ConditionService = new ProductConditionService(Configuration);
+            ConditionService = new ProductConditionService(ProductConditionRepository);
             ReviewsService = new ReviewsService(Configuration);
-            BasketService = new BasketService(Configuration);
-            ChatBotService = new ChatBotService(ChatBotRepository);
-            ChatService = new ChatService(ChatRepository);
-            MainMarketplaceService = new MainMarketplaceService(MainMarketplaceRepository);
-
-            // Instantiate view models
+            BasketService = new BasketService(BasketRepository);
+            UserService = new UserService(Configuration);
+            AccountPageService = new AccountPageService(Configuration);
+            ConversationService = new ConversationService(ConversationRepository);
+            MessageService = new MessageService(MessageRepository);
+            ChatBotService = new ChatbotService(ChatbotRepository);
+            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(ChatRepository);
+            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
+            // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);
             ProductCategoryViewModel = new ProductCategoryViewModel(CategoryService);
             ProductTagViewModel = new ProductTagViewModel(TagService);
             ProductConditionViewModel = new ProductConditionViewModel(ConditionService);
             BorrowProductsViewModel = new BorrowProductsViewModel(BorrowProductsService);
-            AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel(AuctionProductsService);
-            BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel(BorrowProductsService);
-            BuyProductSortAndFilterViewModel = new SortAndFilterViewModel(BuyProductsService);
-            ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, TestingUser);
-            SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, TestingUser, TestingUser);
-            SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
-            BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
+            AuctionProductSortAndFilterViewModel = new SortAndFilterViewModel<AuctionProductsService>(AuctionProductsService);
+            BorrowProductSortAndFilterViewModel = new SortAndFilterViewModel<BorrowProductsService>(BorrowProductsService);
+            BuyProductSortAndFilterViewModel = new SortAndFilterViewModel<BuyProductsService>(BuyProductsService);
             CompareProductsViewModel = new CompareProductsViewModel();
             ChatBotViewModel = new ChatBotViewModel(ChatBotService);
             ChatViewModel = new ChatViewModel(ChatService);
-            MainMarketplaceViewModel = new MainMarketplaceViewModel(MainMarketplaceService);
+            MainMarketplaceViewModel = new MainMarketplaceViewModel();
+            LoginViewModel = new LoginViewModel(UserService);
+            RegisterViewModel = new RegisterViewModel(UserService);
+            ReviewCreateViewModel = null;
+            SeeSellerReviewsViewModel = null;
+            SeeBuyerReviewsViewModel = null;
+            BasketViewModel = null;
+            // Show login window first instead of main window
+            LoginWindow = new LoginWindow();
+            LoginWindow.Activate();
         }
-        private Window mainWindow = null!;
+
+        // Method to be called after successful login
+        public static void ShowMainWindow()
+        {
+            if (CurrentUser != null)
+            {
+                BasketViewModel = new BasketViewModel(CurrentUser, BasketService);
+                ReviewCreateViewModel = new ReviewCreateViewModel(ReviewsService, CurrentUser, CurrentUser);
+                SeeBuyerReviewsViewModel = new SeeBuyerReviewsViewModel(ReviewsService, CurrentUser);
+                SeeSellerReviewsViewModel = new SeeSellerReviewsViewModel(ReviewsService, CurrentUser, CurrentUser);
+                NewChatbotService.SetCurrentUser(CurrentUser);
+                ChatBotService.SetCurrentUser(CurrentUser);
+                ChatBotViewModel.SetCurrentUser(CurrentUser);
+                if (LoginWindow != null)
+                {
+                    LoginWindow.Close();
+                }
+                MainWindow.Activate();
+            }
+            else
+            {
+                Debug.WriteLine("DEBUG: ERROR - Attempted to show main window with NULL CurrentUser");
+            }
+        }
     }
 }

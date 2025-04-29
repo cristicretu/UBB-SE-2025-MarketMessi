@@ -5,10 +5,10 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using DomainLayer.Domain;
-using ViewModelLayer.ViewModel;
+using MarketMinds.Shared.Models;
 using MarketMinds;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using MarketMinds.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -30,120 +31,98 @@ namespace Marketplace_SE
         public RegisterViewModel ViewModel { get; set; }
         public User NewUser { get; set; }
 
+        private const int MINIMUM_PASSWORD_LENGTH = 6;
+
         public RegisterPage()
         {
             this.InitializeComponent();
-            ViewModel = new RegisterViewModel();
+            ViewModel = MarketMinds.App.RegisterViewModel;
             this.DataContext = ViewModel;
             NewUser = new User(0, string.Empty, string.Empty, string.Empty);
         }
 
-        private async void OnCreateUserClick(object sender, RoutedEventArgs e)
+        private async void OnCreateUserClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            NewUser.Username = UsernameTextBox.Text;
-            NewUser.Email = EmailTextBox.Text;
-            NewUser.Password = PasswordBoxWithRevealMode.Password;
-            string confirmPassword = ConfirmPasswordBox.Password;
-
-            if (!IsValidUsername(NewUser.Username))
-            {
-                UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
-                return;
-            }
-            else
-            {
-                UsernameValidationTextBlock.Text = string.Empty;
-            }
-
-            if (await IsUsernameTaken(NewUser.Username))
-            {
-                await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
-                return;
-            }
-
-            string passwordStrength = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
-            if (passwordStrength == "Weak")
-            {
-                await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
-                return;
-            }
-
-            if (NewUser.Password != confirmPassword)
-            {
-                ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
-                return;
-            }
-            else
-            {
-                ConfirmPasswordValidationTextBlock.Text = string.Empty;
-            }
-
-            bool result = await ViewModel.CreateNewUser(NewUser);
-            if (result)
-            {
-                // Set current user if there's a global app state
-                MarketMinds.App.CurrentUser = NewUser;
-
-                await ShowDialog("Account Created", "Your account has been successfully created!");
-                Frame.Navigate(typeof(LoginPage));
-            }
-            else
-            {
-                await ShowDialog("Error", "Failed to create account. Please try again.");
-            }
-        }
-
-        private async Task<bool> IsUsernameTaken(string username)
-        {
+            
+            // Clear any previous validation messages
+            UsernameValidationTextBlock.Text = string.Empty;
+            ConfirmPasswordValidationTextBlock.Text = string.Empty;
+            
+            // Set loading state
+            CreateAccountButton.IsEnabled = false;
+            RegisterProgressRing.IsActive = true;
+            
             try
             {
-                // Call the ViewModel's async method and await the result
-                return await ViewModel.IsUsernameTaken(username);
+                NewUser.Username = UsernameTextBox.Text;
+                NewUser.Email = EmailTextBox.Text;
+                NewUser.Password = PasswordBoxWithRevealMode.Password;
+                string confirmPassword = ConfirmPasswordBox.Password;
+                
+
+                // Client-side validation
+                if (!ViewModel.IsValidUsername(NewUser.Username))
+                {
+                    UsernameValidationTextBlock.Text = "Username must be 5-20 characters and contain only letters, digits, or underscores.";
+                    return;
+                }
+
+                // Check if username is already taken
+                if (await ViewModel.IsUsernameTaken(NewUser.Username))
+                {
+                    await ShowDialog("Username Taken", "This username is already in use. Please choose another.");
+                    return;
+                }
+
+                // Password strength validation
+                string passwordStrength = ViewModel.GetPasswordStrength(PasswordBoxWithRevealMode.Password);
+                if (passwordStrength == "Weak")
+                {
+                    await ShowDialog("Weak Password", "Password must be at least Medium strength. Include an uppercase letter, a special character, and a digit.");
+                    return;
+                }
+
+                // Password confirmation validation
+                if (!ViewModel.PasswordsMatch(NewUser.Password, confirmPassword))
+                {
+                    ConfirmPasswordValidationTextBlock.Text = "Passwords do not match.";
+                    return;
+                }
+
+                // Attempt to create the user
+                bool result = await ViewModel.CreateNewUser(NewUser);
+                if (result)
+                {
+                    // Store user in the app context
+                    MarketMinds.App.CurrentUser = NewUser;
+                    
+                    await ShowDialog("Account Created", "Your account has been successfully created!");
+                    Frame.Navigate(typeof(LoginPage));
+                }
+                else
+                {
+                    await ShowDialog("Error", "Failed to create account. Please try again.");
+                }
             }
             catch (Exception ex)
             {
-                // Log error (you should use proper logging in production)
-                Console.WriteLine($"Error checking username: {ex.Message}");
-
-                // Return true as a fail-safe to prevent duplicate usernames
-                // if there's an error checking availability
-                return true;
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"[RegisterPage] Inner exception: {ex.InnerException.Message}");
+                }
+                await ShowDialog("Error", $"An error occurred: {ex.Message}");
             }
-        }
-
-        private bool IsValidUsername(string username)
-        {
-            return Regex.IsMatch(username, "^[A-Za-z0-9_]{5,20}$");
-        }
-
-        private bool IsValidPassword(string password)
-        {
-            return Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,15}$");
+            finally
+            {
+                // Reset loading state
+                CreateAccountButton.IsEnabled = true;
+                RegisterProgressRing.IsActive = false;
+            }
         }
 
         private void PasswordBoxWithRevealMode_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            PasswordStrengthTextBlock.Text = GetPasswordStrength(PasswordBoxWithRevealMode.Password);
-        }
-
-        private string GetPasswordStrength(string password)
-        {
-            if (password.Length < 6)
-            {
-                return "Weak";
-            }
-
-            if (Regex.IsMatch(password, "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{6,15}$"))
-            {
-                return "Strong";
-            }
-
-            if (Regex.IsMatch(password, "^(?=.*[A-Z])|(?=.*\\d)|(?=.*[@$!%*?&]).{6,15}$"))
-            {
-                return "Medium";
-            }
-
-            return "Weak";
+            PasswordStrengthTextBlock.Text = ViewModel.GetPasswordStrength(PasswordBoxWithRevealMode.Password);
         }
 
         private async Task ShowDialog(string title, string content)
@@ -158,13 +137,13 @@ namespace Marketplace_SE
             await dialog.ShowAsync();
         }
 
-        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs routedEventArgs)
         {
             PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
             ConfirmPasswordBox.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
         }
 
-        private void NavigateToLoginPage(object sender, RoutedEventArgs e)
+        private void NavigateToLoginPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(LoginPage));
         }

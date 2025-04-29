@@ -4,50 +4,53 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;
 using MarketMinds.Services;
 using MarketMinds.Views.Pages;
-using MarketMinds.Helpers;
+using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Services.ProductPaginationService;
+using MarketMinds.Services.BuyProductsService;
 
 namespace UiLayer
 {
     public sealed partial class BuyProductListView : Window
     {
         private readonly BuyProductsViewModel buyProductsViewModel;
-        private readonly SortAndFilterViewModel sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel;
         private readonly ProductPaginationService paginationService;
         private ObservableCollection<BuyProduct> buyProducts;
         private CompareProductsViewModel compareProductsViewModel;
         private readonly BuyProductListViewModelHelper buyProductListViewModelHelper;
 
         // Pagination variables
-        private int currentPage = 1;
-        private int totalPages = 1;
+        private int current_page = 1; // Current page number, default to 1
+        private int total_page_count = 1;
         private List<BuyProduct> currentFullList;
 
-        public BuyProductListView()
+        private const int FIRST_PAGE = 1;
+
+        public BuyProductListView(SortAndFilterViewModel<BuyProductsService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
 
             // Initialize services and view models
             buyProductsViewModel = MarketMinds.App.BuyProductsViewModel;
-            sortAndFilterViewModel = MarketMinds.App.BuyProductSortAndFilterViewModel;
+            this.sortAndFilterViewModel = sortAndFilterViewModel;
             compareProductsViewModel = MarketMinds.App.CompareProductsViewModel;
             paginationService = new ProductPaginationService();
-            buyProductListViewModelHelper = new BuyProductListViewModelHelper();
+            buyProductListViewModelHelper = new BuyProductListViewModelHelper(sortAndFilterViewModel, buyProductsViewModel);
 
             buyProducts = new ObservableCollection<BuyProduct>();
             BuyListView.ItemsSource = buyProducts;
             ApplyFiltersAndPagination();
         }
 
-        private void BuyListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void BuyListView_ItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            var selectedProduct = e.ClickedItem as BuyProduct;
+            var selectedProduct = itemClickEventArgs.ClickedItem as BuyProduct;
             if (selectedProduct != null)
             {
                 var detailView = new BuyProductView(selectedProduct);
@@ -57,9 +60,9 @@ namespace UiLayer
 
         private void ApplyFiltersAndPagination()
         {
-            var (currentPageProducts, newTotalPages, fullList) = buyProductListViewModelHelper.GetBuyProductsPage(buyProductsViewModel, sortAndFilterViewModel, currentPage);
+            var (currentPageProducts, newTotalPages, fullList) = buyProductListViewModelHelper.GetBuyProductsPage(buyProductsViewModel, sortAndFilterViewModel, current_page);
             currentFullList = fullList;
-            totalPages = newTotalPages;
+            total_page_count = newTotalPages;
             buyProducts.Clear();
             foreach (var product in currentPageProducts)
             {
@@ -67,49 +70,49 @@ namespace UiLayer
             }
         }
 
-        private void NextPageButton_Click(object sender, RoutedEventArgs e)
+        private void NextPageButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage < totalPages)
+            if (current_page < total_page_count)
             {
-                currentPage++;
+                current_page++;
                 ApplyFiltersAndPagination();
             }
         }
 
-        private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousPageButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > 1)
+            if (current_page > FIRST_PAGE)
             {
-                currentPage--;
+                current_page--;
                 ApplyFiltersAndPagination();
             }
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage < totalPages)
+            if (current_page < total_page_count)
             {
-                currentPage++;
+                current_page++;
                 ApplyFiltersAndPagination();
             }
         }
 
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (currentPage > 1)
+            if (current_page > FIRST_PAGE)
             {
-                currentPage--;
+                current_page--;
                 ApplyFiltersAndPagination();
             }
         }
 
-        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             sortAndFilterViewModel.HandleSearchQueryChange(SearchTextBox.Text);
             ApplyFiltersAndPagination();
         }
 
-        private async void FilterButton_Click(object sender, RoutedEventArgs e)
+        private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
             filterDialog.XamlRoot = Content.XamlRoot;
@@ -120,13 +123,13 @@ namespace UiLayer
             }
         }
 
-        private void SortButton_Click(object sender, RoutedEventArgs e)
+        private void SortButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             SortingComboBox.Visibility = SortingComboBox.Visibility == Visibility.Visible ?
                                          Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs routedEventArgs)
         {
             if (SortingComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
@@ -141,7 +144,7 @@ namespace UiLayer
             }
         }
 
-        private void AddToCompare_Click(object sender, RoutedEventArgs e)
+        private void AddToCompare_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (sender is Button button && button.DataContext is Product selectedProduct)
             {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.ProductConditionService;
 
 namespace ViewModelLayer.ViewModel
@@ -77,12 +77,12 @@ namespace ViewModelLayer.ViewModel
         {
             this.productConditionService = productConditionService;
         }
-        public List<ProductCondition> GetAllProductConditions()
+        public List<Condition> GetAllProductConditions()
         {
             return productConditionService.GetAllProductConditions();
         }
 
-        public ProductCondition CreateProductCondition(string displayTitle, string description)
+        public Condition CreateProductCondition(string displayTitle, string description)
         {
             return productConditionService.CreateProductCondition(displayTitle, description);
         }
@@ -110,9 +110,9 @@ namespace ViewModelLayer.ViewModel
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception conditionCreationException)
             {
-                ErrorMessage = $"Error creating condition: {ex.Message}";
+                ErrorMessage = $"Error creating condition: {conditionCreationException.Message}";
                 return false;
             }
         }

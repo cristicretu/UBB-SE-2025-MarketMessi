@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ViewModelLayer.ViewModel;
 using MarketMinds.Views.Pages;
@@ -24,8 +24,16 @@ namespace MarketMinds
     {
         public BorrowProduct Product { get; private set; }
         private Window? seeSellerReviewsView;
+        private Window? leaveReviewWindow;
         private readonly User currentUser;
         public DateTime? SelectedEndDate { get; private set; }
+
+        private const int IMAGE_HEIGHT = 250;  // magic numbers removal
+        private const int TEXT_BLOCK_MARGIN = 4;
+        private const int TEXT_BLOCK_PADDING_LEFT = 8;
+        private const int TEXT_BLOCK_PADDING_TOP = 4;
+        private const int TEXT_BLOCK_PADDING_RIGHT = 8;
+        private const int TEXT_BLOCK_PADDING_BOTTOM = 4;
 
         public BorrowProductView(BorrowProduct product)
         {
@@ -42,26 +50,29 @@ namespace MarketMinds
             try
             {
                 // Ensure valid date range
-                if (Product.StartDate > Product.TimeLimit)
+                if (Product.StartDate.HasValue && Product.StartDate.Value > Product.TimeLimit)
                 {
                     Debug.WriteLine("[BorrowProductView] Warning: StartDate is after TimeLimit, swapping dates");
                     var temp = Product.StartDate;
                     Product.StartDate = Product.TimeLimit;
-                    Product.TimeLimit = temp;
+                    Product.TimeLimit = temp.Value;
                 }
 
-                StartDateTextBlock.Text = Product.StartDate.ToString("d");
+                StartDateTextBlock.Text = Product.StartDate.HasValue
+                    ? Product.StartDate.Value.ToString("d")
+                    : DateTime.Now.ToString("d");
+
                 TimeLimitTextBlock.Text = Product.TimeLimit.ToString("d");
                 // Set the DatePicker's range
-                EndDatePicker.MinDate = Product.StartDate;
-                EndDatePicker.MaxDate = Product.TimeLimit;
+                EndDatePicker.MinDate = Product.StartDate ?? DateTime.Now;
+                EndDatePicker.MaxDate = new DateTimeOffset(Product.TimeLimit);
                 Debug.WriteLine($"[BorrowProductView] Date controls initialized - StartDate: {StartDateTextBlock.Text}, TimeLimit: {TimeLimitTextBlock.Text}");
                 Debug.WriteLine($"[BorrowProductView] DatePicker range set - Min: {EndDatePicker.MinDate}, Max: {EndDatePicker.MaxDate}");
             }
-            catch (Exception ex)
+            catch (Exception borrowProductViewException)
             {
-                Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {ex.Message}");
-                Debug.WriteLine($"[BorrowProductView] Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"[BorrowProductView] Error initializing date controls: {borrowProductViewException.Message}");
+                Debug.WriteLine($"[BorrowProductView] Stack trace: {borrowProductViewException.StackTrace}");
             }
 
             LoadProductDetails();
@@ -85,16 +96,17 @@ namespace MarketMinds
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(4),
-                    Padding = new Thickness(8, 4, 8, 4)
+                    Margin = new Thickness(TEXT_BLOCK_MARGIN),
+                    Padding = new Thickness(TEXT_BLOCK_PADDING_LEFT, TEXT_BLOCK_PADDING_TOP, TEXT_BLOCK_PADDING_RIGHT, TEXT_BLOCK_PADDING_BOTTOM)
                 };
             }).ToList();
         }
-        private void OnJoinWaitListClicked(object sender, RoutedEventArgs e)
+
+        private void OnJoinWaitListClicked(object sender, RoutedEventArgs routedEventArgs)
         {
         }
 
-        private void OnLeaveWaitListClicked(object sender, RoutedEventArgs e)
+        private void OnLeaveWaitListClicked(object sender, RoutedEventArgs routedEventArgs)
         {
         }
 
@@ -103,35 +115,77 @@ namespace MarketMinds
             ImageCarousel.Items.Clear();
             foreach (var image in Product.Images)
             {
-                var img = new Microsoft.UI.Xaml.Controls.Image
+                var newImage = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
-                    Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Stretch = Stretch.Uniform,
+                    Height = IMAGE_HEIGHT,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                ImageCarousel.Items.Add(img);
+                ImageCarousel.Items.Add(newImage);
             }
         }
 
-        private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
+        private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            App.SeeSellerReviewsViewModel.Seller = Product.Seller;
-            // Create a window to host the SeeSellerReviewsView page
-            var window = new Window();
-            window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-            window.Activate();
-            // Store reference to window
-            seeSellerReviewsView = window;
+            if (App.SeeSellerReviewsViewModel != null)
+            {
+                App.SeeSellerReviewsViewModel.Seller = Product.Seller;
+                // Create a window to host the SeeSellerReviewsView page
+                var window = new Window();
+                window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                window.Activate();
+                // Store reference to window
+                seeSellerReviewsView = window;
+            }
+            else
+            {
+                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+            }
         }
 
-        private void EndDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser != null)
+            {
+                if (App.ReviewCreateViewModel != null)
+                {
+                    App.ReviewCreateViewModel.Seller = Product.Seller;
+
+                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                    leaveReviewWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                }
+            }
+            else
+            {
+                ShowErrorDialog("You must be logged in to leave a review.");
+            }
+        }
+
+        private async void ShowErrorDialog(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        private void EndDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs calendarDatePickerChangedEventArgs)
         {
             Debug.WriteLine("[EndDatePicker] DateChanged event started");
             Debug.WriteLine($"[EndDatePicker] Sender null? {sender == null}");
-            Debug.WriteLine($"[EndDatePicker] Args null? {args == null}");
+            Debug.WriteLine($"[EndDatePicker] Args null? {calendarDatePickerChangedEventArgs == null}");
             Debug.WriteLine($"[EndDatePicker] Product null? {Product == null}");
             if (sender == null)
             {
@@ -158,24 +212,35 @@ namespace MarketMinds
                     CalculatePriceButton.IsEnabled = false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception endDatePickerException)
             {
-                Debug.WriteLine($"[EndDatePicker] Error in date processing: {ex.Message}");
-                Debug.WriteLine($"[EndDatePicker] Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"[EndDatePicker] Error in date processing: {endDatePickerException.Message}");
+                Debug.WriteLine($"[EndDatePicker] Stack trace: {endDatePickerException.StackTrace}");
             }
         }
 
-        private void OnCalculatePriceClicked(object sender, RoutedEventArgs e)
+        private void OnCalculatePriceClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             if (SelectedEndDate.HasValue)
             {
                 // Calculate price based on days difference and daily rate
-                TimeSpan duration = SelectedEndDate.Value - Product.StartDate;
+                // Make sure StartDate is not null, default to DateTime.Now if it is
+                DateTime startDate = Product.StartDate ?? DateTime.Now;
+                TimeSpan duration = SelectedEndDate.Value - startDate;
                 int days = duration.Days + 1; // Include both start and end dates
-                float totalPrice = days * Product.DailyRate;
+                double totalPrice = days * Product.DailyRate;
 
                 PriceTextBlock.Text = totalPrice.ToString("C"); // Format as currency
             }
+        }
+
+        public DateTimeOffset ConvertToDateTimeOffset(DateTime? dateTime)
+        {
+            if (dateTime.HasValue)
+            {
+                return new DateTimeOffset(dateTime.Value);
+            }
+            return DateTimeOffset.MinValue;
         }
     }
 }

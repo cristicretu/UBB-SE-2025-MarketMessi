@@ -27,9 +27,9 @@ namespace MarketMinds.Views.Pages
         private const int NO_REVIEWS = 0;
         // Public property for binding
         public SeeSellerReviewsViewModel ViewModel => viewModel;
-        public SeeSellerReviewsView(SeeSellerReviewsViewModel viewModel_var)
+        public SeeSellerReviewsView(SeeSellerReviewsViewModel sellerReviewsViewModel)
         {
-            viewModel = viewModel_var;
+            viewModel = sellerReviewsViewModel;
             viewModel.RefreshData();
             this.InitializeComponent();
             // Show/hide elements based on review count

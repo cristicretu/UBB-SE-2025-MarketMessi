@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DataAccessLayer; // Add namespace for DataBaseConnection
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Repositories.BuyProductsRepository;
@@ -6,16 +7,22 @@ using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Repositories.ProductCategoryRepository;
 using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
+using MarketMinds.Repositories.ConversationRepository; // Added from luca
+using MarketMinds.Repositories.MessageRepository;      // Added from luca
+using MarketMinds.Shared.IRepository; // Added for shared interfaces
 using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
-using System.Text.Json.Serialization;
+using Server.DataAccessLayer;
+using Server.MarketMinds.Repositories.BorrowProductsRepository;
+using Server.MarketMinds.Repositories.AccountRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddHttpClient();
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    // Use ReferenceHandler.Preserve for object reference handling
+    // Do not use ReferenceHandler.Preserve as requested by the user
+    // We'll use JsonIgnore attributes on navigation properties instead
     options.JsonSerializerOptions.ReferenceHandler = null;
 
     // Enable camel casing to match frontend expectations
@@ -29,10 +36,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddSingleton<DataBaseConnection>();
 
 // EntityFramework database connection setup
-var InitialCatalog = builder.Configuration["InitialCatalog"];
-var LocalDataSource = builder.Configuration["LocalDataSource"];
-var connectionString = $"Server={LocalDataSource};Database={InitialCatalog};Trusted_Connection=True;";
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+var initialCatalog = builder.Configuration["InitialCatalog"];
+var localDataSource = builder.Configuration["LocalDataSource"];
+var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;";
+builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Register all repositories
@@ -40,9 +47,13 @@ builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository
 builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
-builder.Services.AddScoped<IProductConditionRepository, ProductConditionRepository>();
+builder.Services.AddScoped<MarketMinds.Repositories.ProductCategoryRepository.IProductCategoryRepository, ProductCategoryRepository>();
+builder.Services.AddScoped<MarketMinds.Repositories.ProductConditionRepository.IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
+builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>(); // Added from luca
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();           // Added from luca
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

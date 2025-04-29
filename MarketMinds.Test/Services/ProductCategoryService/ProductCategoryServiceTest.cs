@@ -141,13 +141,13 @@ namespace MarketMinds.Test.Services.ProductCategoryService
 
         private void AddTestCategories()
         {
-            _mockRepository.Categories.Add(new Category(ELECTRONICS_TITLE, ELECTRONICS_DESCRIPTION));
-            _mockRepository.Categories.Add(new Category(CLOTHING_TITLE, CLOTHING_DESCRIPTION));
+            _mockRepository.Categories.Add(new Category(FIRST_CATEGORY_ID, ELECTRONICS_TITLE, ELECTRONICS_DESCRIPTION));
+            _mockRepository.Categories.Add(new Category(SECOND_CATEGORY_ID, CLOTHING_TITLE, CLOTHING_DESCRIPTION));
         }
 
         private void AddCategoryToDelete()
         {
-            _mockRepository.Categories.Add(new Category(CATEGORY_TO_DELETE_TITLE, CATEGORY_TO_DELETE_DESCRIPTION));
+            _mockRepository.Categories.Add(new Category(FIRST_CATEGORY_ID, CATEGORY_TO_DELETE_TITLE, CATEGORY_TO_DELETE_DESCRIPTION));
         }
 
         #endregion

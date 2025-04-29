@@ -1,5 +1,5 @@
 using System;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ProductComparisonService
 {

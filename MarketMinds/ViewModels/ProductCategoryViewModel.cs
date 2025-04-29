@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.ProductCategoryService;
 
 namespace ViewModelLayer.ViewModel
@@ -78,12 +78,12 @@ namespace ViewModelLayer.ViewModel
             this.productCategoryService = productCategoryService;
         }
 
-        public List<ProductCategory> GetAllProductCategories()
+        public List<Category> GetAllProductCategories()
         {
             return productCategoryService.GetAllProductCategories();
         }
 
-        public ProductCategory CreateProductCategory(string displayTitle, string description)
+        public Category CreateProductCategory(string displayTitle, string description)
         {
             return productCategoryService.CreateProductCategory(displayTitle, description);
         }
@@ -110,9 +110,9 @@ namespace ViewModelLayer.ViewModel
                 CategoryDescription = string.Empty;
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception categoryCreationException)
             {
-                ErrorMessage = $"Error creating category: {ex.Message}";
+                ErrorMessage = $"Error creating category: {categoryCreationException.Message}";
                 return false;
             }
         }

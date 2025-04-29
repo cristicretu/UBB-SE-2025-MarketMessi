@@ -5,10 +5,11 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Marketplace_SE.Utilities; // For Notification, FrameNavigation
 using MarketMinds.ViewModels; // For MarketplaceViewModel
 using MarketMinds;
+using MarketMinds.Views.Pages2;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info
@@ -17,19 +18,19 @@ namespace Marketplace_SE
     public sealed partial class MainMarketplacePage : Page
     {
         private readonly MainMarketplaceViewModel mainMarketplaceViewModel;
-        private User me;
+        private User currentUser;
 
         public MainMarketplacePage()
         {
             this.InitializeComponent();
 
             mainMarketplaceViewModel = App.MainMarketplaceViewModel;
-            me = App.CurrentUser;
+            currentUser = App.CurrentUser;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs routedEventArgs)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(routedEventArgs);
             LoadAvailableItems();
         }
 
@@ -50,9 +51,9 @@ namespace Marketplace_SE
                     ShowNotification("Error", "Failed to load items.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception itemsLoadException)
             {
-                ShowNotification("Error", $"An error occurred while loading items: {ex.Message}");
+                ShowNotification("Error", $"An error occurred while loading items: {itemsLoadException.Message}");
             }
             finally
             {
@@ -60,35 +61,18 @@ namespace Marketplace_SE
             }
         }
 
-        private void BuyItemButton_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItem = (sender as Button)?.DataContext as UserNotSoldOrder;
-            if (selectedItem != null)
-            {
-                Frame.Navigate(typeof(FinalizeOrderPage), selectedItem);
-            }
-        }
-
-        private void ChatWithSellerButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.Tag is UserNotSoldOrder selectedOrder)
-            {
-                Frame.Navigate(typeof(ChatPage), selectedOrder);
-            }
-            else
-            {
-                ShowNotification("Error", "Failed to navigate to chat.");
-            }
-        }
-
         private void OpenAccountButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(AccountPage));
+            var accountWindow = new Window();
+            accountWindow.Content = new AccountPage();
+            accountWindow.Activate();
         }
 
-        private void OpenHelpButton_Click(object sender, RoutedEventArgs e)
+        private void OpenHelpButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            Frame.Navigate(typeof(GetHelpPage));
+            var helpWindow = new Window();
+            helpWindow.Content = new GetHelpPage();
+            helpWindow.Activate();
         }
 
         private async Task ShowNotification(string title, string message)

@@ -27,7 +27,7 @@ namespace MarketMinds.Tests.Services.BasketServiceTest
         private const int UPDATED_QUANTITY = 5;
         private const int ZERO_QUANTITY = 0;
         private const int NEGATIVE_QUANTITY = -1;
-        private const int EXCESSIVE_QUANTITY = BasketService.MaxQuantityPerItem + 5;
+        private const int EXCESSIVE_QUANTITY = BasketService.MAXIMUM_QUANTITY_PER_ITEM + 5;
 
         // Constants for basket IDs
         private const int BASKET_ID = 1;

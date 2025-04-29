@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ListingFormValidationService
 {
@@ -20,7 +20,7 @@ namespace MarketMinds.Services.ListingFormValidationService
         /// <param name="errorMessage">The error message if validation fails.</param>
         /// <param name="errorField">The field that caused the validation error.</param>
         /// <returns>True if validation passes, otherwise false.</returns>
-        bool ValidateCommonFields(string title, ProductCategory category, string description, ObservableCollection<string> tags, ProductCondition condition, out string errorMessage, out string errorField);
+        bool ValidateCommonFields(string title, Category category, string description, ObservableCollection<string> tags, Condition condition, out string errorMessage, out string errorField);
 
         /// <summary>
         /// Validates fields specific to a "Buy" product listing.

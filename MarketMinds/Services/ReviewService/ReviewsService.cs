@@ -3,204 +3,275 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
+using MarketMinds.Services.UserService;
+using MarketMinds.Repositories;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ReviewService
 {
     public class ReviewsService : IReviewsService
     {
-        private readonly HttpClient httpClient;
-        private readonly string apiBaseUrl;
-        private readonly JsonSerializerOptions jsonOptions;
+        private readonly ReviewRepository repository;
+        private readonly IUserService userService;
+        private Dictionary<int, string> userCache = new Dictionary<int, string>();
 
         public ReviewsService(IConfiguration configuration)
         {
-            httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (!apiBaseUrl.EndsWith("/"))
-            {
-                apiBaseUrl += "/";
-            }
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            repository = new ReviewRepository(configuration);
+            // We'll need the user service to get usernames
+            userService = App.UserService;
 
-            // Configure JSON options for proper deserialization
-            jsonOptions = new JsonSerializerOptions
+            // If userService is null, create a new instance with the configuration
+            if (userService == null)
             {
-                PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                ReferenceHandler = ReferenceHandler.Preserve // Enable reference handling
-            };
+                userService = new UserService.UserService(configuration);
+            }
+        }
+
+        private async Task<string> GetUsernameForIdAsync(int userId)
+        {
+            if (App.CurrentUser != null && App.CurrentUser.Id == userId)
+            {
+                return App.CurrentUser.Username;
+            }
+
+            if (userCache.ContainsKey(userId))
+            {
+                return userCache[userId];
+            }
+
+            try
+            {
+                // Ensure userService is not null before calling it
+                if (userService == null)
+                {
+                    string fallbackUsernameLocal = $"User #{userId}"; // Renamed to avoid conflict
+                    userCache[userId] = fallbackUsernameLocal;
+                    return fallbackUsernameLocal;
+                }
+
+                var user = await userService.GetUserByIdAsync(userId);
+                if (user != null)
+                {
+                    userCache[userId] = user.Username;
+                    return user.Username;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting username for ID {userId}: {ex.Message}");
+            }
+
+            string fallbackUsername = $"User #{userId}";
+            userCache[userId] = fallbackUsername;
+            return fallbackUsername;
         }
 
         public ObservableCollection<Review> GetReviewsBySeller(User seller)
         {
+            if (seller == null)
+            {
+                return new ObservableCollection<Review>();
+            }
+
             try
             {
-                // Get the JSON response as a string first
-                var response = httpClient.GetAsync($"review/seller/{seller.Id}").Result;
+                var sharedUser = ConvertToSharedUser(seller);
+                var sharedReviews = repository.GetAllReviewsBySeller(sharedUser);
+                var domainReviews = new List<Review>();
 
-                if (!response.IsSuccessStatusCode)
+                foreach (var sharedReview in sharedReviews)
                 {
-                    return new ObservableCollection<Review>();
-                }
-
-                var jsonString = response.Content.ReadAsStringAsync().Result;
-
-                // Then deserialize using System.Text.Json which handles the reference format
-                var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
-
-                // Update username properties for display
-                if (reviews != null)
-                {
-                    foreach (var review in reviews)
+                    var domainReview = ConvertToDomainReview(sharedReview);
+                    domainReview.SellerUsername = seller.Username;
+                    // Fetch buyer username asynchronously
+                    Task.Run(async () =>
                     {
-                        // We know the seller username from the input parameter
-                        review.SellerUsername = seller.Username;
-
-                        // For buyer username, we'll need to display the ID as a fallback
-                        // In a real implementation, you would fetch the buyer's username from a user service
-                        review.BuyerUsername = $"User #{review.BuyerId}";
-
-                        // Try to find test users that match the buyer ID
-                        if (App.CurrentUser.Id == review.BuyerId)
-                        {
-                             review.BuyerUsername = App.CurrentUser.Username;
-                        }
-                        else if (App.TestingUser.Id == review.BuyerId)
-                        {
-                            review.BuyerUsername = App.TestingUser.Username;
-                        }
-                    }
+                        domainReview.BuyerUsername = await GetUsernameForIdAsync(domainReview.BuyerId);
+                    }).Wait();
+                    domainReviews.Add(domainReview);
                 }
 
-                // Convert to ObservableCollection
-                return reviews != null
-                    ? new ObservableCollection<Review>(reviews)
-                    : new ObservableCollection<Review>();
+                return new ObservableCollection<Review>(domainReviews);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving seller reviews: {ex.Message}");
+                Debug.WriteLine($"Error getting reviews by seller: {ex.Message}");
                 return new ObservableCollection<Review>();
             }
         }
 
         public ObservableCollection<Review> GetReviewsByBuyer(User buyer)
         {
+            if (buyer == null)
+            {
+                return new ObservableCollection<Review>();
+            }
+
             try
             {
-                // Get the JSON response as a string first
-                var response = httpClient.GetAsync($"review/buyer/{buyer.Id}").Result;
+                var sharedUser = ConvertToSharedUser(buyer);
+                var sharedReviews = repository.GetAllReviewsByBuyer(sharedUser);
+                var domainReviews = new List<Review>();
 
-                if (!response.IsSuccessStatusCode)
+                foreach (var sharedReview in sharedReviews)
                 {
-                    return new ObservableCollection<Review>();
-                }
-
-                var jsonString = response.Content.ReadAsStringAsync().Result;
-
-                // Then deserialize using System.Text.Json which handles the reference format
-                var reviews = JsonSerializer.Deserialize<List<Review>>(jsonString, jsonOptions);
-
-                // Update username properties for display
-                if (reviews != null)
-                {
-                    foreach (var review in reviews)
+                    var domainReview = ConvertToDomainReview(sharedReview);
+                    domainReview.BuyerUsername = buyer.Username;
+                    // Fetch seller username asynchronously
+                    Task.Run(async () =>
                     {
-                        // We know the buyer username from the input parameter
-                        review.BuyerUsername = buyer.Username;
-
-                        // For seller username, we'll need to display the ID as a fallback
-                        // In a real implementation, you would fetch the seller's username from a user service
-                        review.SellerUsername = $"User #{review.SellerId}";
-
-                        // Try to find test users that match the seller ID
-                        if (App.CurrentUser.Id == review.SellerId)
-                        {
-                            review.SellerUsername = App.CurrentUser.Username;
-                        }
-                        else if (App.TestingUser.Id == review.SellerId)
-                        {
-                             review.SellerUsername = App.TestingUser.Username;
-                        }
-                    }
+                        domainReview.SellerUsername = await GetUsernameForIdAsync(domainReview.SellerId);
+                    }).Wait();
+                    domainReviews.Add(domainReview);
                 }
 
-                // Convert to ObservableCollection
-                return reviews != null
-                    ? new ObservableCollection<Review>(reviews)
-                    : new ObservableCollection<Review>();
+                return new ObservableCollection<Review>(domainReviews);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving buyer reviews: {ex.Message}");
+                Debug.WriteLine($"Error getting reviews by buyer: {ex.Message}");
                 return new ObservableCollection<Review>();
             }
         }
 
         public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
-            // Create the review object without an ID
-            var reviewDto = new
+            try
             {
-                Description = description,
-                Images = images,
-                Rating = rating,
-                SellerId = seller.Id,
-                BuyerId = buyer.Id
-            };
+                // Ensure rating is within the expected range (0-5)
+                double validRating = Math.Max(0, Math.Min(5, rating));
 
-            var response = httpClient.PostAsJsonAsync("review", reviewDto, jsonOptions).Result;
-            response.EnsureSuccessStatusCode();
+                // Create a shared Review object
+                var sharedReview = new MarketMinds.Shared.Models.Review
+                {
+                    Description = description,
+                    Images = ConvertToSharedImages(images ?? new List<Image>()),
+                    Rating = validRating,
+                    SellerId = seller.Id,
+                    BuyerId = buyer.Id
+                };
+
+                repository.CreateReview(sharedReview);
+                userCache.Clear();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error adding review: {ex.Message}");
+                throw;
+            }
         }
 
         public void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating)
         {
-            // Create a review object with the updated values
-            var updatedReview = new Review(
-                -1, // The API will find the review based on other fields
-                description,
-                images,
-                rating,
-                sellerid,
-                buyerid);
+            try
+            {
+                // Ensure the new rating is within the expected range (0-5)
+                double validRating = Math.Max(0, Math.Min(5, newRating));
 
-            // Update with new values
-            updatedReview.Description = newDescription;
-            updatedReview.Rating = newRating;
+                // Create a shared Review object
+                var sharedReview = new MarketMinds.Shared.Models.Review
+                {
+                    Description = description,
+                    Images = ConvertToSharedImages(images ?? new List<Image>()),
+                    Rating = rating,
+                    SellerId = sellerid,
+                    BuyerId = buyerid
+                };
 
-            var response = httpClient.PutAsJsonAsync("review", updatedReview, jsonOptions).Result;
-            response.EnsureSuccessStatusCode();
+                repository.EditReview(sharedReview, validRating, newDescription);
+                userCache.Clear();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error editing review: {ex.Message}");
+                throw;
+            }
         }
 
         public void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid)
         {
-            // Create a review object to delete
-            var reviewToDelete = new Review(
-                -1, // The API will find the review based on other fields
-                description,
-                images,
-                rating,
-                sellerid,
-                buyerid);
-
-            // Using HttpRequestMessage for DELETE with body
-            var request = new HttpRequestMessage
+            try
             {
-                Method = HttpMethod.Delete,
-                RequestUri = new Uri(httpClient.BaseAddress + "review"),
-                Content = JsonContent.Create(reviewToDelete, options: jsonOptions)
-            };
+                // Create a shared Review object
+                var sharedReview = new MarketMinds.Shared.Models.Review
+                {
+                    Description = description,
+                    Images = ConvertToSharedImages(images ?? new List<Image>()),
+                    Rating = rating,
+                    SellerId = sellerid,
+                    BuyerId = buyerid
+                };
 
-            var response = httpClient.SendAsync(request).Result;
-            response.EnsureSuccessStatusCode();
+                repository.DeleteReview(sharedReview);
+                userCache.Clear();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting review: {ex.Message}");
+                throw;
+            }
+        }
+
+        // Helper methods to convert between domain and shared models
+        private MarketMinds.Shared.Models.User ConvertToSharedUser(User domainUser)
+        {
+            if (domainUser == null)
+            {
+                return null;
+            }
+
+            return new MarketMinds.Shared.Models.User
+            {
+                Id = domainUser.Id,
+                Username = domainUser.Username,
+                Email = domainUser.Email,
+                PasswordHash = domainUser.PasswordHash,
+                UserType = domainUser.UserType,
+                Balance = domainUser.Balance,
+                Rating = domainUser.Rating
+            };
+        }
+
+        private Review ConvertToDomainReview(MarketMinds.Shared.Models.Review sharedReview)
+        {
+            if (sharedReview == null)
+            {
+                return null;
+            }
+
+            return new Review
+            {
+                Id = sharedReview.Id,
+                Description = sharedReview.Description,
+                Images = ConvertToDomainImages(sharedReview.Images),
+                Rating = sharedReview.Rating,
+                SellerId = sharedReview.SellerId,
+                BuyerId = sharedReview.BuyerId,
+                SellerUsername = string.Empty,  // Will be populated later
+                BuyerUsername = string.Empty // Will be populated later
+            };
+        }
+
+        private List<Image> ConvertToDomainImages(List<MarketMinds.Shared.Models.Image> sharedImages)
+        {
+            return sharedImages?.Select(img => new Image
+            {
+                Id = img.Id,
+                Url = img.Url
+            }).ToList() ?? new List<Image>();
+        }
+
+        private List<MarketMinds.Shared.Models.Image> ConvertToSharedImages(List<Image> domainImages)
+        {
+            return domainImages?.Select(img => new MarketMinds.Shared.Models.Image
+            {
+                Id = img.Id,
+                Url = img.Url
+            }).ToList() ?? new List<MarketMinds.Shared.Models.Image>();
         }
     }
 }

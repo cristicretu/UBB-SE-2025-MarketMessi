@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System;
-
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +12,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ViewModelLayer.ViewModel;
 using MarketMinds.Views.Pages;
@@ -33,6 +31,15 @@ namespace MarketMinds
 
         private DispatcherTimer? countdownTimer;
         private Window? seeSellerReviewsView;
+        private const int COUNTDOWN_TIMER_INTERVAL_IN_SECONDS = 1;
+        private const int IMAGE_HEIGHT = 250;
+        private const int TAG_MARGIN = 4;
+        private const int TAG_PADDING_LEFT = 8;
+        private const int TAG_PADDING_RIGHT = 8;
+        private const int TAG_PADDING_TOP = 4;
+        private const int TAG_PADDING_BOTTOM = 4;
+        private Window? leaveReviewWindow;
+
         public AuctionProductView(AuctionProduct product)
         {
             this.InitializeComponent();
@@ -48,11 +55,11 @@ namespace MarketMinds
         private void StartCountdownTimer()
         {
             countdownTimer = new DispatcherTimer();
-            countdownTimer.Interval = TimeSpan.FromSeconds(1);
+            countdownTimer.Interval = TimeSpan.FromSeconds(COUNTDOWN_TIMER_INTERVAL_IN_SECONDS);
             countdownTimer.Tick += CountdownTimer_Tick;
             countdownTimer.Start();
         }
-        private void CountdownTimer_Tick(object? sender, object e)
+        private void CountdownTimer_Tick(object? sender, object eventArgs)
         {
             string timeText = GetTimeLeft();
             TimeLeftTextBlock.Text = timeText;
@@ -82,8 +89,8 @@ namespace MarketMinds
                 return new TextBlock
                 {
                     Text = tag.DisplayTitle,
-                    Margin = new Thickness(4),
-                    Padding = new Thickness(8, 4, 8, 4),
+                    Margin = new Thickness(TAG_MARGIN),
+                    Padding = new Thickness(TAG_PADDING_LEFT, TAG_PADDING_TOP, TAG_PADDING_RIGHT, TAG_PADDING_BOTTOM),
                 };
             }).ToList();
         }
@@ -96,8 +103,8 @@ namespace MarketMinds
                 var img = new Microsoft.UI.Xaml.Controls.Image
                 {
                     Source = new BitmapImage(new Uri(image.Url)),
-                    Stretch = Stretch.Uniform, // ✅ shows full image without cropping
-                    Height = 250,
+                    Stretch = Stretch.Uniform,
+                    Height = IMAGE_HEIGHT,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Center
                 };
@@ -108,14 +115,14 @@ namespace MarketMinds
         private void LoadBidHistory()
         {
             BidHistoryListView.ItemsSource = product.BidHistory
-                .OrderByDescending(b => b.Timestamp)
+                .OrderByDescending(bid => bid.Timestamp)
                 .ToList();
         }
         private string GetTimeLeft()
         {
             return auctionProductsViewModel.GetTimeLeft(product);
         }
-        private void OnPlaceBidClicked(object sender, RoutedEventArgs e)
+        private void OnPlaceBidClicked(object sender, RoutedEventArgs routedEventArgs)
         {
             try
             {
@@ -125,9 +132,9 @@ namespace MarketMinds
                 CurrentPriceTextBlock.Text = $"{product.CurrentPrice:C}";
                 LoadBidHistory(); // Refresh bid list
             }
-            catch (Exception ex)
+            catch (Exception bidClickedException)
             {
-                ShowErrorDialog(ex.Message);
+                ShowErrorDialog(bidClickedException.Message);
             }
         }
 
@@ -144,15 +151,44 @@ namespace MarketMinds
             await dialog.ShowAsync();
         }
 
-        private void OnSeeReviewsClicked(object sender, RoutedEventArgs e)
+        private void OnSeeReviewsClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            App.SeeSellerReviewsViewModel.Seller = product.Seller;
-            // Create a window to host the SeeSellerReviewsView page
-            var window = new Window();
-            window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
-            window.Activate();
-            // Store reference to window
-            seeSellerReviewsView = window;
+            if (App.SeeSellerReviewsViewModel != null)
+            {
+                App.SeeSellerReviewsViewModel.Seller = product.Seller;
+                // Create a window to host the SeeSellerReviewsView page
+                var window = new Window();
+                window.Content = new SeeSellerReviewsView(App.SeeSellerReviewsViewModel);
+                window.Activate();
+                // Store reference to window
+                seeSellerReviewsView = window;
+            }
+            else
+            {
+                ShowErrorDialog("Cannot view reviews at this time. Please try again later.");
+            }
+        }
+
+        private void OnLeaveReviewClicked(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser != null)
+            {
+                if (App.ReviewCreateViewModel != null)
+                {
+                    App.ReviewCreateViewModel.Seller = product.Seller;
+
+                    leaveReviewWindow = new CreateReviewView(App.ReviewCreateViewModel);
+                    leaveReviewWindow.Activate();
+                }
+                else
+                {
+                    ShowErrorDialog("Cannot create review at this time. Please try again later.");
+                }
+            }
+            else
+            {
+                ShowErrorDialog("You must be logged in to leave a review.");
+            }
         }
     }
 }

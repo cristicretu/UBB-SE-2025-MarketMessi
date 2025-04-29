@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using DomainLayer.Domain;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.BasketService;
 
 namespace ViewModelLayer.ViewModel
 {
     public class BasketViewModel
     {
-        private const int NODISCOUNT = 0;
-        private const int DEFAULTQUANTITY = 1;
+        private const int NullDiscount = 0;
+        private const int DefaultQuantity = 1;
         private User currentUser;
         private readonly BasketService basketService;
         private Basket basket;
@@ -20,6 +23,8 @@ namespace ViewModelLayer.ViewModel
         public double TotalAmount { get; private set; }
         public string PromoCode { get; set; }
         public string ErrorMessage { get; set; }
+        public bool IsCheckoutInProgress { get; private set; }
+        public bool CheckoutSuccess { get; private set; }
 
         public BasketViewModel(User currentUser, BasketService basketService)
         {
@@ -28,6 +33,8 @@ namespace ViewModelLayer.ViewModel
             BasketItems = new List<BasketItem>();
             PromoCode = string.Empty;
             ErrorMessage = string.Empty;
+            IsCheckoutInProgress = false;
+            CheckoutSuccess = false;
         }
 
         public void LoadBasket()
@@ -40,9 +47,9 @@ namespace ViewModelLayer.ViewModel
                 // Use service to calculate totals instead of local method
                 UpdateTotals();
             }
-            catch (Exception ex)
+            catch (Exception basketLoadException)
             {
-                ErrorMessage = $"Failed to load basket: {ex.Message}";
+                ErrorMessage = $"Failed to load basket: {basketLoadException.Message}";
             }
         }
 
@@ -50,13 +57,13 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                basketService.AddProductToBasket(currentUser.Id, productId, DEFAULTQUANTITY);
+                basketService.AddProductToBasket(currentUser.Id, productId, DefaultQuantity);
                 LoadBasket();
                 ErrorMessage = string.Empty;
             }
-            catch (Exception ex)
+            catch (Exception basketAddException)
             {
-                ErrorMessage = $"Failed to add product to basket: {ex.Message}";
+                ErrorMessage = $"Failed to add product to basket: {basketAddException.Message}";
             }
         }
 
@@ -67,9 +74,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.RemoveProductFromBasket(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception basketRemoveException)
             {
-                ErrorMessage = $"Failed to remove product: {ex.Message}";
+                ErrorMessage = $"Failed to remove product: {basketRemoveException.Message}";
             }
         }
 
@@ -77,11 +84,11 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                if (quantity > BasketService.MaxQuantityPerItem)
+                if (quantity > BasketService.MAXIMUM_QUANTITY_PER_ITEM)
                 {
-                    ErrorMessage = $"Quantity cannot exceed {BasketService.MaxQuantityPerItem}";
+                    ErrorMessage = $"Quantity cannot exceed {BasketService.MAXIMUM_QUANTITY_PER_ITEM}";
 
-                    basketService.UpdateProductQuantity(currentUser.Id, productId, BasketService.MaxQuantityPerItem);
+                    basketService.UpdateProductQuantity(currentUser.Id, productId, BasketService.MAXIMUM_QUANTITY_PER_ITEM);
                 }
                 else
                 {
@@ -90,9 +97,9 @@ namespace ViewModelLayer.ViewModel
                 }
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception productQuantityUpdateException)
             {
-                ErrorMessage = $"Failed to update quantity: {ex.Message}";
+                ErrorMessage = $"Failed to update quantity: {productQuantityUpdateException.Message}";
             }
         }
 
@@ -125,9 +132,9 @@ namespace ViewModelLayer.ViewModel
                 UpdateProductQuantity(basketItem.Product.Id, newQuantity);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception quantityUpdateException)
             {
-                errorMessage = $"Failed to update quantity: {ex.Message}";
+                errorMessage = $"Failed to update quantity: {quantityUpdateException.Message}";
                 return false;
             }
         }
@@ -149,10 +156,10 @@ namespace ViewModelLayer.ViewModel
                 UpdateTotals();
                 ErrorMessage = $"Promo code '{code}' applied successfully.";
             }
-            catch (Exception ex)
+            catch (Exception promoCodeApplicationException)
             {
-                ErrorMessage = $"Failed to apply promo code: {ex.Message}";
-                Discount = NODISCOUNT;
+                ErrorMessage = $"Failed to apply promo code: {promoCodeApplicationException.Message}";
+                Discount = NullDiscount;
                 TotalAmount = Subtotal;
             }
         }
@@ -165,26 +172,65 @@ namespace ViewModelLayer.ViewModel
                 LoadBasket();
                 PromoCode = string.Empty;
             }
-            catch (Exception ex)
+            catch (Exception basketClearException)
             {
-                ErrorMessage = $"Failed to clear basket: {ex.Message}";
+                ErrorMessage = $"Failed to clear basket: {basketClearException.Message}";
             }
         }
 
         public bool CanCheckout()
         {
-            return basket != null && basketService.ValidateBasketBeforeCheckOut(basket.Id);
+            return basket != null && BasketItems.Any() && !IsCheckoutInProgress &&
+                   basketService.ValidateBasketBeforeCheckOut(basket.Id);
         }
 
-        public void Checkout()
+        public async Task<bool> CheckoutAsync()
         {
             if (!CanCheckout())
             {
                 ErrorMessage = "Cannot checkout. Please check your basket items.";
-                return;
+                return false;
             }
 
-            ErrorMessage = string.Empty;
+            try
+            {
+                IsCheckoutInProgress = true;
+                ErrorMessage = string.Empty;
+
+                // Call the service to process the checkout
+                CheckoutSuccess = await basketService.CheckoutBasketAsync(currentUser.Id, basket.Id, Discount, TotalAmount);
+
+                if (CheckoutSuccess)
+                {
+                    // Clear the local basket after successful checkout
+                    BasketItems.Clear();
+                    UpdateTotals();
+                    ErrorMessage = string.Empty;
+                    return true;
+                }
+                else
+                {
+                    Debug.WriteLine("Checkout failed");
+                    ErrorMessage = "Checkout failed. Please try again later.";
+                    return false;
+                }
+            }
+            catch (InvalidOperationException insufficientFundsCheckoutException) when (insufficientFundsCheckoutException.Message.Contains("Insufficient funds"))
+            {
+                Debug.WriteLine($"Insufficient funds error: {insufficientFundsCheckoutException.Message}");
+                ErrorMessage = insufficientFundsCheckoutException.Message;
+                return false;
+            }
+            catch (Exception checkoutException)
+            {
+                Debug.WriteLine($"Error during checkout: {checkoutException.Message}");
+                ErrorMessage = $"Checkout error: {checkoutException.Message}";
+                return false;
+            }
+            finally
+            {
+                IsCheckoutInProgress = false;
+            }
         }
 
         public void DecreaseProductQuantity(int productId)
@@ -195,9 +241,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.DecreaseProductQuantity(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception productQuantityDecreaseException)
             {
-                ErrorMessage = $"Failed to decrease quantity: {ex.Message}";
+                ErrorMessage = $"Failed to decrease quantity: {productQuantityDecreaseException.Message}";
             }
         }
 
@@ -209,9 +255,9 @@ namespace ViewModelLayer.ViewModel
                 basketService.IncreaseProductQuantity(currentUser.Id, productId);
                 LoadBasket();
             }
-            catch (Exception ex)
+            catch (Exception productQuantityIncreaseException)
             {
-                ErrorMessage = $"Failed to increase quantity: {ex.Message}";
+                ErrorMessage = $"Failed to increase quantity: {productQuantityIncreaseException.Message}";
             }
         }
 
@@ -220,18 +266,17 @@ namespace ViewModelLayer.ViewModel
         {
             try
             {
-                BasketTotals totals = basketService.CalculateBasketTotals(basket.Id, PromoCode);
-                Subtotal = totals.Subtotal;
-                Discount = totals.Discount;
-                TotalAmount = totals.TotalAmount;
+                Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
+
+                Discount = string.IsNullOrEmpty(PromoCode) ? NullDiscount :
+                    basketService.GetPromoCodeDiscount(PromoCode, Subtotal);
+
+                TotalAmount = Math.Max(0, Subtotal - Discount);
             }
-            catch (Exception ex)
+            catch (Exception totalUpdateException)
             {
-                // Handle calculation errors
-                ErrorMessage = $"Failed to calculate totals: {ex.Message}";
-                // Set default values
-                Subtotal = BasketItems.Sum(item => item.GetPrice());
-                Discount = NODISCOUNT;
+                Subtotal = BasketItems?.Sum(item => item.Price * item.Quantity) ?? 0;
+                Discount = NullDiscount;
                 TotalAmount = Subtotal;
             }
         }

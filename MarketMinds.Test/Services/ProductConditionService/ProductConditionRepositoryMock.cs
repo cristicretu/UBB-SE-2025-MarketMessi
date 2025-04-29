@@ -7,7 +7,7 @@ namespace MarketMinds.Test.Services.ProductConditionService
     internal class ProductConditionRepositoryMock : IProductConditionRepository
     {
         public List<Condition> Conditions { get; set; } = new List<Condition>();
-        private int CURRENT_INDEX = 0;
+        private int currentIndex = 0;
 
         public ProductConditionRepositoryMock() 
         { 
@@ -17,7 +17,7 @@ namespace MarketMinds.Test.Services.ProductConditionService
         Condition IProductConditionRepository.CreateProductCondition(string displayTitle, string description)
         {
             var newCondition = new Condition(
-                id: ++CURRENT_INDEX,
+                id: ++currentIndex,
                 displayTitle: displayTitle,
                 description: description
             );

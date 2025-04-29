@@ -1,73 +1,81 @@
-﻿using System.Threading.Tasks;
-using System.Text;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
-using DomainLayer.Domain;
-using Microsoft.Extensions.Configuration;
+using MarketMinds.Shared.Models;
+using MarketMinds.Repository;
 using MarketMinds.Services.ProductTagService;
 
 namespace MarketMinds.Services.BuyProductsService
 {
-    public class BuyProductsService : ProductService, IBuyProductsService
+    public class BuyProductsService : IBuyProductsService, IProductService
     {
-        private readonly HttpClient httpClient;
-        private readonly string apiBaseUrl;
+        private readonly BuyProductsRepository buyProductsRepository;
 
-        public BuyProductsService(IConfiguration configuration) : base(null)
+        private const int NOCOUNT = 0;
+
+        public BuyProductsService(BuyProductsRepository buyProductsRepository)
         {
-            httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (!apiBaseUrl.EndsWith("/"))
-            {
-                apiBaseUrl += "/";
-            }
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            this.buyProductsRepository = buyProductsRepository;
         }
 
-        public override List<Product> GetProducts()
+        public List<Product> GetProducts()
         {
-            var products = httpClient.GetFromJsonAsync<List<BuyProduct>>("buyproducts").Result;
-            return products?.Cast<Product>().ToList() ?? new List<Product>();
+            return buyProductsRepository.GetProducts();
         }
 
-        public void CreateListing(Product product)
+        public void CreateListing(BuyProduct product)
         {
-            if (!(product is BuyProduct buyProduct))
-            {
-                throw new ArgumentException("Product must be a BuyProduct.", nameof(product));
-            }
-            var productToSend = new
-            {
-                buyProduct.Title,
-                buyProduct.Description,
-                SellerId = buyProduct.Seller?.Id ?? 0,
-                ConditionId = buyProduct.Condition?.Id,
-                CategoryId = buyProduct.Category?.Id,
-                buyProduct.Price,
-                Images = buyProduct.Images == null
-                       ? new List<object>()
-                       : buyProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
-            };
-            var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = response.Content.ReadAsStringAsync().Result;
-                throw new HttpRequestException($"Failed to create listing. Status: {response.StatusCode}, Error: {errorContent}");
-            }
-            response.EnsureSuccessStatusCode();
+            buyProductsRepository.CreateListing(product);
         }
 
         public void DeleteListing(Product product)
         {
-            if (product.Id == 0)
+            buyProductsRepository.DeleteListing(product);
+        }
+
+        public BuyProduct GetProductById(int id)
+        {
+            return buyProductsRepository.GetProductById(id);
+        }
+
+        public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
+        {
+            List<Product> products = GetProducts();
+            List<Product> productResultSet = new List<Product>();
+            foreach (Product product in products)
             {
-                throw new ArgumentException("Product ID must be set for delete.", nameof(product.Id));
+                bool matchesConditions = selectedConditions == null || selectedConditions.Count == NOCOUNT || selectedConditions.Any(c => c.Id == product.Condition.Id);
+                bool matchesCategories = selectedCategories == null || selectedCategories.Count == NOCOUNT || selectedCategories.Any(c => c.Id == product.Category.Id);
+                bool matchesTags = selectedTags == null || selectedTags.Count == NOCOUNT || selectedTags.Any(t => product.Tags.Any(pt => pt.Id == t.Id));
+                bool matchesSearchQuery = string.IsNullOrEmpty(searchQuery) || product.Title.ToLower().Contains(searchQuery.ToLower());
+
+                if (matchesConditions && matchesCategories && matchesTags && matchesSearchQuery)
+                {
+                    productResultSet.Add(product);
+                }
             }
-            var response = httpClient.DeleteAsync($"buyproducts/{product.Id}").Result;
-            response.EnsureSuccessStatusCode();
+
+            if (sortCondition != null)
+            {
+                if (sortCondition.IsAscending)
+                {
+                    productResultSet = productResultSet.OrderBy(
+                        p =>
+                        {
+                            var prop = p?.GetType().GetProperty(sortCondition.InternalAttributeFieldTitle);
+                            return prop?.GetValue(p);
+                        }).ToList();
+                }
+                else
+                {
+                    productResultSet = productResultSet.OrderByDescending(
+                        p =>
+                        {
+                            var prop = p?.GetType().GetProperty(sortCondition.InternalAttributeFieldTitle);
+                            return prop?.GetValue(p);
+                        }).ToList();
+                }
+            }
+            return productResultSet;
         }
     }
 }

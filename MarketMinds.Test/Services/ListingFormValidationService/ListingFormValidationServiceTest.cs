@@ -54,15 +54,15 @@ namespace MarketMinds.Test.Services
 
         private ListingFormValidationService _validationService;
         private Category _validCategory;
-        private ProductCondition _validCondition;
+        private Condition _validCondition;
         private ObservableCollection<string> _validTags;
 
         [SetUp]
         public void Setup()
         {
             _validationService = new ListingFormValidationService();
-            _validCategory = new Category(CATEGORY_TITLE, CATEGORY_DESCRIPTION);
-            _validCondition = new Condition(CONDITION_TITLE, CONDITION_DESCRIPTION);
+            _validCategory = new Category(CATEGORY_ID, CATEGORY_TITLE, CATEGORY_DESCRIPTION);
+            _validCondition = new Condition(CONDITION_ID, CONDITION_TITLE, CONDITION_DESCRIPTION);
             _validTags = new ObservableCollection<string> { TAG1, TAG2 };
         }
 

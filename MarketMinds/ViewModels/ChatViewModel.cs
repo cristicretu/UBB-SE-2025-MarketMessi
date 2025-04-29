@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services.DreamTeam.ChatService;
 
 namespace MarketMinds.ViewModels;
@@ -11,39 +9,57 @@ namespace MarketMinds.ViewModels;
 public class ChatViewModel
 {
     private readonly IChatService chatService;
+    private int currentUserId;
+    private int currentConversationId;
 
     public ChatViewModel(IChatService chatService)
     {
         this.chatService = chatService;
     }
 
-    public void InitializeChat(User currentUser, User targetUser)
+    public async Task InitializeAsync(string userId)
     {
-        chatService.Initialize(currentUser, targetUser);
+        // Try to parse the string ID to int
+        if (int.TryParse(userId, out int userIdInt))
+        {
+            await InitializeAsync(userIdInt);
+        }
+        else
+        {
+            throw new ArgumentException("Invalid user ID format. The user ID must be a valid integer.", nameof(userId));
+        }
     }
 
-    public bool SendTextMessage(string textMessage)
+    public async Task InitializeAsync(int userId)
     {
-        return chatService.SendTextMessage(textMessage);
+        currentUserId = userId;
+        var conversations = await chatService.GetUserConversationsAsync(userId);
+
+        if (conversations != null && conversations.Count > 0)
+        {
+            currentConversationId = conversations[0].Id;
+        }
+        else
+        {
+            var newConversation = await chatService.CreateConversationAsync(userId);
+            currentConversationId = newConversation.Id;
+        }
     }
 
-    public bool SendImageMessage(byte[] imageData)
+    public async Task<Message> SendMessageAsync(string content)
     {
-        return chatService.SendImageMessage(imageData);
+        return await chatService.SendMessageAsync(currentConversationId, currentUserId, content);
     }
 
-    public List<Message> GetInitialMessages()
+    public async Task<List<Message>> GetMessagesAsync()
     {
-        return chatService.GetInitialMessages();
+        return await chatService.GetMessagesAsync(currentConversationId);
+    }
+    public async Task<Conversation> GetCurrentConversationAsync()
+    {
+        return await chatService.GetConversationAsync(currentConversationId);
     }
 
-    public List<Message> CheckForNewMessages()
-    {
-        return chatService.CheckForNewMessages();
-    }
-
-    public Conversation GetConversation()
-    {
-        return chatService.GetConversation();
-    }
+    public int CurrentConversationId => currentConversationId;
+    public int CurrentUserId => currentUserId;
 }

@@ -2,24 +2,25 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using server.Models;
+using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using Microsoft.EntityFrameworkCore;
-using server.DataAccessLayer;
+using Server.DataAccessLayer;
 
 namespace MarketMinds.Repositories.ReviewRepository
 {
     public class ReviewRepository : IReviewRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
 
         public ReviewRepository(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         public ObservableCollection<Review> GetAllReviewsByBuyer(User buyer)
         {
-            var reviews = _context.Reviews
+            var reviews = context.Reviews
                 .Include(r => r.ReviewImages)
                 .Where(r => r.BuyerId == buyer.Id)
                 .ToList();
@@ -37,7 +38,7 @@ namespace MarketMinds.Repositories.ReviewRepository
 
         public ObservableCollection<Review> GetAllReviewsBySeller(User seller)
         {
-            var reviews = _context.Reviews
+            var reviews = context.Reviews
                 .Include(r => r.ReviewImages)
                 .Where(r => r.SellerId == seller.Id)
                 .ToList();
@@ -73,8 +74,8 @@ namespace MarketMinds.Repositories.ReviewRepository
             };
 
             // Add the review to the context
-            _context.Reviews.Add(newReview);
-            _context.SaveChanges();
+            context.Reviews.Add(newReview);
+            context.SaveChanges();
 
             // Now that we have an ID, we can sync the images
             // We need to restore the Images collection first since it might have been cleared by EF
@@ -83,9 +84,9 @@ namespace MarketMinds.Repositories.ReviewRepository
                 foreach (var image in originalImages)
                 {
                     var reviewImage = ReviewImage.FromImage(image, newReview.Id);
-                    _context.ReviewImages.Add(reviewImage);
+                    context.ReviewImages.Add(reviewImage);
                 }
-                _context.SaveChanges();
+                context.SaveChanges();
             }
 
             // Update the original review object with the generated ID
@@ -104,14 +105,14 @@ namespace MarketMinds.Repositories.ReviewRepository
             }
 
             // Find the review in the database
-            var existingReview = _context.Reviews
+            var existingReview = context.Reviews
                 .Include(r => r.ReviewImages)
                 .FirstOrDefault(r => r.Id == review.Id);
 
             if (existingReview == null)
             {
                 // If not found by ID, try to find by buyer, seller and description
-                existingReview = _context.Reviews
+                existingReview = context.Reviews
                     .Include(r => r.ReviewImages)
                     .FirstOrDefault(r =>
                         r.BuyerId == review.BuyerId &&
@@ -132,17 +133,17 @@ namespace MarketMinds.Repositories.ReviewRepository
             if (review.Images != null && review.Images.Count > 0)
             {
                 // Remove existing images
-                _context.ReviewImages.RemoveRange(existingReview.ReviewImages);
+                context.ReviewImages.RemoveRange(existingReview.ReviewImages);
 
                 // Add new images
                 foreach (var image in review.Images)
                 {
                     var reviewImage = ReviewImage.FromImage(image, existingReview.Id);
-                    _context.ReviewImages.Add(reviewImage);
+                    context.ReviewImages.Add(reviewImage);
                 }
             }
 
-            _context.SaveChanges();
+            context.SaveChanges();
         }
 
         public void DeleteReview(Review review)
@@ -153,14 +154,14 @@ namespace MarketMinds.Repositories.ReviewRepository
             }
 
             // Find the review in the database
-            var existingReview = _context.Reviews
+            var existingReview = context.Reviews
                 .Include(r => r.ReviewImages)
                 .FirstOrDefault(r => r.Id == review.Id);
 
             if (existingReview == null)
             {
                 // If not found by ID, try to find by buyer, seller and description
-                existingReview = _context.Reviews
+                existingReview = context.Reviews
                     .Include(r => r.ReviewImages)
                     .FirstOrDefault(r =>
                         r.BuyerId == review.BuyerId &&
@@ -174,12 +175,12 @@ namespace MarketMinds.Repositories.ReviewRepository
             }
 
             // Remove related images first
-            _context.ReviewImages.RemoveRange(existingReview.ReviewImages);
+            context.ReviewImages.RemoveRange(existingReview.ReviewImages);
 
             // Then remove the review
-            _context.Reviews.Remove(existingReview);
+            context.Reviews.Remove(existingReview);
 
-            _context.SaveChanges();
+            context.SaveChanges();
         }
     }
 }

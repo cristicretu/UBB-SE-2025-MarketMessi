@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using server.Models;
+using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Repositories.ProductCategoryRepository
 {

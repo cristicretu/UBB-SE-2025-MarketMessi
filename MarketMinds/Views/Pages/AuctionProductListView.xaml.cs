@@ -5,20 +5,21 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds;
 using MarketMinds.Views.Pages;
-using MarketMinds.Helpers;
+using MarketMinds.Helpers.ViewModelHelpers;
 using MarketMinds.Services.AuctionSortTypeConverterService;
+using MarketMinds.Services.AuctionProductsService;
 
 namespace UiLayer
 {
     public sealed partial class AuctionProductListView : Window
     {
         private readonly AuctionProductsViewModel auctionProductsViewModel;
-        private readonly SortAndFilterViewModel sortAndFilterViewModel;
+        private readonly SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel;
         private ObservableCollection<AuctionProduct> auctionProducts;
         private CompareProductsViewModel compareProductsViewModel;
         private readonly AuctionProductListViewModelHelper auctionProductListViewModelHelper;
@@ -32,14 +33,14 @@ namespace UiLayer
         private const int NO_ITEMS = 0;
         private List<AuctionProduct> currentFullList;
 
-        public AuctionProductListView()
+        public AuctionProductListView(SortAndFilterViewModel<AuctionProductsService> sortAndFilterViewModel)
         {
             this.InitializeComponent();
 
             auctionProductsViewModel = MarketMinds.App.AuctionProductsViewModel;
-            sortAndFilterViewModel = MarketMinds.App.AuctionProductSortAndFilterViewModel;
+            this.sortAndFilterViewModel = sortAndFilterViewModel;
             compareProductsViewModel = MarketMinds.App.CompareProductsViewModel;
-            auctionProductListViewModelHelper = new AuctionProductListViewModelHelper();
+            auctionProductListViewModelHelper = new AuctionProductListViewModelHelper(sortAndFilterViewModel, auctionProductsViewModel);
             sortTypeConverterService = new AuctionSortTypeConverterService();
 
             auctionProducts = new ObservableCollection<AuctionProduct>();
@@ -48,9 +49,9 @@ namespace UiLayer
             ApplyFiltersAndPagination();
         }
 
-        private void AuctionListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void AuctionListView_ItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            var selectedProduct = e.ClickedItem as AuctionProduct;
+            var selectedProduct = itemClickEventArgs.ClickedItem as AuctionProduct;
             if (selectedProduct != null)
             {
                 // Create and show the detail view
@@ -89,7 +90,7 @@ namespace UiLayer
             NextButton.IsEnabled = canGoToNext;
         }
 
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        private void PreviousButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (currentPage > BASE_PAGE)
             {
@@ -98,7 +99,7 @@ namespace UiLayer
             }
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private void NextButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             if (currentPage < totalPages)
             {
@@ -107,7 +108,7 @@ namespace UiLayer
             }
         }
 
-        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             // Update the search query in the view model and reapply filters
             sortAndFilterViewModel.HandleSearchQueryChange(SearchTextBox.Text);
@@ -115,7 +116,7 @@ namespace UiLayer
             ApplyFiltersAndPagination();
         }
 
-        private async void FilterButton_Click(object sender, RoutedEventArgs e)
+        private async void FilterButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Show a ContentDialog for filtering
             FilterDialog filterDialog = new FilterDialog(sortAndFilterViewModel);
@@ -129,14 +130,14 @@ namespace UiLayer
             }
         }
 
-        private void SortButton_Click(object sender, RoutedEventArgs e)
+        private void SortButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             // Toggle the sorting dropdown visibility
             SortingComboBox.Visibility = SortingComboBox.Visibility == Visibility.Visible ?
                                          Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SortingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
         {
             if (SortingComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
@@ -152,7 +153,7 @@ namespace UiLayer
             }
         }
 
-        private void AddToCompare_Click(object sender, RoutedEventArgs e)
+        private void AddToCompare_Click(object sender, RoutedEventArgs routedEventArgs)
         {
             var button = sender as Button;
             var selectedProduct = button.DataContext as Product;

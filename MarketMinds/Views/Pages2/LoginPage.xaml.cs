@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using MarketMinds.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ViewModelLayer.ViewModel;
 
 namespace Marketplace_SE
 {
@@ -12,43 +12,59 @@ namespace Marketplace_SE
         public LoginPage()
         {
             this.InitializeComponent();
-            ViewModel = new LoginViewModel();
+            ViewModel = MarketMinds.App.LoginViewModel;
             this.DataContext = ViewModel;
         }
 
-        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs e)
+        private void RevealModeCheckbox_Changed(object sender, RoutedEventArgs routedEventArgse)
         {
             PasswordBoxWithRevealMode.PasswordRevealMode = RevealModeCheckBox.IsChecked == true ? PasswordRevealMode.Visible : PasswordRevealMode.Hidden;
         }
 
-        private void NavigateToSignUpPage(object sender, RoutedEventArgs e)
+        private void NavigateToSignUpPage(object sender, RoutedEventArgs routedEventArgs)
         {
             Frame.Navigate(typeof(RegisterPage));
         }
 
-        private void OnLoginButtonClick(object sender, RoutedEventArgs e)
+        private async void OnLoginButtonClick(object sender, RoutedEventArgs routedEventArgs)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBoxWithRevealMode.Password;
-            Console.WriteLine(username);
-            ViewModel.AttemptLogin(username, password);
-            if (ViewModel.LoginStatus)
+            // Clear previous status
+            LoginStatusMessage.Text = string.Empty;
+            LoginStatusMessage.Visibility = Visibility.Collapsed;
+            // Set login button to loading state
+            LoginButton.IsEnabled = false;
+            LoginProgressRing.IsActive = true;
+            try
             {
-                MarketMinds.App.CurrentUser = ViewModel.LoggedInUser;
-                LoginStatusMessage.Text = "You have successfully logged in!";
-                LoginStatusMessage.Visibility = Visibility.Visible;
-                // Frame.Navigate(typeof());
+                // Use the async method from the ViewModel
+                await ViewModel.AttemptLogin(username, password);
+                if (ViewModel.LoginStatus)
+                {
+                    MarketMinds.App.CurrentUser = ViewModel.LoggedInUser;
+                    LoginStatusMessage.Text = "You have successfully logged in!";
+                    LoginStatusMessage.Visibility = Visibility.Visible;
+                    // Navigate to main window
+                    MarketMinds.App.ShowMainWindow();
+                }
+                else
+                {
+                    LoginStatusMessage.Text = "Invalid username or password.";
+                    LoginStatusMessage.Visibility = Visibility.Visible;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                LoginStatusMessage.Text = "Invalid username or password.";
+                LoginStatusMessage.Text = $"Login error: {ex.Message}";
                 LoginStatusMessage.Visibility = Visibility.Visible;
             }
-        }
-
-        private void OnForgotPasswordClick(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(ResetPasswordPage));
+            finally
+            {
+                // Reset login button state
+                LoginButton.IsEnabled = true;
+                LoginProgressRing.IsActive = false;
+            }
         }
 
         private async Task ShowDialog(string title, string content)
