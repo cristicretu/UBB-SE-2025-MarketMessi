@@ -9,15 +9,15 @@ using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.ServiceProxy
 {
-    public class ReviewRepository : IReviewRepository
+    public class ReviewServiceProxy : IReviewRepository
     {
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
         private Dictionary<int, string> userCache = new Dictionary<int, string>();
 
-        public ReviewRepository(IConfiguration configuration)
+        public ReviewServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Services.AuctionProductsService;
-using MarketMinds.Repository;
+using MarketMinds.ServiceProxy;
 using ViewModelLayer.ViewModel;
 
 namespace MarketMinds.ViewModels

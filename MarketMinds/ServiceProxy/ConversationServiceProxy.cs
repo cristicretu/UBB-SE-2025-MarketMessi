@@ -9,14 +9,14 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Newtonsoft.Json;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.ServiceProxy
 {
-    public class ConversationRepository : IConversationRepository
+    public class ConversationServiceProxy : IConversationRepository
     {
         private readonly HttpClient httpClient;
         private readonly string baseUrl = "http://localhost:5000/api/conversation";
 
-        public ConversationRepository(HttpClient httpClient)
+        public ConversationServiceProxy(HttpClient httpClient)
         {
             this.httpClient = httpClient;
             Debug.WriteLine($"ConversationRepository created with baseUrl: {baseUrl}");

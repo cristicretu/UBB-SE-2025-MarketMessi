@@ -8,14 +8,14 @@ using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.ServiceProxy
 {
-    public class ProductTagRepository : IProductTagRepository
+    public class ProductTagServiceProxy : IProductTagRepository
     {
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
 
-        public ProductTagRepository(IConfiguration configuration)
+        public ProductTagServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

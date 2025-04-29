@@ -29,11 +29,11 @@ using Marketplace_SE.Services.DreamTeam;
 using MarketMinds.Services.ConversationService;
 using MarketMinds.Services.MessageService;
 using MarketMinds.Services.DreamTeam.ChatbotService;
-using MarketMinds.Repositories;
+using MarketMinds.ServiceProxy;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories;
-using MarketMinds.Repository;
+using MarketMinds.ServiceProxy;
+using MarketMinds.ServiceProxy;
 
 namespace MarketMinds
 {
@@ -48,13 +48,13 @@ namespace MarketMinds
         public static IConversationRepository ConversationRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
-        public static UserRepository UserRepository;
-        public static ReviewRepository ReviewRepository;
-        public static ProductTagRepository ProductTagRepository;
-        public static AuctionProductsRepository AuctionProductsRepository;
-        public static BorrowProductsRepository BorrowProductsRepository;
-        public static BasketRepository BasketRepository;
-        public static BuyProductsRepository BuyProductsRepository;
+        public static UserServiceProxy UserRepository;
+        public static ReviewServiceProxy ReviewRepository;
+        public static ProductTagServiceProxy ProductTagRepository;
+        public static AuctionProductsServiceProxy AuctionProductsRepository;
+        public static BorrowProductsServiceProxy BorrowProductsRepository;
+        public static BasketServiceProxy BasketRepository;
+        public static BuyProductsServiceProxy BuyProductsRepository;
 
         // Service declarations
         public static BuyProductsService BuyProductsService;
@@ -243,19 +243,19 @@ namespace MarketMinds
             // Instantiate database connection with configuration
             DatabaseConnection = new DataBaseConnection(Configuration);
 
-            ProductCategoryRepository = new ProductCategoryRepository(Configuration);
-            MessageRepository = new MessageRepository(Configuration);
-            ProductConditionRepository = new ProductConditionRepository(Configuration);
-            ConversationRepository = new ConversationRepository(httpClient);
-            ChatbotRepository = new ChatbotRepository(httpClient);
-            ChatRepository = new ChatRepository(httpClient);
-            UserRepository = new UserRepository(Configuration);
-            ReviewRepository = new ReviewRepository(Configuration);
-            ProductTagRepository = new ProductTagRepository(Configuration);
-            AuctionProductsRepository = new AuctionProductsRepository(Configuration);
-            BorrowProductsRepository = new BorrowProductsRepository(Configuration);
-            BasketRepository = new BasketRepository(Configuration);
-            BuyProductsRepository = new BuyProductsRepository(Configuration);
+            ProductCategoryRepository = new ProductCategoryServiceProxy(Configuration);
+            MessageRepository = new MessageServiceProxy(Configuration);
+            ProductConditionRepository = new ProductConditionServiceProxy(Configuration);
+            ConversationRepository = new ConversationServiceProxy(httpClient);
+            ChatbotRepository = new ChatbotServiceProxy(httpClient);
+            ChatRepository = new ChatServiceProxy(httpClient);
+            UserRepository = new UserServiceProxy(Configuration);
+            ReviewRepository = new ReviewServiceProxy(Configuration);
+            ProductTagRepository = new ProductTagServiceProxy(Configuration);
+            AuctionProductsRepository = new AuctionProductsServiceProxy(Configuration);
+            BorrowProductsRepository = new BorrowProductsServiceProxy(Configuration);
+            BasketRepository = new BasketServiceProxy(Configuration);
+            BuyProductsRepository = new BuyProductsServiceProxy(Configuration);
 
             // Instantiate services
             BuyProductsService = new BuyProductsService(BuyProductsRepository);

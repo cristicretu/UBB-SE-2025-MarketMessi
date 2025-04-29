@@ -8,14 +8,14 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Newtonsoft.Json;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.ServiceProxy
 {
-    public class ChatbotRepository : IChatbotRepository
+    public class ChatbotServiceProxy : IChatbotRepository
     {
         private readonly HttpClient httpClient;
         private readonly string baseUrl = "http://localhost:5000/api/chatbot";
 
-        public ChatbotRepository(HttpClient httpClient)
+        public ChatbotServiceProxy(HttpClient httpClient)
         {
             this.httpClient = httpClient;
             Debug.WriteLine($"ChatbotRepository created with baseUrl: {baseUrl}");

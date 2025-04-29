@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace MarketMinds.Repository
+namespace MarketMinds.ServiceProxy
 {
-    public class BasketRepository
+    public class BasketServiceProxy
     {
         public const int MAXIMUM_QUANTITY_PER_ITEM = 10;
         private const int MINIMUM_USER_ID = 0;
@@ -27,7 +27,7 @@ namespace MarketMinds.Repository
         private readonly JsonSerializerOptions jsonOptions;
 
         // Constructor with configuration
-        public BasketRepository(IConfiguration configuration)
+        public BasketServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

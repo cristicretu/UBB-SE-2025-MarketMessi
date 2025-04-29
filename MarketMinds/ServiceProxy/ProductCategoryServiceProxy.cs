@@ -6,14 +6,14 @@ using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.ServiceProxy
 {
-    public class ProductCategoryRepository : IProductCategoryRepository
+    public class ProductCategoryServiceProxy : IProductCategoryRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public ProductCategoryRepository(IConfiguration configuration)
+        public ProductCategoryServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
