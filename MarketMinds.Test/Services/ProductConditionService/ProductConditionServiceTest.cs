@@ -26,7 +26,7 @@ namespace MarketMinds.Test.Services.ProductConditionService
         [SetUp]
         public void Setup()
         {
-            _mockRepository = new ProductConditionRepositoryMock();
+            _mockRepository = new ConditionRepositoryMock();
             _service = new MarketMinds.Services.ProductConditionService.ProductConditionService(_mockRepository);
         }
 

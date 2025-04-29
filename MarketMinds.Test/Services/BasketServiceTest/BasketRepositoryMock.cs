@@ -147,7 +147,6 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                 Tags = new List<ProductTag>(),
                 Images = new List<Image>()
             };
-
             var invalidItem = new BasketItem(NEXT_ITEM_ID++, invalidPriceProduct, 1);
             _basketItems[basketId].Add(invalidItem);
         }

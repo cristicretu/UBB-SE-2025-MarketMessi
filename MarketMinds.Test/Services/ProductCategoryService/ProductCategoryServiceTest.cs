@@ -9,7 +9,6 @@ namespace MarketMinds.Test.Services.ProductCategoryService
     {
         // Constants to replace magic strings and numbers
         private const int FIRST_CATEGORY_ID = 1;
-        private const int SECOND_CATEGORY_ID = 2;
         private const string ELECTRONICS_TITLE = "Electronics";
         private const string ELECTRONICS_DESCRIPTION = "Electronic devices";
         private const string CLOTHING_TITLE = "Clothing";
