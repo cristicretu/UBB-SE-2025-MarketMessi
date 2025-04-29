@@ -66,8 +66,6 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateBuyProduct([FromBody] BuyProduct product)
         {
-            Console.WriteLine($"Received buy product in API: {JsonSerializer.Serialize(product)}");
-
             // Store incoming images and clear them before validation
             var incomingImages = product.Images?.ToList() ?? new List<BuyProductImage>();
             product.Images = new List<BuyProductImage>();
@@ -126,6 +124,16 @@ namespace MarketMinds.Controllers
                     {
                         var savedProduct = buyProductsRepository.GetProductByID(product.Id);
                         Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
+                        
+                        if (savedProduct.Images.Count < incomingImages.Count)
+                        {
+                            foreach (var img in incomingImages.Where(i => !savedProduct.Images.Any(si => si.Url == i.Url)))
+                            {
+                                buyProductsRepository.AddImageToProduct(product.Id, img);
+                            }
+                            
+                            var updatedProduct = buyProductsRepository.GetProductByID(product.Id);
+                        }
                     }
                     catch (Exception ex)
                     {

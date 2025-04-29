@@ -35,6 +35,22 @@ namespace MarketMinds.ServiceProxy
             {
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
+            
+            if (auctionProduct.StartTime == default(DateTime))
+            {
+                auctionProduct.StartTime = DateTime.Now;
+            }
+            
+            if (auctionProduct.EndTime == default(DateTime))
+            {
+                auctionProduct.EndTime = DateTime.Now.AddDays(7);
+            }
+            
+            if (auctionProduct.StartPrice <= 0 && auctionProduct.CurrentPrice > 0)
+            {
+                auctionProduct.StartPrice = auctionProduct.CurrentPrice;
+            }
+            
             var productToSend = new
             {
                 auctionProduct.Title,
@@ -46,17 +62,22 @@ namespace MarketMinds.ServiceProxy
                 EndTime = auctionProduct.EndTime,
                 StartPrice = auctionProduct.StartPrice,
                 CurrentPrice = auctionProduct.CurrentPrice,
-                Images = auctionProduct.Images == null
-                       ? new List<object>()
+                Images = auctionProduct.Images == null || !auctionProduct.Images.Any()
+                       ? (auctionProduct.NonMappedImages != null && auctionProduct.NonMappedImages.Any() 
+                          ? auctionProduct.NonMappedImages.Select(img => new { Url = img.Url ?? "" }).Cast<object>().ToList()
+                          : new List<object>())
                        : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
-            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
             var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
                 response.EnsureSuccessStatusCode();
+            }
+            else 
+            {
+                var responseContent = response.Content.ReadAsStringAsync().Result;
             }
         }
 

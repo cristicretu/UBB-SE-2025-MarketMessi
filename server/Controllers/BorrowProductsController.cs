@@ -126,6 +126,21 @@ namespace Server.Controllers
                     DailyRate = productDTO.DailyRate,
                     IsBorrowed = productDTO.IsBorrowed
                 };
+                if (product.StartDate == default(DateTime))
+                {
+                    product.StartDate = DateTime.Now;
+                }
+                else
+                {
+                }
+
+                if (product.EndDate == default(DateTime))
+                {
+                    product.EndDate = DateTime.Now.AddDays(7);
+                }
+                else
+                {
+                }
 
                 Console.WriteLine($"Mapped DTO to product: SellerId={product.SellerId}, CategoryId={product.CategoryId}, ConditionId={product.ConditionId}");
 
