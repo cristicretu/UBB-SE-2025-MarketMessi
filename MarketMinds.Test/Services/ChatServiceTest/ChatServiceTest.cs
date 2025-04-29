@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ChatRepository;
 using MarketMinds.Services.DreamTeam.ChatService;
 using MarketMinds.Test.Services.ChatServiceTest;

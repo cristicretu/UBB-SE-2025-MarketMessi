@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using NUnit.Framework;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services;
 using MarketMinds.Services.ListingFormValidationService;
 
@@ -53,7 +53,7 @@ namespace MarketMinds.Test.Services
         private const int PAST_DAYS_SORT = -7;
 
         private ListingFormValidationService _validationService;
-        private ProductCategory _validCategory;
+        private Category _validCategory;
         private ProductCondition _validCondition;
         private ObservableCollection<string> _validTags;
 
@@ -61,8 +61,8 @@ namespace MarketMinds.Test.Services
         public void Setup()
         {
             _validationService = new ListingFormValidationService();
-            _validCategory = new ProductCategory(CATEGORY_ID, CATEGORY_TITLE, CATEGORY_DESCRIPTION);
-            _validCondition = new ProductCondition(CONDITION_ID, CONDITION_TITLE, CONDITION_DESCRIPTION);
+            _validCategory = new Category(CATEGORY_TITLE, CATEGORY_DESCRIPTION);
+            _validCondition = new Condition(CONDITION_TITLE, CONDITION_DESCRIPTION);
             _validTags = new ObservableCollection<string> { TAG1, TAG2 };
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.BasketRepository;
 
 namespace MarketMinds.Test.Services.BasketServiceTest
@@ -98,8 +98,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                     "Test Product",
                     "Test Description",
                     new User(1, "Test Seller", "seller@test.com"),
-                    new ProductCondition(1, "New", "Brand new item"),
-                    new ProductCategory(1, "Electronics", "Electronic devices"),
+                    new Condition(1, "New", "Brand new item"),
+                    new Category(1, "Electronics", "Electronic devices"),
                     new List<ProductTag>(),
                     new List<Image>(),
                     100);
@@ -196,8 +196,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                 "Invalid Quantity Product",
                 "Product with invalid quantity",
                 new User(1, "Test Seller", "seller@test.com"),
-                new ProductCondition(1, "New", "Brand new item"),
-                new ProductCategory(1, "Electronics", "Electronic devices"),
+                new Condition(1, "New", "Brand new item"),
+                new Category(1, "Electronics", "Electronic devices"),
                 new List<ProductTag>(),
                 new List<Image>(),
                 100);
@@ -219,8 +219,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
             invalidPriceProduct.Title = "Invalid Price Product";
             invalidPriceProduct.Description = "Product with invalid price";
             invalidPriceProduct.Seller = new User(1, "Test Seller", "seller@test.com");
-            invalidPriceProduct.Condition = new ProductCondition(1, "New", "Brand new item");
-            invalidPriceProduct.Category = new ProductCategory(1, "Electronics", "Electronic devices");
+            invalidPriceProduct.Condition = new Condition(1, "New", "Brand new item");
+            invalidPriceProduct.Category = new Category(1, "Electronics", "Electronic devices");
             invalidPriceProduct.Tags = new List<ProductTag>();
             invalidPriceProduct.Images = new List<Image>();
 
@@ -245,8 +245,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                 "Valid Product",
                 "Product with valid attributes",
                 new User(1, "Test Seller", "seller@test.com"),
-                new ProductCondition(1, "New", "Brand new item"),
-                new ProductCategory(1, "Electronics", "Electronic devices"),
+                new Condition(1, "New", "Brand new item"),
+                new Category(1, "Electronics", "Electronic devices"),
                 new List<ProductTag>(),
                 new List<Image>(),
                 100);
@@ -257,8 +257,8 @@ namespace MarketMinds.Test.Services.BasketServiceTest
                 "Second Product",
                 "Another product with valid attributes",
                 new User(1, "Test Seller", "seller@test.com"),
-                new ProductCondition(1, "New", "Brand new item"),
-                new ProductCategory(1, "Electronics", "Electronic devices"),
+                new Condition(1, "New", "Brand new item"),
+                new Category(1, "Electronics", "Electronic devices"),
                 new List<ProductTag>(),
                 new List<Image>(),
                 50);

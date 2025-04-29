@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ChatBotRepository;
 
 namespace MarketMinds.Test.Services.ChatBotServiceTest

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using DomainLayer.Domain;
+using MarketMinds.Shared.Models;
 using MarketMinds.Services;
 using MarketMinds.Views.Pages;
 using Microsoft.UI.Xaml;
@@ -92,8 +92,8 @@ namespace MarketMinds.Test.Services.ProductViewNavigationService
         {
             // Create a minimal valid product for testing non-null scenarios
             // This is a helper method that can be expanded if needed for additional tests
-            var category = new ProductCategory(1, "Test Category", "Test Category Description");
-            var condition = new ProductCondition(1, "New", "Brand new item");
+            var category = new Category(1, "Test Category", "Test Category Description");
+            var condition = new Condition(1, "New", "Brand new item");
 
             return new BuyProduct(
                 1,

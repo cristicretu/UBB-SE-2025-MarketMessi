@@ -1,4 +1,4 @@
-﻿using DomainLayer.Domain;
+﻿using MarketMinds.Shared.Models;
 using MarketMinds.Services.ProductCategoryService;
 using NUnit.Framework;
 
@@ -9,7 +9,6 @@ namespace MarketMinds.Test.Services.ProductCategoryService
     {
         // Constants to replace magic strings and numbers
         private const int FIRST_CATEGORY_ID = 1;
-        private const int SECOND_CATEGORY_ID = 2;
         private const string ELECTRONICS_TITLE = "Electronics";
         private const string ELECTRONICS_DESCRIPTION = "Electronic devices";
         private const string CLOTHING_TITLE = "Clothing";
@@ -142,13 +141,13 @@ namespace MarketMinds.Test.Services.ProductCategoryService
 
         private void AddTestCategories()
         {
-            _mockRepository.Categories.Add(new ProductCategory(FIRST_CATEGORY_ID, ELECTRONICS_TITLE, ELECTRONICS_DESCRIPTION));
-            _mockRepository.Categories.Add(new ProductCategory(SECOND_CATEGORY_ID, CLOTHING_TITLE, CLOTHING_DESCRIPTION));
+            _mockRepository.Categories.Add(new Category(ELECTRONICS_TITLE, ELECTRONICS_DESCRIPTION));
+            _mockRepository.Categories.Add(new Category(CLOTHING_TITLE, CLOTHING_DESCRIPTION));
         }
 
         private void AddCategoryToDelete()
         {
-            _mockRepository.Categories.Add(new ProductCategory(FIRST_CATEGORY_ID, CATEGORY_TO_DELETE_TITLE, CATEGORY_TO_DELETE_DESCRIPTION));
+            _mockRepository.Categories.Add(new Category(CATEGORY_TO_DELETE_TITLE, CATEGORY_TO_DELETE_DESCRIPTION));
         }
 
         #endregion
