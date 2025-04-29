@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories;
+using MarketMinds.ServiceProxy;
 using MarketMinds.Shared.IRepository;
 using Microsoft.Extensions.Configuration;
 
@@ -10,11 +10,11 @@ namespace MarketMinds.Services.UserService
 {
     public class UserService : IUserService
     {
-        private readonly UserRepository repository;
+        private readonly UserServiceProxy repository;
 
         public UserService(IConfiguration configuration)
         {
-            repository = new UserRepository(configuration);
+            repository = new UserServiceProxy(configuration);
         }
 
         public async Task<bool> AuthenticateUserAsync(string username, string password)
@@ -93,26 +93,20 @@ namespace MarketMinds.Services.UserService
                 {
                     return false;
                 }
-                
                 if (string.IsNullOrEmpty(user.Username))
                 {
                     return false;
                 }
-                
                 if (string.IsNullOrEmpty(user.Email))
                 {
                     return false;
                 }
-                
                 if (string.IsNullOrEmpty(user.Password))
                 {
                     return false;
                 }
-                
                 var sharedUser = ConvertToSharedUser(user);
-                
                 bool result = await repository.RegisterUserAsync(sharedUser);
-                
                 return result;
             }
             catch (Exception ex)
@@ -166,8 +160,6 @@ namespace MarketMinds.Services.UserService
             {
                 return null;
             }
-
-            
             return new MarketMinds.Shared.Models.User
             {
                 Id = domainUser.Id,

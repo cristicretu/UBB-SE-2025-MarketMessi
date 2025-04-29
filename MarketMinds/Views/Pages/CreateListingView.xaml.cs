@@ -288,7 +288,7 @@ namespace UiLayer
             string description = descriptionTextBox.Text;
             Condition condition = (ProductCondition)conditionComboBox.SelectedItem;
 
-            // ---> ADD EXPLICIT ID CHECK <---           
+            // ---> ADD EXPLICIT ID CHECK <---
             if (category == null || category.Id == 0)
             {
                  categoryErrorTextBlock.Text = "Please select a valid category.";
@@ -299,9 +299,8 @@ namespace UiLayer
             {
                  conditionErrorTextBlock.Text = "Please select a valid condition.";
                  conditionErrorTextBlock.Visibility = Visibility.Visible;
-                 return; 
+                 return;
             }
-            
             // Validate common fields
             bool isValid = validationService.ValidateCommonFields(title, category, description, tags, condition, out string errorMessage, out string errorField);
 

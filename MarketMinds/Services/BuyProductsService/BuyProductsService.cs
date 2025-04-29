@@ -1,18 +1,18 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repository;
+using MarketMinds.ServiceProxy;
 using MarketMinds.Services.ProductTagService;
 
 namespace MarketMinds.Services.BuyProductsService
 {
     public class BuyProductsService : IBuyProductsService, IProductService
     {
-        private readonly BuyProductsRepository buyProductsRepository;
+        private readonly BuyProductsServiceProxy buyProductsRepository;
 
         private const int NOCOUNT = 0;
 
-        public BuyProductsService(BuyProductsRepository buyProductsRepository)
+        public BuyProductsService(BuyProductsServiceProxy buyProductsRepository)
         {
             this.buyProductsRepository = buyProductsRepository;
         }

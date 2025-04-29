@@ -3,17 +3,17 @@ using System.Linq;
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Repositories;
+using MarketMinds.ServiceProxy;
 
 namespace MarketMinds.Services.ProductTagService
 {
     public class ProductTagService : IProductTagService
     {
-        private readonly ProductTagRepository repository;
+        private readonly ProductTagServiceProxy repository;
 
         public ProductTagService(IConfiguration configuration)
         {
-            repository = new ProductTagRepository(configuration);
+            repository = new ProductTagServiceProxy(configuration);
         }
 
         public virtual List<ProductTag> GetAllProductTags()

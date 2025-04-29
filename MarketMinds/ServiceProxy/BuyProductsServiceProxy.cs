@@ -9,14 +9,14 @@ using Microsoft.Extensions.Configuration;
 using MarketMinds.Services;
 using MarketMinds.Shared.Models;
 
-namespace MarketMinds.Repository
+namespace MarketMinds.ServiceProxy
 {
-    public class BuyProductsRepository
+    public class BuyProductsServiceProxy
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public BuyProductsRepository(IConfiguration configuration)
+        public BuyProductsServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Services.UserService;
-using MarketMinds.Repositories;
+using MarketMinds.ServiceProxy;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Services.ReviewService
 {
     public class ReviewsService : IReviewsService
     {
-        private readonly ReviewRepository repository;
+        private readonly ReviewServiceProxy repository;
         private readonly IUserService userService;
         private Dictionary<int, string> userCache = new Dictionary<int, string>();
 
         public ReviewsService(IConfiguration configuration)
         {
-            repository = new ReviewRepository(configuration);
+            repository = new ReviewServiceProxy(configuration);
             // We'll need the user service to get usernames
             userService = App.UserService;
 

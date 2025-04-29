@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -7,17 +8,16 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
 
-namespace MarketMinds.Repositories
+namespace MarketMinds.ServiceProxy
 {
-    public class UserRepository : IAccountRepository
+    public class UserServiceProxy : IAccountRepository
     {
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
         private static readonly int ERROR_CODE = -1;
 
-        public UserRepository(IConfiguration configuration)
+        public UserServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

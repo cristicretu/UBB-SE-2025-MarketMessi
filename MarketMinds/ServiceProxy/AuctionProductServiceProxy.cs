@@ -9,16 +9,16 @@ using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Services;
 
-namespace MarketMinds.Repository
+namespace MarketMinds.ServiceProxy
 {
-    public class AuctionProductsRepository
+    public class AuctionProductsServiceProxy
     {
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public AuctionProductsRepository(IConfiguration configuration)
+        public AuctionProductsServiceProxy(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
