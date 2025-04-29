@@ -93,26 +93,26 @@ namespace MarketMinds.Services.UserService
                 {
                     return false;
                 }
-                
+
                 if (string.IsNullOrEmpty(user.Username))
                 {
                     return false;
                 }
-                
+
                 if (string.IsNullOrEmpty(user.Email))
                 {
                     return false;
                 }
-                
+
                 if (string.IsNullOrEmpty(user.Password))
                 {
                     return false;
                 }
-                
+
                 var sharedUser = ConvertToSharedUser(user);
-                
+
                 bool result = await repository.RegisterUserAsync(sharedUser);
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -167,7 +167,6 @@ namespace MarketMinds.Services.UserService
                 return null;
             }
 
-            
             return new MarketMinds.Shared.Models.User
             {
                 Id = domainUser.Id,

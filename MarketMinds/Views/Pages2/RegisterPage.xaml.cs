@@ -43,22 +43,19 @@ namespace Marketplace_SE
 
         private async void OnCreateUserClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            
             // Clear any previous validation messages
             UsernameValidationTextBlock.Text = string.Empty;
             ConfirmPasswordValidationTextBlock.Text = string.Empty;
-            
             // Set loading state
             CreateAccountButton.IsEnabled = false;
             RegisterProgressRing.IsActive = true;
-            
+
             try
             {
                 NewUser.Username = UsernameTextBox.Text;
                 NewUser.Email = EmailTextBox.Text;
                 NewUser.Password = PasswordBoxWithRevealMode.Password;
                 string confirmPassword = ConfirmPasswordBox.Password;
-                
 
                 // Client-side validation
                 if (!ViewModel.IsValidUsername(NewUser.Username))
@@ -95,7 +92,7 @@ namespace Marketplace_SE
                 {
                     // Store user in the app context
                     MarketMinds.App.CurrentUser = NewUser;
-                    
+
                     await ShowDialog("Account Created", "Your account has been successfully created!");
                     Frame.Navigate(typeof(LoginPage));
                 }
