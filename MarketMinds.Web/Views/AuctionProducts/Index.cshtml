@@ -7,56 +7,40 @@
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6">Auction Products</h1>
 
-    <table class="table w-full">
-        <thead>
-            <tr class="bg-gray-100">
-                <th class="px-4 py-2">
-                    @Html.DisplayNameFor(model => model.Title)
-                </th>
-                <th class="px-4 py-2">
-                    @Html.DisplayNameFor(model => model.CurrentPrice)
-                </th>
-                <th class="px-4 py-2">
-                    @Html.DisplayNameFor(model => model.StartPrice)
-                </th>
-                <th class="px-4 py-2">
-                    Start Time
-                </th>
-                <th class="px-4 py-2">
-                    End Time
-                </th>
-                <th class="px-4 py-2">
-                    Time Left
-                </th>
-                <th class="px-4 py-2">
-                    Category
-                </th>
-                <th class="px-4 py-2">
-                    Condition
-                </th>
-                <th class="px-4 py-2"></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model) {
-            <tr class="border-b hover:bg-gray-50">
-                <td class="px-4 py-2">
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td class="px-4 py-2">
-                    $@Html.DisplayFor(modelItem => item.CurrentPrice)
-                </td>
-                <td class="px-4 py-2">
-                    $@Html.DisplayFor(modelItem => item.StartPrice)
-                </td>
-                <td class="px-4 py-2">
-                    @Html.DisplayFor(modelItem => item.StartTime)
-                </td>
-                <td class="px-4 py-2">
-                    @Html.DisplayFor(modelItem => item.EndTime)
-                </td>
-                <td class="px-4 py-2">
-                    <span class="text-orange-600 font-medium" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @foreach (var item in Model) 
+        {
+            <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                <div class="h-48 bg-gradient-to-r from-blue-300 via-purple-300 to-orange-300 flex items-center justify-center">
+                    @if (item.Images != null && item.Images.Any())
+                    {
+                        <img src="@item.Images.First().Url" alt="@item.Title" class="h-full w-full object-cover">
+                    }
+                    else
+                    {
+                        <div class="text-white text-lg">No Image</div>
+                    }
+                </div>
+                <div class="p-4">
+                    <h2 class="text-xl font-semibold">@item.Title</h2>
+                    <p class="text-gray-600 mb-1">@(item.Category?.Name ?? "Uncategorized")</p>
+                    
+                    @if (!string.IsNullOrEmpty(item.Description) && item.Description.Length > 50)
+                    {
+                        <p class="text-gray-700 text-sm mb-3">@(item.Description.Substring(0, 50))...</p>
+                    }
+                    else
+                    {
+                        <p class="text-gray-700 text-sm mb-3">@(item.Description ?? "No description")</p>
+                    }
+                    
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-blue-600 font-bold text-xl">$@item.CurrentPrice.ToString("N2")</span>
+                        <span class="text-gray-600 text-sm">Starting: $@item.StartPrice.ToString("N2")</span>
+                    </div>
+                    
+                    <div class="text-orange-600 font-medium mb-3" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                        Time left: 
                         @{
                             var timeLeft = item.EndTime - DateTime.Now;
                             if (timeLeft > TimeSpan.Zero)
@@ -68,21 +52,13 @@
                                 <span class="text-red-600">Auction Ended</span>
                             }
                         }
-                    </span>
-                </td>
-                <td class="px-4 py-2">
-                    @(item.Category?.Name ?? "Uncategorized")
-                </td>
-                <td class="px-4 py-2">
-                    @(item.Condition?.Name ?? "Unknown")
-                </td>
-                <td class="px-4 py-2">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="bg-primary text-white px-3 py-1 rounded hover:bg-blue-700 transition">Details</a>
-                </td>
-            </tr>
+                    </div>
+                    
+                    <a asp-action="Details" asp-route-id="@item.Id" class="block text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">View Details</a>
+                </div>
+            </div>
         }
-        </tbody>
-    </table>
+    </div>
 </div>
 
 @section Scripts {
