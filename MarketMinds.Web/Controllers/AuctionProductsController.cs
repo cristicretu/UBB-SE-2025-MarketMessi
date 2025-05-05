@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -40,31 +41,15 @@ namespace MarketMinds.Web.Controllers
 
     public class AuctionProductsController : Controller
     {
-        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<AuctionProductsController> _logger;
-        private readonly IConfiguration _configuration;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IAuctionProductService _auctionProductService;
 
         public AuctionProductsController(
-            IHttpClientFactory clientFactory,
             ILogger<AuctionProductsController> logger,
-            IConfiguration configuration)
+            IAuctionProductService auctionProductService)
         {
-            _clientFactory = clientFactory;
             _logger = logger;
-            _configuration = configuration;
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                ReferenceHandler = ReferenceHandler.Preserve,
-                WriteIndented = true,
-                AllowTrailingCommas = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
-            };
-            
-            // Add custom converter for handling password property
-            _jsonOptions.Converters.Add(new NumberToStringConverter());
+            _auctionProductService = auctionProductService;
         }
 
         // GET: AuctionProducts
@@ -72,33 +57,9 @@ namespace MarketMinds.Web.Controllers
         {
             try
             {
-                var client = _clientFactory.CreateClient("ApiClient");
-                
-                // Log the base address and configuration
-                _logger.LogInformation($"API Base URL from config: {_configuration["ApiSettings:BaseUrl"]}");
-                _logger.LogInformation($"HttpClient BaseAddress: {client.BaseAddress}");
-                
-                var requestUrl = "api/auctionproducts";
-                _logger.LogInformation($"Requesting URL: {client.BaseAddress}{requestUrl}");
-                
-                var response = await client.GetAsync(requestUrl);
-                _logger.LogInformation($"Response status: {response.StatusCode}");
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    _logger.LogInformation($"Response content: {content.Substring(0, Math.Min(content.Length, 100))}...");
-                    var auctionProducts = JsonSerializer.Deserialize<List<AuctionProduct>>(content, _jsonOptions);
-                    return View(auctionProducts);
-                }
-                else
-                {
-                    _logger.LogError($"API returned {response.StatusCode} when getting auction products");
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError($"Error response content: {errorContent}");
-                    ModelState.AddModelError(string.Empty, "Unable to fetch auction products from the API");
-                    return View(new List<AuctionProduct>());
-                }
+                _logger.LogInformation("Fetching all auction products");
+                var auctionProducts = await _auctionProductService.GetAllAuctionProductsAsync();
+                return View(auctionProducts);
             }
             catch (Exception ex)
             {
@@ -113,37 +74,92 @@ namespace MarketMinds.Web.Controllers
         {
             try
             {
-                var client = _clientFactory.CreateClient("ApiClient");
-                var requestUrl = $"api/auctionproducts/{id}";
-                _logger.LogInformation($"Requesting URL: {client.BaseAddress}{requestUrl}");
+                _logger.LogInformation($"Fetching auction product with ID {id}");
+                var auctionProduct = await _auctionProductService.GetAuctionProductByIdAsync(id);
                 
-                var response = await client.GetAsync(requestUrl);
-                _logger.LogInformation($"Response status for id {id}: {response.StatusCode}");
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var auctionProduct = JsonSerializer.Deserialize<AuctionProduct>(content, _jsonOptions);
-                    return View(auctionProduct);
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if (auctionProduct == null || auctionProduct.Id == 0)
                 {
                     _logger.LogWarning($"Auction product with ID {id} not found");
                     return NotFound();
                 }
-                else
-                {
-                    _logger.LogError($"API returned {response.StatusCode} when getting auction product {id}");
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError($"Error response content: {errorContent}");
-                    return RedirectToAction(nameof(Index));
-                }
+                
+                return View(auctionProduct);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error fetching auction product {id}");
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        // GET: AuctionProducts/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: AuctionProducts/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(AuctionProduct auctionProduct)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
+                    if (result)
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error creating auction product");
+                    ModelState.AddModelError(string.Empty, "An error occurred while creating the auction product");
+                }
+            }
+            return View(auctionProduct);
+        }
+
+        // GET: AuctionProducts/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            var auctionProduct = await _auctionProductService.GetAuctionProductByIdAsync(id);
+            if (auctionProduct == null || auctionProduct.Id == 0)
+            {
+                return NotFound();
+            }
+            return View(auctionProduct);
+        }
+
+        // POST: AuctionProducts/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, AuctionProduct auctionProduct)
+        {
+            if (id != auctionProduct.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var result = await _auctionProductService.UpdateAuctionProductAsync(auctionProduct);
+                    if (result)
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error updating auction product {id}");
+                    ModelState.AddModelError(string.Empty, "An error occurred while updating the auction product");
+                }
+            }
+            return View(auctionProduct);
         }
 
         // Helper method to calculate time left for an auction
