@@ -13,5 +13,13 @@ namespace MarketMinds.Shared.Services.Interfaces
         Task<bool> PlaceBidAsync(int auctionId, int bidderId, double bidAmount);
         Task<bool> UpdateAuctionProductAsync(AuctionProduct auctionProduct);
         Task<bool> DeleteAuctionProductAsync(int id);
+        
+        // Business logic methods
+        void ValidateBid(AuctionProduct auction, int bidderId, double bidAmount);
+        void ExtendAuctionTimeIfNeeded(AuctionProduct auction);
+        void SetDefaultAuctionTimes(AuctionProduct product);
+        void SetDefaultPricing(AuctionProduct product);
+        void ProcessRefundForPreviousBidder(AuctionProduct product, double newBidAmount);
+        bool IsAuctionEnded(AuctionProduct auction);
     }
 } 

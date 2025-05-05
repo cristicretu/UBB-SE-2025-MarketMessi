@@ -66,100 +66,39 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
-            if (product.StartTime == default(DateTime))
-            {
-                product.StartTime = DateTime.Now;
-                Console.WriteLine($"Server set default StartTime: {product.StartTime}");
-            }
-            
-            if (product.EndTime == default(DateTime))
-            {
-                product.EndTime = DateTime.Now.AddDays(7);
-                Console.WriteLine($"Server set default EndTime: {product.EndTime}");
-            }
-            else 
-            {
-                if (product.EndTime.Year < 2000)
-                {
-                    product.EndTime = DateTime.Now.AddDays(7);
-                    Console.WriteLine($"Server corrected invalid EndTime: {product.EndTime}");
-                }
-                else
-                {
-                    Console.WriteLine($"Server preserved client EndTime: {product.EndTime}");
-                }
-            }
-            
-            if (product.StartPrice <= 0)
-            {
-                if (product.CurrentPrice > 0)
-                {
-                    product.StartPrice = product.CurrentPrice;
-                }
-                else
-                {
-                    product.StartPrice = 1.0; // Default minimum price
-                    product.CurrentPrice = 1.0;
-                }
-            }
-            
-            var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
-            product.Images = new List<ProductImage>();
+            // Basic validation only - business logic should be in the service layer
             if (product == null || !ModelState.IsValid)
             {
-                // Manually remove image validation errors if they occurred before clearing
-                ModelState.Remove("Images");
-                if (ModelState.ErrorCount > 0 && incomingImages.Count > 0)
-                {
-                    // Remove potential errors like "Images[0].Product" if they exist
-                    var imageKeys = ModelState.Keys.Where(k => k.StartsWith("Images[")).ToList();
-                    foreach (var key in imageKeys)
-                    {
-                        ModelState.Remove(key);
-                    }
-                }
-                // Re-check if model state is valid after potentially removing image errors
-                if (!ModelState.IsValid)
-                {
-                    Console.WriteLine($"Model State is Invalid (after image handling): {System.Text.Json.JsonSerializer.Serialize(ModelState)}");
-                    return BadRequest(ModelState);
-                }
+                return BadRequest(ModelState);
             }
+            
             if (product.Id != NULL_PRODUCT_ID)
             {
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
+            
             try
             {
+                // Process images if any
+                var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
+                product.Images = new List<ProductImage>();
+                
                 // Add the product (without images linked yet)
                 auctionProductsRepository.AddProduct(product);
-                // Now 'product' has its Id assigned by the database
-
+                
                 // Link and add images if any were provided
                 if (incomingImages.Any())
                 {
                     foreach (var img in incomingImages)
                     {
                         img.ProductId = product.Id; // Set the foreign key
-                        // Assuming ProductImage doesn't have other required fields from client
-                        // Add the now-linked image back to the product's collection
                         product.Images.Add(img);
                     }
 
                     // Update the product to save the linked images
                     auctionProductsRepository.UpdateProduct(product);
-
-                    // Verify images were saved by retrieving the product again
-                    try
-                    {
-                        var savedProduct = auctionProductsRepository.GetProductByID(product.Id);
-                        Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error verifying images: {ex.Message}");
-                    }
                 }
+                
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, auctionProductDTO);
             }
@@ -246,22 +185,7 @@ namespace MarketMinds.Controllers
             try
             {
                 var product = auctionProductsRepository.GetProductByID(id);
-                // Handle refund for previous bidder if any
-                if (product.Bids.Any())
-                {
-                    var previousBid = product.Bids.OrderByDescending(b => b.Timestamp).FirstOrDefault();
-                    if (previousBid != null)
-                    {
-                        var previousBidder = previousBid.Bidder;
-                        if (previousBidder != null)
-                        {
-                            // Refund the previous bidder's balance
-                            Console.WriteLine($"Refunding previous bidder (ID: {previousBidder.Id}) with amount: {previousBid.Price}");
-                            previousBidder.Balance += (double)previousBid.Price;
-                            // _userRepository.UpdateUser(previousBidder);
-                        }
-                    }
-                }
+                
                 // Create the bid
                 var bid = new Bid
                 {
@@ -270,10 +194,12 @@ namespace MarketMinds.Controllers
                     Price = bidDTO.Amount,
                     Timestamp = bidDTO.Timestamp
                 };
+                
                 // Add bid to product and update current price
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
                 auctionProductsRepository.UpdateProduct(product);
+                
                 return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
             }
             catch (KeyNotFoundException knfex)
