@@ -29,10 +29,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add React SPA services
-builder.Services.AddSpaStaticFiles(configuration =>
+// Register HTTP client for API communication
+builder.Services.AddHttpClient("ApiClient", client =>
 {
-    configuration.RootPath = "ClientApp/build";
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/");
 });
 
 // Register services from MarketMinds.Shared (you'll need to add the specific services here)
@@ -53,29 +53,14 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseSpaStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}");
-});
-
-app.UseSpa(spa =>
-{
-    spa.Options.SourcePath = "ClientApp";
-
-    if (app.Environment.IsDevelopment())
-    {
-        // In development, proxy requests to the Vite dev server
-        spa.UseProxyToSpaDevelopmentServer("http://localhost:3000");
-    }
-});
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run(); 

@@ -1,0 +1,92 @@
+@model IEnumerable<MarketMinds.Shared.Models.AuctionProduct>
+
+@{
+    ViewData["Title"] = "Auction Products";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Auction Products</h1>
+
+    <table class="table w-full">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-2">
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th class="px-4 py-2">
+                    @Html.DisplayNameFor(model => model.CurrentPrice)
+                </th>
+                <th class="px-4 py-2">
+                    @Html.DisplayNameFor(model => model.StartPrice)
+                </th>
+                <th class="px-4 py-2">
+                    Start Time
+                </th>
+                <th class="px-4 py-2">
+                    End Time
+                </th>
+                <th class="px-4 py-2">
+                    Time Left
+                </th>
+                <th class="px-4 py-2">
+                    Category
+                </th>
+                <th class="px-4 py-2">
+                    Condition
+                </th>
+                <th class="px-4 py-2"></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model) {
+            <tr class="border-b hover:bg-gray-50">
+                <td class="px-4 py-2">
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td class="px-4 py-2">
+                    $@Html.DisplayFor(modelItem => item.CurrentPrice)
+                </td>
+                <td class="px-4 py-2">
+                    $@Html.DisplayFor(modelItem => item.StartPrice)
+                </td>
+                <td class="px-4 py-2">
+                    @Html.DisplayFor(modelItem => item.StartTime)
+                </td>
+                <td class="px-4 py-2">
+                    @Html.DisplayFor(modelItem => item.EndTime)
+                </td>
+                <td class="px-4 py-2">
+                    <span class="text-orange-600 font-medium" data-countdown="@item.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                        @{
+                            var timeLeft = item.EndTime - DateTime.Now;
+                            if (timeLeft > TimeSpan.Zero)
+                            {
+                                @($"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
+                            }
+                            else
+                            {
+                                <span class="text-red-600">Auction Ended</span>
+                            }
+                        }
+                    </span>
+                </td>
+                <td class="px-4 py-2">
+                    @(item.Category?.Name ?? "Uncategorized")
+                </td>
+                <td class="px-4 py-2">
+                    @(item.Condition?.Name ?? "Unknown")
+                </td>
+                <td class="px-4 py-2">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="bg-primary text-white px-3 py-1 rounded hover:bg-blue-700 transition">Details</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        // Any additional page-specific JavaScript can go here
+    </script>
+} 
