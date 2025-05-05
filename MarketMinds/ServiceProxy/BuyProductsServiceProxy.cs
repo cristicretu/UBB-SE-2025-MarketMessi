@@ -74,8 +74,8 @@ namespace MarketMinds.ServiceProxy
                 CategoryId = product.Category?.Id,
                 product.Price,
                 Images = product.Images == null || !product.Images.Any()
-                       ? (product.NonMappedImages != null && product.NonMappedImages.Any() 
-                          ? product.NonMappedImages.Select(img => new { Url = img.Url ?? "" }).Cast<object>().ToList()
+                       ? (product.NonMappedImages != null && product.NonMappedImages.Any()
+                          ? product.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
                           : new List<object>())
                        : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };

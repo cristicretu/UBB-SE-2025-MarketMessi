@@ -129,17 +129,31 @@ namespace Server.Controllers
                 if (product.StartDate == default(DateTime))
                 {
                     product.StartDate = DateTime.Now;
+                    Console.WriteLine($"Server set default StartDate: {product.StartDate}");
                 }
                 else
                 {
+                    Console.WriteLine($"Server preserved client StartDate: {product.StartDate}");
                 }
 
                 if (product.EndDate == default(DateTime))
                 {
                     product.EndDate = DateTime.Now.AddDays(7);
+                    Console.WriteLine($"Server set default EndDate: {product.EndDate}");
                 }
                 else
                 {
+                    Console.WriteLine($"Server preserved client EndDate: {product.EndDate}");
+                }
+
+                if (product.TimeLimit == default(DateTime))
+                {
+                    product.TimeLimit = DateTime.Now.AddDays(7);
+                    Console.WriteLine($"Server set default TimeLimit: {product.TimeLimit}");
+                }
+                else
+                {
+                    Console.WriteLine($"Server preserved client TimeLimit: {product.TimeLimit}");
                 }
 
                 Console.WriteLine($"Mapped DTO to product: SellerId={product.SellerId}, CategoryId={product.CategoryId}, ConditionId={product.ConditionId}");

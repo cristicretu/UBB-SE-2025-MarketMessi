@@ -82,9 +82,11 @@ namespace MarketMinds.Controllers
                 if (product.EndTime.Year < 2000)
                 {
                     product.EndTime = DateTime.Now.AddDays(7);
+                    Console.WriteLine($"Server corrected invalid EndTime: {product.EndTime}");
                 }
                 else
                 {
+                    Console.WriteLine($"Server preserved client EndTime: {product.EndTime}");
                 }
             }
             

@@ -48,20 +48,23 @@ namespace MarketMinds.ServiceProxy
 
             Console.WriteLine($"Start Date: {borrowProduct.StartDate}");
             Console.WriteLine($"End Date: {borrowProduct.EndDate}");
-            
             // Ensure valid dates
             if (borrowProduct.StartDate == default(DateTime))
             {
                 borrowProduct.StartDate = DateTime.Now;
                 Console.WriteLine($"Setting default StartDate to now: {borrowProduct.StartDate}");
             }
-            
             if (borrowProduct.EndDate == default(DateTime))
             {
                 borrowProduct.EndDate = DateTime.Now.AddDays(7);
                 Console.WriteLine($"Setting default EndDate to 7 days from now: {borrowProduct.EndDate}");
             }
-            
+            // Fix for TimeLimit default value
+            if (borrowProduct.TimeLimit == default(DateTime))
+            {
+                borrowProduct.TimeLimit = DateTime.Now.AddDays(7);
+                Console.WriteLine($"Setting default TimeLimit to 7 days from now: {borrowProduct.TimeLimit}");
+            }
             var productToSend = new
             {
                 borrowProduct.Title,
@@ -73,15 +76,13 @@ namespace MarketMinds.ServiceProxy
                 StartDate = borrowProduct.StartDate,
                 EndDate = borrowProduct.EndDate,
                 Images = borrowProduct.Images == null || !borrowProduct.Images.Any()
-                       ? (borrowProduct.NonMappedImages != null && borrowProduct.NonMappedImages.Any() 
-                          ? borrowProduct.NonMappedImages.Select(img => new { Url = img.Url ?? "" }).Cast<object>().ToList()
+                       ? (borrowProduct.NonMappedImages != null && borrowProduct.NonMappedImages.Any()
+                          ? borrowProduct.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
                           : new List<object>())
                        : borrowProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
-            
             Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
             Console.WriteLine($"Sending to URL: {httpClient.BaseAddress}borrowproducts");
-            
             try
             {
                 // Use a more direct approach to sending the payload
@@ -90,10 +91,8 @@ namespace MarketMinds.ServiceProxy
                     WriteIndented = true,
                     PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
                 };
-                
                 var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
                 var response = httpClient.PostAsync("borrowproducts", content).Result;
-                
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
@@ -105,7 +104,6 @@ namespace MarketMinds.ServiceProxy
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     Console.WriteLine($"API Success Response: {responseContent}");
                 }
-                
                 Console.WriteLine("Successfully created borrow product listing.");
             }
             catch (Exception ex)
