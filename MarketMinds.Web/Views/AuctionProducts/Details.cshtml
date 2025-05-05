@@ -1,0 +1,123 @@
+@model MarketMinds.Shared.Models.AuctionProduct
+
+@{
+    ViewData["Title"] = "Auction Details";
+    var timeLeft = Model.EndTime - DateTime.Now;
+    var isAuctionEnded = timeLeft <= TimeSpan.Zero;
+}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">@Model.Title</h1>
+        <a asp-action="Index" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition">Back to List</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            <div>
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    <img src="@Model.Images.First().Url" alt="@Model.Title" class="w-full h-auto rounded-lg object-cover" />
+                }
+                else
+                {
+                    <div class="bg-gray-200 w-full h-64 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-500">No Image Available</span>
+                    </div>
+                }
+            </div>
+            <div>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <h2 class="text-2xl font-semibold">Description</h2>
+                        <p class="text-gray-700 mt-2">@Model.Description</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <h3 class="text-lg font-medium">Current Price</h3>
+                            <p class="text-primary-dark font-bold text-2xl">$@Model.CurrentPrice.ToString("F2")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Starting Price</h3>
+                            <p class="text-gray-600">$@Model.StartPrice.ToString("F2")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Time Left</h3>
+                            <p class="@(isAuctionEnded ? "text-red-600" : "text-orange-600") font-medium" data-countdown="@Model.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                @(isAuctionEnded ? "Auction Ended" : $"{timeLeft.Days}d {timeLeft.Hours}h {timeLeft.Minutes}m")
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Category</h3>
+                            <p class="text-gray-600">@(Model.Category?.Name ?? "Uncategorized")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Condition</h3>
+                            <p class="text-gray-600">@(Model.Condition?.Name ?? "Unknown")</p>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-medium">Seller</h3>
+                            <p class="text-gray-600">@(Model.Seller?.Username ?? "Unknown")</p>
+                        </div>
+                    </div>
+                    
+                    @if (!isAuctionEnded)
+                    {
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium mb-2">Place a Bid</h3>
+                            <form asp-action="PlaceBid" asp-route-id="@Model.Id" method="post" class="flex gap-2">
+                                <input type="number" name="bidAmount" min="@(Model.CurrentPrice + 0.01)" step="0.01" class="form-control w-full" placeholder="Enter your bid amount" required />
+                                <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition">Bid</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-6 p-4 bg-red-50 text-red-600 rounded-lg">
+                            <p class="font-medium">This auction has ended.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.Bids != null && Model.Bids.Any())
+        {
+            <div class="p-6 border-t">
+                <h2 class="text-xl font-semibold mb-4">Bid History</h2>
+                <table class="table w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2 text-left">Bidder</th>
+                            <th class="px-4 py-2 text-left">Amount</th>
+                            <th class="px-4 py-2 text-left">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var bid in Model.Bids.OrderByDescending(b => b.Timestamp))
+                        {
+                            <tr class="border-b">
+                                <td class="px-4 py-2">@(bid.Bidder?.Username ?? $"User #{bid.BidderId}")</td>
+                                <td class="px-4 py-2">$@bid.Price.ToString("F2")</td>
+                                <td class="px-4 py-2">@bid.Timestamp.ToString("MM/dd/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-6 border-t">
+                <p class="text-gray-500">No bids have been placed on this auction yet.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add any client-side functionality here if needed
+    </script>
+} 
