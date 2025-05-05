@@ -66,9 +66,45 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
+            if (product.StartTime == default(DateTime))
+            {
+                product.StartTime = DateTime.Now;
+                Console.WriteLine($"Server set default StartTime: {product.StartTime}");
+            }
+            
+            if (product.EndTime == default(DateTime))
+            {
+                product.EndTime = DateTime.Now.AddDays(7);
+                Console.WriteLine($"Server set default EndTime: {product.EndTime}");
+            }
+            else 
+            {
+                if (product.EndTime.Year < 2000)
+                {
+                    product.EndTime = DateTime.Now.AddDays(7);
+                    Console.WriteLine($"Server corrected invalid EndTime: {product.EndTime}");
+                }
+                else
+                {
+                    Console.WriteLine($"Server preserved client EndTime: {product.EndTime}");
+                }
+            }
+            
+            if (product.StartPrice <= 0)
+            {
+                if (product.CurrentPrice > 0)
+                {
+                    product.StartPrice = product.CurrentPrice;
+                }
+                else
+                {
+                    product.StartPrice = 1.0; // Default minimum price
+                    product.CurrentPrice = 1.0;
+                }
+            }
+            
             var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
             product.Images = new List<ProductImage>();
-            // Validate the main product (without images for now)
             if (product == null || !ModelState.IsValid)
             {
                 // Manually remove image validation errors if they occurred before clearing

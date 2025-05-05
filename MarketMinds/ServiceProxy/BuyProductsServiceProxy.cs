@@ -73,8 +73,10 @@ namespace MarketMinds.ServiceProxy
                 ConditionId = product.Condition?.Id,
                 CategoryId = product.Category?.Id,
                 product.Price,
-                Images = product.Images == null
-                       ? new List<object>()
+                Images = product.Images == null || !product.Images.Any()
+                       ? (product.NonMappedImages != null && product.NonMappedImages.Any()
+                          ? product.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
+                          : new List<object>())
                        : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
             var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
@@ -83,7 +85,10 @@ namespace MarketMinds.ServiceProxy
                 var errorContent = response.Content.ReadAsStringAsync().Result;
                 throw new HttpRequestException($"Failed to create listing. Status: {response.StatusCode}, Error: {errorContent}");
             }
-            response.EnsureSuccessStatusCode();
+            else
+            {
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+            }
         }
 
         public void DeleteListing(Product product)

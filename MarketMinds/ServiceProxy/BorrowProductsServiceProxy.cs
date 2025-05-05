@@ -46,40 +46,63 @@ namespace MarketMinds.ServiceProxy
                 throw new InvalidOperationException("HTTP client is not properly initialized");
             }
 
-            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(product)}");
+            Console.WriteLine($"Start Date: {borrowProduct.StartDate}");
+            Console.WriteLine($"End Date: {borrowProduct.EndDate}");
+            // Ensure valid dates
+            if (borrowProduct.StartDate == default(DateTime))
+            {
+                borrowProduct.StartDate = DateTime.Now;
+                Console.WriteLine($"Setting default StartDate to now: {borrowProduct.StartDate}");
+            }
+            if (borrowProduct.EndDate == default(DateTime))
+            {
+                borrowProduct.EndDate = DateTime.Now.AddDays(7);
+                Console.WriteLine($"Setting default EndDate to 7 days from now: {borrowProduct.EndDate}");
+            }
+            // Fix for TimeLimit default value
+            if (borrowProduct.TimeLimit == default(DateTime))
+            {
+                borrowProduct.TimeLimit = DateTime.Now.AddDays(7);
+                Console.WriteLine($"Setting default TimeLimit to 7 days from now: {borrowProduct.TimeLimit}");
+            }
+            var productToSend = new
+            {
+                borrowProduct.Title,
+                borrowProduct.Description,
+                SellerId = borrowProduct.Seller?.Id ?? 0,
+                ConditionId = borrowProduct.Condition?.Id,
+                CategoryId = borrowProduct.Category?.Id,
+                borrowProduct.DailyRate,
+                StartDate = borrowProduct.StartDate,
+                EndDate = borrowProduct.EndDate,
+                Images = borrowProduct.Images == null || !borrowProduct.Images.Any()
+                       ? (borrowProduct.NonMappedImages != null && borrowProduct.NonMappedImages.Any()
+                          ? borrowProduct.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
+                          : new List<object>())
+                       : borrowProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+            };
+            Console.WriteLine($"Sending product payload: {System.Text.Json.JsonSerializer.Serialize(productToSend)}");
             Console.WriteLine($"Sending to URL: {httpClient.BaseAddress}borrowproducts");
             try
             {
-                // Log request details
-                Console.WriteLine("=== REQUEST DIAGNOSTICS ===");
-                Console.WriteLine($"HttpClient DefaultRequestHeaders: {string.Join(", ", httpClient.DefaultRequestHeaders.Select(h => $"{h.Key}:{string.Join(",", h.Value)}"))}");
-                Console.WriteLine($"HttpClient BaseAddress: {httpClient.BaseAddress}");
-                // Create a custom JsonSerializerOptions to see exactly what's being sent
+                // Use a more direct approach to sending the payload
                 var serializerOptions = new System.Text.Json.JsonSerializerOptions
                 {
                     WriteIndented = true,
                     PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
                 };
-                // Diagnose the exact payload we're trying to send
-                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(product, serializerOptions);
-                Console.WriteLine("Actual JSON payload being sent:");
-                Console.WriteLine(jsonPayload);
-                Console.WriteLine("===========================");
-                // Use JsonContent instead of PostAsJsonAsync to have more control over serialization
-                var content = System.Net.Http.Json.JsonContent.Create(product, null, serializerOptions);
+                var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
                 var response = httpClient.PostAsync("borrowproducts", content).Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = response.Content.ReadAsStringAsync().Result;
                     Console.WriteLine($"API Error: {response.StatusCode} - {errorContent}");
-                    // Check if this is a validation error and provide more helpful details
-                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        Console.WriteLine("Validation error detected. Ensure navigation properties are handled correctly:");
-                        Console.WriteLine("- Seller, Category, and Condition should be null but their IDs should be set");
-                        Console.WriteLine("- Images should be sent as URLs only without nested objects");
-                    }
-                    response.EnsureSuccessStatusCode(); // This will throw with the status code
+                    response.EnsureSuccessStatusCode();
+                }
+                else
+                {
+                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine($"API Success Response: {responseContent}");
                 }
                 Console.WriteLine("Successfully created borrow product listing.");
             }
