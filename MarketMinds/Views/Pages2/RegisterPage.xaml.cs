@@ -85,17 +85,19 @@ namespace Marketplace_SE
                 }
 
                 // Attempt to create the user
-                bool result = await ViewModel.CreateNewUser(NewUser);
-                if (result)
+                User registeredUser = await ViewModel.CreateNewUser(NewUser);
+                if (registeredUser != null)
                 {
-                    // Store user in the app context
-                    MarketMinds.App.CurrentUser = NewUser;
+                    // Store the *returned* user (with ID and other server-set details) in the app context
+                    MarketMinds.App.CurrentUser = registeredUser;
                     await ShowDialog("Account Created", "Your account has been successfully created!");
+                    // Optionally, navigate to login or directly to the main app page
+                    // For now, navigating to LoginPage to ensure the login flow also works with the new user
                     Frame.Navigate(typeof(LoginPage));
                 }
                 else
                 {
-                    await ShowDialog("Error", "Failed to create account. Please try again.");
+                    await ShowDialog("Error", "Failed to create account. Please try again or check details.");
                 }
             }
             catch (Exception ex)

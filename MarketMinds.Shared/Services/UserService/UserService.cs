@@ -85,37 +85,40 @@ namespace MarketMinds.Shared.Services.UserService
             }
         }
 
-        public async Task<bool> RegisterUserAsync(User user)
+        public async Task<User> RegisterUserAsync(User user)
         {
             try
             {
                 if (user == null)
                 {
-                    return false;
+                    return null;
                 }
                 if (string.IsNullOrEmpty(user.Username))
                 {
-                    return false;
+                    return null;
                 }
                 if (string.IsNullOrEmpty(user.Email))
                 {
-                    return false;
+                    return null;
                 }
                 if (string.IsNullOrEmpty(user.Password))
                 {
-                    return false;
+                    // Password should be handled by the proxy/server, but good to have a check here.
+                    return null; 
                 }
                 var sharedUser = ConvertToSharedUser(user);
-                bool result = await repository.RegisterUserAsync(sharedUser);
-                return result;
+                // The repository.RegisterUserAsync now returns a User object (or null)
+                var registeredSharedUser = await repository.RegisterUserAsync(sharedUser);
+                return registeredSharedUser != null ? ConvertToDomainUser(registeredSharedUser) : null;
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[UserService] Error registering user: {ex.Message}");
                 if (ex.InnerException != null)
                 {
                     Debug.WriteLine($"[UserService] Inner exception: {ex.InnerException.Message}");
                 }
-                return false;
+                return null;
             }
         }
 

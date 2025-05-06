@@ -10,7 +10,7 @@ namespace MarketMinds.Shared.Services.UserService
         Task<User> GetUserByUsernameAsync(string username);
         Task<User> GetUserByEmailAsync(string email);
         Task<bool> IsUsernameTakenAsync(string username);
-        Task<bool> RegisterUserAsync(User user);
+        Task<User> RegisterUserAsync(User user);
         Task<User> GetUserByIdAsync(int userId);
     }
 }

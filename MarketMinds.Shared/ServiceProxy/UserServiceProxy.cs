@@ -242,21 +242,23 @@ namespace MarketMinds.ServiceProxy
             }
         }
 
-        public async Task<bool> RegisterUserAsync(User user)
+        public async Task<User> RegisterUserAsync(User user)
         {
             try
             {
                 var existingUserByEmail = await GetUserByEmailAsync(user.Email);
                 if (existingUserByEmail != null)
                 {
-                    return false;
+                    // Consider logging or returning a specific error/status
+                    return null; 
                 }
 
                 // Check if username exists
                 bool usernameTaken = await IsUsernameTakenAsync(user.Username);
                 if (usernameTaken)
                 {
-                    return false;
+                    // Consider logging or returning a specific error/status
+                    return null;
                 }
 
                 // Verify we're sending all required fields
@@ -265,22 +267,30 @@ namespace MarketMinds.ServiceProxy
                     Username = user.Username,
                     Email = user.Email,
                     Password = user.Password
+                    // UserType is typically set server-side or has a default
                 };
                 var response = await httpClient.PostAsJsonAsync("users/register", registerRequest);
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    // The server returns the created user (without password hash)
+                    return JsonSerializer.Deserialize<User>(content, jsonOptions);
+                }
+                else
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
                     Debug.WriteLine($"[UserRepository] Register API error response: {responseBody}");
+                    return null;
                 }
-                return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[UserRepository] Error registering user: {ex.Message}");
                 if (ex.InnerException != null)
                 {
                     Debug.WriteLine($"[UserRepository] Inner exception: {ex.InnerException.Message}");
                 }
-                return false;
+                return null;
             }
         }
 

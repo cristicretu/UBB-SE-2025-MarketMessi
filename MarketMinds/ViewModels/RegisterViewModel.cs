@@ -33,39 +33,43 @@ namespace MarketMinds.ViewModels
 			}
 		}
 
-		public async Task<bool> CreateNewUser(User user)
+		public async Task<User> CreateNewUser(User user)
 		{
 			try
 			{
 				if (user == null)
 				{
-					return false;
+					return null;
 				}
 
 				if (string.IsNullOrEmpty(user.Username))
 				{
-					return false;
+					return null;
 				}
 
 				if (string.IsNullOrEmpty(user.Email))
 				{
-					return false;
+					return null;
 				}
 
 				if (string.IsNullOrEmpty(user.Password))
 				{
-					return false;
+					// Password validation is important, ensure it's handled before this call if necessary
+					return null;
 				}
 
-				bool result = await userService.RegisterUserAsync(user);
-				return result;
+				// userService.RegisterUserAsync now returns a User object or null
+				User registeredUser = await userService.RegisterUserAsync(user);
+				return registeredUser;
 			}
 			catch (Exception userCreationException)
 			{
+				Debug.WriteLine($"[RegisterViewModel] Error creating new user: {userCreationException.Message}");
 				if (userCreationException.InnerException != null)
 				{
+					Debug.WriteLine($"[RegisterViewModel] Inner exception: {userCreationException.InnerException.Message}");
 				}
-				return false;
+				return null;
 			}
 		}
 
