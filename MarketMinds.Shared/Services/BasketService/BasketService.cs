@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.ServiceProxy;
+using MarketMinds.Shared.ProxyRepository;
 using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.Services.BasketService
@@ -25,10 +25,10 @@ namespace MarketMinds.Shared.Services.BasketService
         private const int INVALID_USER_ID = -1;
         private const int INVALID_BASKET_ID = -1;
 
-        private readonly BasketServiceProxy basketRepository;
+        private readonly BasketProxyRepository basketRepository;
 
         // Constructor with configuration
-        public BasketService(BasketServiceProxy basketRepository)
+        public BasketService(BasketProxyRepository basketRepository)
         {
             this.basketRepository = basketRepository;
         }

@@ -29,11 +29,9 @@ using Marketplace_SE.Services.DreamTeam;
 using MarketMinds.Shared.Services.ConversationService;
 using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
-using MarketMinds.ServiceProxy;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
-using MarketMinds.ServiceProxy;
-using MarketMinds.ServiceProxy;
+using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds
 {
@@ -48,13 +46,13 @@ namespace MarketMinds
         public static IConversationRepository ConversationRepository;
         public static IChatRepository ChatRepository;
         public static IChatbotRepository ChatbotRepository;
-        public static UserServiceProxy UserRepository;
-        public static ReviewServiceProxy ReviewRepository;
-        public static ProductTagServiceProxy ProductTagRepository;
-        public static AuctionProductsServiceProxy AuctionProductsRepository;
-        public static BorrowProductsServiceProxy BorrowProductsRepository;
-        public static BasketServiceProxy BasketRepository;
-        public static BuyProductsServiceProxy BuyProductsRepository;
+        public static UserProxyRepository UserRepository;
+        public static ReviewProxyRepository ReviewRepository;
+        public static ProductTagProxyRepository ProductTagRepository;
+        public static AuctionProductsProxyRepository AuctionProductsRepository;
+        public static BorrowProductsProxyRepository BorrowProductsRepository;
+        public static BasketProxyRepository BasketRepository;
+        public static BuyProductsProxyRepository BuyProductsRepository;
 
         // Service declarations
         public static BuyProductsService BuyProductsService;
@@ -240,22 +238,19 @@ namespace MarketMinds
         {
             // Create but don't show the main window yet
             MainWindow = new UiLayer.MainWindow();
-            // Instantiate database connection with configuration
-            DatabaseConnection = new DataBaseConnection(Configuration);
-
-            ProductCategoryRepository = new ProductCategoryServiceProxy(Configuration);
-            MessageRepository = new MessageServiceProxy(Configuration);
-            ProductConditionRepository = new ProductConditionServiceProxy(Configuration);
-            ConversationRepository = new ConversationServiceProxy(Configuration);
-            ChatbotRepository = new ChatbotServiceProxy(Configuration);
-            ChatRepository = new ChatServiceProxy(Configuration);
-            UserRepository = new UserServiceProxy(Configuration);
-            ReviewRepository = new ReviewServiceProxy(Configuration);
-            ProductTagRepository = new ProductTagServiceProxy(Configuration);
-            AuctionProductsRepository = new AuctionProductsServiceProxy(Configuration);
-            BorrowProductsRepository = new BorrowProductsServiceProxy(Configuration);
-            BasketRepository = new BasketServiceProxy(Configuration);
-            BuyProductsRepository = new BuyProductsServiceProxy(Configuration);
+            ProductCategoryRepository = new ProductCategoryProxyRepository(Configuration);
+            MessageRepository = new MessageProxyRepository(Configuration);
+            ProductConditionRepository = new ProductConditionProxyRepository(Configuration);
+            ConversationRepository = new ConversationProxyRepository(Configuration);
+            ChatbotRepository = new ChatbotProxyRepository(Configuration);
+            ChatRepository = new ChatProxyRepository(Configuration);
+            UserRepository = new UserProxyRepository(Configuration);
+            ReviewRepository = new ReviewProxyRepository(Configuration);
+            ProductTagRepository = new ProductTagProxyRepository(Configuration);
+            AuctionProductsRepository = new AuctionProductsProxyRepository(Configuration);
+            BorrowProductsRepository = new BorrowProductsProxyRepository(Configuration);
+            BasketRepository = new BasketProxyRepository(Configuration);
+            BuyProductsRepository = new BuyProductsProxyRepository(Configuration);
 
             // Initialize services
             UserService = new UserService(Configuration);

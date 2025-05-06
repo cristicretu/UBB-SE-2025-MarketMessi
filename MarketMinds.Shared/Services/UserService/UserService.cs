@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.ServiceProxy;
+using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 using Microsoft.Extensions.Configuration;
 
@@ -10,11 +10,11 @@ namespace MarketMinds.Shared.Services.UserService
 {
     public class UserService : IUserService
     {
-        private readonly UserServiceProxy repository;
+        private readonly UserProxyRepository repository;
 
         public UserService(IConfiguration configuration)
         {
-            repository = new UserServiceProxy(configuration);
+            repository = new UserProxyRepository(configuration);
         }
 
         public async Task<bool> AuthenticateUserAsync(string username, string password)

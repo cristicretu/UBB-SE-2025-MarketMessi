@@ -7,14 +7,14 @@ using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services;
 
-namespace MarketMinds.ServiceProxy
+namespace MarketMinds.Shared.ProxyRepository
 {
-    public class BorrowProductsServiceProxy
+    public class BorrowProductsProxyRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public BorrowProductsServiceProxy(IConfiguration configuration)
+        public BorrowProductsProxyRepository(IConfiguration configuration)
         {
             if (configuration == null)
             {

@@ -7,21 +7,21 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.UserService;
-using MarketMinds.ServiceProxy;
+using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.Services.ReviewService
 {
     public class ReviewsService : IReviewsService
     {
-        private readonly ReviewServiceProxy repository;
+        private readonly ReviewProxyRepository repository;
         private readonly IUserService userService;
         private readonly User currentUser;
         private Dictionary<int, string> userCache = new Dictionary<int, string>();
 
         public ReviewsService(IConfiguration configuration, IUserService userService, User currentUser = null)
         {
-            repository = new ReviewServiceProxy(configuration);
+            repository = new ReviewProxyRepository(configuration);
             this.userService = userService;
             this.currentUser = currentUser;
 

@@ -9,15 +9,15 @@ using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace MarketMinds.ServiceProxy
+namespace MarketMinds.Shared.ProxyRepository
 {
-    public class UserServiceProxy : IAccountRepository
+    public class UserProxyRepository : IAccountRepository
     {
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
         private static readonly int ERROR_CODE = -1;
 
-        public UserServiceProxy(IConfiguration configuration)
+        public UserProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
