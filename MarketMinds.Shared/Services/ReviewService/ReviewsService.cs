@@ -16,26 +16,27 @@ namespace MarketMinds.Shared.Services.ReviewService
     {
         private readonly ReviewServiceProxy repository;
         private readonly IUserService userService;
+        private readonly User currentUser;
         private Dictionary<int, string> userCache = new Dictionary<int, string>();
 
-        public ReviewsService(IConfiguration configuration)
+        public ReviewsService(IConfiguration configuration, IUserService userService, User currentUser = null)
         {
             repository = new ReviewServiceProxy(configuration);
-            // We'll need the user service to get usernames
-            userService = App.UserService;
+            this.userService = userService;
+            this.currentUser = currentUser;
 
             // If userService is null, create a new instance with the configuration
-            if (userService == null)
+            if (this.userService == null)
             {
-                userService = new UserService.UserService(configuration);
+                this.userService = new UserService.UserService(configuration);
             }
         }
 
         private async Task<string> GetUsernameForIdAsync(int userId)
         {
-            if (App.CurrentUser != null && App.CurrentUser.Id == userId)
+            if (currentUser != null && currentUser.Id == userId)
             {
-                return App.CurrentUser.Username;
+                return currentUser.Username;
             }
 
             if (userCache.ContainsKey(userId))

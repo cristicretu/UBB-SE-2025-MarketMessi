@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration; // For IConfiguration
-using MarketMinds; // For App.CurrentUser
 using MarketMinds.Shared.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -142,21 +141,14 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
                 Debug.WriteLine($"Error retrieving user: {ex.GetType().Name}: {ex.Message}");
             }
 
-            // If we got here, we failed to get the user from API
-            if (App.CurrentUser?.Id == userId)
-            {
-                // Use App.CurrentUser as fallback only during development
-                Debug.WriteLine("Using App.CurrentUser as fallback for development");
-                return CreateUserCopy(App.CurrentUser);
-            }
-
+            // If we reach here, the API call failed
             return null;
         }
 
-        public async Task<User> GetCurrentLoggedInUserAsync()
+        public async Task<User> GetCurrentLoggedInUserAsync(User currentUser)
         {
-            // Get user ID from App.CurrentUser
-            int currentUserId = App.CurrentUser?.Id ?? 0;
+            // Get user ID from currentUser parameter
+            int currentUserId = currentUser?.Id ?? 0;
             Debug.WriteLine($"Getting data for current user ID: {currentUserId}");
 
             if (currentUserId <= 0)
@@ -166,7 +158,16 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
             }
 
             // Get user data from API
-            return await GetUserAsync(currentUserId);
+            User apiUser = await GetUserAsync(currentUserId);
+            
+            // If API call fails, return a copy of the provided currentUser as fallback
+            if (apiUser == null && currentUser != null)
+            {
+                Debug.WriteLine("Using provided currentUser as fallback");
+                return CreateUserCopy(currentUser);
+            }
+            
+            return apiUser;
         }
 
         public async Task<List<UserOrder>> GetUserOrdersAsync(int userId)
