@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
 using MarketMinds.Shared.Models;
-using Windows.UI.Xaml;
+using System.IO;
 
 namespace MarketMinds.Shared.Services.ImagineUploadService
 {
@@ -12,11 +11,12 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
     public interface IImageUploadService
     {
         /// <summary>
-        /// Uploads an image using a file picker.
+        /// Uploads an image from a stream.
         /// </summary>
-        /// <param name="window">The parent window for the file picker.</param>
+        /// <param name="imageStream">The stream containing the image data.</param>
+        /// <param name="fileName">The name of the file (e.g., "image.png").</param>
         /// <returns>The URL of the uploaded image.</returns>
-        Task<string> UploadImage(Window window);
+        Task<string> UploadImage(Stream imageStream, string fileName);
 
         /// <summary>
         /// Simulates an image upload using a file path.
@@ -47,11 +47,12 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
         List<Image> ParseImagesString(string imagesString);
 
         /// <summary>
-        /// Adds an image to an existing collection of images.
+        /// Adds an image from a stream to an existing collection of images.
         /// </summary>
-        /// <param name="window">The parent window for the file picker.</param>
+        /// <param name="imageStream">The stream containing the image data.</param>
+        /// <param name="fileName">The name of the file (e.g., "image.png").</param>
         /// <param name="currentImagesString">The current collection of image URLs as a string.</param>
         /// <returns>The updated collection of image URLs as a string.</returns>
-        Task<string> AddImageToCollection(Window window, string currentImagesString);
+        Task<string> AddImageToCollection(Stream imageStream, string fileName, string currentImagesString);
     }
 }

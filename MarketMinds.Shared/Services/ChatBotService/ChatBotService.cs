@@ -6,7 +6,6 @@ using System.Diagnostics;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using Newtonsoft.Json;
-using Windows.Storage;
 
 namespace MarketMinds.Shared.Services.DreamTeam.ChatbotService
 {
