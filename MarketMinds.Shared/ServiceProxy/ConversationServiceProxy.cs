@@ -8,18 +8,21 @@ using System.Diagnostics;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+
 
 namespace MarketMinds.ServiceProxy
 {
     public class ConversationServiceProxy : IConversationRepository
     {
         private readonly HttpClient httpClient;
-        private readonly string baseUrl = "http://localhost:5000/api/conversation";
+        private readonly string apiBaseUrl;
 
-        public ConversationServiceProxy(HttpClient httpClient)
+        public ConversationServiceProxy(IConfiguration configuration)
         {
-            this.httpClient = httpClient;
-            Debug.WriteLine($"ConversationRepository created with baseUrl: {baseUrl}");
+            this.httpClient = new HttpClient();
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            Debug.WriteLine($"ConversationRepository created with baseUrl: {apiBaseUrl}");
         }
 
         public async Task<Conversation> CreateConversationAsync(Conversation conversation)
@@ -35,7 +38,7 @@ namespace MarketMinds.ServiceProxy
                 var jsonContent = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await httpClient.PostAsync(baseUrl, content);
+                var response = await httpClient.PostAsync(apiBaseUrl, content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -61,7 +64,7 @@ namespace MarketMinds.ServiceProxy
             try
             {
                 Debug.WriteLine($"Getting conversation with ID: {conversationId}");
-                var response = await httpClient.GetAsync($"{baseUrl}/{conversationId}");
+                var response = await httpClient.GetAsync($"{apiBaseUrl}/{conversationId}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -87,7 +90,7 @@ namespace MarketMinds.ServiceProxy
             try
             {
                 Debug.WriteLine($"Getting conversations for user ID: {userId}");
-                var response = await httpClient.GetAsync($"{baseUrl}/user/{userId}");
+                var response = await httpClient.GetAsync($"{apiBaseUrl}/user/{userId}");
 
                 if (response.IsSuccessStatusCode)
                 {

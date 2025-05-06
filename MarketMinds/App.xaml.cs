@@ -246,9 +246,9 @@ namespace MarketMinds
             ProductCategoryRepository = new ProductCategoryServiceProxy(Configuration);
             MessageRepository = new MessageServiceProxy(Configuration);
             ProductConditionRepository = new ProductConditionServiceProxy(Configuration);
-            ConversationRepository = new ConversationServiceProxy(httpClient);
-            ChatbotRepository = new ChatbotServiceProxy(httpClient);
-            ChatRepository = new ChatServiceProxy(httpClient);
+            ConversationRepository = new ConversationServiceProxy(Configuration);
+            ChatbotRepository = new ChatbotServiceProxy(Configuration);
+            ChatRepository = new ChatServiceProxy(Configuration);
             UserRepository = new UserServiceProxy(Configuration);
             ReviewRepository = new ReviewServiceProxy(Configuration);
             ProductTagRepository = new ProductTagServiceProxy(Configuration);
