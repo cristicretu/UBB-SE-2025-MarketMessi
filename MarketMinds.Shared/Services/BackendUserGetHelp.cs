@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
-using Marketplace_SE.Data;
-using Marketplace_SE.Utilities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-using Windows.Media.ClosedCaptioning;
 
 namespace Marketplace_SE.Service
 {

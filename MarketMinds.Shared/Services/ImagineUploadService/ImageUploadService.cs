@@ -7,11 +7,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using WinRT.Interop;
+//using WinRT.Interop;
 using Microsoft.UI.Xaml;
 using MarketMinds.Shared.Models;
 using Newtonsoft.Json;
 using Windows.Storage.Streams;
+using Windows.UI.Xaml;
+using System.IO;
 
 namespace MarketMinds.Shared.Services.ImagineUploadService
 {
@@ -31,9 +33,9 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
 
         public async Task<string> UploadImage(Window window)
         {
-            var hwnd = WindowNative.GetWindowHandle(window);
+            //var hwnd = WindowNative.GetWindowHandle(window);
             var picker = new FileOpenPicker();
-            InitializeWithWindow.Initialize(picker, hwnd);
+            //InitializeWithWindow.Initialize(picker, hwnd);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
@@ -54,7 +56,9 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
             {
                 // Log file details
                 var properties = await file.GetBasicPropertiesAsync();
-                string clientId = App.Configuration.GetSection("ImgurSettings:ClientId").Value;
+
+                // Read client ID from appsettings.json in MarketMinds.Shared directory
+                string clientId = GetImgurClientId();
 
                 // Validate Client ID format
                 if (string.IsNullOrEmpty(clientId))
@@ -134,6 +138,44 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Upload failed: {ex.Message}", ex);
+            }
+        }
+
+        private string GetImgurClientId()
+        {
+            try
+            {
+                // Path to appsettings.json in MarketMinds.Shared directory
+                string appSettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarketMinds.Shared", "appsettings.json");
+
+                // If not found in the base directory, try searching in the current directory and going up to find MarketMinds.Shared
+                if (!File.Exists(appSettingsPath))
+                {
+                    string currentDir = AppDomain.CurrentDomain.BaseDirectory;
+                    while (currentDir != null && !Directory.Exists(Path.Combine(currentDir, "MarketMinds.Shared")))
+                    {
+                        currentDir = Directory.GetParent(currentDir)?.FullName;
+                    }
+
+                    if (currentDir != null)
+                    {
+                        appSettingsPath = Path.Combine(currentDir, "MarketMinds.Shared", "appsettings.json");
+                    }
+                }
+
+                // Read and parse the JSON file
+                if (File.Exists(appSettingsPath))
+                {
+                    string json = File.ReadAllText(appSettingsPath);
+                    dynamic settings = JsonConvert.DeserializeObject(json);
+                    return settings?.ImgurSettings?.ClientId?.ToString();
+                }
+
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
             }
         }
 

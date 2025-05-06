@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using MarketMinds.Shared.Models;
+using Windows.UI.Xaml;
 
 namespace MarketMinds.Shared.Services.ImagineUploadService
 {
