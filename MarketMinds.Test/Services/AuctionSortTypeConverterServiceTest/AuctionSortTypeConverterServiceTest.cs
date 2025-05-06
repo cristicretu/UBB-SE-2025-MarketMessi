@@ -1,7 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using NUnit.Framework;
-using MarketMinds.Services.AuctionSortTypeConverterService;
+using MarketMinds.Shared.Services.AuctionSortTypeConverterService;
 
 namespace MarketMinds.Test.Services.AuctionSortTypeConverterServiceTest
 {

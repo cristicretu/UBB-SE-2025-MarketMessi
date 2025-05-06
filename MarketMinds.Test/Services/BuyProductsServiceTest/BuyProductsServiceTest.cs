@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.BuyProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Repositories.BuyProductsRepository;
 using MarketMinds.Test.Services.BuyProductsServiceTest;
 

@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 
 namespace MarketMinds
 {

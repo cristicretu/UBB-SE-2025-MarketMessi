@@ -5,7 +5,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.BasketService;
+using MarketMinds.Shared.Services.BasketService;
 
 namespace ViewModelLayer.ViewModel
 {

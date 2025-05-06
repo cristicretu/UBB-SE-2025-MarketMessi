@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.Helpers.Selectors;
-using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.ViewModels;
 using Marketplace_SE.Utilities;
 using Marketplace_SE;

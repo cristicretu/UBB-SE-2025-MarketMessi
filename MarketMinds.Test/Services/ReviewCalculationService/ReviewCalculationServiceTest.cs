@@ -1,8 +1,8 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using NUnit.Framework;
 using System.Collections.Generic;
-using MarketMinds.Services.ReviewCalculationService;
+using MarketMinds.Shared.Services.ReviewCalculationService;
 
 namespace MarketMinds.Test.Services
 {

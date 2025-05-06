@@ -11,10 +11,10 @@ using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
-using MarketMinds.Services;
-using MarketMinds.Services.AuctionProductsService;
-using MarketMinds.Services.BorrowProductsService;
-using MarketMinds.Services.BuyProductsService;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace UiLayer
 {

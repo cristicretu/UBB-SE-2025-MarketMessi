@@ -11,24 +11,24 @@ using DataAccessLayer;
 using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Services.AuctionProductsService;
-using MarketMinds.Services.BorrowProductsService;
-using MarketMinds.Services.BasketService;
-using MarketMinds.Services.BuyProductsService;
-using MarketMinds.Services.ProductCategoryService;
-using MarketMinds.Services.ProductConditionService;
-using MarketMinds.Services.ReviewService;
-using MarketMinds.Services.ProductTagService;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BasketService;
+using MarketMinds.Shared.Services.BuyProductsService;
+using MarketMinds.Shared.Services.ProductCategoryService;
+using MarketMinds.Shared.Services.ProductConditionService;
+using MarketMinds.Shared.Services.ReviewService;
+using MarketMinds.Shared.Services.ProductTagService;
+using MarketMinds.Shared.Services;
 using MarketMinds.ViewModels;
-using MarketMinds.Services.DreamTeam.ChatbotService;
-using MarketMinds.Services.ImagineUploadService;
-using MarketMinds.Services.UserService;
+using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.UserService;
 using Microsoft.Extensions.Logging.Abstractions;
 using Marketplace_SE.Services.DreamTeam;
-using MarketMinds.Services.ConversationService;
-using MarketMinds.Services.MessageService;
-using MarketMinds.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services.ConversationService;
+using MarketMinds.Shared.Services.MessageService;
+using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.ServiceProxy;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
@@ -65,14 +65,14 @@ namespace MarketMinds
         public static ProductConditionService ConditionService;
         public static ReviewsService ReviewsService;
         public static BasketService BasketService;
-        public static MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService ChatBotService;
-        public static MarketMinds.Services.DreamTeam.ChatService.ChatService ChatService;
+        public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService ChatBotService;
+        public static MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService ChatService;
         public static IImageUploadService ImageUploadService;
         public static IUserService UserService;
         public static AccountPageService AccountPageService { get; private set; }
         public static IConversationService ConversationService;
         public static IMessageService MessageService;
-        public static MarketMinds.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
+        public static MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService NewChatbotService;
 
         // ViewModel declarations
         public static BuyProductsViewModel BuyProductsViewModel { get; private set; }
@@ -271,8 +271,8 @@ namespace MarketMinds
             ConversationService = new ConversationService(ConversationRepository);
             MessageService = new MessageService(MessageRepository);
             ChatBotService = new ChatbotService(ChatbotRepository);
-            ChatService = new MarketMinds.Services.DreamTeam.ChatService.ChatService(ChatRepository);
-            NewChatbotService = new MarketMinds.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
+            ChatService = new MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService(ChatRepository);
+            NewChatbotService = new MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService(ChatbotRepository);
             // Initialize non-user dependent view models
             BuyProductsViewModel = new BuyProductsViewModel(BuyProductsService);
             AuctionProductsViewModel = new AuctionProductsViewModel(AuctionProductsService);

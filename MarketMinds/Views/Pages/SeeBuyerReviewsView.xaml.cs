@@ -1,4 +1,4 @@
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using BusinessLogicLayer.ViewModel;
 using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml;

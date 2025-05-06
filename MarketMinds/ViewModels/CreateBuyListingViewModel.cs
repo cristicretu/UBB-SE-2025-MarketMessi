@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.BuyProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace ViewModelLayer.ViewModel
 {

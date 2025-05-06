@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ViewModelLayer.ViewModel;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ListingCreationService;
+using MarketMinds.Shared.Services.ListingCreationService;
 
 namespace ViewModelLayer.ViewModel
 {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.UserService;
+using MarketMinds.Shared.Services.UserService;
 
 namespace MarketMinds.ViewModels
 {

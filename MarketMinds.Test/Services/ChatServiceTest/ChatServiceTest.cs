@@ -4,7 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ChatRepository;
-using MarketMinds.Services.DreamTeam.ChatService;
+using MarketMinds.Shared.Services.DreamTeam.ChatService;
 using MarketMinds.Test.Services.ChatServiceTest;
 
 namespace MarketMinds.Tests.Services.ChatServiceTest

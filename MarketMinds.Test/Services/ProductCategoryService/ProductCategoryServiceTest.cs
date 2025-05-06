@@ -1,5 +1,5 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services.ProductCategoryService;
+using MarketMinds.Shared.Services.ProductCategoryService;
 using NUnit.Framework;
 
 namespace MarketMinds.Test.Services.ProductCategoryService
@@ -28,7 +28,7 @@ namespace MarketMinds.Test.Services.ProductCategoryService
         public void Setup()
         {
             _mockRepository = new ProductCategoryRepositoryMock();
-            _service = new MarketMinds.Services.ProductCategoryService.ProductCategoryService(_mockRepository);
+            _service = new MarketMinds.Shared.Services.ProductCategoryService.ProductCategoryService(_mockRepository);
         }
 
         #region GetAllProductCategories Tests

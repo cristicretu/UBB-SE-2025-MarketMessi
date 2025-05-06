@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ReviewService;
-using MarketMinds.Services.ReviewCalculationService;
+using MarketMinds.Shared.Services.ReviewService;
+using MarketMinds.Shared.Services.ReviewCalculationService;
 
 namespace BusinessLogicLayer.ViewModel
 {

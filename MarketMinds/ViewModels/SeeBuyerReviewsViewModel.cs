@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ReviewService;
+using MarketMinds.Shared.Services.ReviewService;
 using Microsoft.IdentityModel.Tokens;
-using MarketMinds.Services.ReviewCalculationService;
-using MarketMinds.Services.ReviewCreationService;
+using MarketMinds.Shared.Services.ReviewCalculationService;
+using MarketMinds.Shared.Services.ReviewCreationService;
 
 namespace BusinessLogicLayer.ViewModel
 {

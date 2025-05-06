@@ -7,9 +7,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
-using MarketMinds.Services.AuctionProductsService;
-using MarketMinds.Services.BorrowProductsService;
-using MarketMinds.Services.BuyProductsService;
+using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 using UiLayer;
 
 namespace MarketMinds.Helpers

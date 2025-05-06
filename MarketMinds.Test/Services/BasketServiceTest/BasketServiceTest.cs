@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.BasketService;
+using MarketMinds.Shared.Services.BasketService;
 using MarketMinds.Repositories.BasketRepository;
 using MarketMinds.Test.Services.BasketServiceTest;
 

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ReviewService;
+using MarketMinds.Shared.Services.ReviewService;
 using Microsoft.UI.Xaml;
-using MarketMinds.Services.ImagineUploadService;
-using MarketMinds.Services.ReviewCreationService;
+using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.ReviewCreationService;
 
 namespace ViewModelLayer.ViewModel
 {

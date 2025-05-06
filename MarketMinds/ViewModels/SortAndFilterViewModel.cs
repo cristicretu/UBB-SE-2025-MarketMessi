@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services;
-using MarketMinds.Services.AuctionProductsService;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.AuctionProductsService;
 
 namespace BusinessLogicLayer.ViewModel
 {

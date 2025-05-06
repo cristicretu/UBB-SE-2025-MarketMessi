@@ -1,9 +1,9 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MarketMinds.Services.ConversationService;
-using MarketMinds.Services.MessageService;
-using MarketMinds.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services.ConversationService;
+using MarketMinds.Shared.Services.MessageService;
+using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 using MarketMinds.Views;
 using Marketplace_SE;
 
