@@ -11,14 +11,14 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 
 
-namespace MarketMinds.ServiceProxy
+namespace MarketMinds.Shared.ProxyRepository
 {
-    public class ConversationServiceProxy : IConversationRepository
+    public class ConversationProxyRepository : IConversationRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public ConversationServiceProxy(IConfiguration configuration)
+        public ConversationProxyRepository(IConfiguration configuration)
         {
             this.httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

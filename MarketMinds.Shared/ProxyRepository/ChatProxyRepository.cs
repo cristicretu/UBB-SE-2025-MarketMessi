@@ -10,13 +10,13 @@ using MarketMinds.Shared.IRepository;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 
-namespace MarketMinds.ServiceProxy
+namespace MarketMinds.Shared.ProxyRepository
 {
-    public class ChatServiceProxy : IChatRepository
+    public class ChatProxyRepository : IChatRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
-        public ChatServiceProxy(IConfiguration configuration)
+        public ChatProxyRepository(IConfiguration configuration)
         {
             this.httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

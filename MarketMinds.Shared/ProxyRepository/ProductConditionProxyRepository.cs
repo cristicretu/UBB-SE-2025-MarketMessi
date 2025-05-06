@@ -6,14 +6,14 @@ using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 
-namespace MarketMinds.ServiceProxy
+namespace MarketMinds.Shared.ProxyRepository
 {
-    public class ProductConditionServiceProxy : IProductConditionRepository
+    public class ProductConditionProxyRepository : IProductConditionRepository
     {
         private readonly HttpClient httpClient;
         private readonly string apiBaseUrl;
 
-        public ProductConditionServiceProxy(IConfiguration configuration)
+        public ProductConditionProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

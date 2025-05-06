@@ -10,13 +10,13 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
 using Newtonsoft.Json;
 
-namespace MarketMinds.ServiceProxy
+namespace MarketMinds.Shared.ProxyRepository
 {
-    public class MessageServiceProxy : IMessageRepository
+    public class MessageProxyRepository : IMessageRepository
     {
         private readonly HttpClient httpClient;
 
-        public MessageServiceProxy(IConfiguration configuration)
+        public MessageProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
             var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";

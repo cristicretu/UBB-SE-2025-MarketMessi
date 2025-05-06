@@ -2,20 +2,20 @@
 using System.Linq;
 using System.Collections.Generic;
 using MarketMinds.Shared.Models;
-using MarketMinds.ServiceProxy;
+using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
 {
     public class AuctionProductsService : IAuctionProductsService, IProductService
     {
-        private readonly AuctionProductsServiceProxy auctionProductsRepository;
+        private readonly AuctionProductsProxyRepository auctionProductsRepository;
 
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
         private const int NOCOUNT = 0;
 
-        public AuctionProductsService(AuctionProductsServiceProxy auctionProductsRepository)
+        public AuctionProductsService(AuctionProductsProxyRepository auctionProductsRepository)
         {
             this.auctionProductsRepository = auctionProductsRepository;
         }
