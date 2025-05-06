@@ -2,7 +2,7 @@ using System;
 using MarketMinds.Shared.Models;
 using MarketMinds.Views.Pages;
 
-namespace MarketMinds.Shared.Services
+namespace MarketMinds.Services
 {
     public class ProductViewNavigationService : IProductViewNavigationService
     {

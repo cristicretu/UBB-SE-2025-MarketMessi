@@ -1,7 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
-using Microsoft.UI.Xaml;
+using Windows.UI.Xaml;
 
-namespace MarketMinds.Shared.Services
+namespace MarketMinds.Services
 {
     /// <summary>
     /// Interface for ProductViewNavigationService to manage navigation to product-related views.
