@@ -1,7 +1,7 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using NUnit.Framework;
-using MarketMinds.Services.BorrowSortTypeConverterService;
+using MarketMinds.Shared.Services.BorrowSortTypeConverterService;
 
 namespace MarketMinds.Test.Services
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Repositories;
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Test.Services.AuctionProductsServiceTest;

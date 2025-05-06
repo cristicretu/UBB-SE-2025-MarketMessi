@@ -11,8 +11,8 @@ using BusinessLogicLayer.ViewModel;
 using MarketMinds;
 using MarketMinds.Views.Pages;
 using MarketMinds.Helpers.ViewModelHelpers;
-using MarketMinds.Services.AuctionSortTypeConverterService;
-using MarketMinds.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.AuctionSortTypeConverterService;
+using MarketMinds.Shared.Services.AuctionProductsService;
 
 namespace UiLayer
 {

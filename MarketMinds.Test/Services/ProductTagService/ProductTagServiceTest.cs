@@ -1,6 +1,6 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Repositories.ProductTagRepository;
-using MarketMinds.Services.ProductTagService;
+using MarketMinds.Shared.Services.ProductTagService;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +30,7 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void Setup()
         {
             _repositoryMock = new ProductTagRepositoryMock();
-            _service = new MarketMinds.Services.ProductTagService.ProductTagService(_repositoryMock);
+            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService(_repositoryMock);
         }
 
         #region GetAllProductTags Tests

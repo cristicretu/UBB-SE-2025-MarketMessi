@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.DreamTeam.ChatService;
+using MarketMinds.Shared.Services.DreamTeam.ChatService;
 
 namespace MarketMinds.ViewModels;
 

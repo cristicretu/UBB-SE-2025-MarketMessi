@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds;
 using MarketMinds.Helpers.Selectors;
-using MarketMinds.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.ViewModels;
 using Marketplace_SE.Utilities;
 using Marketplace_SE;
@@ -272,60 +272,39 @@ namespace MarketMinds.Views.Pages2
                 return;
             }
 
-            Window currentWindow = GetCurrentWindow();
-            if (currentWindow == null)
+            Windows.Storage.Pickers.FileOpenPicker picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".gif");
+
+            Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
             {
-                return;
-            }
-
-            AttachButton.IsEnabled = false;
-
-            try
-            {
-                string hexImageData = await imageUploadService.UploadImage(currentWindow);
-
-                if (!string.IsNullOrEmpty(hexImageData))
+                try
                 {
-                    byte[] bytes = null;
-                    try
+                    using (var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read))
                     {
-                        bytes = DataEncoder.HexDecode(hexImageData);
-                    }
-                    catch (Exception hexDecodeException)
-                    {
-                        AttachButton.IsEnabled = true;
-                        return;
-                    }
-
-                    if (bytes != null && bytes.Length > 0)
-                    {
-                        try
+                        // Pass the stream and file name to the service
+                        string imageUrl = await imageUploadService.UploadImage(stream.AsStreamForRead(), file.Name);
+                        if (!string.IsNullOrEmpty(imageUrl))
                         {
-                            var message = new Message
+                            // Prepend image URL to message box or handle as needed
+                            // For example, sending it as a message immediately:
+                            var imageMessage = await chatViewModel.SendMessageAsync(imageUrl);
+                            if (imageMessage != null)
                             {
-                                ConversationId = chatViewModel.CurrentConversationId,
-                                Content = DataEncoder.HexEncode(bytes),
-                                UserId = currentUser.Id
-                            };
-
-                            AddMessageToDisplay(message);
-                            // Send the image content as a message
-                            await chatViewModel.SendMessageAsync(DataEncoder.HexEncode(bytes));
-                        }
-                        catch (Exception ex)
-                        {
-                            ShowErrorDialog("Image send error", "Failed to send image message: " + ex.Message);
+                                AddMessageToDisplay(imageMessage);
+                            }
+                            // Or, if you want to add it to the text box for the user to send:
+                            // MessageBox.Text = imageUrl + "\n" + MessageBox.Text;
                         }
                     }
                 }
-            }
-            catch (Exception imageUploadException)
-            {
-                ShowErrorDialog("Image upload error", "Failed to upload image.");
-            }
-            finally
-            {
-                AttachButton.IsEnabled = true;
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error uploading image: {ex.Message}");
+                    ShowErrorDialog("Upload Error", "Failed to upload image: " + ex.Message);
+                }
             }
         }
 

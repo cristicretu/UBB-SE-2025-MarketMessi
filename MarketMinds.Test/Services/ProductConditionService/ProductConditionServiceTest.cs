@@ -1,5 +1,5 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services.ProductConditionService;
+using MarketMinds.Shared.Services.ProductConditionService;
 using NUnit.Framework;
 
 namespace MarketMinds.Test.Services.ProductConditionService
@@ -27,7 +27,7 @@ namespace MarketMinds.Test.Services.ProductConditionService
         public void Setup()
         {
             _mockRepository = new ConditionRepositoryMock();
-            _service = new MarketMinds.Services.ProductConditionService.ProductConditionService(_mockRepository);
+            _service = new MarketMinds.Shared.Services.ProductConditionService.ProductConditionService(_mockRepository);
         }
 
         #region GetAllProductConditions Tests

@@ -1,12 +1,12 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services;
-using MarketMinds.Services.AuctionProductsService;
-using MarketMinds.Services.BorrowProductsService;
-using MarketMinds.Services.BuyProductsService;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 using Moq;
 using NUnit.Framework;
 using System;
-using MarketMinds.Services.ListingCreationService;
+using MarketMinds.Shared.Services.ListingCreationService;
 
 namespace MarketMinds.Test.Services
 {

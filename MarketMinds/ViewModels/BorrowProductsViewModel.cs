@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BorrowProductsService;
 
 namespace ViewModelLayer.ViewModel;
 

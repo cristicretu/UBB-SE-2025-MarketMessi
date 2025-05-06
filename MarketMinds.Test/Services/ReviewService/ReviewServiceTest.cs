@@ -1,5 +1,5 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Services.ReviewService;
+using MarketMinds.Shared.Services.ReviewService;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

@@ -108,9 +108,9 @@ namespace MarketMinds.Test.Services.ProductTagService
             return new ProductRepositoryMock();
         }
 
-        private MarketMinds.Services.ProductTagService.ProductService CreateProductService(ProductRepositoryMock repository)
+        private MarketMinds.Shared.Services.ProductTagService.ProductService CreateProductService(ProductRepositoryMock repository)
         {
-            return new MarketMinds.Services.ProductTagService.ProductService(repository);
+            return new MarketMinds.Shared.Services.ProductTagService.ProductService(repository);
         }
 
         private Product CreateSampleProduct(int id, string title, Category category = null, Condition condition = null)
@@ -385,7 +385,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var products = new List<Product>();
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, null, null);
 
             // Assert
@@ -397,7 +397,7 @@ namespace MarketMinds.Test.Services.ProductTagService
         {
             // Act & Assert
             Assert.Throws<NullReferenceException>(() =>
-                MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+                MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                     null, null, null, null, null, null));
         }
 
@@ -415,7 +415,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var selectedConditions = new List<Condition> { condition1, condition2 };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, selectedConditions, null, null, null, null);
 
             // Assert
@@ -446,7 +446,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var selectedCategories = new List<Category> { category1, category2 };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, selectedCategories, null, null, null);
 
             // Assert
@@ -477,7 +477,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var selectedTags = new List<ProductTag> { tag1, tag2 };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, selectedTags, null, null);
 
             // Assert
@@ -510,7 +510,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var products = CreateProductsForTextSearch();
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, null, SEARCH_QUERY_COMPUTER);
 
             // Assert
@@ -524,7 +524,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var products = CreateProductsForTextSearch();
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, null, SEARCH_QUERY_COMPUTER);
 
             // Assert
@@ -543,7 +543,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, null, SEARCH_QUERY_TOP);
 
             // Assert
@@ -562,7 +562,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, null, SEARCH_QUERY_TOP);
 
             // Assert
@@ -590,7 +590,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var (category, condition, tag, products) = SetupAllFilterTypesTest();
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products,
                 new List<Condition> { condition },
                 new List<Category> { category },
@@ -610,7 +610,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var (category, condition, tag, products) = SetupAllFilterTypesTest();
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products,
                 new List<Condition> { condition },
                 new List<Category> { category },
@@ -655,7 +655,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var selectedConditions = new List<Condition> { condition };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, selectedConditions, null, null, null, null);
 
             // Assert
@@ -671,7 +671,7 @@ namespace MarketMinds.Test.Services.ProductTagService
             var selectedConditions = new List<Condition> { condition };
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, selectedConditions, null, null, null, null);
 
             // Assert
@@ -701,7 +701,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                 SORT_FIELD_ID_EXTERNAL_NAME, SORT_FIELD_ID_INTERNAL_NAME, true);
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, sortCondition, null);
 
             // Assert
@@ -720,7 +720,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                 SORT_FIELD_ID_EXTERNAL_NAME, SORT_FIELD_ID_INTERNAL_NAME, false);
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, sortCondition, null);
 
             // Assert
@@ -749,7 +749,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                 SORT_FIELD_TITLE_EXTERNAL_NAME, SORT_FIELD_TITLE_INTERNAL_NAME, true);
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, selectedTags, sortCondition, null);
 
             // Assert
@@ -794,7 +794,7 @@ namespace MarketMinds.Test.Services.ProductTagService
                 SORT_FIELD_CATEGORY_EXTERNAL_NAME, SORT_FIELD_CATEGORY_SERVICE, true);
 
             // Act
-            var result = MarketMinds.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
+            var result = MarketMinds.Shared.Services.ProductTagService.ProductService.GetSortedFilteredProducts(
                 products, null, null, null, sortCondition, null);
 
             // Assert

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.UserService;
+using MarketMinds.Shared.Services.UserService;
 
 namespace MarketMinds.ViewModels
 {

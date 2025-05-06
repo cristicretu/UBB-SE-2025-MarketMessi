@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ProductCategoryService;
+using MarketMinds.Shared.Services.ProductCategoryService;
 
 namespace ViewModelLayer.ViewModel
 {

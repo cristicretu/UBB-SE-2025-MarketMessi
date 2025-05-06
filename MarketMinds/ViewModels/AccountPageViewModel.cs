@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using Marketplace_SE.Utilities;
 using MarketMinds.Shared.Models;
 
@@ -123,7 +123,7 @@ namespace MarketMinds.ViewModels
                 }
 
                 // Attempt to get current user
-                CurrentUser = await accountPageService.GetCurrentLoggedInUserAsync();
+                CurrentUser = await accountPageService.GetCurrentLoggedInUserAsync(App.CurrentUser);
 
                 if (CurrentUser != null)
                 {

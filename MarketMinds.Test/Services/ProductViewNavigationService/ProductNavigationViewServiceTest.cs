@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using MarketMinds.Views.Pages;
 using Microsoft.UI.Xaml;
 using Moq;
@@ -20,14 +20,14 @@ namespace MarketMinds.Test.Services.ProductViewNavigationService
         private const string ARGUMENT_NAME_PRODUCT = "product";
         private const string ARGUMENT_NAME_SELLER = "seller";
 
-        private MarketMinds.Services.ProductViewNavigationService _navigationService;
+        private MarketMinds.Shared.Services.ProductViewNavigationService _navigationService;
         private User _seller;
         private BuyProduct _testProduct;
 
         [SetUp]
         public void Setup()
         {
-            _navigationService = new MarketMinds.Services.ProductViewNavigationService();
+            _navigationService = new MarketMinds.Shared.Services.ProductViewNavigationService();
             _seller = new User(SELLER_ID, SELLER_USERNAME, SELLER_EMAIL);
 
             // Initialize a test product if needed for non-null tests

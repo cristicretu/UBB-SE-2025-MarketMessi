@@ -1,13 +1,14 @@
 ﻿using System;
+using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.ReviewService;
+using MarketMinds.Shared.Services.ReviewService;
 using Microsoft.UI.Xaml;
-using MarketMinds.Services.ImagineUploadService;
-using MarketMinds.Services.ReviewCreationService;
+using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.ReviewCreationService;
 
 namespace ViewModelLayer.ViewModel
 {
@@ -41,18 +42,27 @@ namespace ViewModelLayer.ViewModel
             StatusMessage = string.Empty;
         }
 
-        public async Task<bool> AddImage(Window window)
+        public async Task<bool> AddImage(Stream imageStream, string fileName)
         {
+            if (imageStream == null)
+            {
+                StatusMessage = "No image stream provided.";
+                return false;
+            }
+            if (string.IsNullOrEmpty(fileName))
+            {
+                StatusMessage = "No file name provided.";
+                return false;
+            }
+
             try
             {
-                // Add temporary message
                 string originalImagesString = ImagesString;
                 StatusMessage = "Uploading image...";
 
-                // Attempt to upload the image
-                string updatedImagesString = await imageUploadService.AddImageToCollection(window, ImagesString);
+                // Call the updated service method
+                string updatedImagesString = await imageUploadService.AddImageToCollection(imageStream, fileName, ImagesString);
 
-                // Clear status if successful
                 if (updatedImagesString != originalImagesString)
                 {
                     ImagesString = updatedImagesString;
@@ -61,7 +71,13 @@ namespace ViewModelLayer.ViewModel
                 }
                 else
                 {
-                    StatusMessage = "No image selected or upload cancelled";
+                    // This case might mean the image was a duplicate and wasn't added, or no link was returned.
+                    // The service's AddImageToCollection already handles not adding duplicates.
+                    // If updatedImagesString is same as original, it means either upload failed to return a link OR it was a duplicate.
+                    // If it was a duplicate and already in ImagesString, this is fine.
+                    // If upload failed and returned null/empty, it would also be same as original if original was also null/empty.
+                    // Let's assume if it's same, it means no *new* unique image was added or upload failed.
+                    StatusMessage = "Image not added (possibly a duplicate or upload issue).";
                     return false;
                 }
             }

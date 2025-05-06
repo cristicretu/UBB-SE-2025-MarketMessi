@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,11 +20,12 @@ using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.Storage;
 using Microsoft.Extensions.Configuration;
-using MarketMinds.Services.ImagineUploadService;
-using MarketMinds.Services.ListingFormValidationService;
+using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.ListingFormValidationService;
 using ProductCategory = MarketMinds.Shared.Models.Category;
 using ProductCondition = MarketMinds.Shared.Models.Condition;
 using MarketMinds.ViewModels;
+using WinRT.Interop;
 
 namespace UiLayer
 {
@@ -226,18 +228,39 @@ namespace UiLayer
 
         private async void OnUploadImageClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            try
+            var picker = new FileOpenPicker();
+
+            // Get the current window handle (HWND)
+            var hwnd = WindowNative.GetWindowHandle(this.window); // Assuming 'this.window' is the correct MainWindow instance
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".gif");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
             {
-                string updatedImagesString = await imageUploadService.AddImageToCollection(window.CreateListingViewWindow, viewModel.ImagesString);
-                if (updatedImagesString != viewModel.ImagesString)
+                try
                 {
-                    viewModel.ImagesString = updatedImagesString;
-                    imagesTextBlock.Text = viewModel.ImagesString;
+                    using (var stream = await file.OpenAsync(FileAccessMode.Read))
+                    {
+                        // Pass the stream, file name, and current images string to the service
+                        string updatedImagesString = await imageUploadService.AddImageToCollection(stream.AsStreamForRead(), file.Name, viewModel.ImagesString);
+                        if (updatedImagesString != viewModel.ImagesString)
+                        {
+                            viewModel.ImagesString = updatedImagesString;
+                            imagesTextBlock.Text = viewModel.ImagesString; // Update the UI
+                        }
+                    }
                 }
-            }
-            catch (Exception imageUploadException)
-            {
-                await ShowErrorDialog("Image Upload Error", imageUploadException.Message);
+                catch (Exception imageUploadException)
+                {
+                    await ShowErrorDialog("Image Upload Error", imageUploadException.Message);
+                }
             }
         }
 

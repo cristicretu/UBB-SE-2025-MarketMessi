@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BorrowProductsService;
 using BusinessLogicLayer.ViewModel;
 using ViewModelLayer.ViewModel;
 using Microsoft.UI.Xaml;

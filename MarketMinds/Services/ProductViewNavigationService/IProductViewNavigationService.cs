@@ -1,5 +1,5 @@
 ﻿using MarketMinds.Shared.Models;
-using Microsoft.UI.Xaml;
+using Windows.UI.Xaml;
 
 namespace MarketMinds.Services
 {
@@ -13,13 +13,13 @@ namespace MarketMinds.Services
         /// </summary>
         /// <param name="product">The product for which the detail view is created.</param>
         /// <returns>A Window containing the product detail view.</returns>
-        Window CreateProductDetailView(Product product);
+        Microsoft.UI.Xaml.Window CreateProductDetailView(Product product);
 
         /// <summary>
         /// Creates a view to display reviews for a specific seller.
         /// </summary>
         /// <param name="seller">The seller whose reviews are to be displayed.</param>
         /// <returns>A Window containing the seller reviews view.</returns>
-        Window CreateSellerReviewsView(User seller);
+        Microsoft.UI.Xaml.Window CreateSellerReviewsView(User seller);
     }
 }

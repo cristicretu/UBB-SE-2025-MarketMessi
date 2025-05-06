@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using MarketMinds.Shared.Models;
-using MarketMinds.Services;
+using MarketMinds.Shared.Services;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
-using MarketMinds.Services.ProductPaginationService;
+using MarketMinds.Shared.Services.ProductPaginationService;
 
 namespace MarketMinds.Test.Services
 {

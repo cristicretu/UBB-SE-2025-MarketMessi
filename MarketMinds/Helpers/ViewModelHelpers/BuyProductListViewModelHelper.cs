@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using ViewModelLayer.ViewModel;
 using BusinessLogicLayer.ViewModel;
-using MarketMinds.Services;
-using MarketMinds.Services.ProductPaginationService;
-using MarketMinds.Services.BuyProductsService;
+using MarketMinds.Shared.Services;
+using MarketMinds.Shared.Services.ProductPaginationService;
+using MarketMinds.Shared.Services.BuyProductsService;
 
 namespace MarketMinds.Helpers.ViewModelHelpers
 {
