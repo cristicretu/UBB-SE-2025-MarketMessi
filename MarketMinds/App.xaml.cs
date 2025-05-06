@@ -257,16 +257,16 @@ namespace MarketMinds
             BasketRepository = new BasketServiceProxy(Configuration);
             BuyProductsRepository = new BuyProductsServiceProxy(Configuration);
 
-            // Instantiate services
+            // Initialize services
+            UserService = new UserService(Configuration);
+            ReviewsService = new ReviewsService(Configuration, UserService, CurrentUser);
             BuyProductsService = new BuyProductsService(BuyProductsRepository);
             BorrowProductsService = new BorrowProductsService(BorrowProductsRepository);
             AuctionProductsService = new AuctionProductsService(AuctionProductsRepository);
             CategoryService = new ProductCategoryService(ProductCategoryRepository);
             TagService = new ProductTagService(Configuration);
             ConditionService = new ProductConditionService(ProductConditionRepository);
-            ReviewsService = new ReviewsService(Configuration);
             BasketService = new BasketService(BasketRepository);
-            UserService = new UserService(Configuration);
             AccountPageService = new AccountPageService(Configuration);
             ConversationService = new ConversationService(ConversationRepository);
             MessageService = new MessageService(MessageRepository);

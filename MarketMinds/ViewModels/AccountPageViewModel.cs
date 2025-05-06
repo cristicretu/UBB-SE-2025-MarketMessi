@@ -123,7 +123,7 @@ namespace MarketMinds.ViewModels
                 }
 
                 // Attempt to get current user
-                CurrentUser = await accountPageService.GetCurrentLoggedInUserAsync();
+                CurrentUser = await accountPageService.GetCurrentLoggedInUserAsync(App.CurrentUser);
 
                 if (CurrentUser != null)
                 {

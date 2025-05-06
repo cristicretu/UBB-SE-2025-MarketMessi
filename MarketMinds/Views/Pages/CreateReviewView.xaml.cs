@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.IO;
 using System;
 using System.Collections.Generic;
 using ViewModelLayer.ViewModel;
@@ -13,6 +14,7 @@ using MarketMinds.Shared.Models;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using MarketMinds.Shared.Services;
+using WinRT.Interop;
 
 namespace MarketMinds
 {
@@ -46,7 +48,35 @@ namespace MarketMinds
 
         private async void HandleAddImage_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            await ViewModel.AddImage(this);
+            var picker = new FileOpenPicker();
+            var hwnd = WindowNative.GetWindowHandle(this);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                try
+                {
+                    using (var stream = await file.OpenAsync(FileAccessMode.Read))
+                    {
+                        await ViewModel.AddImage(stream.AsStreamForRead(), file.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ViewModel.StatusMessage = "Error selecting or reading image: " + ex.Message;
+                }
+            }
+            else
+            {
+                ViewModel.StatusMessage = "No image selected.";
+            }
             UpdateStatusMessage();
         }
 
@@ -89,7 +119,35 @@ namespace MarketMinds
 
         private async void OnUploadImageClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            await ViewModel.AddImage(this);
+            var picker = new FileOpenPicker();
+            var hwnd = WindowNative.GetWindowHandle(this);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                try
+                {
+                    using (var stream = await file.OpenAsync(FileAccessMode.Read))
+                    {
+                        await ViewModel.AddImage(stream.AsStreamForRead(), file.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ViewModel.StatusMessage = "Error selecting or reading image: " + ex.Message;
+                }
+            }
+            else
+            {
+                ViewModel.StatusMessage = "No image selected.";
+            }
             UpdateStatusMessage();
         }
         private void UpdateStatusMessage()
