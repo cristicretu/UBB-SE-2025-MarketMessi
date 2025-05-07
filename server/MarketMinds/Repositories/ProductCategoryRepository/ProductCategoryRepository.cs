@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.ProductCategoryRepository
 {
@@ -31,7 +32,7 @@ namespace MarketMinds.Repositories.ProductCategoryRepository
             }
         }
 
-        public Category CreateProductCategory(string displayTitle, string? description)
+        public Category CreateProductCategory(string displayTitle, string description)
         {
             try
             {
@@ -68,6 +69,22 @@ namespace MarketMinds.Repositories.ProductCategoryRepository
                 Console.WriteLine($"Error in DeleteProductCategory using EF: {exception.Message}");
                 throw;
             }
+        }
+
+        // Stub implementations for Raw methods (these won't be called server-side)
+        public string GetAllProductCategoriesRaw()
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string CreateProductCategoryRaw(string displayTitle, string description)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public void DeleteProductCategoryRaw(string displayTitle)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
         }
     }
 }

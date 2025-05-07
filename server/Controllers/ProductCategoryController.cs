@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ProductCategoryRepository;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Controllers
 {

@@ -3,7 +3,7 @@ using System.Net;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ProductConditionRepository;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Controllers
 {

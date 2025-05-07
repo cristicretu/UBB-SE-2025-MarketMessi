@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.ProductConditionRepository
 {
@@ -74,6 +75,22 @@ namespace MarketMinds.Repositories.ProductConditionRepository
                 Console.WriteLine($"Error in DeleteProductCondition using EF: {exception.Message}");
                 throw;
             }
+        }
+
+        // Stub implementations for Raw methods (these won't be called server-side)
+        public string GetAllProductConditionsRaw()
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string CreateProductConditionRaw(string displayTitle, string description)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public void DeleteProductConditionRaw(string displayTitle)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
         }
     }
 }

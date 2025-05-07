@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace MarketMinds.Repositories.BasketRepository
 {
@@ -224,6 +226,67 @@ namespace MarketMinds.Repositories.BasketRepository
             {
                 throw new ArgumentException("Product ID cannot be negative");
             }
+        }
+
+        // Stub implementations for Raw methods (these won't be called server-side)
+        public HttpResponseMessage AddProductToBasketRaw(int userId, int productId, int quantity)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string GetBasketByUserRaw(int userId)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public HttpResponseMessage RemoveProductFromBasketRaw(int userId, int productId)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public HttpResponseMessage UpdateProductQuantityRaw(int userId, int productId, int quantity)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public HttpResponseMessage ClearBasketRaw(int userId)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string ValidateBasketBeforeCheckOutRaw(int basketId)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public HttpResponseMessage ApplyPromoCodeRaw(int basketId, string code)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string GetPromoCodeDiscountRaw(string code)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string CalculateBasketTotalsRaw(int basketId, string promoCode)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public HttpResponseMessage DecreaseProductQuantityRaw(int userId, int productId)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public HttpResponseMessage IncreaseProductQuantityRaw(int userId, int productId)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public Task<HttpResponseMessage> CheckoutBasketRaw(int userId, int basketId, object requestData)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
         }
     }
 }
