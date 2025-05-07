@@ -1,22 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using MarketMinds.Shared.ProxyRepository;
 
 namespace MarketMinds.Shared.Services.ProductCategoryService
 {
     public class ProductCategoryService : IProductCategoryService
     {
-        private readonly IProductCategoryRepository productCategoryRepository;
+        private readonly ProductCategoryProxyRepository productCategoryRepository;
 
         public ProductCategoryService(IProductCategoryRepository repository)
         {
-            productCategoryRepository = repository;
+            productCategoryRepository = repository as ProductCategoryProxyRepository
+                ?? throw new ArgumentException("Repository must be of type ProductCategoryProxyRepository");
         }
 
         public List<Category> GetAllProductCategories()
         {
-            var categories = productCategoryRepository.GetAllProductCategories();
+            var responseJson = productCategoryRepository.GetAllProductCategoriesRaw();
+            var categories = new List<Category>();
+            var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
+
+            if (responseJsonArray != null)
+            {
+                foreach (var responseJsonItem in responseJsonArray)
+                {
+                    var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
+                    var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
+                    var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
+                    categories.Add(new Category(id, name, description));
+                }
+            }
+
             if (categories == null)
             {
                 throw new InvalidOperationException("Failed to retrieve product categories.");
@@ -41,7 +58,19 @@ namespace MarketMinds.Shared.Services.ProductCategoryService
                 throw new ArgumentException("Category description cannot exceed 500 characters.", nameof(description));
             }
 
-            var category = productCategoryRepository.CreateProductCategory(name, description);
+            var json = productCategoryRepository.CreateProductCategoryRaw(name, description);
+            var jsonObject = JsonNode.Parse(json);
+
+            if (jsonObject == null)
+            {
+                throw new InvalidOperationException("Failed to create product category.");
+            }
+
+            var id = jsonObject["id"]?.GetValue<int>() ?? 0;
+            var categoryName = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
+            var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
+            var category = new Category(id, categoryName, categoryDescription);
+
             if (category == null)
             {
                 throw new InvalidOperationException("Failed to create product category.");
@@ -57,7 +86,7 @@ namespace MarketMinds.Shared.Services.ProductCategoryService
                 throw new ArgumentException("Category name cannot be null or empty.", nameof(name));
             }
 
-            productCategoryRepository.DeleteProductCategory(name);
+            productCategoryRepository.DeleteProductCategoryRaw(name);
         }
     }
 
