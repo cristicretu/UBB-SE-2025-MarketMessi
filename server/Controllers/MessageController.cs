@@ -15,7 +15,7 @@ namespace Server.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IMessageRepository messageRepository;
-        
+
         public MessageController(IMessageRepository messageRepository)
         {
             this.messageRepository = messageRepository;
@@ -30,16 +30,16 @@ namespace Server.Controllers
             {
                 return BadRequest("Request body cannot be null");
             }
-            
+
             try
             {
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                
+
                 bool isWelcomeMessage = false;
-                try 
+                try
                 {
                     var existingMessages = await messageRepository.GetMessagesByConversationIdAsync(createMessageDto.ConversationId);
                     isWelcomeMessage = existingMessages == null || existingMessages.Count == 0;
@@ -48,13 +48,9 @@ namespace Server.Controllers
                 {
                     // Silently continue
                 }
-                
-                var createdMessage = await messageRepository.CreateMessageAsync(
-                    createMessageDto.ConversationId,
-                    createMessageDto.UserId,
-                    createMessageDto.Content
-                );
-                
+
+                var createdMessage = await messageRepository.CreateMessageAsync(createMessageDto);
+
                 var messageDto = new MessageDto
                 {
                     Id = createdMessage.Id,
@@ -62,7 +58,7 @@ namespace Server.Controllers
                     UserId = createdMessage.UserId,
                     Content = createdMessage.Content
                 };
-                
+
                 return CreatedAtAction(nameof(GetMessagesByConversation), new { conversationId = messageDto.ConversationId }, messageDto);
             }
             catch (Exception ex)
@@ -70,7 +66,7 @@ namespace Server.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-        
+
         [HttpGet("conversation/{conversationId}")]
         [ProducesResponseType(typeof(List<MessageDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetMessagesByConversation(int conversationId)
@@ -78,7 +74,7 @@ namespace Server.Controllers
             try
             {
                 var messages = await messageRepository.GetMessagesByConversationIdAsync(conversationId);
-                
+
                 var messageDtos = messages.Select(message => new MessageDto
                 {
                     Id = message.Id,
@@ -86,7 +82,7 @@ namespace Server.Controllers
                     UserId = message.UserId,
                     Content = message.Content
                 }).ToList();
-                
+
                 return Ok(messageDtos);
             }
             catch (Exception ex)

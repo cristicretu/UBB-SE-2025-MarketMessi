@@ -58,13 +58,13 @@ namespace MarketMinds.Shared.ProxyRepository
 
             if (jsonObject == null)
             {
-                throw new InvalidOperationException("Failed to parse the server response.");
+                return null;
             }
 
             var id = jsonObject["id"]?.GetValue<int>() ?? 0;
             var categoryName = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
             var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new Category(categoryName, categoryDescription);
+            return new Category(id, categoryName, categoryDescription);
         }
 
         public void DeleteProductCategory(string name)
