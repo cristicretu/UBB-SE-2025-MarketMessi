@@ -32,16 +32,9 @@ namespace MarketMinds.Shared.ProxyRepository
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        public async Task<Message> CreateMessageAsync(CreateMessageDto newMessage)
         {
-            var createDto = new
-            {
-                ConversationId = conversationId,
-                UserId = userId,
-                Content = content
-            };
-
-            var response = await httpClient.PostAsJsonAsync("message", createDto);
+            var response = await httpClient.PostAsJsonAsync("message", newMessage);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<Message>();

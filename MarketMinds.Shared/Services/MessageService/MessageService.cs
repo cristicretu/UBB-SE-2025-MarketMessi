@@ -19,7 +19,27 @@ namespace MarketMinds.Shared.Services.MessageService
 
         public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            return await messageRepository.CreateMessageAsync(conversationId, userId, content);
+            if (conversationId <= 0)
+            {
+                throw new ArgumentException("Conversation ID must be greater than zero.", nameof(conversationId));
+            }
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than zero.", nameof(userId));
+            }
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new ArgumentException("Content cannot be null or empty.", nameof(content));
+            }
+
+            var createDto = new CreateMessageDto
+            {
+                ConversationId = conversationId,
+                UserId = userId,
+                Content = content
+            };
+
+            return await messageRepository.CreateMessageAsync(createDto);
         }
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
