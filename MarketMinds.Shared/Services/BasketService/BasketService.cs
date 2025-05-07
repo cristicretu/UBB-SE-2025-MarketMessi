@@ -28,12 +28,19 @@ namespace MarketMinds.Shared.Services.BasketService
         private const int INVALID_BASKET_ID = -1;
 
         private readonly IBasketRepository basketRepository;
+        private readonly BasketProxyRepository proxyRepository;
         private readonly JsonSerializerOptions jsonOptions;
 
         // Constructor with configuration
         public BasketService(IBasketRepository basketRepository)
         {
             this.basketRepository = basketRepository;
+            this.proxyRepository = basketRepository as BasketProxyRepository;
+
+            if (this.proxyRepository == null && basketRepository.GetType().Name.Contains("Proxy"))
+            {
+                throw new InvalidOperationException("Expected BasketProxyRepository but received incompatible type.");
+            }
 
             // Configure JSON options
             jsonOptions = new JsonSerializerOptions
@@ -65,7 +72,15 @@ namespace MarketMinds.Shared.Services.BasketService
                 int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
                 // Make the API call to add product to basket
-                basketRepository.AddProductToBasketRaw(userId, productId, limitedQuantity);
+                if (proxyRepository != null)
+                {
+                    proxyRepository.AddProductToBasketRaw(userId, productId, limitedQuantity);
+                }
+                else
+                {
+                    // If not a proxy repository, use the standard interface method
+                    basketRepository.AddItemToBasket(userId, productId, limitedQuantity);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -82,41 +97,49 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Use the proxy repository to get the raw JSON response
-                var responseJson = basketRepository.GetBasketByUserRaw(user.Id);
-
-                try
+                if (proxyRepository != null)
                 {
-                    // Create improved JsonSerializerOptions optimized for the client
-                    var options = new JsonSerializerOptions
+                    // Use the proxy repository to get the raw JSON response
+                    var responseJson = proxyRepository.GetBasketByUserRaw(user.Id);
+
+                    try
                     {
-                        PropertyNameCaseInsensitive = true,
-                        AllowTrailingCommas = true,
-                        ReadCommentHandling = JsonCommentHandling.Skip,
-                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        ReferenceHandler = ReferenceHandler.IgnoreCycles
-                    };
+                        // Create improved JsonSerializerOptions optimized for the client
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true,
+                            AllowTrailingCommas = true,
+                            ReadCommentHandling = JsonCommentHandling.Skip,
+                            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                            ReferenceHandler = ReferenceHandler.IgnoreCycles
+                        };
 
-                    // Add UserJsonConverter to handle password field type mismatch
-                    options.Converters.Add(new MarketMinds.Shared.Services.UserJsonConverter());
+                        // Add UserJsonConverter to handle password field type mismatch
+                        options.Converters.Add(new MarketMinds.Shared.Services.UserJsonConverter());
 
-                    // Deserialize directly
-                    var basket = JsonSerializer.Deserialize<Basket>(responseJson, options);
+                        // Deserialize directly
+                        var basket = JsonSerializer.Deserialize<Basket>(responseJson, options);
 
-                    // Make sure we have an Items collection
-                    if (basket.Items == null)
-                    {
-                        basket.Items = new List<BasketItem>();
+                        // Make sure we have an Items collection
+                        if (basket.Items == null)
+                        {
+                            basket.Items = new List<BasketItem>();
+                        }
+
+                        return basket;
                     }
-
-                    return basket;
+                    catch (JsonException ex)
+                    {
+                        // Try to fallback to a simpler deserialization
+                        var fallbackBasket = new Basket { Id = user.Id, Items = new List<BasketItem>() };
+                        return fallbackBasket;
+                    }
                 }
-                catch (JsonException ex)
+                else
                 {
-                    // Try to fallback to a simpler deserialization
-                    var fallbackBasket = new Basket { Id = user.Id, Items = new List<BasketItem>() };
-                    return fallbackBasket;
+                    // Use the standard interface method
+                    return basketRepository.GetBasketByUserId(user.Id);
                 }
             }
             catch (HttpRequestException ex)
@@ -142,8 +165,16 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Make the API call to remove product from basket
-                basketRepository.RemoveProductFromBasketRaw(userId, productId);
+                if (proxyRepository != null)
+                {
+                    // Make the API call to remove product from basket
+                    proxyRepository.RemoveProductFromBasketRaw(userId, productId);
+                }
+                else
+                {
+                    // Use the standard interface method
+                    basketRepository.RemoveItemByProductId(userId, productId);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -175,8 +206,16 @@ namespace MarketMinds.Shared.Services.BasketService
                 // Apply the maximum quantity limit
                 int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
 
-                // Make the API call to update product quantity
-                basketRepository.UpdateProductQuantityRaw(userId, productId, limitedQuantity);
+                if (proxyRepository != null)
+                {
+                    // Make the API call to update product quantity
+                    proxyRepository.UpdateProductQuantityRaw(userId, productId, limitedQuantity);
+                }
+                else
+                {
+                    // Use the standard interface method
+                    basketRepository.UpdateItemQuantityByProductId(userId, productId, limitedQuantity);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -228,8 +267,16 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Clear the basket through API
-                basketRepository.ClearBasketRaw(userId);
+                if (proxyRepository != null)
+                {
+                    // Clear the basket through API
+                    proxyRepository.ClearBasketRaw(userId);
+                }
+                else
+                {
+                    // Use the standard interface method
+                    basketRepository.ClearBasket(userId);
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -250,23 +297,32 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Validate basket through API
-                var responseContent = basketRepository.ValidateBasketBeforeCheckOutRaw(basketId);
+                if (proxyRepository != null)
+                {
+                    // Validate basket through API
+                    var responseContent = proxyRepository.ValidateBasketBeforeCheckOutRaw(basketId);
 
-                try
-                {
-                    return JsonSerializer.Deserialize<bool>(responseContent, jsonOptions);
-                }
-                catch (JsonException)
-                {
-                    // Try a simple parsing approach as fallback
-                    responseContent = responseContent.Trim().ToLower();
-                    if (responseContent == "true")
+                    try
                     {
-                        return true;
+                        return JsonSerializer.Deserialize<bool>(responseContent, jsonOptions);
                     }
+                    catch (JsonException)
+                    {
+                        // Try a simple parsing approach as fallback
+                        responseContent = responseContent.Trim().ToLower();
+                        if (responseContent == "true")
+                        {
+                            return true;
+                        }
 
-                    return false;
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Default validation logic when not using proxy
+                    var items = basketRepository.GetBasketItems(basketId);
+                    return items != null && items.Count > 0;
                 }
             }
             catch (HttpRequestException ex)
@@ -292,12 +348,20 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Apply promo code through API
-                var response = basketRepository.ApplyPromoCodeRaw(basketId, code);
-
-                if (!response.IsSuccessStatusCode)
+                if (proxyRepository != null)
                 {
-                    throw new InvalidOperationException("Invalid promo code");
+                    // Apply promo code through API
+                    var response = proxyRepository.ApplyPromoCodeRaw(basketId, code);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new InvalidOperationException("Invalid promo code");
+                    }
+                }
+                else
+                {
+                    // Default behavior for non-proxy implementations
+                    // No-op, as non-proxy implementations may not support promo codes
                 }
             }
             catch (HttpRequestException ex)
@@ -330,16 +394,24 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                var responseJson = basketRepository.GetPromoCodeDiscountRaw(code);
+                if (proxyRepository != null)
+                {
+                    var responseJson = proxyRepository.GetPromoCodeDiscountRaw(code);
 
-                try
-                {
-                    var result = JsonSerializer.Deserialize<DiscountResponse>(responseJson, jsonOptions);
-                    double discount = subtotal * result.DiscountRate;
-                    return discount;
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<DiscountResponse>(responseJson, jsonOptions);
+                        double discount = subtotal * result.DiscountRate;
+                        return discount;
+                    }
+                    catch (JsonException)
+                    {
+                        return MINIMUM_DISCOUNT;
+                    }
                 }
-                catch (JsonException)
+                else
                 {
+                    // Default behavior for non-proxy implementations
                     return MINIMUM_DISCOUNT;
                 }
             }
@@ -359,18 +431,42 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Get totals from API
-                var responseJson = basketRepository.CalculateBasketTotalsRaw(basketId, promoCode);
+                if (proxyRepository != null)
+                {
+                    // Get totals from API
+                    var responseJson = proxyRepository.CalculateBasketTotalsRaw(basketId, promoCode);
 
-                try
-                {
-                    var totals = JsonSerializer.Deserialize<BasketTotals>(responseJson, jsonOptions);
-                    return totals;
+                    try
+                    {
+                        var totals = JsonSerializer.Deserialize<BasketTotals>(responseJson, jsonOptions);
+                        return totals;
+                    }
+                    catch (JsonException)
+                    {
+                        // Create a default totals object
+                        return new BasketTotals();
+                    }
                 }
-                catch (JsonException)
+                else
                 {
-                    // Create a default totals object
-                    return new BasketTotals();
+                    // Calculate totals manually for non-proxy implementations
+                    var totals = new BasketTotals();
+                    var items = basketRepository.GetBasketItems(basketId);
+
+                    if (items != null)
+                    {
+                        totals.Subtotal = items.Sum(i => i.Price * i.Quantity);
+
+                        // Apply discount if promo code provided
+                        if (!string.IsNullOrEmpty(promoCode))
+                        {
+                            totals.Discount = GetPromoCodeDiscount(promoCode, totals.Subtotal);
+                        }
+
+                        totals.TotalAmount = totals.Subtotal - totals.Discount;
+                    }
+
+                    return totals;
                 }
             }
             catch (HttpRequestException ex)
@@ -396,8 +492,26 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Decrease quantity through API
-                basketRepository.DecreaseProductQuantityRaw(userId, productId);
+                if (proxyRepository != null)
+                {
+                    // Decrease quantity through API
+                    proxyRepository.DecreaseProductQuantityRaw(userId, productId);
+                }
+                else
+                {
+                    // For non-proxy implementations, get current quantity and decrease by 1
+                    var basket = basketRepository.GetBasketByUserId(userId);
+                    var item = basket?.Items?.FirstOrDefault(i => i.ProductId == productId);
+
+                    if (item != null && item.Quantity > 1)
+                    {
+                        basketRepository.UpdateItemQuantityByProductId(userId, productId, item.Quantity - 1);
+                    }
+                    else if (item != null && item.Quantity == 1)
+                    {
+                        basketRepository.RemoveItemByProductId(userId, productId);
+                    }
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -422,8 +536,28 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                // Increase quantity through API
-                basketRepository.IncreaseProductQuantityRaw(userId, productId);
+                if (proxyRepository != null)
+                {
+                    // Increase quantity through API
+                    proxyRepository.IncreaseProductQuantityRaw(userId, productId);
+                }
+                else
+                {
+                    // For non-proxy implementations, get current quantity and increase by 1
+                    var basket = basketRepository.GetBasketByUserId(userId);
+                    var item = basket?.Items?.FirstOrDefault(i => i.ProductId == productId);
+
+                    if (item != null)
+                    {
+                        int newQuantity = Math.Min(item.Quantity + 1, MAXIMUM_QUANTITY_PER_ITEM);
+                        basketRepository.UpdateItemQuantityByProductId(userId, productId, newQuantity);
+                    }
+                    else
+                    {
+                        // If item doesn't exist, add it with quantity 1
+                        basketRepository.AddItemToBasket(userId, productId, 1);
+                    }
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -481,28 +615,37 @@ namespace MarketMinds.Shared.Services.BasketService
 
                 System.Diagnostics.Debug.WriteLine($"Checkout request: BasketId={basketId}, Discount={basketTotals.Discount}, Total={basketTotals.TotalAmount}");
 
-                // Call the account API to create the order
-                var response = await basketRepository.CheckoutBasketRaw(userId, basketId, request);
-
-                // Handle the response
-                if (response.IsSuccessStatusCode)
+                if (proxyRepository != null)
                 {
-                    // If successful order creation, the API should have cleared the basket already
-                    System.Diagnostics.Debug.WriteLine($"Successfully created order from basket {basketId} for user {userId}");
-                    return true;
+                    // Call the account API to create the order
+                    var response = await proxyRepository.CheckoutBasketRaw(userId, basketId, request);
+
+                    // Handle the response
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // If successful order creation, the API should have cleared the basket already
+                        System.Diagnostics.Debug.WriteLine($"Successfully created order from basket {basketId} for user {userId}");
+                        return true;
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        System.Diagnostics.Debug.WriteLine($"Error creating order: {response.StatusCode}, Content: {errorContent}");
+
+                        // If it's a balance issue (400 status code), throw a more user-friendly message
+                        if (response.StatusCode == System.Net.HttpStatusCode.BadRequest &&
+                            errorContent.Contains("Insufficient funds"))
+                        {
+                            throw new InvalidOperationException(errorContent);
+                        }
+
+                        return false;
+                    }
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"Error creating order: {response.StatusCode}, Content: {errorContent}");
-
-                    // If it's a balance issue (400 status code), throw a more user-friendly message
-                    if (response.StatusCode == System.Net.HttpStatusCode.BadRequest &&
-                        errorContent.Contains("Insufficient funds"))
-                    {
-                        throw new InvalidOperationException(errorContent);
-                    }
-
+                    // For non-proxy implementations, we'd need a different checkout mechanism
+                    // This is a placeholder - in a real implementation, you'd process the order locally
                     return false;
                 }
             }
@@ -518,6 +661,123 @@ namespace MarketMinds.Shared.Services.BasketService
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Could not checkout basket: {ex.Message}", ex);
+            }
+        }
+
+        // New methods for the standard IBasketRepository operations with validation
+        public Basket GetBasketByUserId(int userId)
+        {
+            if (userId <= MINIMUM_USER_ID)
+            {
+                throw new ArgumentException("Invalid user ID");
+            }
+
+            try
+            {
+                return basketRepository.GetBasketByUserId(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Failed to retrieve user's basket: {ex.Message}", ex);
+            }
+        }
+
+        public void RemoveItemByProductId(int basketId, int productId)
+        {
+            if (basketId <= MINIMUM_BASKET_ID)
+            {
+                throw new ArgumentException("Invalid basket ID");
+            }
+
+            if (productId <= MINIMUM_ITEM_ID)
+            {
+                throw new ArgumentException("Invalid product ID");
+            }
+
+            try
+            {
+                basketRepository.RemoveItemByProductId(basketId, productId);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Failed to remove item from basket: {ex.Message}", ex);
+            }
+        }
+
+        public List<BasketItem> GetBasketItems(int basketId)
+        {
+            if (basketId <= MINIMUM_BASKET_ID)
+            {
+                throw new ArgumentException("Invalid basket ID");
+            }
+
+            try
+            {
+                return basketRepository.GetBasketItems(basketId);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Failed to retrieve basket items: {ex.Message}", ex);
+            }
+        }
+
+        public void AddItemToBasket(int basketId, int productId, int quantity)
+        {
+            if (basketId <= MINIMUM_BASKET_ID)
+            {
+                throw new ArgumentException("Invalid basket ID");
+            }
+
+            if (productId <= MINIMUM_ITEM_ID)
+            {
+                throw new ArgumentException("Invalid product ID");
+            }
+
+            if (quantity < MINIMUM_QUANTITY)
+            {
+                throw new ArgumentException("Quantity cannot be negative");
+            }
+
+            try
+            {
+                // Apply the maximum quantity limit
+                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
+
+                basketRepository.AddItemToBasket(basketId, productId, limitedQuantity);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Failed to add item to basket: {ex.Message}", ex);
+            }
+        }
+
+        public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
+        {
+            if (basketId <= MINIMUM_BASKET_ID)
+            {
+                throw new ArgumentException("Invalid basket ID");
+            }
+
+            if (productId <= MINIMUM_ITEM_ID)
+            {
+                throw new ArgumentException("Invalid product ID");
+            }
+
+            if (quantity < MINIMUM_QUANTITY)
+            {
+                throw new ArgumentException("Quantity cannot be negative");
+            }
+
+            try
+            {
+                // Apply the maximum quantity limit
+                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
+
+                basketRepository.UpdateItemQuantityByProductId(basketId, productId, limitedQuantity);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Failed to update item quantity: {ex.Message}", ex);
             }
         }
     }

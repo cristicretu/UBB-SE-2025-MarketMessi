@@ -13,16 +13,6 @@ namespace MarketMinds.Shared.ProxyRepository
 {
     public class BasketProxyRepository : IBasketRepository
     {
-        public const int MAXIMUM_QUANTITY_PER_ITEM = 10;
-        private const int MINIMUM_USER_ID = 0;
-        private const int MINIMUM_ITEM_ID = 0;
-        private const int MINIMUM_BASKET_ID = 0;
-        private const double MINIMUM_DISCOUNT = 0;
-        private const int MINIMUM_QUANTITY = 0;
-        private const int DEFAULT_QUANTITY = 1;
-        private const int INVALID_USER_ID = -1;
-        private const int INVALID_BASKET_ID = -1;
-
         private readonly HttpClient httpClient;
         private readonly JsonSerializerOptions jsonOptions;
 
@@ -46,7 +36,6 @@ namespace MarketMinds.Shared.ProxyRepository
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                // Changed from Preserve to IgnoreCycles
                 ReferenceHandler = ReferenceHandler.IgnoreCycles
             };
 
@@ -54,14 +43,78 @@ namespace MarketMinds.Shared.ProxyRepository
             httpClient.Timeout = TimeSpan.FromSeconds(30);
         }
 
-        public HttpResponseMessage AddProductToBasketRaw(int userId, int productId, int quantity)
+        public Basket GetBasketByUserId(int userId)
+        {
+            string fullUrl = $"{httpClient.BaseAddress.AbsoluteUri.Replace("api/basket/", "")}api/basket/user/{userId}";
+            var response = httpClient.GetAsync(fullUrl).Result;
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = response.Content.ReadAsStringAsync().Result;
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
+            };
+
+            options.Converters.Add(new MarketMinds.Shared.Services.UserJsonConverter());
+            var basket = JsonSerializer.Deserialize<Basket>(responseJson, options) ?? new Basket { Id = userId, Items = new List<BasketItem>() };
+
+            // Make sure we have an Items collection
+            if (basket.Items == null)
+            {
+                basket.Items = new List<BasketItem>();
+            }
+
+            return basket;
+        }
+
+        public void RemoveItemByProductId(int basketId, int productId)
+        {
+            var response = httpClient.DeleteAsync($"{basketId}/product/{productId}").Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        public List<BasketItem> GetBasketItems(int basketId)
+        {
+            var response = httpClient.GetAsync($"{basketId}/items").Result;
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = response.Content.ReadAsStringAsync().Result;
+            var items = JsonSerializer.Deserialize<List<BasketItem>>(responseJson, jsonOptions) ?? new List<BasketItem>();
+            return items;
+        }
+
+        public void AddItemToBasket(int basketId, int productId, int quantity)
+        {
+            var response = httpClient.PostAsJsonAsync($"{basketId}/product/{productId}", quantity).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
+        {
+            var response = httpClient.PutAsJsonAsync($"{basketId}/product/{productId}", quantity).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        public void ClearBasket(int basketId)
+        {
+            var response = httpClient.DeleteAsync($"{basketId}/clear").Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        // Support methods needed by BasketService
+        internal HttpResponseMessage AddProductToBasketRaw(int userId, int productId, int quantity)
         {
             var response = httpClient.PostAsJsonAsync($"user/{userId}/product/{productId}", quantity).Result;
             response.EnsureSuccessStatusCode();
             return response;
         }
 
-        public string GetBasketByUserRaw(int userId)
+        internal string GetBasketByUserRaw(int userId)
         {
             string fullUrl = $"{httpClient.BaseAddress.AbsoluteUri.Replace("api/basket/", "")}api/basket/user/{userId}";
             var response = httpClient.GetAsync(fullUrl).Result;
@@ -69,41 +122,41 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public HttpResponseMessage RemoveProductFromBasketRaw(int userId, int productId)
+        internal HttpResponseMessage RemoveProductFromBasketRaw(int userId, int productId)
         {
             var response = httpClient.DeleteAsync($"user/{userId}/product/{productId}").Result;
             response.EnsureSuccessStatusCode();
             return response;
         }
 
-        public HttpResponseMessage UpdateProductQuantityRaw(int userId, int productId, int quantity)
+        internal HttpResponseMessage UpdateProductQuantityRaw(int userId, int productId, int quantity)
         {
             var response = httpClient.PutAsJsonAsync($"user/{userId}/product/{productId}", quantity).Result;
             response.EnsureSuccessStatusCode();
             return response;
         }
 
-        public HttpResponseMessage ClearBasketRaw(int userId)
+        internal HttpResponseMessage ClearBasketRaw(int userId)
         {
             var response = httpClient.DeleteAsync($"user/{userId}/clear").Result;
             response.EnsureSuccessStatusCode();
             return response;
         }
 
-        public string ValidateBasketBeforeCheckOutRaw(int basketId)
+        internal string ValidateBasketBeforeCheckOutRaw(int basketId)
         {
             var response = httpClient.GetAsync($"{basketId}/validate").Result;
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public HttpResponseMessage ApplyPromoCodeRaw(int basketId, string code)
+        internal HttpResponseMessage ApplyPromoCodeRaw(int basketId, string code)
         {
             var response = httpClient.PostAsJsonAsync($"{basketId}/promocode", code).Result;
             return response;
         }
 
-        public string GetPromoCodeDiscountRaw(string code)
+        internal string GetPromoCodeDiscountRaw(string code)
         {
             string normalizedCode = code.Trim().ToUpper();
             var response = httpClient.PostAsJsonAsync($"1/promocode", normalizedCode).Result;
@@ -116,7 +169,7 @@ namespace MarketMinds.Shared.ProxyRepository
             return "{}";
         }
 
-        public string CalculateBasketTotalsRaw(int basketId, string promoCode)
+        internal string CalculateBasketTotalsRaw(int basketId, string promoCode)
         {
             string endpoint = $"{basketId}/totals";
             if (!string.IsNullOrEmpty(promoCode))
@@ -129,58 +182,27 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public HttpResponseMessage DecreaseProductQuantityRaw(int userId, int productId)
+        internal HttpResponseMessage DecreaseProductQuantityRaw(int userId, int productId)
         {
             var response = httpClient.PutAsync($"user/{userId}/product/{productId}/decrease", null).Result;
             response.EnsureSuccessStatusCode();
             return response;
         }
 
-        public HttpResponseMessage IncreaseProductQuantityRaw(int userId, int productId)
+        internal HttpResponseMessage IncreaseProductQuantityRaw(int userId, int productId)
         {
             var response = httpClient.PutAsync($"user/{userId}/product/{productId}/increase", null).Result;
             response.EnsureSuccessStatusCode();
             return response;
         }
 
-        public async Task<HttpResponseMessage> CheckoutBasketRaw(int userId, int basketId, object requestData)
+        internal async Task<HttpResponseMessage> CheckoutBasketRaw(int userId, int basketId, object requestData)
         {
             using var httpClientAccount = new HttpClient();
             httpClientAccount.BaseAddress = new Uri(httpClient.BaseAddress.AbsoluteUri.Replace("api/basket/", ""));
             httpClientAccount.Timeout = TimeSpan.FromSeconds(30);
 
             return await httpClientAccount.PostAsJsonAsync($"api/account/{userId}/orders", requestData);
-        }
-
-        // Legacy methods that throw NotImplementedException
-        public void AddItemToBasket(int basketId, int productId, int quantity)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public void ClearBasket(int basketId)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public List<BasketItem> GetBasketItems(int basketId)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public Basket GetBasketByUserId(int userId)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public void RemoveItemByProductId(int basketId, int productId)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
         }
     }
 }
