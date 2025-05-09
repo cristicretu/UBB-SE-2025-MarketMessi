@@ -19,26 +19,33 @@ namespace MarketMinds.Shared.Services.ProductCategoryService
 
         public List<Category> GetAllProductCategories()
         {
-            var responseJson = productCategoryRepository.GetAllProductCategoriesRaw();
-            var categories = new List<Category>();
-            var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
-
-            if (responseJsonArray != null)
+            try
             {
-                foreach (var responseJsonItem in responseJsonArray)
+                var responseJson = productCategoryRepository.GetAllProductCategoriesRaw();
+                var categories = new List<Category>();
+                var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
+
+                if (responseJsonArray != null)
                 {
-                    var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
-                    var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
-                    var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    categories.Add(new Category(id, name, description));
+                    foreach (var responseJsonItem in responseJsonArray)
+                    {
+                        var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
+                        var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
+                        var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
+                        categories.Add(new Category(id, name, description));
+                    }
                 }
-            }
 
-            if (categories == null)
-            {
-                throw new InvalidOperationException("Failed to retrieve product categories.");
+                if (categories == null)
+                {
+                    throw new InvalidOperationException("Failed to retrieve product categories.");
+                }
+                return categories;
             }
-            return categories;
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error getting product categories: {ex.Message}", ex);
+            }
         }
 
         public Category CreateProductCategory(string name, string description)
@@ -58,25 +65,36 @@ namespace MarketMinds.Shared.Services.ProductCategoryService
                 throw new ArgumentException("Category description cannot exceed 500 characters.", nameof(description));
             }
 
-            var json = productCategoryRepository.CreateProductCategoryRaw(name, description);
-            var jsonObject = JsonNode.Parse(json);
-
-            if (jsonObject == null)
+            try
             {
-                throw new InvalidOperationException("Failed to create product category.");
+                var json = productCategoryRepository.CreateProductCategoryRaw(name, description);
+                var jsonObject = JsonNode.Parse(json);
+
+                if (jsonObject == null)
+                {
+                    throw new InvalidOperationException("Failed to create product category.");
+                }
+
+                var id = jsonObject["id"]?.GetValue<int>() ?? 0;
+                var categoryName = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
+                var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
+                var category = new Category(id, categoryName, categoryDescription);
+
+                if (category == null)
+                {
+                    throw new InvalidOperationException("Failed to create product category.");
+                }
+
+                return category;
             }
-
-            var id = jsonObject["id"]?.GetValue<int>() ?? 0;
-            var categoryName = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
-            var categoryDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            var category = new Category(id, categoryName, categoryDescription);
-
-            if (category == null)
+            catch (ArgumentException)
             {
-                throw new InvalidOperationException("Failed to create product category.");
+                throw;
             }
-
-            return category;
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error creating product category: {ex.Message}", ex);
+            }
         }
 
         public void DeleteProductCategory(string name)
@@ -86,7 +104,18 @@ namespace MarketMinds.Shared.Services.ProductCategoryService
                 throw new ArgumentException("Category name cannot be null or empty.", nameof(name));
             }
 
-            productCategoryRepository.DeleteProductCategoryRaw(name);
+            try
+            {
+                productCategoryRepository.DeleteProductCategoryRaw(name);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error deleting product category: {ex.Message}", ex);
+            }
         }
     }
 

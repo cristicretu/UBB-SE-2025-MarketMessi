@@ -28,9 +28,8 @@ namespace MarketMinds.Controllers
                 var allConditions = productConditionRepository.GetAllProductConditions();
                 return Ok(allConditions);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Console.WriteLine($"Error getting all product conditions: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -41,9 +40,9 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateProductCondition([FromBody] ProductConditionRequest productConditionRequest)
         {
-            if (productConditionRequest == null || string.IsNullOrWhiteSpace(productConditionRequest.DisplayTitle) || !ModelState.IsValid)
+            if (productConditionRequest == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Request body cannot be null");
             }
 
             try
@@ -61,9 +60,8 @@ namespace MarketMinds.Controllers
             {
                 return BadRequest(argumentException.Message);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Console.WriteLine($"Error creating product condition: {exception}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the condition.");
             }
         }
@@ -90,16 +88,12 @@ namespace MarketMinds.Controllers
                 // If the condition doesn't exist, return success anyway (idempotent delete)
                 return NoContent();
             }
-            catch (Exception exception)
+            catch (InvalidOperationException ex) when (ex.Message.Contains("being used by one or more products"))
             {
-                // Look for foreign key constraint errors
-                if (exception.ToString().Contains("REFERENCE constraint") ||
-                    exception.ToString().Contains("FK_BorrowProducts_ProductConditions"))
-                {
-                    return BadRequest($"Cannot delete condition '{productConditionName}' because it is being used by one or more products. Update or delete those products first.");
-                }
-
-                Console.WriteLine($"Error deleting product condition '{productConditionName}': {exception}");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the condition.");
             }
         }

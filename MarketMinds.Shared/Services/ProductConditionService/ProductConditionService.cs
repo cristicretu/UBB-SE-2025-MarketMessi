@@ -21,42 +21,101 @@ namespace MarketMinds.Shared.Services.ProductConditionService
 
         public List<Condition> GetAllProductConditions()
         {
-            var responseJson = productConditionRepository.GetAllProductConditionsRaw();
-            var clientConditions = new List<Condition>();
-            var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
-
-            if (responseJsonArray != null)
+            try
             {
-                foreach (var responseJsonItem in responseJsonArray)
+                var responseJson = productConditionRepository.GetAllProductConditionsRaw();
+                var clientConditions = new List<Condition>();
+                var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
+
+                if (responseJsonArray != null)
                 {
-                    var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
-                    var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
-                    var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    clientConditions.Add(new Condition(id, name, description));
+                    foreach (var responseJsonItem in responseJsonArray)
+                    {
+                        var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
+                        var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
+                        var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
+                        clientConditions.Add(new Condition(id, name, description));
+                    }
                 }
+                return clientConditions;
             }
-            return clientConditions;
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error retrieving product conditions: {ex.Message}", ex);
+            }
         }
 
         public Condition CreateProductCondition(string displayTitle, string description)
         {
-            var json = productConditionRepository.CreateProductConditionRaw(displayTitle, description);
-            var jsonObject = JsonNode.Parse(json);
-
-            if (jsonObject == null)
+            // Business logic validation moved from controller
+            if (string.IsNullOrWhiteSpace(displayTitle))
             {
-                throw new InvalidOperationException("Failed to parse the server response.");
+                throw new ArgumentException("Condition title cannot be null or empty.", nameof(displayTitle));
             }
 
-            var id = jsonObject["id"]?.GetValue<int>() ?? 0;
-            var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
-            var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new Condition(id, name, conditionDescription);
+            if (displayTitle.Length > 100)
+            {
+                throw new ArgumentException("Condition title cannot exceed 100 characters.", nameof(displayTitle));
+            }
+
+            if (description != null && description.Length > 500)
+            {
+                throw new ArgumentException("Condition description cannot exceed 500 characters.", nameof(description));
+            }
+
+            try
+            {
+                var json = productConditionRepository.CreateProductConditionRaw(displayTitle, description);
+                var jsonObject = JsonNode.Parse(json);
+
+                if (jsonObject == null)
+                {
+                    throw new InvalidOperationException("Failed to parse the server response.");
+                }
+
+                var id = jsonObject["id"]?.GetValue<int>() ?? 0;
+                var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
+                var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
+                return new Condition(id, name, conditionDescription);
+            }
+            catch (ArgumentException)
+            {
+                // Rethrow argument exceptions directly
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error creating product condition: {ex.Message}", ex);
+            }
         }
 
         public void DeleteProductCondition(string displayTitle)
         {
-            productConditionRepository.DeleteProductConditionRaw(displayTitle);
+            if (string.IsNullOrWhiteSpace(displayTitle))
+            {
+                throw new ArgumentException("Condition title cannot be null or empty.", nameof(displayTitle));
+            }
+
+            try
+            {
+                productConditionRepository.DeleteProductConditionRaw(displayTitle);
+            }
+            catch (KeyNotFoundException)
+            {
+                // We'll treat this as a success for idempotent deletes
+                return;
+            }
+            catch (Exception ex)
+            {
+                // Check for foreign key constraint errors
+                if (ex.ToString().Contains("REFERENCE constraint") ||
+                    ex.ToString().Contains("FK_BorrowProducts_ProductConditions"))
+                {
+                    throw new InvalidOperationException($"Cannot delete condition '{displayTitle}' because it is being used by one or more products.", ex);
+                }
+
+                throw new InvalidOperationException($"Error deleting product condition: {ex.Message}", ex);
+            }
         }
     }
 

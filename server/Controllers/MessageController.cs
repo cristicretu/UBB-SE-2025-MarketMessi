@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using System.Net;
-using System.Diagnostics;
 
 namespace Server.Controllers
 {
@@ -20,12 +19,12 @@ namespace Server.Controllers
         {
             this.messageRepository = messageRepository;
         }
+
         [HttpPost]
         [ProducesResponseType(typeof(MessageDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateMessage([FromBody] CreateMessageDto createMessageDto)
         {
-            var sw = Stopwatch.StartNew();
             if (createMessageDto == null)
             {
                 return BadRequest("Request body cannot be null");
@@ -61,6 +60,10 @@ namespace Server.Controllers
 
                 return CreatedAtAction(nameof(GetMessagesByConversation), new { conversationId = messageDto.ConversationId }, messageDto);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
@@ -84,6 +87,10 @@ namespace Server.Controllers
                 }).ToList();
 
                 return Ok(messageDtos);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
