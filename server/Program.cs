@@ -9,6 +9,7 @@ using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
 using MarketMinds.Repositories.ConversationRepository; // Added from luca
 using MarketMinds.Repositories.MessageRepository;      // Added from luca
+using MarketMinds.Repositories.ChatbotRepository;      // Added new ChatbotRepository
 using MarketMinds.Shared.IRepository; // Added for shared interfaces
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>(
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
