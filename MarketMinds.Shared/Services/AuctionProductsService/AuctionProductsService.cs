@@ -13,7 +13,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
-        private const int NOCOUNT = 0;
+        private const int EMPTY_COLLECTION_COUNT = 0;
 
         public AuctionProductsService(AuctionProductsProxyRepository auctionProductsRepository)
         {
@@ -47,28 +47,45 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public void PlaceBid(AuctionProduct auction, User bidder, double bidAmount)
         {
+            ValidateBid(auction, bidder, bidAmount);
+            
             try
             {
-                ValidateBid(auction, bidder, bidAmount);
-                
                 var bid = new Bid(bidder.Id, auction.Id, bidAmount)
                 {
                     Product = auction,
                     Bidder = bidder
                 };
                 
-                bidder.Balance -= bidAmount;
+                double originalBalance = bidder.Balance;
+                double originalPrice = auction.CurrentPrice;
+                var originalBids = new List<Bid>(auction.Bids);
                 
+                bidder.Balance -= bidAmount;
                 auction.AddBid(bid);
                 auction.CurrentPrice = bidAmount;
-                
                 ExtendAuctionTime(auction);
                 
-                auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+                try
+                {
+                    auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+                }
+                catch (Exception exception)
+                {
+                    bidder.Balance = originalBalance;
+                    auction.CurrentPrice = originalPrice;
+                    auction.Bids = originalBids;
+                    
+                    throw new Exception($"Server rejected the bid: {exception.Message}", exception);
+                }
             }
-            catch (Exception bidPlacementException)
+            catch (Exception exception)
             {
-                throw new InvalidOperationException("Failed to place bid", bidPlacementException);
+                if (exception.Message.Contains("Server rejected"))
+                {
+                    throw;
+                }
+                throw new Exception($"Failed to place bid: {exception.Message}", exception);
             }
         }
 
@@ -97,6 +114,31 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public void ValidateBid(AuctionProduct auction, User bidder, double bidAmount)
         {
+            if (auction == null)
+            {
+                throw new ArgumentNullException(nameof(auction), "Auction cannot be null");
+            }
+            
+            if (bidder == null)
+            {
+                throw new ArgumentNullException(nameof(bidder), "Bidder cannot be null");
+            }
+            
+            if (auction.Id <= 0)
+            {
+                throw new Exception("Cannot bid on an unsaved auction");
+            }
+            
+            if (bidder.Id <= 0)
+            {
+                throw new Exception("Cannot bid with an unsaved user profile");
+            }
+            
+            if (bidder.Id == auction.SellerId)
+            {
+                throw new Exception("You cannot bid on your own auction");
+            }
+            
             double minimumBid = auction.Bids.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
 
             if (bidAmount < minimumBid)
@@ -112,6 +154,11 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             if (DateTime.Now > auction.EndTime)
             {
                 throw new Exception("Auction already ended");
+            }
+            
+            if (DateTime.Now < auction.StartTime)
+            {
+                throw new Exception($"Auction hasn't started yet. Starts at {auction.StartTime}");
             }
         }
 
@@ -134,10 +181,8 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             }
             catch (Exception exception)
             {
-                if (exception.InnerException != null)
-                {
-                    throw new Exception($"Inner exception: {exception.InnerException.Message}", exception.InnerException);
-                }
+                string innerMessage = exception.InnerException?.Message ?? exception.Message;
+                throw new Exception($"Error retrieving products: {innerMessage}", exception);
             }
         }
 
@@ -164,9 +209,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             List<Product> productResultSet = new List<Product>();
             foreach (Product product in products)
             {
-                bool matchesConditions = selectedConditions == null || selectedConditions.Count == NOCOUNT || selectedConditions.Any(condition => condition.Id == product.Condition.Id);
-                bool matchesCategories = selectedCategories == null || selectedCategories.Count == NOCOUNT || selectedCategories.Any(category => category.Id == product.Category.Id);
-                bool matchesTags = selectedTags == null || selectedTags.Count == NOCOUNT || selectedTags.Any(tag => product.Tags.Any(productTag => productTag.Id == tag.Id));
+                bool matchesConditions = selectedConditions == null || selectedConditions.Count == EMPTY_COLLECTION_COUNT || selectedConditions.Any(condition => condition.Id == product.Condition.Id);
+                bool matchesCategories = selectedCategories == null || selectedCategories.Count == EMPTY_COLLECTION_COUNT || selectedCategories.Any(category => category.Id == product.Category.Id);
+                bool matchesTags = selectedTags == null || selectedTags.Count == EMPTY_COLLECTION_COUNT || selectedTags.Any(tag => product.Tags.Any(productTag => productTag.Id == tag.Id));
                 bool matchesSearchQuery = string.IsNullOrEmpty(searchQuery) || product.Title.ToLower().Contains(searchQuery.ToLower());
 
                 if (matchesConditions && matchesCategories && matchesTags && matchesSearchQuery)

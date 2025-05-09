@@ -20,20 +20,19 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 var products = context.AuctionProducts
-                    .Include(p => p.Seller)
-                    .Include(p => p.Condition)
-                    .Include(p => p.Category)
-                    .Include(p => p.Bids)
-                        .ThenInclude(b => b.Bidder)
-                    .Include(p => p.Images)
+                    .Include(product => product.Seller)
+                    .Include(product => product.Condition)
+                    .Include(product => product.Category)
+                    .Include(product => product.Bids)
+                        .ThenInclude(bid => bid.Bidder)
+                    .Include(product => product.Images)
                     .ToList();
 
                 return products;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error in GetProducts: {ex.Message}");
-                throw;
+                throw new Exception($"Failed to retrieve auction products: {exception.Message}", exception);
             }
         }
 
@@ -44,10 +43,9 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 context.AuctionProducts.Remove(product);
                 context.SaveChanges();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error in DeleteProduct: {ex.Message}");
-                throw;
+                throw new Exception($"Failed to delete auction product: {exception.Message}", exception);
             }
         }
 
@@ -58,10 +56,9 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
                 context.AuctionProducts.Add(product);
                 context.SaveChanges();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error in AddProduct: {ex.Message}");
-                throw;
+                throw new Exception($"Failed to add auction product: {exception.Message}", exception);
             }
         }
 
@@ -79,13 +76,11 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
                 if (product.Images != null && product.Images.Any())
                 {
-                    Console.WriteLine($"Updating product {product.Id} with {product.Images.Count} images");
 
                     foreach (var image in product.Images)
                     {
                         if (image.Id == 0)
                         {
-                            Console.WriteLine($"Adding new image with URL: {image.Url} to product ID: {product.Id}");
                             image.ProductId = product.Id;
                             context.Set<ProductImage>().Add(image);
                         }
@@ -94,10 +89,9 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
                 context.SaveChanges();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error in UpdateProduct: {ex.Message}");
-                throw;
+                throw new Exception($"Failed to update auction product: {exception.Message}", exception);
             }
         }
 
@@ -106,13 +100,13 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
             try
             {
                 var product = context.AuctionProducts
-                    .Include(p => p.Seller)
-                    .Include(p => p.Condition)
-                    .Include(p => p.Category)
-                    .Include(p => p.Bids)
-                        .ThenInclude(b => b.Bidder)
-                    .Include(p => p.Images)
-                    .FirstOrDefault(p => p.Id == id);
+                    .Include(product => product.Seller)
+                    .Include(product => product.Condition)
+                    .Include(product => product.Category)
+                    .Include(product => product.Bids)
+                        .ThenInclude(bid => bid.Bidder)
+                    .Include(product => product.Images)
+                    .FirstOrDefault(product => product.Id == id);
 
                 if (product == null)
                 {
@@ -121,14 +115,13 @@ namespace MarketMinds.Repositories.AuctionProductsRepository
 
                 return product;
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                throw;
+                throw new KeyNotFoundException($"AuctionProduct with ID {id} not found.", keyNotFoundException);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error in GetProductByID: {ex.Message}");
-                throw;
+                throw new Exception($"Failed to retrieve auction product by ID: {exception.Message}", exception);
             }
         }
     }

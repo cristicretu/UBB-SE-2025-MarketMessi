@@ -66,6 +66,11 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public void PlaceBid(AuctionProduct auction, User bidder, double bidAmount)
         {
+            if (httpClient == null || httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("HTTP client is not properly initialized");
+            }
+            
             var bidToSend = new
             {
                 ProductId = auction.Id,
@@ -74,18 +79,26 @@ namespace MarketMinds.Shared.ProxyRepository
                 Timestamp = DateTime.Now
             };
             
-            var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var errorContent = response.Content.ReadAsStringAsync().Result;
-                response.EnsureSuccessStatusCode();
+                var response = httpClient.PostAsJsonAsync($"auctionproducts/{auction.Id}/bids", bidToSend).Result;
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    var errorMessage = !string.IsNullOrWhiteSpace(errorContent) ? errorContent : "Unknown server error";
+                    throw new Exception($"Server rejected bid: {errorMessage} (Status code: {(int)response.StatusCode})");
+                }
+            }
+            catch (Exception exception)
+            {
+                throw new Exception($"Failed to place bid: {exception.Message}", exception);
             }
         }
 
         public void ConcludeAuction(AuctionProduct auction)
         {
             var response = httpClient.DeleteAsync($"auctionproducts/{auction.Id}").Result;
-            response.EnsureSuccessStatusCode();
         }
 
         public List<AuctionProduct> GetProducts()
