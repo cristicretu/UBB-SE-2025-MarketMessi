@@ -2,23 +2,16 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
 {
     public class AuctionProductsService : IAuctionProductsService, IProductService, IAuctionProductService
     {
         private readonly AuctionProductsProxyRepository auctionProductsRepository;
-        private readonly HttpClient httpClient;
-        private readonly JsonSerializerOptions jsonOptions;
 
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
@@ -26,31 +19,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
         private const int EMPTY_COLLECTION_COUNT = 0;
         private const double MINIMUM_PRICE = 0.0;
 
-        public AuctionProductsService(
-            AuctionProductsProxyRepository auctionProductsRepository, 
-            HttpClient httpClient = null,
-            IConfiguration configuration = null)
+        public AuctionProductsService(AuctionProductsProxyRepository auctionProductsRepository)
         {
             this.auctionProductsRepository = auctionProductsRepository;
-            
-            if (httpClient != null)
-            {
-                this.httpClient = httpClient;
-                
-                if (this.httpClient.BaseAddress == null && configuration != null)
-                {
-                    var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/";
-                    this.httpClient.BaseAddress = new Uri(apiBaseUrl);
-                }
-                
-                jsonOptions = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    ReferenceHandler = ReferenceHandler.Preserve,
-                    WriteIndented = true
-                };
-            }
         }
 
         #region Synchronous Methods
@@ -71,7 +42,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             {
                 auctionProduct.EndTime = DateTime.Now.AddDays(7);
             }
-
+            
             if (auctionProduct.StartPrice <= MINIMUM_PRICE && auctionProduct.CurrentPrice > MINIMUM_PRICE)
             {
                 auctionProduct.StartPrice = auctionProduct.CurrentPrice;
@@ -325,23 +296,13 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         #endregion
 
-        #region Async Methods from AuctionProductService
+        #region Async Methods
 
         public async Task<List<AuctionProduct>> GetAllAuctionProductsAsync()
         {
-            if (httpClient == null)
-            {
-                return GetProducts();
-            }
-
             try
             {
-                var response = await httpClient.GetAsync("api/auctionproducts");
-                response.EnsureSuccessStatusCode();
-                
-                var content = await response.Content.ReadAsStringAsync();
-                var auctionProducts = JsonSerializer.Deserialize<List<AuctionProduct>>(content, jsonOptions);
-                return auctionProducts ?? new List<AuctionProduct>();
+                return GetProducts();
             }
             catch (Exception exception)
             {
@@ -351,19 +312,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public async Task<AuctionProduct> GetAuctionProductByIdAsync(int id)
         {
-            if (httpClient == null)
-            {
-                return GetProductById(id);
-            }
-
             try
             {
-                var response = await httpClient.GetAsync($"api/auctionproducts/{id}");
-                response.EnsureSuccessStatusCode();
-                
-                var content = await response.Content.ReadAsStringAsync();
-                var auctionProduct = JsonSerializer.Deserialize<AuctionProduct>(content, jsonOptions);
-                return auctionProduct ?? new AuctionProduct();
+                return GetProductById(id);
             }
             catch (Exception exception)
             {
@@ -373,38 +324,12 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public async Task<bool> CreateAuctionProductAsync(AuctionProduct auctionProduct)
         {
-            if (httpClient == null)
-            {
-                try {
-                    CreateListing(auctionProduct);
-                    return true;
-                }
-                catch {
-                    return false;
-                }
-            }
-
             try
             {
                 SetDefaultAuctionTimes(auctionProduct);
                 SetDefaultPricing(auctionProduct);
-                
-                var productToSend = new
-                {
-                    auctionProduct.Title,
-                    auctionProduct.Description,
-                    SellerId = auctionProduct.Seller?.Id ?? 0,
-                    ConditionId = auctionProduct.Condition?.Id,
-                    CategoryId = auctionProduct.Category?.Id,
-                    auctionProduct.StartTime,
-                    auctionProduct.EndTime,
-                    auctionProduct.StartPrice,
-                    auctionProduct.CurrentPrice,
-                    Images = auctionProduct.Images?.Select(img => new { img.Url }).ToList()
-                };
-
-                var response = await httpClient.PostAsJsonAsync("api/auctionproducts", productToSend);
-                return response.IsSuccessStatusCode;
+                CreateListing(auctionProduct);
+                return true;
             }
             catch (Exception exception)
             {
@@ -414,36 +339,32 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public async Task<bool> PlaceBidAsync(int auctionId, int bidderId, double bidAmount)
         {
-            if (httpClient == null)
-            {
-                throw new InvalidOperationException("HTTP client is required for PlaceBidAsync");
-            }
-
             try
             {
-                var auction = await GetAuctionProductByIdAsync(auctionId);
+                var auction = GetProductById(auctionId);
                 if (auction == null || auction.Id == 0)
                 {
                     throw new KeyNotFoundException($"Auction product with ID {auctionId} not found.");
                 }
+                
                 ValidateBid(auction, bidderId, bidAmount);
-                
                 ProcessRefundForPreviousBidder(auction, bidAmount);
-                
                 ExtendAuctionTimeIfNeeded(auction);
                 
                 if (auction.EndTime > DateTime.Now)
                 {
-                    var bidToSend = new
+                    var bid = new Bid
                     {
-                        ProductId = auctionId,
                         BidderId = bidderId,
-                        Amount = bidAmount,
+                        ProductId = auctionId,
+                        Price = bidAmount,
                         Timestamp = DateTime.Now
                     };
+
+                    var bidder = new User { Id = bidderId };
                     
-                    var response = await httpClient.PostAsJsonAsync($"api/auctionproducts/{auctionId}/bids", bidToSend);
-                    return response.IsSuccessStatusCode;
+                    auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+                    return true;
                 }
                 else
                 {
@@ -458,30 +379,10 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public async Task<bool> UpdateAuctionProductAsync(AuctionProduct auctionProduct)
         {
-            if (httpClient == null)
-            {
-                throw new InvalidOperationException("HTTP client is required for UpdateAuctionProductAsync");
-            }
-
             try
             {
-                var productToSend = new
-                {
-                    auctionProduct.Id,
-                    auctionProduct.Title,
-                    auctionProduct.Description,
-                    SellerId = auctionProduct.Seller?.Id,
-                    ConditionId = auctionProduct.Condition?.Id,
-                    CategoryId = auctionProduct.Category?.Id,
-                    auctionProduct.StartTime,
-                    auctionProduct.EndTime,
-                    auctionProduct.StartPrice,
-                    auctionProduct.CurrentPrice,
-                    Images = auctionProduct.Images?.Select(img => new { img.Url }).ToList()
-                };
-
-                var response = await httpClient.PutAsJsonAsync($"api/auctionproducts/{auctionProduct.Id}", productToSend);
-                return response.IsSuccessStatusCode;
+                auctionProductsRepository.CreateListing(auctionProduct);
+                return true;
             }
             catch (Exception exception)
             {
@@ -491,24 +392,11 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public async Task<bool> DeleteAuctionProductAsync(int id)
         {
-            if (httpClient == null)
-            {
-                try
-                {
-                    var product = GetProductById(id);
-                    ConcludeAuction(product);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-
             try
             {
-                var response = await httpClient.DeleteAsync($"api/auctionproducts/{id}");
-                return response.IsSuccessStatusCode;
+                var product = GetProductById(id);
+                ConcludeAuction(product);
+                return true;
             }
             catch (Exception exception)
             {
@@ -546,9 +434,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public void SetDefaultPricing(AuctionProduct product)
         {
-            if (product.StartPrice <= 0)
+            if (product.StartPrice <= MINIMUM_PRICE)
             {
-                if (product.CurrentPrice > 0)
+                if (product.CurrentPrice > MINIMUM_PRICE)
                 {
                     product.StartPrice = product.CurrentPrice;
                 }
@@ -558,7 +446,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                     product.CurrentPrice = DEFAULT_MIN_PRICE;
                 }
             }
-            else if (product.CurrentPrice <= 0)
+            else if (product.CurrentPrice <= MINIMUM_PRICE)
             {
                 product.CurrentPrice = product.StartPrice;
             }
