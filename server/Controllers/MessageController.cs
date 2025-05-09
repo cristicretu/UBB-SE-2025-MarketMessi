@@ -37,19 +37,8 @@ namespace Server.Controllers
                     return BadRequest(ModelState);
                 }
 
-                bool isWelcomeMessage = false;
-                try
-                {
-                    var existingMessages = await messageRepository.GetMessagesByConversationIdAsync(createMessageDto.ConversationId);
-                    isWelcomeMessage = existingMessages == null || existingMessages.Count == 0;
-                }
-                catch (Exception ex)
-                {
-                    // Silently continue
-                }
-                
                 var message = await messageRepository.CreateMessageAsync(createMessageDto);
-                
+
                 var messageDto = new MessageDto
                 {
                     Id = message.Id,
