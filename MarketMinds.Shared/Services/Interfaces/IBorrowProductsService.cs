@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.DTOs;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -13,6 +14,20 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         /// </summary>
         /// <param name="product">The product to add.</param>
         void CreateListing(Product product);
+        
+        /// <summary>
+        /// Creates a new borrow product from a DTO.
+        /// </summary>
+        /// <param name="productDTO">The DTO containing product information.</param>
+        /// <returns>The created BorrowProduct with its ID set.</returns>
+        BorrowProduct CreateProduct(CreateBorrowProductDTO productDTO);
+        
+        /// <summary>
+        /// Validates the product DTO for creating a borrow product.
+        /// </summary>
+        /// <param name="productDTO">The DTO to validate.</param>
+        /// <returns>A dictionary of validation errors, if any.</returns>
+        Dictionary<string, string[]> ValidateProductDTO(CreateBorrowProductDTO productDTO);
 
         /// <summary>
         /// Deletes an existing product listing.

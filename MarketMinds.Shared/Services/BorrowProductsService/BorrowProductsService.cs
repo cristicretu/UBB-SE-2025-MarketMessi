@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
+using MarketMinds.Shared.Models.DTOs;
 
 namespace MarketMinds.Shared.Services.BorrowProductsService
 {
@@ -12,6 +13,7 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         private readonly BorrowProductsProxyRepository borrowProductsRepository;
 
         private const int DEFAULT_PRODUCT_COUNT = 0;
+        private const int NULL_PRODUCT_ID = 0;
 
         public BorrowProductsService(BorrowProductsProxyRepository borrowProductsRepository)
         {
@@ -25,22 +27,120 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 throw new ArgumentException("Product must be a BorrowProduct.", nameof(product));
             }
 
-            if (borrowProduct.StartDate == default(DateTime))
-            {
-                borrowProduct.StartDate = DateTime.Now;
-            }
-
-            if (borrowProduct.EndDate == default(DateTime))
-            {
-                borrowProduct.EndDate = DateTime.Now.AddDays(7);
-            }
-
-            if (borrowProduct.TimeLimit == default(DateTime))
-            {
-                borrowProduct.TimeLimit = DateTime.Now.AddDays(7);
-            }
+            ApplyDefaultDates(borrowProduct);
 
             borrowProductsRepository.CreateListing(borrowProduct);
+        }
+
+        public BorrowProduct CreateProduct(CreateBorrowProductDTO productDTO)
+        {
+            if (productDTO == null)
+            {
+                throw new ArgumentNullException(nameof(productDTO), "Product data cannot be null");
+            }
+
+            var product = new BorrowProduct
+            {
+                Title = productDTO.Title,
+                Description = productDTO.Description,
+                SellerId = productDTO.SellerId,
+                CategoryId = productDTO.CategoryId ?? NULL_PRODUCT_ID,
+                ConditionId = productDTO.ConditionId ?? NULL_PRODUCT_ID,
+                TimeLimit = productDTO.TimeLimit,
+                StartDate = productDTO.StartDate,
+                EndDate = productDTO.EndDate,
+                DailyRate = productDTO.DailyRate,
+                IsBorrowed = productDTO.IsBorrowed
+            };
+
+            ApplyDefaultDates(product);
+            
+            borrowProductsRepository.CreateListing(product);
+            
+            if (productDTO.Images != null && productDTO.Images.Any())
+            {
+                foreach (var imageInfo in productDTO.Images)
+                {
+                    if (string.IsNullOrWhiteSpace(imageInfo.Url))
+                    {
+                        continue;
+                    }
+
+                    var image = new BorrowProductImage
+                    {
+                        Url = imageInfo.Url,
+                        ProductId = product.Id
+                    };
+
+                    borrowProductsRepository.AddImageToProduct(product.Id, image);
+                }
+            }
+            
+            return (BorrowProduct)GetProductById(product.Id);
+        }
+
+        public Dictionary<string, string[]> ValidateProductDTO(CreateBorrowProductDTO productDTO)
+        {
+            Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
+
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(productDTO.Title))
+            {
+                AddError(errors, "Title", "Title is required");
+            }
+
+            if (productDTO.SellerId <= 0)
+            {
+                AddError(errors, "SellerId", "Valid seller ID is required");
+            }
+
+            // Validate business rules
+            if (productDTO.DailyRate < 0)
+            {
+                AddError(errors, "DailyRate", "Daily rate cannot be negative");
+            }
+
+            if (productDTO.StartDate != default && productDTO.EndDate != default && productDTO.EndDate < productDTO.StartDate)
+            {
+                AddError(errors, "EndDate", "End date cannot be before start date");
+            }
+
+            return errors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray());
+        }
+
+        private void AddError(Dictionary<string, List<string>> errors, string key, string errorMessage)
+        {
+            if (!errors.ContainsKey(key))
+            {
+                errors[key] = new List<string>();
+            }
+            errors[key].Add(errorMessage);
+        }
+
+        private void ApplyDefaultDates(BorrowProduct product)
+        {
+            if (product.StartDate == default)
+            {
+                product.StartDate = DateTime.Now;
+            }
+
+            if (product.EndDate == default)
+            {
+                product.EndDate = DateTime.Now.AddDays(7);
+            }
+
+            if (product.TimeLimit == default)
+            {
+                product.TimeLimit = DateTime.Now.AddDays(7);
+            }
+
+            DateTime startDate = product.StartDate ?? DateTime.Now;
+            DateTime endDate = product.EndDate ?? startDate.AddDays(7);
+            
+            if (endDate < startDate)
+            {
+                product.EndDate = startDate.AddDays(7);
+            }
         }
 
         public void DeleteListing(Product product)
@@ -60,6 +160,11 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
 
         public Product GetProductById(int id)
         {
+            if (id <= 0)
+            {
+                throw new ArgumentException("Product ID must be greater than 0", nameof(id));
+            }
+            
             try
             {
                 var product = borrowProductsRepository.GetProductById(id);

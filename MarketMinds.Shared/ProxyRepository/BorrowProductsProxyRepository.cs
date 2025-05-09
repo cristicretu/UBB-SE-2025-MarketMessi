@@ -46,6 +46,8 @@ namespace MarketMinds.Shared.ProxyRepository
                 borrowProduct.DailyRate,
                 StartDate = borrowProduct.StartDate,
                 EndDate = borrowProduct.EndDate,
+                TimeLimit = borrowProduct.TimeLimit,
+                borrowProduct.IsBorrowed,
                 Images = borrowProduct.Images == null || !borrowProduct.Images.Any()
                        ? (borrowProduct.NonMappedImages != null && borrowProduct.NonMappedImages.Any()
                           ? borrowProduct.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
@@ -53,33 +55,34 @@ namespace MarketMinds.Shared.ProxyRepository
                        : borrowProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
             };
 
-            try
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
             {
-                var serializerOptions = new System.Text.Json.JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-                };
-                var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
-                var response = httpClient.PostAsync("borrowproducts", content).Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = response.Content.ReadAsStringAsync().Result;
-                    response.EnsureSuccessStatusCode();
-                }
-                else
-                {
-                    var responseContent = response.Content.ReadAsStringAsync().Result;
-                }
-            }
-            catch (Exception exception)
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            
+            var content = System.Net.Http.Json.JsonContent.Create(productToSend, null, serializerOptions);
+            var response = httpClient.PostAsync("borrowproducts", content).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        public void AddImageToProduct(int productId, BorrowProductImage image)
+        {
+            var imageToSend = new
             {
-                if (exception.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {exception.InnerException.GetType().Name} - {exception.InnerException.Message}");
-                }
-                throw;
-            }
+                Url = image.Url,
+                ProductId = productId
+            };
+
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            
+            var content = System.Net.Http.Json.JsonContent.Create(imageToSend, null, serializerOptions);
+            var response = httpClient.PostAsync($"borrowproducts/{productId}/images", content).Result;
+            response.EnsureSuccessStatusCode();
         }
 
         public void DeleteListing(Product product)
@@ -90,31 +93,20 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public List<Product> GetProducts()
         {
-            try
+            var serializerOptions = new System.Text.Json.JsonSerializerOptions
             {
-                var serializerOptions = new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                };
-                serializerOptions.Converters.Add(new UserJsonConverter());
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            serializerOptions.Converters.Add(new UserJsonConverter());
 
-                var response = httpClient.GetAsync("borrowproducts").Result;
-                response.EnsureSuccessStatusCode();
-                var json = response.Content.ReadAsStringAsync().Result;
-            
-                var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
-                return products?.Cast<Product>().ToList() ?? new List<Product>();
-            }
-            catch (Exception exception)
-            {
-                if (exception.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
-                }
-                return new List<Product>();
-            }
+            var response = httpClient.GetAsync("borrowproducts").Result;
+            response.EnsureSuccessStatusCode();
+            var json = response.Content.ReadAsStringAsync().Result;
+        
+            var products = System.Text.Json.JsonSerializer.Deserialize<List<BorrowProduct>>(json, serializerOptions);
+            return products?.Cast<Product>().ToList() ?? new List<Product>();
         }
 
         public Product GetProductById(int id)
