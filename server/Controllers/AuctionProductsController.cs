@@ -186,6 +186,15 @@ namespace MarketMinds.Controllers
             {
                 product.EndTime = product.StartTime.AddDays(7);
             }
+            
+            if (product.StartPrice <= 0 && product.CurrentPrice > 0)
+            {
+                product.StartPrice = product.CurrentPrice;
+            }
+            else if (product.CurrentPrice <= 0 && product.StartPrice > 0)
+            {
+                product.CurrentPrice = product.StartPrice;
+            }
         }
     }
 }

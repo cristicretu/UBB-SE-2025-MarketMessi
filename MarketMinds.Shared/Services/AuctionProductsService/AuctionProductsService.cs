@@ -1,24 +1,59 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
+using MarketMinds.Shared.Services.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.Services.AuctionProductsService
 {
-    public class AuctionProductsService : IAuctionProductsService, IProductService
+    public class AuctionProductsService : IAuctionProductsService, IProductService, IAuctionProductService
     {
         private readonly AuctionProductsProxyRepository auctionProductsRepository;
+        private readonly HttpClient httpClient;
+        private readonly JsonSerializerOptions jsonOptions;
 
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
+        private const double DEFAULT_MIN_PRICE = 1.0;
         private const int EMPTY_COLLECTION_COUNT = 0;
+        private const double MINIMUM_PRICE = 0.0;
 
-        public AuctionProductsService(AuctionProductsProxyRepository auctionProductsRepository)
+        public AuctionProductsService(
+            AuctionProductsProxyRepository auctionProductsRepository, 
+            HttpClient httpClient = null,
+            IConfiguration configuration = null)
         {
             this.auctionProductsRepository = auctionProductsRepository;
+            
+            if (httpClient != null)
+            {
+                this.httpClient = httpClient;
+                
+                if (this.httpClient.BaseAddress == null && configuration != null)
+                {
+                    var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001/api/";
+                    this.httpClient.BaseAddress = new Uri(apiBaseUrl);
+                }
+                
+                jsonOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    ReferenceHandler = ReferenceHandler.Preserve,
+                    WriteIndented = true
+                };
+            }
         }
+
+        #region Synchronous Methods
 
         public void CreateListing(Product product)
         {
@@ -36,10 +71,14 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             {
                 auctionProduct.EndTime = DateTime.Now.AddDays(7);
             }
-            
-            if (auctionProduct.StartPrice <= 0 && auctionProduct.CurrentPrice > 0)
+
+            if (auctionProduct.StartPrice <= MINIMUM_PRICE && auctionProduct.CurrentPrice > MINIMUM_PRICE)
             {
                 auctionProduct.StartPrice = auctionProduct.CurrentPrice;
+            }
+            else if (auctionProduct.StartPrice > MINIMUM_PRICE && auctionProduct.CurrentPrice <= MINIMUM_PRICE)
+            {
+                auctionProduct.CurrentPrice = auctionProduct.StartPrice;
             }
             
             auctionProductsRepository.CreateListing(auctionProduct);
@@ -139,6 +178,16 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 throw new Exception("You cannot bid on your own auction");
             }
             
+            if (IsAuctionEnded(auction))
+            {
+                throw new Exception("Auction already ended");
+            }
+            
+            if (DateTime.Now < auction.StartTime)
+            {
+                throw new Exception($"Auction hasn't started yet. Starts at {auction.StartTime}");
+            }
+            
             double minimumBid = auction.Bids.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
 
             if (bidAmount < minimumBid)
@@ -150,15 +199,45 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             {
                 throw new Exception("Insufficient balance");
             }
+        }
 
-            if (DateTime.Now > auction.EndTime)
+        public void ValidateBid(AuctionProduct auction, int bidderId, double bidAmount)
+        {
+            if (auction == null)
             {
-                throw new Exception("Auction already ended");
+                throw new ArgumentNullException(nameof(auction), "Auction cannot be null");
+            }
+            
+            if (auction.Id <= 0)
+            {
+                throw new InvalidOperationException("Cannot bid on an unsaved auction");
+            }
+            
+            if (bidderId <= 0)
+            {
+                throw new InvalidOperationException("Cannot bid with an invalid user id");
+            }
+            
+            if (bidderId == auction.SellerId)
+            {
+                throw new InvalidOperationException("You cannot bid on your own auction");
+            }
+            
+            if (IsAuctionEnded(auction))
+            {
+                throw new InvalidOperationException("Cannot place bid on an ended auction");
             }
             
             if (DateTime.Now < auction.StartTime)
             {
-                throw new Exception($"Auction hasn't started yet. Starts at {auction.StartTime}");
+                throw new InvalidOperationException($"Auction hasn't started yet. Starts at {auction.StartTime}");
+            }
+            
+            double minimumBid = auction.Bids?.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
+
+            if (bidAmount < minimumBid)
+            {
+                throw new InvalidOperationException($"Bid must be at least ${minimumBid}");
             }
         }
 
@@ -243,5 +322,261 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             }
             return productResultSet;
         }
+
+        #endregion
+
+        #region Async Methods from AuctionProductService
+
+        public async Task<List<AuctionProduct>> GetAllAuctionProductsAsync()
+        {
+            if (httpClient == null)
+            {
+                return GetProducts();
+            }
+
+            try
+            {
+                var response = await httpClient.GetAsync("api/auctionproducts");
+                response.EnsureSuccessStatusCode();
+                
+                var content = await response.Content.ReadAsStringAsync();
+                var auctionProducts = JsonSerializer.Deserialize<List<AuctionProduct>>(content, jsonOptions);
+                return auctionProducts ?? new List<AuctionProduct>();
+            }
+            catch (Exception exception)
+            {
+                return new List<AuctionProduct>();
+            }
+        }
+
+        public async Task<AuctionProduct> GetAuctionProductByIdAsync(int id)
+        {
+            if (httpClient == null)
+            {
+                return GetProductById(id);
+            }
+
+            try
+            {
+                var response = await httpClient.GetAsync($"api/auctionproducts/{id}");
+                response.EnsureSuccessStatusCode();
+                
+                var content = await response.Content.ReadAsStringAsync();
+                var auctionProduct = JsonSerializer.Deserialize<AuctionProduct>(content, jsonOptions);
+                return auctionProduct ?? new AuctionProduct();
+            }
+            catch (Exception exception)
+            {
+                return new AuctionProduct();
+            }
+        }
+
+        public async Task<bool> CreateAuctionProductAsync(AuctionProduct auctionProduct)
+        {
+            if (httpClient == null)
+            {
+                try {
+                    CreateListing(auctionProduct);
+                    return true;
+                }
+                catch {
+                    return false;
+                }
+            }
+
+            try
+            {
+                SetDefaultAuctionTimes(auctionProduct);
+                SetDefaultPricing(auctionProduct);
+                
+                var productToSend = new
+                {
+                    auctionProduct.Title,
+                    auctionProduct.Description,
+                    SellerId = auctionProduct.Seller?.Id ?? 0,
+                    ConditionId = auctionProduct.Condition?.Id,
+                    CategoryId = auctionProduct.Category?.Id,
+                    auctionProduct.StartTime,
+                    auctionProduct.EndTime,
+                    auctionProduct.StartPrice,
+                    auctionProduct.CurrentPrice,
+                    Images = auctionProduct.Images?.Select(img => new { img.Url }).ToList()
+                };
+
+                var response = await httpClient.PostAsJsonAsync("api/auctionproducts", productToSend);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> PlaceBidAsync(int auctionId, int bidderId, double bidAmount)
+        {
+            if (httpClient == null)
+            {
+                throw new InvalidOperationException("HTTP client is required for PlaceBidAsync");
+            }
+
+            try
+            {
+                var auction = await GetAuctionProductByIdAsync(auctionId);
+                if (auction == null || auction.Id == 0)
+                {
+                    throw new KeyNotFoundException($"Auction product with ID {auctionId} not found.");
+                }
+                ValidateBid(auction, bidderId, bidAmount);
+                
+                ProcessRefundForPreviousBidder(auction, bidAmount);
+                
+                ExtendAuctionTimeIfNeeded(auction);
+                
+                if (auction.EndTime > DateTime.Now)
+                {
+                    var bidToSend = new
+                    {
+                        ProductId = auctionId,
+                        BidderId = bidderId,
+                        Amount = bidAmount,
+                        Timestamp = DateTime.Now
+                    };
+                    
+                    var response = await httpClient.PostAsJsonAsync($"api/auctionproducts/{auctionId}/bids", bidToSend);
+                    return response.IsSuccessStatusCode;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Auction has already ended.");
+                }
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateAuctionProductAsync(AuctionProduct auctionProduct)
+        {
+            if (httpClient == null)
+            {
+                throw new InvalidOperationException("HTTP client is required for UpdateAuctionProductAsync");
+            }
+
+            try
+            {
+                var productToSend = new
+                {
+                    auctionProduct.Id,
+                    auctionProduct.Title,
+                    auctionProduct.Description,
+                    SellerId = auctionProduct.Seller?.Id,
+                    ConditionId = auctionProduct.Condition?.Id,
+                    CategoryId = auctionProduct.Category?.Id,
+                    auctionProduct.StartTime,
+                    auctionProduct.EndTime,
+                    auctionProduct.StartPrice,
+                    auctionProduct.CurrentPrice,
+                    Images = auctionProduct.Images?.Select(img => new { img.Url }).ToList()
+                };
+
+                var response = await httpClient.PutAsJsonAsync($"api/auctionproducts/{auctionProduct.Id}", productToSend);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAuctionProductAsync(int id)
+        {
+            if (httpClient == null)
+            {
+                try
+                {
+                    var product = GetProductById(id);
+                    ConcludeAuction(product);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            try
+            {
+                var response = await httpClient.DeleteAsync($"api/auctionproducts/{id}");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Additional Business Logic Methods
+
+        public void ExtendAuctionTimeIfNeeded(AuctionProduct auction)
+        {
+            var timeRemaining = auction.EndTime - DateTime.Now;
+            
+            if (timeRemaining.TotalMinutes < MAX_AUCTION_TIME)
+            {
+                var oldEndTime = auction.EndTime;
+                auction.EndTime = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
+            }
+        }
+
+        public void SetDefaultAuctionTimes(AuctionProduct product)
+        {
+            if (product.StartTime == default || product.StartTime.Year < 2000)
+            {
+                product.StartTime = DateTime.Now;
+            }
+            
+            if (product.EndTime == default || product.EndTime.Year < 2000)
+            {
+                product.EndTime = DateTime.Now.AddDays(7);
+            }
+        }
+
+        public void SetDefaultPricing(AuctionProduct product)
+        {
+            if (product.StartPrice <= 0)
+            {
+                if (product.CurrentPrice > 0)
+                {
+                    product.StartPrice = product.CurrentPrice;
+                }
+                else
+                {
+                    product.StartPrice = DEFAULT_MIN_PRICE;
+                    product.CurrentPrice = DEFAULT_MIN_PRICE;
+                }
+            }
+            else if (product.CurrentPrice <= 0)
+            {
+                product.CurrentPrice = product.StartPrice;
+            }
+        }
+
+        public void ProcessRefundForPreviousBidder(AuctionProduct product, double newBidAmount)
+        {
+            if (product.Bids != null && product.Bids.Any())
+            {
+                var highestBid = product.Bids.OrderByDescending(b => b.Price).FirstOrDefault();
+                if (highestBid != null)
+                {
+                    int previousBidderId = highestBid.BidderId;
+                    double previousBidAmount = highestBid.Price;
+                }
+            }
+        }
+
+        #endregion
     }
 }
