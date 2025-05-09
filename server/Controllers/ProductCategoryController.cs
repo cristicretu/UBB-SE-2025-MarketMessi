@@ -41,9 +41,9 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateProductCategory([FromBody] ProductCategoryRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.DisplayTitle) || !ModelState.IsValid)
+            if (request == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Request body cannot be null");
             }
 
             try
