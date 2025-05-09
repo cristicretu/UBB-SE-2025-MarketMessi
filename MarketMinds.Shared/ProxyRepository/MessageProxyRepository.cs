@@ -15,37 +15,98 @@ namespace MarketMinds.Shared.ProxyRepository
     public class MessageProxyRepository : IMessageRepository
     {
         private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
 
         public MessageProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (string.IsNullOrEmpty(apiBaseUrl))
-            {
-                throw new InvalidOperationException("API base URL is null or empty");
-            }
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        }
 
-            if (!apiBaseUrl.EndsWith("/"))
+        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        {
+            try
             {
-                apiBaseUrl += "/";
+                var createDto = new CreateMessageDto
+                {
+                    ConversationId = conversationId,
+                    UserId = userId,
+                    Content = content
+                };
+
+                var jsonContent = JsonConvert.SerializeObject(createDto);
+                var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/Message", stringContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var message = JsonConvert.DeserializeObject<Message>(responseContent);
+                    return message;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to create message: {response.StatusCode}");
+                }
             }
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception in CreateMessageAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<Message> CreateMessageAsync(CreateMessageDto newMessage)
         {
-            var response = await httpClient.PostAsJsonAsync("message", newMessage);
-            response.EnsureSuccessStatusCode();
+           try
+            {
+                var jsonContent = JsonConvert.SerializeObject(newMessage);
+                var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            return await response.Content.ReadFromJsonAsync<Message>();
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/Message", stringContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var message = JsonConvert.DeserializeObject<Message>(responseContent);
+                    return message;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to create message: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception in CreateMessageAsync: {ex.Message}");
+                throw;
+            }
         }
+
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            var response = await httpClient.GetAsync($"message/conversation/{conversationId}");
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var response = await httpClient.GetAsync($"{apiBaseUrl}/api/Message/conversation/{conversationId}");
 
-            return await response.Content.ReadFromJsonAsync<List<Message>>();
+                if (response.IsSuccessStatusCode)
+                {
+                    var messages = await response.Content.ReadFromJsonAsync<List<Message>>();
+                    return messages;
+                }
+                else
+                {
+                    throw new Exception($"Failed to get messages: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

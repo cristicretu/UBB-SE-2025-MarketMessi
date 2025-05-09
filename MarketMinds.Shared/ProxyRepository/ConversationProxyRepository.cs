@@ -38,7 +38,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 var jsonContent = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await httpClient.PostAsync(apiBaseUrl, content);
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/Conversation", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -64,7 +64,7 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 Debug.WriteLine($"Getting conversation with ID: {conversationId}");
-                var response = await httpClient.GetAsync($"{apiBaseUrl}/{conversationId}");
+                var response = await httpClient.GetAsync($"{apiBaseUrl}/api/Conversation/{conversationId}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -90,7 +90,7 @@ namespace MarketMinds.Shared.ProxyRepository
             try
             {
                 Debug.WriteLine($"Getting conversations for user ID: {userId}");
-                var response = await httpClient.GetAsync($"{apiBaseUrl}/user/{userId}");
+                var response = await httpClient.GetAsync($"{apiBaseUrl}/api/Conversation/user/{userId}");
 
                 if (response.IsSuccessStatusCode)
                 {

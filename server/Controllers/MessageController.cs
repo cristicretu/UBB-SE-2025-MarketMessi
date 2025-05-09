@@ -37,14 +37,25 @@ namespace Server.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var createdMessage = await messageRepository.CreateMessageAsync(createMessageDto);
-
+                bool isWelcomeMessage = false;
+                try
+                {
+                    var existingMessages = await messageRepository.GetMessagesByConversationIdAsync(createMessageDto.ConversationId);
+                    isWelcomeMessage = existingMessages == null || existingMessages.Count == 0;
+                }
+                catch (Exception ex)
+                {
+                    // Silently continue
+                }
+                
+                var message = await messageRepository.CreateMessageAsync(createMessageDto);
+                
                 var messageDto = new MessageDto
                 {
-                    Id = createdMessage.Id,
-                    ConversationId = createdMessage.ConversationId,
-                    UserId = createdMessage.UserId,
-                    Content = createdMessage.Content
+                    Id = message.Id,
+                    ConversationId = message.ConversationId,
+                    UserId = message.UserId,
+                    Content = message.Content
                 };
 
                 return CreatedAtAction(nameof(GetMessagesByConversation), new { conversationId = messageDto.ConversationId }, messageDto);
