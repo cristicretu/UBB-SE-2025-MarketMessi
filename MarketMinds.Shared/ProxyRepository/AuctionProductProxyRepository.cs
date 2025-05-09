@@ -21,7 +21,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public AuctionProductsProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
             if (!apiBaseUrl.EndsWith("/"))
             {
                 apiBaseUrl += "/";

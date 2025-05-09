@@ -19,7 +19,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public MessageProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
             if (string.IsNullOrEmpty(apiBaseUrl))
             {
                 throw new InvalidOperationException("API base URL is null or empty");
