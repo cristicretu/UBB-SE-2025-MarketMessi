@@ -78,7 +78,7 @@ namespace MarketMinds.Repositories.ReviewRepository
             }
         }
 
-        public void EditReview(Review review)
+        public void EditReview(Review review, double rating, string description)
         {
             if (review == null)
             {
@@ -87,6 +87,8 @@ namespace MarketMinds.Repositories.ReviewRepository
 
             try
             {
+                review.Rating = rating;
+                review.Description = description;
                 context.Entry(review).State = EntityState.Modified;
                 context.SaveChanges();
             }
