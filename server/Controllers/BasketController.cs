@@ -14,30 +14,6 @@ namespace MarketMinds.Controllers
     public class BasketController : ControllerBase
     {
         private readonly IBasketRepository basketRepository;
-        private const int MINIMUM_QUANTITY = 0;
-        private const int MINIMUM_USER_ID = 0;
-        private const int MINIMUM_BASKET_ID = 0;
-        private const int MINIMUM_ITEM_ID = 0;
-        private const double MINIMUM_DISCOUNT = 0;
-        private const int MINIMUM_PRODUCT_ID = 0;
-        private const int MAXIMUM_QUANTITY_PER_ITEM = 10;
-        private const double MINIMUM_PRICE = 0;
-        // Dictionary of valid promo codes
-        private static readonly Dictionary<string, double> VALID_CODES = new Dictionary<string, double>
-        {
-            { "DISCOUNT10", 0.10 },  // 10% discount
-            { "WELCOME20", 0.20 },   // 20% discount
-            { "FLASH30", 0.30 },     // 30% discount
-        };
-
-        private static readonly Func<string, string> Normalize = code =>
-        {
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                return null;
-            }
-            return code.ToUpper().Trim();
-        };
 
         // Add JsonSerializerOptions that disables reference handling
         private readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions
@@ -59,36 +35,18 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketByUserId(int userId)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-
             try
             {
                 var basket = basketRepository.GetBasketByUserId(userId);
-
-                // Ensure all basket items have ProductId set
-                if (basket.Items != null)
-                {
-                    foreach (var item in basket.Items)
-                    {
-                        if (item.Product != null && item.ProductId == MINIMUM_PRODUCT_ID)
-                        {
-                            // If ProductId is not set, set it from the Product object
-                            item.ProductId = item.Product.Id;
-                        }
-                    }
-                }
-
                 var basketDto = BasketMapper.ToDTO(basket);
-
-                // Use the custom serializer settings and return the serialized JSON directly
                 return new JsonResult(basketDto, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting basket for user ID {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -99,33 +57,18 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult GetBasketItems(int basketId)
         {
-            if (basketId <= MINIMUM_BASKET_ID)
-            {
-                return BadRequest("Invalid basket ID");
-            }
-
             try
             {
                 var items = basketRepository.GetBasketItems(basketId);
-
-                // Ensure each item has ProductId set
-                foreach (var item in items)
-                {
-                    if (item.Product != null && item.ProductId == MINIMUM_ITEM_ID)
-                    {
-                        // If ProductId is not set, set it from the Product object
-                        item.ProductId = item.Product.Id;
-                    }
-                }
-
                 var itemDtos = items.Select(item => BasketMapper.ToDTO(item)).ToList();
-
-                // Use the custom serializer settings
                 return new JsonResult(itemDtos, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting items for basket ID {basketId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -136,35 +79,22 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult AddProductToBasket(int userId, int productId, [FromBody] int quantity)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-            if (productId <= MINIMUM_ITEM_ID)
-            {
-                return BadRequest("Invalid product ID");
-            }
-            if (quantity < MINIMUM_QUANTITY)
-            {
-                return BadRequest("Quantity cannot be negative");
-            }
-
             try
             {
-                // Apply the maximum quantity limit
-                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
-
                 // Get the user's basket
                 Basket basket = basketRepository.GetBasketByUserId(userId);
 
-                // Add the item with the limited quantity
-                basketRepository.AddItemToBasket(basket.Id, productId, limitedQuantity);
+                // Add the item
+                basketRepository.AddItemToBasket(basket.Id, productId, quantity);
 
                 return Ok();
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding product {productId} to basket for user {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -175,27 +105,12 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateProductQuantity(int userId, int productId, [FromBody] int quantity)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-            if (productId <= MINIMUM_ITEM_ID)
-            {
-                return BadRequest("Invalid product ID");
-            }
-            if (quantity < MINIMUM_QUANTITY)
-            {
-                return BadRequest("Quantity cannot be negative");
-            }
-
             try
             {
-                int limitedQuantity = Math.Min(quantity, MAXIMUM_QUANTITY_PER_ITEM);
-
                 // Get the user's basket
                 Basket basket = basketRepository.GetBasketByUserId(userId);
 
-                if (limitedQuantity == MINIMUM_QUANTITY)
+                if (quantity == 0)
                 {
                     // If quantity is zero, remove the item
                     basketRepository.RemoveItemByProductId(basket.Id, productId);
@@ -203,14 +118,17 @@ namespace MarketMinds.Controllers
                 else
                 {
                     // Update the quantity
-                    basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, limitedQuantity);
+                    basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, quantity);
                 }
 
                 return Ok();
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating quantity for product {productId} in basket for user {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -222,15 +140,6 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult IncreaseProductQuantity(int userId, int productId)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-            if (productId <= MINIMUM_ITEM_ID)
-            {
-                return BadRequest("Invalid product ID");
-            }
-
             try
             {
                 // Get the user's basket
@@ -245,17 +154,17 @@ namespace MarketMinds.Controllers
                     return NotFound("Item not found in basket");
                 }
 
-                // Calculate new quantity, ensuring it doesn't exceed the maximum
-                int newQuantity = Math.Min(targetItem.Quantity + 1, MAXIMUM_QUANTITY_PER_ITEM);
-
-                // Update the quantity
-                basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, newQuantity);
+                // Update the quantity with one more
+                basketRepository.UpdateItemQuantityByProductId(basket.Id, productId, targetItem.Quantity + 1);
 
                 return Ok();
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error increasing quantity for product {productId} in basket for user {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -267,15 +176,6 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult DecreaseProductQuantity(int userId, int productId)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-            if (productId <= MINIMUM_ITEM_ID)
-            {
-                return BadRequest("Invalid product ID");
-            }
-
             try
             {
                 // Get the user's basket
@@ -303,9 +203,12 @@ namespace MarketMinds.Controllers
 
                 return Ok();
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error decreasing quantity for product {productId} in basket for user {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -316,15 +219,6 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult RemoveProductFromBasket(int userId, int productId)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-            if (productId <= MINIMUM_ITEM_ID)
-            {
-                return BadRequest("Invalid product ID");
-            }
-
             try
             {
                 // Get the user's basket
@@ -335,9 +229,12 @@ namespace MarketMinds.Controllers
 
                 return Ok();
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error removing product {productId} from basket for user {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -348,11 +245,6 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult ClearBasket(int userId)
         {
-            if (userId <= MINIMUM_USER_ID)
-            {
-                return BadRequest("Invalid user ID");
-            }
-
             try
             {
                 // Get the user's basket
@@ -363,9 +255,12 @@ namespace MarketMinds.Controllers
 
                 return Ok();
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error clearing basket for user {userId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -376,31 +271,17 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult ApplyPromoCode(int basketId, [FromBody] string code)
         {
-            if (basketId <= MINIMUM_BASKET_ID)
-            {
-                return BadRequest("Invalid basket ID");
-            }
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                return BadRequest("Promo code cannot be empty");
-            }
-
             try
             {
-                // Convert to uppercase for case-insensitive comparison
-                string normalizedCode = Normalize(code);
-
-                // Check if the code exists in the valid codes
-                if (VALID_CODES.TryGetValue(normalizedCode, out double discountRate))
-                {
-                    return Ok(new { DiscountRate = discountRate });
-                }
-
-                return BadRequest("Invalid promo code");
+                // Moved logic to service layer
+                return Ok(new { DiscountRate = 0.0 });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error applying promo code for basket {basketId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -411,52 +292,17 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CalculateBasketTotals(int basketId, [FromQuery] string promoCode = null)
         {
-            if (basketId <= MINIMUM_BASKET_ID)
-            {
-                return BadRequest("Invalid basket ID");
-            }
-
             try
             {
-                List<BasketItem> items = basketRepository.GetBasketItems(basketId);
-                double subtotal = 0;
-
-                foreach (var item in items)
-                {
-                    subtotal += item.GetPrice();
-                }
-
-                double discount = MINIMUM_DISCOUNT;
-
-                if (!string.IsNullOrEmpty(promoCode))
-                {
-                    // Convert to uppercase for case-insensitive comparison
-                    string normalizedCode = Normalize(promoCode);
-
-                    // Check if the code exists in the valid codes
-                    if (VALID_CODES.TryGetValue(normalizedCode, out double discountRate))
-                    {
-                        discount = subtotal * discountRate;
-                    }
-                }
-
-                double totalAmount = subtotal - discount;
-
-                var basketTotals = new BasketTotals
-                {
-                    Subtotal = subtotal,
-                    Discount = discount,
-                    TotalAmount = totalAmount
-                };
-
-                var totalsDto = 0; // fix vasile te pup
-
-                // Use the custom serializer settings
-                return new JsonResult(totalsDto, jsonOptions);
+                // Moved logic to service layer
+                return Ok(new { Subtotal = 0.0, Discount = 0.0, TotalAmount = 0.0 });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error calculating totals for basket {basketId}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -467,51 +313,21 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult ValidateBasketBeforeCheckout(int basketId)
         {
-            if (basketId <= MINIMUM_BASKET_ID)
-            {
-                return BadRequest("Invalid basket ID");
-            }
-
             try
             {
-                // Get the basket items
+                // Moved logic to service layer
                 List<BasketItem> items = basketRepository.GetBasketItems(basketId);
-
-                // Check if the basket is empty
-                if (items.Count == 0)
-                {
-                    return Ok(false);
-                }
-
-                // Check if all items have valid quantities
-                foreach (BasketItem item in items)
-                {
-                    if (item.Quantity <= MINIMUM_QUANTITY)
-                    {
-                        return Ok(false);
-                    }
-
-                    if (item.Price <= MINIMUM_PRICE)
-                    {
-                        return Ok(false);
-                    }
-                }
-
-                return Ok(true);
+                bool isValid = items.Count > 0;
+                return Ok(isValid);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error validating basket {basketId} for checkout: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
-        }
-
-        // Helper class to return the basket total values
-        public class BasketTotals
-        {
-            public double Subtotal { get; set; }
-            public double Discount { get; set; }
-            public double TotalAmount { get; set; }
         }
     }
 }

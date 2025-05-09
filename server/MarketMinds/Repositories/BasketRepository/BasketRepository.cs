@@ -10,12 +10,6 @@ namespace MarketMinds.Repositories.BasketRepository
 {
     public class BasketRepository : IBasketRepository
     {
-        private const int INVALID_BASKET_ID = -1;
-        private const int INVALID_ITEM_ID = -1;
-        private const int DEFAULT_PRICE = 0;
-        private const int MINIMUM_VALID_ID = 0;
-        private const int ZERO_QUANTITY = 0;
-
         private readonly ApplicationDbContext context;
 
         public BasketRepository(ApplicationDbContext context)
@@ -57,18 +51,12 @@ namespace MarketMinds.Repositories.BasketRepository
 
         public List<BasketItem> GetBasketItems(int basketId)
         {
-            Debug.WriteLine($"[Repository] GetBasketItems called with basketId: {basketId}");
-
             var basketItems = context.BasketItems
                 .Where(bi => bi.BasketId == basketId)
                 .ToList();
 
-            Debug.WriteLine($"[Repository] Found {basketItems.Count} basket items in database");
-
             foreach (var item in basketItems)
             {
-                Debug.WriteLine($"[Repository] Loading product details for item {item.Id}, productId: {item.ProductId}");
-
                 var product = context.BuyProducts
                     .Include(p => p.Seller)
                     .Include(p => p.Condition)
@@ -77,14 +65,7 @@ namespace MarketMinds.Repositories.BasketRepository
 
                 if (product != null)
                 {
-                    Debug.WriteLine($"[Repository] Found product: {product.Id} - {product.Title}");
                     item.Product = product;
-
-                    if (item.ProductId != product.Id)
-                    {
-                        Debug.WriteLine($"[Repository] WARNING: ProductId mismatch! Setting ProductId={product.Id} for item {item.Id}");
-                        item.ProductId = product.Id;
-                    }
 
                     var productTagIds = context.Set<BuyProductProductTag>()
                         .Where(pt => pt.ProductId == product.Id)
@@ -96,30 +77,20 @@ namespace MarketMinds.Repositories.BasketRepository
                         .ToList();
 
                     product.Tags = tags;
-                    Debug.WriteLine($"[Repository] Loaded {tags.Count} tags for product {product.Id}");
 
                     var productImages = context.Set<BuyProductImage>()
                         .Where(pi => pi.ProductId == product.Id)
                         .ToList();
 
                     product.NonMappedImages = productImages.Select(pi => new Image(pi.Url)).ToList();
-                    Debug.WriteLine($"[Repository] Loaded {product.NonMappedImages.Count} images for product {product.Id}");
-                }
-                else
-                {
-                    Debug.WriteLine($"[Repository] WARNING: Product with ID {item.ProductId} not found!");
                 }
             }
 
-            Debug.WriteLine($"[Repository] Returning {basketItems.Count} fully loaded basket items");
             return basketItems;
         }
 
         public void AddItemToBasket(int basketId, int productId, int quantity)
         {
-            ValidateQuantity(quantity);
-            ValidateProductId(productId);
-
             var product = context.BuyProducts.Find(productId);
             if (product == null)
             {
@@ -156,11 +127,6 @@ namespace MarketMinds.Repositories.BasketRepository
 
         public void ClearBasket(int basketId)
         {
-            if (basketId < INVALID_BASKET_ID)
-            {
-                throw new ArgumentException("Basket ID cannot be negative");
-            }
-
             var basketItems = context.BasketItems
                 .Where(bi => bi.BasketId == basketId);
 
@@ -170,8 +136,6 @@ namespace MarketMinds.Repositories.BasketRepository
 
         public bool RemoveProductFromBasket(int basketId, int productId)
         {
-            ValidateProductId(productId);
-
             var basketItem = context.BasketItems
                 .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
@@ -188,9 +152,6 @@ namespace MarketMinds.Repositories.BasketRepository
 
         public void UpdateItemQuantityByProductId(int basketId, int productId, int quantity)
         {
-            ValidateQuantity(quantity);
-            ValidateProductId(productId);
-
             var basketItem = context.BasketItems
                 .FirstOrDefault(bi => bi.BasketId == basketId && bi.ProductId == productId);
 
@@ -199,7 +160,7 @@ namespace MarketMinds.Repositories.BasketRepository
                 throw new Exception("Basket item not found");
             }
 
-            if (quantity == ZERO_QUANTITY)
+            if (quantity == 0)
             {
                 context.BasketItems.Remove(basketItem);
             }
@@ -210,22 +171,6 @@ namespace MarketMinds.Repositories.BasketRepository
             }
 
             context.SaveChanges();
-        }
-
-        private void ValidateQuantity(int quantity)
-        {
-            if (quantity < 0)
-            {
-                throw new ArgumentException("Quantity cannot be negative");
-            }
-        }
-
-        private void ValidateProductId(int productId)
-        {
-            if (productId < 0)
-            {
-                throw new ArgumentException("Product ID cannot be negative");
-            }
         }
 
         // Stub implementations for Raw methods (these won't be called server-side)
