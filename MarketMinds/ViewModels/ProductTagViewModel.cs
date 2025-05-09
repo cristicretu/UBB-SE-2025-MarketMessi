@@ -10,7 +10,7 @@ namespace ViewModelLayer.ViewModel
 {
     public class ProductTagViewModel
     {
-        private ProductTagService productTagService;
+        private IProductTagService productTagService;
 
         public ProductTagViewModel(ProductTagService productTagService)
         {
