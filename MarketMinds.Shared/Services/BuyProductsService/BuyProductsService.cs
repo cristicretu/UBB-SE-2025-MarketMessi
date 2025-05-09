@@ -31,7 +31,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
         {
             try
             {
-                var json = buyProductsRepository.GetProductsRaw();
+                var json = buyProductsRepository.GetProducts();
                 Console.WriteLine("Received JSON from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 
@@ -88,7 +88,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                            : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
                 };
 
-                var responseJson = buyProductsRepository.CreateListingRaw(productToSend);
+                var responseJson = buyProductsRepository.CreateListing(productToSend);
                 // Could deserialize response if needed
             }
             catch (HttpRequestException ex)
@@ -112,7 +112,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
-                buyProductsRepository.DeleteListingRaw(product.Id);
+                buyProductsRepository.DeleteListing(product.Id);
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
 
             try
             {
-                var json = buyProductsRepository.GetProductByIdRaw(id);
+                var json = buyProductsRepository.GetProductById(id);
                 Console.WriteLine($"Received JSON for product {id} from server:");
                 Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
 

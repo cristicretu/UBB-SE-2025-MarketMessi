@@ -55,7 +55,7 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public void DeleteProductTagRaw(string displayTitle)
+        public void DeleteProductTag(string displayTitle)
         {
             var response = httpClient.DeleteAsync($"ProductTag/{displayTitle}").Result;
             response.EnsureSuccessStatusCode();
@@ -68,11 +68,6 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         public ProductTag CreateProductTag(string displayTitle)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public void DeleteProductTag(string displayTitle)
         {
             throw new NotImplementedException("This method should be called from the service layer");
         }

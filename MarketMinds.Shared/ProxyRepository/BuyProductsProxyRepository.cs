@@ -24,7 +24,7 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         // Raw data access methods
-        public string GetProductsRaw()
+        public string GetProducts()
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {
@@ -36,20 +36,20 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public string CreateListingRaw(object productToSend)
+        public string CreateListing(object productToSend)
         {
             var response = httpClient.PostAsJsonAsync("buyproducts", productToSend).Result;
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public void DeleteListingRaw(int id)
+        public void DeleteListing(int id)
         {
             var response = httpClient.DeleteAsync($"buyproducts/{id}").Result;
             response.EnsureSuccessStatusCode();
         }
 
-        public string GetProductByIdRaw(int id)
+        public string GetProductById(int id)
         {
             if (httpClient == null || httpClient.BaseAddress == null)
             {
@@ -61,25 +61,5 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        // Legacy implementations that delegate to service layer
-        public List<Models.Product> GetProducts()
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public void CreateListing(Models.BuyProduct product)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public void DeleteListing(Models.Product product)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
-
-        public Models.BuyProduct GetProductById(int id)
-        {
-            throw new NotImplementedException("This method should be called from the service layer");
-        }
     }
 }

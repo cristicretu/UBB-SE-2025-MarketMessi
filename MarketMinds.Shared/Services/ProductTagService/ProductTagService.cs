@@ -78,7 +78,7 @@ namespace MarketMinds.Shared.Services.ProductTagService
 
             try
             {
-                repository.DeleteProductTagRaw(displayTitle);
+                repository.DeleteProductTag(displayTitle);
             }
             catch (Exception ex)
             {
