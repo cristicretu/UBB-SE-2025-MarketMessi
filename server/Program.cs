@@ -47,8 +47,8 @@ builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository
 builder.Services.AddScoped<IBuyProductsRepository, BuyProductsRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<MarketMinds.Repositories.ProductCategoryRepository.IProductCategoryRepository, ProductCategoryRepository>();
-builder.Services.AddScoped<MarketMinds.Repositories.ProductConditionRepository.IProductConditionRepository, ProductConditionRepository>();
+builder.Services.AddScoped<MarketMinds.Shared.IRepository.IProductCategoryRepository, ProductCategoryRepository>();
+builder.Services.AddScoped<MarketMinds.Shared.IRepository.IProductConditionRepository, ProductConditionRepository>();
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

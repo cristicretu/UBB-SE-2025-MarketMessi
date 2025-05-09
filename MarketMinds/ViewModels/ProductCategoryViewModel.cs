@@ -12,7 +12,7 @@ namespace ViewModelLayer.ViewModel
 {
     public class ProductCategoryViewModel : INotifyPropertyChanged
     {
-        private ProductCategoryService productCategoryService;
+        private IProductCategoryService productCategoryService;
         private string categoryName;
         private string categoryDescription;
         private string errorMessage;

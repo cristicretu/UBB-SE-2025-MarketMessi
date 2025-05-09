@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.ProductCategoryRepository
 {
@@ -19,55 +20,46 @@ namespace MarketMinds.Repositories.ProductCategoryRepository
 
         public List<Category> GetAllProductCategories()
         {
-            try
-            {
-                var allCategories = databaseContext.ProductCategories.ToList();
-                return allCategories;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Error in GetAllProductCategories using EF: {exception.Message}");
-                throw;
-            }
+            return databaseContext.ProductCategories.ToList();
         }
 
-        public Category CreateProductCategory(string displayTitle, string? description)
+        public Category CreateProductCategory(string displayTitle, string description)
         {
-            try
-            {
-                var categoryToCreate = new Category(displayTitle, description);
+            var categoryToCreate = new Category(displayTitle, description);
 
-                databaseContext.ProductCategories.Add(categoryToCreate);
-                databaseContext.SaveChanges();
+            databaseContext.ProductCategories.Add(categoryToCreate);
+            databaseContext.SaveChanges();
 
-                return categoryToCreate;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Error in CreateProductCategory using EF: {exception.Message}");
-                throw;
-            }
+            return categoryToCreate;
         }
 
         public void DeleteProductCategory(string displayTitle)
         {
-            try
-            {
-                var categoryToDelete = databaseContext.ProductCategories.FirstOrDefault(category => category.Name == displayTitle);
+            var categoryToDelete = databaseContext.ProductCategories.FirstOrDefault(category => category.Name == displayTitle);
 
-                if (categoryToDelete == null)
-                {
-                    throw new KeyNotFoundException($"Category with title '{displayTitle}' not found.");
-                }
-
-                databaseContext.ProductCategories.Remove(categoryToDelete);
-                databaseContext.SaveChanges();
-            }
-            catch (Exception exception)
+            if (categoryToDelete == null)
             {
-                Console.WriteLine($"Error in DeleteProductCategory using EF: {exception.Message}");
-                throw;
+                throw new KeyNotFoundException($"Category with title '{displayTitle}' not found.");
             }
+
+            databaseContext.ProductCategories.Remove(categoryToDelete);
+            databaseContext.SaveChanges();
+        }
+
+        // Stub implementations for Raw methods (these won't be called server-side)
+        public string GetAllProductCategoriesRaw()
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string CreateProductCategoryRaw(string displayTitle, string description)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public void DeleteProductCategoryRaw(string displayTitle)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
         }
     }
 }

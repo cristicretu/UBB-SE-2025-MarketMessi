@@ -215,7 +215,7 @@ namespace MarketMinds.Views
                 try
                 {
                     Debug.WriteLine($"[DEBUG] LoadMessagesAsync: Fetching messages for conversation {conversationId}");
-                    fetchedMessages = await messageService.GetMessagesByConversationIdAsync(conversationId);
+                    fetchedMessages = await messageService.GetMessagesLegacyAsync(conversationId);
                     Debug.WriteLine($"[DEBUG] LoadMessagesAsync: Fetched {fetchedMessages.Count} messages");
                 }
                 catch (Exception fetchEx)

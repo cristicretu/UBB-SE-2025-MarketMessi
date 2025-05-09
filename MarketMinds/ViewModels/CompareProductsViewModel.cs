@@ -12,7 +12,7 @@ namespace ViewModelLayer.ViewModel
     {
         public Product LeftProduct;
         public Product RightProduct;
-        private readonly ProductComparisonService comparisonService;
+        private readonly IProductComparisonService comparisonService;
 
         public CompareProductsViewModel()
         {

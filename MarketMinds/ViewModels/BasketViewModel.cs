@@ -14,7 +14,7 @@ namespace ViewModelLayer.ViewModel
         private const int NullDiscount = 0;
         private const int DefaultQuantity = 1;
         private User currentUser;
-        private readonly BasketService basketService;
+        private readonly IBasketService basketService;
         private Basket basket;
 
         public List<BasketItem> BasketItems { get; private set; }
