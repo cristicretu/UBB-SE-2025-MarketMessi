@@ -48,7 +48,7 @@ namespace MarketMinds.Controllers
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return Ok(auctionProductDTO);
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
                 return NotFound(keyNotFoundException.Message);
             }
@@ -121,7 +121,7 @@ namespace MarketMinds.Controllers
                 auctionProductsRepository.UpdateProduct(product);
                 return NoContent();
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
                 return NotFound(keyNotFoundException.Message);
             }
