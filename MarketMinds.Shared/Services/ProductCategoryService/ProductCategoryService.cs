@@ -9,7 +9,7 @@ namespace MarketMinds.Shared.Services.ProductCategoryService
 {
     public class ProductCategoryService : IProductCategoryService
     {
-        private readonly ProductCategoryProxyRepository productCategoryRepository;
+        private readonly IProductCategoryRepository productCategoryRepository;
 
         public ProductCategoryService(IProductCategoryRepository repository)
         {

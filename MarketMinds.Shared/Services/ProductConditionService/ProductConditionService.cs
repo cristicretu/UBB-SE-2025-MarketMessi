@@ -11,7 +11,7 @@ namespace MarketMinds.Shared.Services.ProductConditionService
 {
     public class ProductConditionService : IProductConditionService
     {
-        private readonly ProductConditionProxyRepository productConditionRepository;
+        private readonly IProductConditionRepository productConditionRepository;
 
         public ProductConditionService(IProductConditionRepository repository)
         {

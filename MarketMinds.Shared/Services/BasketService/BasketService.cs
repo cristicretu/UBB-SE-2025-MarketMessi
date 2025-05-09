@@ -49,19 +49,12 @@ namespace MarketMinds.Shared.Services.BasketService
         };
 
         private readonly IBasketRepository basketRepository;
-        private readonly BasketProxyRepository proxyRepository;
         private readonly JsonSerializerOptions jsonOptions;
 
         // Constructor with configuration
         public BasketService(IBasketRepository basketRepository)
         {
             this.basketRepository = basketRepository;
-            this.proxyRepository = basketRepository as BasketProxyRepository;
-
-            if (this.proxyRepository == null && basketRepository.GetType().Name.Contains("Proxy"))
-            {
-                throw new InvalidOperationException("Expected BasketProxyRepository but received incompatible type.");
-            }
 
             // Configure JSON options
             jsonOptions = new JsonSerializerOptions
@@ -100,9 +93,9 @@ namespace MarketMinds.Shared.Services.BasketService
                 Basket basket = GetBasketByUserId(userId);
 
                 // Make the API call to add product to basket
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
-                    proxyRepository.AddProductToBasketRaw(userId, productId, limitedQuantity);
+                    ((BasketProxyRepository)basketRepository).AddProductToBasketRaw(userId, productId, limitedQuantity);
                 }
                 else
                 {
@@ -125,10 +118,10 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Use the proxy repository to get the raw JSON response
-                    var responseJson = proxyRepository.GetBasketByUserRaw(user.Id);
+                    var responseJson = ((BasketProxyRepository)basketRepository).GetBasketByUserRaw(user.Id);
 
                     try
                     {
@@ -256,10 +249,10 @@ namespace MarketMinds.Shared.Services.BasketService
                 // Get the user's basket
                 Basket basket = GetBasketByUserId(userId);
 
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Make the API call to remove product from basket
-                    proxyRepository.RemoveProductFromBasketRaw(userId, productId);
+                    ((BasketProxyRepository)basketRepository).RemoveProductFromBasketRaw(userId, productId);
                 }
                 else
                 {
@@ -303,9 +296,9 @@ namespace MarketMinds.Shared.Services.BasketService
                 if (limitedQuantity == MINIMUM_QUANTITY)
                 {
                     // If quantity is zero, remove the item
-                    if (proxyRepository != null)
+                    if (basketRepository.GetType().Name.Contains("Proxy"))
                     {
-                        proxyRepository.RemoveProductFromBasketRaw(userId, productId);
+                        ((BasketProxyRepository)basketRepository).RemoveProductFromBasketRaw(userId, productId);
                     }
                     else
                     {
@@ -314,10 +307,10 @@ namespace MarketMinds.Shared.Services.BasketService
                 }
                 else
                 {
-                    if (proxyRepository != null)
+                    if (basketRepository.GetType().Name.Contains("Proxy"))
                     {
                         // Make the API call to update product quantity
-                        proxyRepository.UpdateProductQuantityRaw(userId, productId, limitedQuantity);
+                        ((BasketProxyRepository)basketRepository).UpdateProductQuantityRaw(userId, productId, limitedQuantity);
                     }
                     else
                     {
@@ -379,10 +372,10 @@ namespace MarketMinds.Shared.Services.BasketService
                 // Get the user's basket
                 Basket basket = GetBasketByUserId(userId);
 
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Clear the basket through API
-                    proxyRepository.ClearBasketRaw(userId);
+                    ((BasketProxyRepository)basketRepository).ClearBasketRaw(userId);
                 }
                 else
                 {
@@ -409,10 +402,10 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Validate basket through API
-                    var responseContent = proxyRepository.ValidateBasketBeforeCheckOutRaw(basketId);
+                    var responseContent = ((BasketProxyRepository)basketRepository).ValidateBasketBeforeCheckOutRaw(basketId);
 
                     try
                     {
@@ -568,10 +561,10 @@ namespace MarketMinds.Shared.Services.BasketService
 
             try
             {
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Get totals from API
-                    var responseJson = proxyRepository.CalculateBasketTotalsRaw(basketId, promoCode);
+                    var responseJson = ((BasketProxyRepository)basketRepository).CalculateBasketTotalsRaw(basketId, promoCode);
 
                     try
                     {
@@ -640,10 +633,10 @@ namespace MarketMinds.Shared.Services.BasketService
                 // Get the user's basket
                 Basket basket = GetBasketByUserId(userId);
 
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Decrease quantity through API
-                    proxyRepository.DecreaseProductQuantityRaw(userId, productId);
+                    ((BasketProxyRepository)basketRepository).DecreaseProductQuantityRaw(userId, productId);
                 }
                 else
                 {
@@ -692,10 +685,10 @@ namespace MarketMinds.Shared.Services.BasketService
                 // Get the user's basket
                 Basket basket = GetBasketByUserId(userId);
 
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Increase quantity through API
-                    proxyRepository.IncreaseProductQuantityRaw(userId, productId);
+                    ((BasketProxyRepository)basketRepository).IncreaseProductQuantityRaw(userId, productId);
                 }
                 else
                 {
@@ -770,10 +763,10 @@ namespace MarketMinds.Shared.Services.BasketService
 
                 System.Diagnostics.Debug.WriteLine($"Checkout request: BasketId={basketId}, Discount={basketTotals.Discount}, Total={basketTotals.TotalAmount}");
 
-                if (proxyRepository != null)
+                if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Call the account API to create the order
-                    var response = await proxyRepository.CheckoutBasketRaw(userId, basketId, request);
+                    var response = await ((BasketProxyRepository)basketRepository).CheckoutBasketRaw(userId, basketId, request);
 
                     // Handle the response
                     if (response.IsSuccessStatusCode)
