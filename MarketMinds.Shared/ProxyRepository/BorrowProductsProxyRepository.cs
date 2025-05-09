@@ -21,7 +21,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null");
             }
             httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             if (string.IsNullOrEmpty(apiBaseUrl))
             {
                 throw new InvalidOperationException("API base URL is null or empty");

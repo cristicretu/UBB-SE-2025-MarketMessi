@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
-using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Shared.ProxyRepository
 {
@@ -18,7 +16,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public ProductTagProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:500";
             if (string.IsNullOrEmpty(apiBaseUrl))
             {
                 throw new InvalidOperationException("API base URL is null or empty");
@@ -38,60 +36,45 @@ namespace MarketMinds.Shared.ProxyRepository
             };
         }
 
+        // Raw methods for API access
+        public string GetAllProductTagsRaw()
+        {
+            var response = httpClient.GetAsync("ProductTag").Result;
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
+        public string CreateProductTagRaw(string displayTitle)
+        {
+            var requestContent = new StringContent(
+                $"{{\"displayTitle\":\"{displayTitle}\"}}",
+                System.Text.Encoding.UTF8,
+                "application/json");
+            var response = httpClient.PostAsync("ProductTag", requestContent).Result;
+            response.EnsureSuccessStatusCode();
+            return response.Content.ReadAsStringAsync().Result;
+        }
+
+        public void DeleteProductTagRaw(string displayTitle)
+        {
+            var response = httpClient.DeleteAsync($"ProductTag/{displayTitle}").Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        // Legacy implementations that delegate to service layer
         public List<ProductTag> GetAllProductTags()
         {
-            try
-            {
-                var response = httpClient.GetAsync("ProductTag").Result;
-                response.EnsureSuccessStatusCode();
-                var responseJson = response.Content.ReadAsStringAsync().Result;
-                var tags = JsonSerializer.Deserialize<List<ProductTag>>(responseJson, jsonOptions);
-                return tags ?? new List<ProductTag>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting all product tags: {ex.Message}");
-                return new List<ProductTag>();
-            }
+            throw new NotImplementedException("This method should be called from the service layer");
         }
 
         public ProductTag CreateProductTag(string displayTitle)
         {
-            try
-            {
-                var requestContent = new StringContent(
-                    $"{{\"displayTitle\":\"{displayTitle}\"}}",
-                    System.Text.Encoding.UTF8,
-                    "application/json");
-                var response = httpClient.PostAsync("ProductTag", requestContent).Result;
-                response.EnsureSuccessStatusCode();
-                var json = response.Content.ReadAsStringAsync().Result;
-                var tag = JsonSerializer.Deserialize<ProductTag>(json, jsonOptions);
-                if (tag == null)
-                {
-                    throw new InvalidOperationException("Failed to parse the server response.");
-                }
-                return tag;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error creating product tag: {ex.Message}");
-                throw;
-            }
+            throw new NotImplementedException("This method should be called from the service layer");
         }
 
         public void DeleteProductTag(string displayTitle)
         {
-            try
-            {
-                var response = httpClient.DeleteAsync($"ProductTag/{displayTitle}").Result;
-                response.EnsureSuccessStatusCode();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error deleting product tag: {ex.Message}");
-                throw;
-            }
+            throw new NotImplementedException("This method should be called from the service layer");
         }
     }
 }

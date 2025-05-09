@@ -1,40 +1,159 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Services.ProductTagService;
 
 namespace MarketMinds.Shared.Services.BuyProductsService
 {
     public class BuyProductsService : IBuyProductsService, IProductService
     {
         private readonly BuyProductsProxyRepository buyProductsRepository;
-
+        private readonly JsonSerializerOptions jsonOptions;
         private const int NOCOUNT = 0;
 
         public BuyProductsService(BuyProductsProxyRepository buyProductsRepository)
         {
             this.buyProductsRepository = buyProductsRepository;
+
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            jsonOptions.Converters.Add(new UserJsonConverter());
         }
 
         public List<Product> GetProducts()
         {
-            return buyProductsRepository.GetProducts();
+            try
+            {
+                var json = buyProductsRepository.GetProductsRaw();
+                Console.WriteLine("Received JSON from server:");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+
+                var products = JsonSerializer.Deserialize<List<BuyProduct>>(json, jsonOptions);
+                return products?.Cast<Product>().ToList() ?? new List<Product>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting products: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                return new List<Product>();
+            }
         }
 
         public void CreateListing(BuyProduct product)
         {
-            buyProductsRepository.CreateListing(product);
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product), "Product cannot be null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(product.Title))
+            {
+                throw new ArgumentException("Product title is required.", nameof(product.Title));
+            }
+
+            if (product.Price < 0)
+            {
+                throw new ArgumentException("Price cannot be negative.", nameof(product.Price));
+            }
+
+            if (product.Seller == null || product.Seller.Id == 0)
+            {
+                throw new ArgumentException("Valid seller is required.", nameof(product.Seller));
+            }
+
+            try
+            {
+                var productToSend = new
+                {
+                    product.Title,
+                    product.Description,
+                    SellerId = product.Seller?.Id ?? 0,
+                    ConditionId = product.Condition?.Id,
+                    CategoryId = product.Category?.Id,
+                    product.Price,
+                    Images = product.Images == null || !product.Images.Any()
+                           ? (product.NonMappedImages != null && product.NonMappedImages.Any()
+                              ? product.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
+                              : new List<object>())
+                           : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+                };
+
+                var responseJson = buyProductsRepository.CreateListingRaw(productToSend);
+                // Could deserialize response if needed
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error creating product: {ex.Message}");
+                throw;
+            }
         }
 
         public void DeleteListing(Product product)
         {
-            buyProductsRepository.DeleteListing(product);
+            if (product == null)
+            {
+                throw new ArgumentNullException(nameof(product), "Product cannot be null.");
+            }
+
+            if (product.Id == 0)
+            {
+                throw new ArgumentException("Product ID must be set for delete.", nameof(product.Id));
+            }
+
+            try
+            {
+                buyProductsRepository.DeleteListingRaw(product.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting product: {ex.Message}");
+                throw;
+            }
         }
 
         public BuyProduct GetProductById(int id)
         {
-            return buyProductsRepository.GetProductById(id);
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID must be a positive number.", nameof(id));
+            }
+
+            try
+            {
+                var json = buyProductsRepository.GetProductByIdRaw(id);
+                Console.WriteLine($"Received JSON for product {id} from server:");
+                Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)) + (json.Length > 500 ? "..." : string.Empty));
+
+                var product = JsonSerializer.Deserialize<BuyProduct>(json, jsonOptions);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Buy product with ID {id} not found.");
+                }
+                return product;
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting product by ID {id}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                throw new KeyNotFoundException($"Buy product with ID {id} not found: {ex.Message}");
+            }
         }
 
         public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)

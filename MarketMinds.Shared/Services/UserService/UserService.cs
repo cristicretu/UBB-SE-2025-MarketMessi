@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
@@ -11,17 +15,34 @@ namespace MarketMinds.Shared.Services.UserService
     public class UserService : IUserService
     {
         private readonly UserProxyRepository repository;
+        private readonly JsonSerializerOptions jsonOptions;
 
         public UserService(IConfiguration configuration)
         {
             repository = new UserProxyRepository(configuration);
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+            };
         }
 
         public async Task<bool> AuthenticateUserAsync(string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("Password cannot be null or empty.", nameof(password));
+            }
+
             try
             {
-                return await repository.AuthenticateUserAsync(username, password);
+                await repository.AuthenticateUserRawAsync(username, password);
+                return true;
             }
             catch (Exception ex)
             {
@@ -32,9 +53,20 @@ namespace MarketMinds.Shared.Services.UserService
 
         public async Task<User> GetUserByCredentialsAsync(string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("Password cannot be null or empty.", nameof(password));
+            }
+
             try
             {
-                var sharedUser = await repository.GetUserByCredentialsAsync(username, password);
+                var json = await repository.AuthenticateUserRawAsync(username, password);
+                var sharedUser = JsonSerializer.Deserialize<MarketMinds.Shared.Models.User>(json, jsonOptions);
                 return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
@@ -46,9 +78,15 @@ namespace MarketMinds.Shared.Services.UserService
 
         public async Task<User> GetUserByUsernameAsync(string username)
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            }
+
             try
             {
-                var sharedUser = await repository.GetUserByUsernameAsync(username);
+                var json = await repository.GetUserByUsernameRawAsync(username);
+                var sharedUser = JsonSerializer.Deserialize<MarketMinds.Shared.Models.User>(json, jsonOptions);
                 return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
@@ -60,9 +98,15 @@ namespace MarketMinds.Shared.Services.UserService
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentException("Email cannot be null or empty.", nameof(email));
+            }
+
             try
             {
-                var sharedUser = await repository.GetUserByEmailAsync(email);
+                var json = await repository.GetUserByEmailRawAsync(email);
+                var sharedUser = JsonSerializer.Deserialize<MarketMinds.Shared.Models.User>(json, jsonOptions);
                 return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
@@ -74,41 +118,88 @@ namespace MarketMinds.Shared.Services.UserService
 
         public async Task<bool> IsUsernameTakenAsync(string username)
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            }
+
             try
             {
-                return await repository.IsUsernameTakenAsync(username);
+                var json = await repository.CheckUsernameRawAsync(username);
+                var result = JsonSerializer.Deserialize<UsernameCheckResult>(json, jsonOptions);
+                return result.Exists;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error checking if username is taken: {ex.Message}");
-                return true;
+                return true; // Default to true (username taken) if there's an error
             }
         }
 
         public async Task<User> RegisterUserAsync(User user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User cannot be null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(user.Username));
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ArgumentException("Email cannot be null or empty.", nameof(user.Email));
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Password))
+            {
+                throw new ArgumentException("Password cannot be null or empty.", nameof(user.Password));
+            }
+
             try
             {
-                if (user == null)
+                // Validate email is not already in use
+                try
                 {
-                    return null;
+                    var existingUserByEmail = await GetUserByEmailAsync(user.Email);
+                    if (existingUserByEmail != null)
+                    {
+                        Debug.WriteLine($"[UserService] Email already in use: {user.Email}");
+                        return null;
+                    }
                 }
-                if (string.IsNullOrEmpty(user.Username))
+                catch (Exception)
                 {
-                    return null;
+                    // If we can't check email (API error), continue with registration
                 }
-                if (string.IsNullOrEmpty(user.Email))
+
+                // Validate username is not already taken
+                try
                 {
-                    return null;
+                    bool usernameTaken = await IsUsernameTakenAsync(user.Username);
+                    if (usernameTaken)
+                    {
+                        Debug.WriteLine($"[UserService] Username already taken: {user.Username}");
+                        return null;
+                    }
                 }
-                if (string.IsNullOrEmpty(user.Password))
+                catch (Exception)
                 {
-                    // Password should be handled by the proxy/server, but good to have a check here.
-                    return null; 
+                    // If we can't check username (API error), continue with registration
                 }
-                var sharedUser = ConvertToSharedUser(user);
-                // The repository.RegisterUserAsync now returns a User object (or null)
-                var registeredSharedUser = await repository.RegisterUserAsync(sharedUser);
+
+                // Create registration request
+                var registerRequest = new
+                {
+                    Username = user.Username,
+                    Email = user.Email,
+                    Password = user.Password
+                };
+
+                var json = await repository.RegisterUserRawAsync(registerRequest);
+                var registeredSharedUser = JsonSerializer.Deserialize<MarketMinds.Shared.Models.User>(json, jsonOptions);
                 return registeredSharedUser != null ? ConvertToDomainUser(registeredSharedUser) : null;
             }
             catch (Exception ex)
@@ -124,15 +215,119 @@ namespace MarketMinds.Shared.Services.UserService
 
         public async Task<User> GetUserByIdAsync(int userId)
         {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be a positive number.", nameof(userId));
+            }
+
             try
             {
-                var sharedUser = await repository.GetUserByIdAsync(userId);
+                var json = await repository.GetUserByIdRawAsync(userId);
+                var sharedUser = JsonSerializer.Deserialize<MarketMinds.Shared.Models.User>(json, jsonOptions);
                 return sharedUser != null ? ConvertToDomainUser(sharedUser) : null;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error getting user by ID: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task<List<UserOrder>> GetUserOrdersAsync(int userId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be a positive number.", nameof(userId));
+            }
+
+            try
+            {
+                var json = await repository.GetUserOrdersRawAsync(userId);
+                var orders = JsonSerializer.Deserialize<List<UserOrder>>(json, jsonOptions);
+                return orders ?? new List<UserOrder>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user orders: {ex.Message}");
+                return new List<UserOrder>();
+            }
+        }
+
+        public async Task<double> GetBasketTotalAsync(int userId, int basketId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be a positive number.", nameof(userId));
+            }
+
+            if (basketId <= 0)
+            {
+                throw new ArgumentException("Basket ID must be a positive number.", nameof(basketId));
+            }
+
+            try
+            {
+                var json = await repository.GetBasketTotalRawAsync(userId, basketId);
+                return JsonSerializer.Deserialize<double>(json, jsonOptions);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting basket total: {ex.Message}");
+                return 0;
+            }
+        }
+
+        public async Task<List<Order>> CreateOrderFromBasketAsync(int userId, int basketId, double discountAmount = 0)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be a positive number.", nameof(userId));
+            }
+
+            if (basketId <= 0)
+            {
+                throw new ArgumentException("Basket ID must be a positive number.", nameof(basketId));
+            }
+
+            if (discountAmount < 0)
+            {
+                throw new ArgumentException("Discount amount cannot be negative.", nameof(discountAmount));
+            }
+
+            try
+            {
+                var json = await repository.CreateOrderFromBasketRawAsync(userId, basketId, discountAmount);
+                var orders = JsonSerializer.Deserialize<List<Order>>(json, jsonOptions);
+                return orders ?? new List<Order>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating order from basket: {ex.Message}");
+                return new List<Order>();
+            }
+        }
+
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "User cannot be null.");
+            }
+
+            if (user.Id <= 0)
+            {
+                throw new ArgumentException("User ID must be a positive number.", nameof(user.Id));
+            }
+
+            try
+            {
+                var sharedUser = ConvertToSharedUser(user);
+                return await repository.UpdateUserRawAsync(sharedUser);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating user: {ex.Message}");
+                return false;
             }
         }
 
@@ -174,6 +369,11 @@ namespace MarketMinds.Shared.Services.UserService
                 Balance = domainUser.Balance,
                 Rating = domainUser.Rating
             };
+        }
+
+        private class UsernameCheckResult
+        {
+            public bool Exists { get; set; }
         }
     }
 }

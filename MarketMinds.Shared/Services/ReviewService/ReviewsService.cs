@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.ProxyRepository;
-using MarketMinds.Shared.Models;
 
 namespace MarketMinds.Shared.Services.ReviewService
 {
@@ -17,6 +17,7 @@ namespace MarketMinds.Shared.Services.ReviewService
         private readonly ReviewProxyRepository repository;
         private readonly IUserService userService;
         private readonly User currentUser;
+        private readonly JsonSerializerOptions jsonOptions;
         private Dictionary<int, string> userCache = new Dictionary<int, string>();
 
         public ReviewsService(IConfiguration configuration, IUserService userService, User currentUser = null)
@@ -30,6 +31,12 @@ namespace MarketMinds.Shared.Services.ReviewService
             {
                 this.userService = new UserService.UserService(configuration);
             }
+
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
         }
 
         private async Task<string> GetUsernameForIdAsync(int userId)
@@ -80,20 +87,23 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
-                var sharedUser = ConvertToSharedUser(seller);
-                var sharedReviews = repository.GetAllReviewsBySeller(sharedUser);
+                var jsonResponse = repository.GetReviewsBySellerRaw(seller.Id);
+                var sharedReviews = JsonSerializer.Deserialize<List<Review>>(jsonResponse, jsonOptions);
                 var domainReviews = new List<Review>();
 
-                foreach (var sharedReview in sharedReviews)
+                if (sharedReviews != null)
                 {
-                    var domainReview = ConvertToDomainReview(sharedReview);
-                    domainReview.SellerUsername = seller.Username;
-                    // Fetch buyer username asynchronously
-                    Task.Run(async () =>
+                    foreach (var sharedReview in sharedReviews)
                     {
-                        domainReview.BuyerUsername = await GetUsernameForIdAsync(domainReview.BuyerId);
-                    }).Wait();
-                    domainReviews.Add(domainReview);
+                        var domainReview = ConvertToDomainReview(sharedReview);
+                        domainReview.SellerUsername = seller.Username;
+                        // Fetch buyer username asynchronously
+                        Task.Run(async () =>
+                        {
+                            domainReview.BuyerUsername = await GetUsernameForIdAsync(domainReview.BuyerId);
+                        }).Wait();
+                        domainReviews.Add(domainReview);
+                    }
                 }
 
                 return new ObservableCollection<Review>(domainReviews);
@@ -114,20 +124,23 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
-                var sharedUser = ConvertToSharedUser(buyer);
-                var sharedReviews = repository.GetAllReviewsByBuyer(sharedUser);
+                var jsonResponse = repository.GetReviewsByBuyerRaw(buyer.Id);
+                var sharedReviews = JsonSerializer.Deserialize<List<Review>>(jsonResponse, jsonOptions);
                 var domainReviews = new List<Review>();
 
-                foreach (var sharedReview in sharedReviews)
+                if (sharedReviews != null)
                 {
-                    var domainReview = ConvertToDomainReview(sharedReview);
-                    domainReview.BuyerUsername = buyer.Username;
-                    // Fetch seller username asynchronously
-                    Task.Run(async () =>
+                    foreach (var sharedReview in sharedReviews)
                     {
-                        domainReview.SellerUsername = await GetUsernameForIdAsync(domainReview.SellerId);
-                    }).Wait();
-                    domainReviews.Add(domainReview);
+                        var domainReview = ConvertToDomainReview(sharedReview);
+                        domainReview.BuyerUsername = buyer.Username;
+                        // Fetch seller username asynchronously
+                        Task.Run(async () =>
+                        {
+                            domainReview.SellerUsername = await GetUsernameForIdAsync(domainReview.SellerId);
+                        }).Wait();
+                        domainReviews.Add(domainReview);
+                    }
                 }
 
                 return new ObservableCollection<Review>(domainReviews);
@@ -141,13 +154,28 @@ namespace MarketMinds.Shared.Services.ReviewService
 
         public void AddReview(string description, List<Image> images, double rating, User seller, User buyer)
         {
+            if (seller == null)
+            {
+                throw new ArgumentNullException(nameof(seller), "Seller cannot be null.");
+            }
+
+            if (buyer == null)
+            {
+                throw new ArgumentNullException(nameof(buyer), "Buyer cannot be null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new ArgumentException("Review description cannot be null or empty.", nameof(description));
+            }
+
             try
             {
                 // Ensure rating is within the expected range (0-5)
                 double validRating = Math.Max(0, Math.Min(5, rating));
 
-                // Create a shared Review object
-                var sharedReview = new MarketMinds.Shared.Models.Review
+                // Create a Review object
+                var reviewToCreate = new MarketMinds.Shared.Models.Review
                 {
                     Description = description,
                     Images = ConvertToSharedImages(images ?? new List<Image>()),
@@ -156,7 +184,7 @@ namespace MarketMinds.Shared.Services.ReviewService
                     BuyerId = buyer.Id
                 };
 
-                repository.CreateReview(sharedReview);
+                repository.CreateReviewRaw(reviewToCreate);
                 userCache.Clear();
             }
             catch (Exception ex)
@@ -166,8 +194,23 @@ namespace MarketMinds.Shared.Services.ReviewService
             }
         }
 
-        public void EditReview(string description, List<Image> images, double rating, int sellerid, int buyerid, string newDescription, double newRating)
+        public void EditReview(string description, List<Image> images, double rating, int sellerId, int buyerId, string newDescription, double newRating)
         {
+            if (string.IsNullOrWhiteSpace(newDescription))
+            {
+                throw new ArgumentException("New review description cannot be null or empty.", nameof(newDescription));
+            }
+
+            if (sellerId <= 0)
+            {
+                throw new ArgumentException("Invalid seller ID.", nameof(sellerId));
+            }
+
+            if (buyerId <= 0)
+            {
+                throw new ArgumentException("Invalid buyer ID.", nameof(buyerId));
+            }
+
             try
             {
                 // Ensure the new rating is within the expected range (0-5)
@@ -179,11 +222,20 @@ namespace MarketMinds.Shared.Services.ReviewService
                     Description = description,
                     Images = ConvertToSharedImages(images ?? new List<Image>()),
                     Rating = rating,
-                    SellerId = sellerid,
-                    BuyerId = buyerid
+                    SellerId = sellerId,
+                    BuyerId = buyerId
                 };
 
-                repository.EditReview(sharedReview, validRating, newDescription);
+                var updateRequest = new
+                {
+                    ReviewId = sharedReview.Id,
+                    SellerId = sharedReview.SellerId,
+                    BuyerId = sharedReview.BuyerId,
+                    Description = newDescription,
+                    Rating = validRating
+                };
+
+                repository.EditReviewRaw(updateRequest);
                 userCache.Clear();
             }
             catch (Exception ex)
@@ -193,8 +245,18 @@ namespace MarketMinds.Shared.Services.ReviewService
             }
         }
 
-        public void DeleteReview(string description, List<Image> images, double rating, int sellerid, int buyerid)
+        public void DeleteReview(string description, List<Image> images, double rating, int sellerId, int buyerId)
         {
+            if (sellerId <= 0)
+            {
+                throw new ArgumentException("Invalid seller ID.", nameof(sellerId));
+            }
+
+            if (buyerId <= 0)
+            {
+                throw new ArgumentException("Invalid buyer ID.", nameof(buyerId));
+            }
+
             try
             {
                 // Create a shared Review object
@@ -203,11 +265,18 @@ namespace MarketMinds.Shared.Services.ReviewService
                     Description = description,
                     Images = ConvertToSharedImages(images ?? new List<Image>()),
                     Rating = rating,
-                    SellerId = sellerid,
-                    BuyerId = buyerid
+                    SellerId = sellerId,
+                    BuyerId = buyerId
                 };
 
-                repository.DeleteReview(sharedReview);
+                var deleteRequest = new
+                {
+                    ReviewId = sharedReview.Id,
+                    SellerId = sharedReview.SellerId,
+                    BuyerId = sharedReview.BuyerId
+                };
+
+                repository.DeleteReviewRaw(deleteRequest);
                 userCache.Clear();
             }
             catch (Exception ex)

@@ -30,7 +30,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
             httpClient = new HttpClient();
 
             // Get API base URL from configuration, same way as BasketService
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             Debug.WriteLine($"Using API base URL from configuration: {apiBaseUrl}");
 
             if (!apiBaseUrl.EndsWith("/"))

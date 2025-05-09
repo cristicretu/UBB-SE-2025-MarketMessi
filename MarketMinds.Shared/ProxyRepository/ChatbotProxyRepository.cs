@@ -18,7 +18,7 @@ namespace MarketMinds.Shared.ProxyRepository
         public ChatbotProxyRepository(IConfiguration configuration)
         {
             this.httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5001";
             Debug.WriteLine($"ChatbotRepository created with baseUrl: {apiBaseUrl}");
         }
 
