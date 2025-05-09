@@ -58,6 +58,35 @@ namespace MarketMinds.Shared.ProxyRepository
             }
         }
 
+        public async Task<Message> CreateMessageAsync(CreateMessageDto newMessage)
+        {
+           try
+            {
+                var jsonContent = JsonConvert.SerializeObject(newMessage);
+                var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/Message", stringContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var message = JsonConvert.DeserializeObject<Message>(responseContent);
+                    return message;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to create message: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception in CreateMessageAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
             try

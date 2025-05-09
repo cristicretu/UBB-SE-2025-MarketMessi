@@ -49,11 +49,7 @@ namespace Server.Controllers
                     // Silently continue
                 }
                 
-                var message = await messageRepository.CreateMessageAsync(
-                    createMessageDto.ConversationId,
-                    createMessageDto.UserId,
-                    createMessageDto.Content
-                );
+                var message = await messageRepository.CreateMessageAsync(createMessageDto);
                 
                 var messageDto = new MessageDto
                 {
