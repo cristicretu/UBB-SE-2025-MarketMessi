@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Diagnostics;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 
@@ -17,21 +19,76 @@ namespace MarketMinds.Shared.Services.MessageService
             messageRepository = repository;
         }
 
-        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        public async Task<MessageDto> CreateMessageAsync(CreateMessageDto createMessageDto)
+        {
+            if (createMessageDto == null)
+            {
+                throw new ArgumentNullException(nameof(createMessageDto), "Message data cannot be null");
+            }
+
+            if (createMessageDto.ConversationId <= 0)
+            {
+                throw new ArgumentException("Conversation ID must be greater than zero.", nameof(createMessageDto.ConversationId));
+            }
+
+            if (createMessageDto.UserId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than zero.", nameof(createMessageDto.UserId));
+            }
+
+            if (string.IsNullOrWhiteSpace(createMessageDto.Content))
+            {
+                throw new ArgumentException("Content cannot be null or empty.", nameof(createMessageDto.Content));
+            }
+
+            var sw = Stopwatch.StartNew();
+
+            // Check if this is the first message in the conversation (welcome message)
+            bool isWelcomeMessage = false;
+            try
+            {
+                var existingMessages = await messageRepository.GetMessagesByConversationIdAsync(createMessageDto.ConversationId);
+                isWelcomeMessage = existingMessages == null || existingMessages.Count == 0;
+            }
+            catch (Exception)
+            {
+                // Silently continue if we can't determine if it's a welcome message
+            }
+
+            var createdMessage = await messageRepository.CreateMessageAsync(createMessageDto);
+
+            // Convert to DTO for response
+            return new MessageDto
+            {
+                Id = createdMessage.Id,
+                ConversationId = createdMessage.ConversationId,
+                UserId = createdMessage.UserId,
+                Content = createdMessage.Content
+            };
+        }
+
+        public async Task<List<MessageDto>> GetMessagesByConversationIdAsync(int conversationId)
         {
             if (conversationId <= 0)
             {
                 throw new ArgumentException("Conversation ID must be greater than zero.", nameof(conversationId));
             }
-            if (userId <= 0)
-            {
-                throw new ArgumentException("User ID must be greater than zero.", nameof(userId));
-            }
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                throw new ArgumentException("Content cannot be null or empty.", nameof(content));
-            }
 
+            var messages = await messageRepository.GetMessagesByConversationIdAsync(conversationId);
+
+            // Convert to DTOs
+            return messages.Select(message => new MessageDto
+            {
+                Id = message.Id,
+                ConversationId = message.ConversationId,
+                UserId = message.UserId,
+                Content = message.Content
+            }).ToList();
+        }
+
+        // Legacy method - keeping for backward compatibility
+        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        {
             var createDto = new CreateMessageDto
             {
                 ConversationId = conversationId,
@@ -39,10 +96,20 @@ namespace MarketMinds.Shared.Services.MessageService
                 Content = content
             };
 
-            return await messageRepository.CreateMessageAsync(createDto);
+            var messageDto = await CreateMessageAsync(createDto);
+
+            // Convert back to Message for backward compatibility
+            return new Message
+            {
+                Id = messageDto.Id,
+                ConversationId = messageDto.ConversationId,
+                UserId = messageDto.UserId,
+                Content = messageDto.Content
+            };
         }
 
-        public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
+        // Legacy method - keeping for backward compatibility
+        public async Task<List<Message>> GetMessagesLegacyAsync(int conversationId)
         {
             return await messageRepository.GetMessagesByConversationIdAsync(conversationId);
         }

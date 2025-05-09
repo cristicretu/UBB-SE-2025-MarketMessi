@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
 using System.Net;
-using System.Diagnostics;
 
 namespace Server.Controllers
 {
@@ -20,12 +19,12 @@ namespace Server.Controllers
         {
             this.messageRepository = messageRepository;
         }
+
         [HttpPost]
         [ProducesResponseType(typeof(MessageDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateMessage([FromBody] CreateMessageDto createMessageDto)
         {
-            var sw = Stopwatch.StartNew();
             if (createMessageDto == null)
             {
                 return BadRequest("Request body cannot be null");
@@ -36,17 +35,6 @@ namespace Server.Controllers
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
-                }
-
-                bool isWelcomeMessage = false;
-                try
-                {
-                    var existingMessages = await messageRepository.GetMessagesByConversationIdAsync(createMessageDto.ConversationId);
-                    isWelcomeMessage = existingMessages == null || existingMessages.Count == 0;
-                }
-                catch (Exception ex)
-                {
-                    // Silently continue
                 }
 
                 var createdMessage = await messageRepository.CreateMessageAsync(createMessageDto);
@@ -60,6 +48,10 @@ namespace Server.Controllers
                 };
 
                 return CreatedAtAction(nameof(GetMessagesByConversation), new { conversationId = messageDto.ConversationId }, messageDto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
@@ -84,6 +76,10 @@ namespace Server.Controllers
                 }).ToList();
 
                 return Ok(messageDtos);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {

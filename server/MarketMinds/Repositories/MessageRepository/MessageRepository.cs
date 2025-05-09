@@ -38,7 +38,5 @@ namespace MarketMinds.Repositories.MessageRepository
                 .Where(m => m.ConversationId == conversationId)
                 .ToListAsync();
         }
-
-
     }
 }
