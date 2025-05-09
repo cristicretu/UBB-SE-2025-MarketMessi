@@ -10,10 +10,17 @@ namespace ViewModelLayer.ViewModel
 {
     public class CreateBorrowListingViewModel : CreateListingViewModelBase
     {
-        public BorrowProductsService BorrowProductsService { get; set; }
+        private IBorrowProductsService borrowProductsService;
+
+        public BorrowProductsService BorrowProductsService
+        {
+            get => borrowProductsService as BorrowProductsService;
+            set => borrowProductsService = value;
+        }
+
         public override void CreateListing(Product product)
         {
-            BorrowProductsService.CreateListing(product);
+            borrowProductsService.CreateListing(product);
         }
     }
 }

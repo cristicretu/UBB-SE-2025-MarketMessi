@@ -30,9 +30,8 @@ namespace MarketMinds.Controllers
                 var dtos = AuctionProductMapper.ToDTOList(products);
                 return Ok(dtos);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting all auction products: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -51,11 +50,10 @@ namespace MarketMinds.Controllers
             }
             catch (KeyNotFoundException knfex)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error getting auction product by ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -66,7 +64,6 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
-            // Basic validation only - business logic should be in the service layer
             if (product == null || !ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -79,36 +76,31 @@ namespace MarketMinds.Controllers
             
             try
             {
-                // Process images if any
                 var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
                 product.Images = new List<ProductImage>();
                 
-                // Add the product (without images linked yet)
                 auctionProductsRepository.AddProduct(product);
                 
-                // Link and add images if any were provided
                 if (incomingImages.Any())
                 {
-                    foreach (var img in incomingImages)
+                    foreach (var image in incomingImages)
                     {
-                        img.ProductId = product.Id; // Set the foreign key
-                        product.Images.Add(img);
+                        image.ProductId = product.Id;
+                        product.Images.Add(image);
                     }
 
-                    // Update the product to save the linked images
                     auctionProductsRepository.UpdateProduct(product);
                 }
                 
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, auctionProductDTO);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error creating auction product: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
             }
         }
@@ -131,15 +123,14 @@ namespace MarketMinds.Controllers
             }
             catch (KeyNotFoundException knfex)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating auction product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
         }
@@ -156,17 +147,16 @@ namespace MarketMinds.Controllers
                 auctionProductsRepository.DeleteProduct(productToDelete);
                 return NoContent();
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error deleting auction product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
         }
@@ -186,7 +176,6 @@ namespace MarketMinds.Controllers
             {
                 var product = auctionProductsRepository.GetProductByID(id);
                 
-                // Create the bid
                 var bid = new Bid
                 {
                     BidderId = bidDTO.BidderId,
@@ -195,20 +184,18 @@ namespace MarketMinds.Controllers
                     Timestamp = bidDTO.Timestamp
                 };
                 
-                // Add bid to product and update current price
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
                 auctionProductsRepository.UpdateProduct(product);
                 
                 return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error placing bid on auction product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while placing the bid.");
             }
         }

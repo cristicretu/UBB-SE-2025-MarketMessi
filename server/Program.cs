@@ -52,8 +52,8 @@ builder.Services.AddScoped<MarketMinds.Repositories.ProductConditionRepository.I
 builder.Services.AddScoped<IProductTagRepository, ProductTagRepository>();
 builder.Services.AddScoped<IBorrowProductsRepository, BorrowProductsRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IConversationRepository, ConversationRepository>(); // Added from luca
-builder.Services.AddScoped<IMessageRepository, MessageRepository>();           // Added from luca
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
