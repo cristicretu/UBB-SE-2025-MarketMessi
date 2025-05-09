@@ -83,7 +83,6 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         {
             Dictionary<string, List<string>> errors = new Dictionary<string, List<string>>();
 
-            // Validate required fields
             if (string.IsNullOrWhiteSpace(productDTO.Title))
             {
                 AddError(errors, "Title", "Title is required");
@@ -94,7 +93,6 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
                 AddError(errors, "SellerId", "Valid seller ID is required");
             }
 
-            // Validate business rules
             if (productDTO.DailyRate < 0)
             {
                 AddError(errors, "DailyRate", "Daily rate cannot be negative");
