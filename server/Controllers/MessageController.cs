@@ -48,15 +48,19 @@ namespace Server.Controllers
                 {
                     // Silently continue
                 }
-
-                var createdMessage = await messageRepository.CreateMessageAsync(createMessageDto);
-
+                
+                var message = await messageRepository.CreateMessageAsync(
+                    createMessageDto.ConversationId,
+                    createMessageDto.UserId,
+                    createMessageDto.Content
+                );
+                
                 var messageDto = new MessageDto
                 {
-                    Id = createdMessage.Id,
-                    ConversationId = createdMessage.ConversationId,
-                    UserId = createdMessage.UserId,
-                    Content = createdMessage.Content
+                    Id = message.Id,
+                    ConversationId = message.ConversationId,
+                    UserId = message.UserId,
+                    Content = message.Content
                 };
 
                 return CreatedAtAction(nameof(GetMessagesByConversation), new { conversationId = messageDto.ConversationId }, messageDto);

@@ -35,8 +35,10 @@ namespace MarketMinds.Shared.ProxyRepository
 
                 var jsonContent = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                
+                var fullUrl = $"{apiBaseUrl}/api/Chatbot";
 
-                var response = await httpClient.PostAsync(apiBaseUrl, content);
+                var response = await httpClient.PostAsync(fullUrl, content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -47,6 +49,7 @@ namespace MarketMinds.Shared.ProxyRepository
                 }
                 else
                 {
+                    var errorContent = await response.Content.ReadAsStringAsync();
                     Debug.WriteLine($"Error getting bot response: {response.StatusCode}");
                     throw new Exception($"Failed to get bot response: {response.StatusCode}");
                 }
