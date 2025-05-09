@@ -22,16 +22,63 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public void CreateListing(Product product)
         {
-            auctionProductsRepository.CreateListing(product);
+            if (!(product is AuctionProduct auctionProduct))
+            {
+                throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
+            }
+            
+            if (auctionProduct.StartTime == default(DateTime))
+            {
+                auctionProduct.StartTime = DateTime.Now;
+            }
+            
+            if (auctionProduct.EndTime == default(DateTime))
+            {
+                auctionProduct.EndTime = DateTime.Now.AddDays(7);
+            }
+            
+            if (auctionProduct.StartPrice <= 0 && auctionProduct.CurrentPrice > 0)
+            {
+                auctionProduct.StartPrice = auctionProduct.CurrentPrice;
+            }
+            
+            auctionProductsRepository.CreateListing(auctionProduct);
         }
 
         public void PlaceBid(AuctionProduct auction, User bidder, double bidAmount)
         {
-            auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+            try
+            {
+                ValidateBid(auction, bidder, bidAmount);
+                
+                var bid = new Bid(bidder.Id, auction.Id, bidAmount)
+                {
+                    Product = auction,
+                    Bidder = bidder
+                };
+                
+                bidder.Balance -= bidAmount;
+                
+                auction.AddBid(bid);
+                auction.CurrentPrice = bidAmount;
+                
+                ExtendAuctionTime(auction);
+                
+                auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
+            }
+            catch (Exception bidPlacementException)
+            {
+                throw new InvalidOperationException("Failed to place bid", bidPlacementException);
+            }
         }
 
         public void ConcludeAuction(AuctionProduct auction)
         {
+            if (auction.Id == 0)
+            {
+                throw new ArgumentException("Auction Product ID must be set for delete.", nameof(auction.Id));
+            }
+            
             auctionProductsRepository.ConcludeAuction(auction);
         }
 
@@ -50,22 +97,65 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 
         public void ValidateBid(AuctionProduct auction, User bidder, double bidAmount)
         {
-            auctionProductsRepository.ValidateBid(auction, bidder, bidAmount);
+            double minimumBid = auction.Bids.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
+
+            if (bidAmount < minimumBid)
+            {
+                throw new Exception($"Bid must be at least ${minimumBid}");
+            }
+
+            if (bidAmount > bidder.Balance)
+            {
+                throw new Exception("Insufficient balance");
+            }
+
+            if (DateTime.Now > auction.EndTime)
+            {
+                throw new Exception("Auction already ended");
+            }
         }
 
         public void ExtendAuctionTime(AuctionProduct auction)
         {
-            auctionProductsRepository.ExtendAuctionTime(auction);
+            var timeRemaining = auction.EndTime - DateTime.Now;
+
+            if (timeRemaining.TotalMinutes < MAX_AUCTION_TIME)
+            {
+                var oldEndTime = auction.EndTime;
+                auction.EndTime = DateTime.Now.AddMinutes(MAX_AUCTION_TIME);
+            }
         }
 
         public List<AuctionProduct> GetProducts()
         {
-            return auctionProductsRepository.GetProducts();
+            try
+            {
+                return auctionProductsRepository.GetProducts();
+            }
+            catch (Exception exception)
+            {
+                if (exception.InnerException != null)
+                {
+                    throw new Exception($"Inner exception: {exception.InnerException.Message}", exception.InnerException);
+                }
+            }
         }
 
         public AuctionProduct GetProductById(int id)
         {
-            return auctionProductsRepository.GetProductById(id);
+            try
+            {
+                var product = auctionProductsRepository.GetProductById(id);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Auction product with ID {id} not found.");
+                }
+                return product;
+            }
+            catch (Exception exception)
+            {
+                throw new KeyNotFoundException($"Auction product with ID {id} not found: {exception.Message}");
+            }
         }
 
         public List<Product> GetSortedFilteredProducts(List<Condition> selectedConditions, List<Category> selectedCategories, List<ProductTag> selectedTags, ProductSortType sortCondition, string searchQuery)
@@ -74,9 +164,9 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             List<Product> productResultSet = new List<Product>();
             foreach (Product product in products)
             {
-                bool matchesConditions = selectedConditions == null || selectedConditions.Count == NOCOUNT || selectedConditions.Any(c => c.Id == product.Condition.Id);
-                bool matchesCategories = selectedCategories == null || selectedCategories.Count == NOCOUNT || selectedCategories.Any(c => c.Id == product.Category.Id);
-                bool matchesTags = selectedTags == null || selectedTags.Count == NOCOUNT || selectedTags.Any(t => product.Tags.Any(pt => pt.Id == t.Id));
+                bool matchesConditions = selectedConditions == null || selectedConditions.Count == NOCOUNT || selectedConditions.Any(condition => condition.Id == product.Condition.Id);
+                bool matchesCategories = selectedCategories == null || selectedCategories.Count == NOCOUNT || selectedCategories.Any(category => category.Id == product.Category.Id);
+                bool matchesTags = selectedTags == null || selectedTags.Count == NOCOUNT || selectedTags.Any(tag => product.Tags.Any(productTag => productTag.Id == tag.Id));
                 bool matchesSearchQuery = string.IsNullOrEmpty(searchQuery) || product.Title.ToLower().Contains(searchQuery.ToLower());
 
                 if (matchesConditions && matchesCategories && matchesTags && matchesSearchQuery)
@@ -90,19 +180,19 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 if (sortCondition.IsAscending)
                 {
                     productResultSet = productResultSet.OrderBy(
-                        p =>
+                        product =>
                         {
-                            var prop = p?.GetType().GetProperty(sortCondition.InternalAttributeFieldTitle);
-                            return prop?.GetValue(p);
+                            var property = product?.GetType().GetProperty(sortCondition.InternalAttributeFieldTitle);
+                            return property?.GetValue(product);
                         }).ToList();
                 }
                 else
                 {
                     productResultSet = productResultSet.OrderByDescending(
-                        p =>
+                        product =>
                         {
-                            var prop = p?.GetType().GetProperty(sortCondition.InternalAttributeFieldTitle);
-                            return prop?.GetValue(p);
+                            var property = product?.GetType().GetProperty(sortCondition.InternalAttributeFieldTitle);
+                            return property?.GetValue(product);
                         }).ToList();
                 }
             }
