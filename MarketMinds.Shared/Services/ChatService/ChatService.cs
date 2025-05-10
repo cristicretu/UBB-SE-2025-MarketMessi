@@ -59,7 +59,6 @@ namespace MarketMinds.Shared.Services.DreamTeam.ChatService
             return domainMessages;
         }
 
-        // Helper conversion methods
         private Conversation ConvertToDomainConversation(MarketMinds.Shared.Models.Conversation sharedModel)
         {
             if (sharedModel == null)
@@ -70,7 +69,6 @@ namespace MarketMinds.Shared.Services.DreamTeam.ChatService
             {
                 Id = sharedModel.Id,
                 UserId = sharedModel.UserId
-                // Add any other properties needed
             };
         }
 
@@ -87,7 +85,6 @@ namespace MarketMinds.Shared.Services.DreamTeam.ChatService
                 ConversationId = sharedModel.ConversationId,
                 UserId = sharedModel.UserId,
                 Content = sharedModel.Content
-                // Add any other properties needed
             };
         }
     }

@@ -22,14 +22,12 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             this.httpClient = new HttpClient();
             apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            Debug.WriteLine($"ConversationRepository created with baseUrl: {apiBaseUrl}");
         }
 
         public async Task<Conversation> CreateConversationAsync(Conversation conversation)
         {
             try
             {
-                Debug.WriteLine($"Creating conversation for user ID: {conversation.UserId}");
                 var requestData = new
                 {
                     UserId = conversation.UserId
@@ -43,18 +41,15 @@ namespace MarketMinds.Shared.ProxyRepository
                 if (response.IsSuccessStatusCode)
                 {
                     var createdConversation = await response.Content.ReadFromJsonAsync<Conversation>();
-                    Debug.WriteLine($"Created conversation with ID: {createdConversation.Id}");
                     return createdConversation;
                 }
                 else
                 {
-                    Debug.WriteLine($"Error creating conversation: {response.StatusCode}");
                     throw new Exception($"Failed to create conversation: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception in CreateConversationAsync: {ex.Message}");
                 throw;
             }
         }
@@ -63,24 +58,20 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                Debug.WriteLine($"Getting conversation with ID: {conversationId}");
                 var response = await httpClient.GetAsync($"{apiBaseUrl}/api/Conversation/{conversationId}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var conversation = await response.Content.ReadFromJsonAsync<Conversation>();
-                    Debug.WriteLine($"Retrieved conversation with ID: {conversation.Id}");
                     return conversation;
                 }
                 else
                 {
-                    Debug.WriteLine($"Error getting conversation: {response.StatusCode}");
                     throw new Exception($"Failed to get conversation: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception in GetConversationByIdAsync: {ex.Message}");
                 throw;
             }
         }
@@ -89,24 +80,20 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                Debug.WriteLine($"Getting conversations for user ID: {userId}");
                 var response = await httpClient.GetAsync($"{apiBaseUrl}/api/Conversation/user/{userId}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var conversations = await response.Content.ReadFromJsonAsync<List<Conversation>>();
-                    Debug.WriteLine($"Retrieved {conversations.Count} conversations");
                     return conversations;
                 }
                 else
                 {
-                    Debug.WriteLine($"Error getting conversations: {response.StatusCode}");
                     throw new Exception($"Failed to get conversations: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception in GetConversationsByUserIdAsync: {ex.Message}");
                 throw;
             }
         }

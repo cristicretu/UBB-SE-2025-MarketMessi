@@ -13,5 +13,6 @@ namespace MarketMinds.Shared.Services.DreamTeam.ChatbotService
         bool IsInteractionActive();
         Task<string> GetBotResponseAsync(string userMessage, bool isWelcomeMessage = false);
         void SetCurrentUser(MarketMinds.Shared.Models.User user);
+        Task<string> GetUserContextAsync(int userId);
     }
 }

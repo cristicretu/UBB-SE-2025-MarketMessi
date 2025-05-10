@@ -26,8 +26,6 @@ namespace Server.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateConversation([FromBody] CreateConversationDto createConversationDto)
         {
-            var sw = Stopwatch.StartNew();
-            
             try
             {
                 if (createConversationDto == null)
@@ -37,10 +35,6 @@ namespace Server.Controllers
                 
                 if (!ModelState.IsValid)
                 {
-                    foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                    {
-                        Console.WriteLine($"- {error.ErrorMessage}");
-                    }
                     return BadRequest(ModelState);
                 }
                 
@@ -50,18 +44,13 @@ namespace Server.Controllers
                 };
                 
                 var createdConversation = await conversationRepository.CreateConversationAsync(conversation);
-                
-                var conversationDto = new ConversationDto
-                {
-                    Id = createdConversation.Id,
-                    UserId = createdConversation.UserId
-                };
+                var conversationDto = MapToConversationDto(createdConversation);
                 
                 return CreatedAtAction(nameof(GetConversation), new { id = conversationDto.Id }, conversationDto);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError, exception.Message);
             }
         }
         [HttpGet("{id}")]
@@ -78,17 +67,13 @@ namespace Server.Controllers
                     return NotFound($"Conversation with id {id} not found.");
                 }
                 
-                var conversationDto = new ConversationDto
-                {
-                    Id = conversation.Id,
-                    UserId = conversation.UserId
-                };
+                var conversationDto = MapToConversationDto(conversation);
                 
                 return Ok(conversationDto);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError, exception.Message);
             }
         }
         
@@ -96,23 +81,27 @@ namespace Server.Controllers
         [ProducesResponseType(typeof(List<ConversationDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetUserConversations(int userId)
         {
-            Console.WriteLine($"GetUserConversations called for userId: {userId}");
             try
             {
                 var conversations = await conversationRepository.GetConversationsByUserIdAsync(userId);
                 
-                var conversationDtos = conversations.Select(conversation => new ConversationDto
-                {
-                    Id = conversation.Id,
-                    UserId = conversation.UserId
-                }).ToList();
+                var conversationDtos = conversations.Select(MapToConversationDto).ToList();
                 
                 return Ok(conversationDtos);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError, exception.Message);
             }
+        }
+        
+        private ConversationDto MapToConversationDto(Conversation conversation)
+        {
+            return new ConversationDto
+            {
+                Id = conversation.Id,
+                UserId = conversation.UserId
+            };
         }
     }
 }

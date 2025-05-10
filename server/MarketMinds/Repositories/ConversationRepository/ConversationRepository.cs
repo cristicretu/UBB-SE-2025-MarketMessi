@@ -13,9 +13,9 @@ namespace MarketMinds.Repositories.ConversationRepository
     {
         private readonly ApplicationDbContext context;
 
-        public ConversationRepository(ApplicationDbContext dbContext)
+        public ConversationRepository(ApplicationDbContext databaseContext)
         {
-            this.context = dbContext;
+            this.context = databaseContext;
         }
 
         public async Task<Conversation> CreateConversationAsync(Conversation conversation)
@@ -28,13 +28,13 @@ namespace MarketMinds.Repositories.ConversationRepository
         public async Task<Conversation> GetConversationByIdAsync(int conversationId)
         {
             return await context.Conversations
-                .FirstOrDefaultAsync(c => c.Id == conversationId);
+                .FirstOrDefaultAsync(conversation => conversation.Id == conversationId);
         }
 
         public async Task<List<Conversation>> GetConversationsByUserIdAsync(int userId)
         {
             return await context.Conversations
-                .Where(c => c.UserId == userId)
+                .Where(conversation => conversation.UserId == userId)
                 .ToListAsync();
         }
     }
