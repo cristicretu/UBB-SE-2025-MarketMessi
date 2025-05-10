@@ -8,125 +8,33 @@
     <h1 class="text-3xl font-bold mb-6">Create New Product</h1>
 
     <div class="bg-white rounded-lg shadow-md p-6">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
-            
+        <form asp-action="Create" method="post">
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Product Type</label>
-                <select id="productType" name="productType" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                    <option value="auction" selected>Auction</option>
-                    <option value="borrow" disabled>Borrow (Coming Soon)</option>
-                    <option value="buy" disabled>Buy (Coming Soon)</option>
-                </select>
+                <label asp-for="Title" class="block text-gray-700 text-sm font-bold mb-2">Title</label>
+                <input asp-for="Title" class="shadow border rounded w-full py-2 px-3 text-gray-700" />
             </div>
             
             <div class="mb-4">
-                <label asp-for="Title" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <input asp-for="Title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" />
-                <span asp-validation-for="Title" class="text-red-500 text-xs"></span>
+                <label asp-for="Description" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
+                <textarea asp-for="Description" class="shadow border rounded w-full py-2 px-3 text-gray-700" rows="3"></textarea>
             </div>
             
             <div class="mb-4">
-                <label asp-for="Description" class="block text-gray-700 text-sm font-bold mb-2"></label>
-                <textarea asp-for="Description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" rows="5"></textarea>
-                <span asp-validation-for="Description" class="text-red-500 text-xs"></span>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Tags (comma separated)</label>
-                <input type="text" id="tags" name="tags" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" placeholder="electronics, home, vintage" />
+                <label asp-for="StartPrice" class="block text-gray-700 text-sm font-bold mb-2">Price ($)</label>
+                <input asp-for="StartPrice" class="shadow border rounded w-full py-2 px-3 text-gray-700" type="number" step="0.01" min="0" />
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="mb-4">
-                    <label asp-for="StartPrice" class="block text-gray-700 text-sm font-bold mb-2">Start Price ($)</label>
-                    <input asp-for="StartPrice" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="number" step="0.01" min="0" />
-                    <span asp-validation-for="StartPrice" class="text-red-500 text-xs"></span>
-                </div>
-                
-                <div class="mb-4 auction-field">
-                    <label asp-for="CurrentPrice" class="block text-gray-700 text-sm font-bold mb-2">Current Price ($)</label>
-                    <input asp-for="CurrentPrice" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="number" step="0.01" min="0" />
-                    <span asp-validation-for="CurrentPrice" class="text-red-500 text-xs"></span>
-                </div>
-            </div>
+            <input type="hidden" asp-for="CategoryId" value="1" />
+            <input type="hidden" asp-for="ConditionId" value="1" />
+            <input type="hidden" asp-for="SellerId" value="1" />
+            <input type="hidden" name="productType" value="auction" />
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 auction-field">
-                <div class="mb-4">
-                    <label asp-for="StartTime" class="block text-gray-700 text-sm font-bold mb-2">Start Time</label>
-                    <input asp-for="StartTime" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="datetime-local" />
-                    <span asp-validation-for="StartTime" class="text-red-500 text-xs"></span>
-                </div>
-                
-                <div class="mb-4">
-                    <label asp-for="EndTime" class="block text-gray-700 text-sm font-bold mb-2">End Time</label>
-                    <input asp-for="EndTime" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" type="datetime-local" />
-                    <span asp-validation-for="EndTime" class="text-red-500 text-xs"></span>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Category</label>
-                <select id="categoryId" name="CategoryId" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                    <option value="">-- Select Category --</option>
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Condition</label>
-                <select id="conditionId" name="ConditionId" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                    <option value="">-- Select Condition --</option>
-                </select>
-            </div>
-            
-            <div class="mb-4">
-                <label for="imageUrls" class="block text-gray-700 text-sm font-bold mb-2">Image URLs (One per line)</label>
-                <textarea id="imageUrls" name="imageUrls" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" rows="3" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"></textarea>
-            </div>
-
-            <div class="mb-4">
-                <label for="imageUpload" class="block text-gray-700 text-sm font-bold mb-2">Upload Images</label>
-                <input type="file" id="imageUpload" name="imageUpload" multiple class="w-full text-gray-700" accept="image/*" />
-                <p class="text-gray-500 text-xs mt-1">You can select multiple images</p>
-            </div>
-            
-            <div class="flex items-center justify-between mt-6">
-                <input type="submit" value="Create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" />
-                <a asp-action="Index" class="text-blue-600 hover:text-blue-800">Back to List</a>
+            <div class="flex items-center mt-6">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Create
+                </button>
+                <a asp-action="Index" class="ml-4 text-blue-600 hover:text-blue-800">Back to List</a>
             </div>
         </form>
     </div>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
-    <script>
-        // Set default values when page loads
-        $(document).ready(function() {
-            // Default start time to now
-            if (!$("#StartTime").val()) {
-                $("#StartTime").val(new Date().toISOString().slice(0, 16));
-            }
-            
-            // Default end time to 7 days from now
-            if (!$("#EndTime").val()) {
-                const endDate = new Date();
-                endDate.setDate(endDate.getDate() + 7);
-                $("#EndTime").val(endDate.toISOString().slice(0, 16));
-            }
-
-            // Handle product type change
-            $("#productType").change(function() {
-                const productType = $(this).val();
-                
-                // Show/hide fields based on product type
-                if (productType === "auction") {
-                    $(".auction-field").show();
-                } else {
-                    $(".auction-field").hide();
-                }
-            });
-        });
-    </script>
-} 
+</div> 

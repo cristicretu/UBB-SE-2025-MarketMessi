@@ -50,64 +50,33 @@ namespace MarketMinds.Web.Controllers
         // POST: Home/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            AuctionProduct auctionProduct, 
-            string productType, 
-            string tags, 
-            string imageUrls, 
-            IFormFileCollection imageUpload)
+        public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _logger.LogInformation($"Creating new {productType} product: {auctionProduct.Title}");
+                    // Set default values
+                    auctionProduct.StartTime = DateTime.Now;
+                    auctionProduct.EndTime = DateTime.Now.AddDays(7);
+                    auctionProduct.CurrentPrice = auctionProduct.StartPrice;
                     
-                    // Set seller ID (in a real app, this would come from authentication)
-                    auctionProduct.SellerId = 1; // Demo user ID
+                    // Create the product
+                    var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
                     
-                    // Handle the product based on its type
-                    switch (productType.ToLower())
+                    if (result)
                     {
-                        case "auction":
-                            // Process image URLs if provided
-                            if (!string.IsNullOrEmpty(imageUrls))
-                            {
-                                var urls = imageUrls.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                    .Select(url => url.Trim())
-                                    .Where(url => !string.IsNullOrEmpty(url));
-                                
-                                foreach (var url in urls)
-                                {
-                                    auctionProduct.Images.Add(new ProductImage { Url = url });
-                                }
-                            }
-                            
-                            // Create the product through the service
-                            var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
-                            
-                            if (result)
-                            {
-                                return RedirectToAction("Index", "AuctionProducts");
-                            }
-                            break;
-                            
-                        case "borrow":
-                        case "buy":
-                            // For future implementation
-                            _logger.LogInformation($"{productType} product creation not yet implemented");
-                            ModelState.AddModelError(string.Empty, $"{productType} product creation is not yet available");
-                            break;
-                            
-                        default:
-                            ModelState.AddModelError(string.Empty, $"Unknown product type: {productType}");
-                            break;
+                        return RedirectToAction("Index", "AuctionProducts");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Failed to create product.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Error creating {productType} product");
-                    ModelState.AddModelError(string.Empty, $"An error occurred while creating the {productType} product");
+                    _logger.LogError(ex, "Error creating product");
+                    ModelState.AddModelError(string.Empty, "An error occurred while creating the product.");
                 }
             }
             
@@ -124,7 +93,16 @@ namespace MarketMinds.Web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var errorModel = new ErrorViewModel 
+            { 
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                ErrorMessage = TempData["ErrorMessage"] as string ?? "An unexpected error occurred"
+            };
+            
+            _logger.LogInformation("Displaying error page. RequestId: {RequestId}, Message: {Message}", 
+                errorModel.RequestId, errorModel.ErrorMessage);
+                
+            return View(errorModel);
         }
     }
 } 
