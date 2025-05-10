@@ -123,12 +123,12 @@ namespace MarketMinds.Shared.Services.ImagineUploadService
         {
             try
             {
-                string appSettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarketMinds.Shared", "appsettings.json");
+                string appSettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarketMinds", "appsettings.json");
 
                 if (!File.Exists(appSettingsPath))
                 {
                     string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-                    string targetDirName = "MarketMinds.Shared";
+                    string targetDirName = "MarketMinds";
                     string rootPath = Path.GetPathRoot(currentDir);
                     while (currentDir != null && currentDir != rootPath && !Directory.Exists(Path.Combine(currentDir, targetDirName)))
                     {
