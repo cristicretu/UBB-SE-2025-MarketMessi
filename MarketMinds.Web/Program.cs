@@ -3,13 +3,11 @@ using MarketMinds.Shared;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.AuctionProductsService;
+using MarketMinds.Shared.ProxyRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Remove database connection and replace with services
-
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 
 // Register shared service clients
 builder.Services.AddHttpClient("ApiClient", client =>
@@ -17,11 +15,11 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/");
 });
 
+// Register AuctionProductsProxyRepository
+builder.Services.AddSingleton<AuctionProductsProxyRepository>();
+
 // Register AuctionProductService
-builder.Services.AddHttpClient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/");
-});
+builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
 
 var app = builder.Build();
 
@@ -32,7 +30,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -47,6 +44,5 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
 
 app.Run();
