@@ -526,7 +526,12 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
             
-            return View("Create", new AuctionProduct()); // Return to Create view with empty auction product
+            return View("Create", new BorrowProduct
+            {
+                Categories = _categoryService.GetAllProductCategories(),
+                Conditions = _conditionService.GetAllProductConditions(),
+                Tags = _productTagService.GetAllProductTags()
+            }); // Return to Create view with empty borrow product
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
