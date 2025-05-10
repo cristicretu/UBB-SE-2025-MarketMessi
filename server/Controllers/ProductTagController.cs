@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
-using MarketMinds.Repositories.ProductTagRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -12,11 +11,11 @@ namespace MarketMinds.Controllers
     [Route("api/[controller]")]
     public class ProductTagController : ControllerBase
     {
-        private readonly IProductTagRepository productTagRepository;
+        private readonly IProductTagRepository _productTagRepository;
 
         public ProductTagController(IProductTagRepository productTagRepository)
         {
-            this.productTagRepository = productTagRepository;
+            _productTagRepository = productTagRepository;
         }
 
         [HttpGet]
@@ -26,12 +25,15 @@ namespace MarketMinds.Controllers
         {
             try
             {
-                var allTags = productTagRepository.GetAllProductTags();
+                var allTags = _productTagRepository.GetAllProductTags();
                 return Ok(allTags);
             }
-            catch (Exception exception)
+            catch (ApplicationException ex)
             {
-                Console.WriteLine($"Error getting all product tags: {exception}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -42,27 +44,30 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateProductTag([FromBody] ProductTagRequest productTagRequest)
         {
-            if (productTagRequest == null || string.IsNullOrWhiteSpace(productTagRequest.DisplayTitle) || !ModelState.IsValid)
+            if (productTagRequest == null || !ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             try
             {
-                var newTag = productTagRepository.CreateProductTag(productTagRequest.DisplayTitle);
+                var newTag = _productTagRepository.CreateProductTag(productTagRequest.DisplayTitle);
 
                 return CreatedAtAction(
                     nameof(GetAllProductTags),
                     new { id = newTag.Id },
                     newTag);
             }
-            catch (ArgumentException argumentException)
+            catch (ArgumentException ex)
             {
-                return BadRequest(argumentException.Message);
+                return BadRequest(ex.Message);
             }
-            catch (Exception exception)
+            catch (ApplicationException ex)
             {
-                Console.WriteLine($"Error creating product tag: {exception}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the tag.");
             }
         }
@@ -72,25 +77,33 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteProductTag(string productTagName)
+        public IActionResult DeleteProductTag(string title)
         {
-            if (string.IsNullOrWhiteSpace(productTagName))
+            if (string.IsNullOrWhiteSpace(title))
             {
                 return BadRequest("Tag title is required.");
             }
 
             try
             {
-                productTagRepository.DeleteProductTag(productTagName);
+                _productTagRepository.DeleteProductTag(title);
                 return NoContent();
             }
-            catch (KeyNotFoundException keyNotFoundException)
+            catch (KeyNotFoundException)
             {
-                return NotFound(keyNotFoundException.Message);
+                // Idempotent delete: return success even if the tag doesn't exist
+                return NoContent();
             }
-            catch (Exception exception)
+            catch (ArgumentException ex)
             {
-                Console.WriteLine($"Error deleting product tag '{productTagName}': {exception}");
+                return BadRequest(ex.Message);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
+            catch (Exception)
+            {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the tag.");
             }
         }

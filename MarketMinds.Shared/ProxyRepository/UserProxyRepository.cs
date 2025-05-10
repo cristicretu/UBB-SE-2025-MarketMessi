@@ -1,9 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
@@ -36,21 +38,102 @@ namespace MarketMinds.Shared.ProxyRepository
 
             jsonOptions = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver()
             };
         }
 
+        // Raw data access methods
+        public async Task<string> GetUserByIdRawAsync(int userId)
+        {
+            var response = await httpClient.GetAsync($"account/{userId}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetUserOrdersRawAsync(int userId)
+        {
+            var response = await httpClient.GetAsync($"account/{userId}/orders");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetBasketTotalRawAsync(int userId, int basketId)
+        {
+            var response = await httpClient.GetAsync($"account/{userId}/basket/{basketId}/total");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateOrderFromBasketRawAsync(int userId, int basketId, double discountAmount = 0)
+        {
+            var orderRequest = new
+            {
+                UserId = userId,
+                BasketId = basketId,
+                DiscountAmount = discountAmount
+            };
+
+            var response = await httpClient.PostAsJsonAsync($"account/orders", orderRequest);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<bool> UpdateUserRawAsync(User user)
+        {
+            var response = await httpClient.PutAsJsonAsync($"account/{user.Id}", user);
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+
+        public async Task<string> AuthenticateUserRawAsync(string username, string password)
+        {
+            var loginRequest = new
+            {
+                Username = username,
+                Password = password
+            };
+
+            var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetUserByUsernameRawAsync(string username)
+        {
+            var response = await httpClient.GetAsync($"users/{username}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetUserByEmailRawAsync(string email)
+        {
+            var response = await httpClient.GetAsync($"users/by-email/{email}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CheckUsernameRawAsync(string username)
+        {
+            var response = await httpClient.GetAsync($"users/check-username/{username}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> RegisterUserRawAsync(object registerRequest)
+        {
+            var response = await httpClient.PostAsJsonAsync("users/register", registerRequest);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        // IAccountRepository implementation - these now just call the service methods
         public async Task<User> GetUserByIdAsync(int userId)
         {
             try
             {
-                var response = await httpClient.GetAsync($"account/{userId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<User>(content, jsonOptions);
-                }
-                return null;
+                var json = await GetUserByIdRawAsync(userId);
+                return JsonSerializer.Deserialize<User>(json, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -63,13 +146,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var response = await httpClient.GetAsync($"account/{userId}/orders");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<UserOrder>>(content, jsonOptions);
-                }
-                return new List<UserOrder>();
+                var json = await GetUserOrdersRawAsync(userId);
+                return JsonSerializer.Deserialize<List<UserOrder>>(json, jsonOptions) ?? new List<UserOrder>();
             }
             catch (Exception ex)
             {
@@ -82,13 +160,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var response = await httpClient.GetAsync($"account/{userId}/basket/{basketId}/total");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<double>(content, jsonOptions);
-                }
-                return 0;
+                var json = await GetBasketTotalRawAsync(userId, basketId);
+                return JsonSerializer.Deserialize<double>(json, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -101,20 +174,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var orderRequest = new
-                {
-                    UserId = userId,
-                    BasketId = basketId,
-                    DiscountAmount = discountAmount
-                };
-
-                var response = await httpClient.PostAsJsonAsync($"account/orders", orderRequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<Order>>(content, jsonOptions);
-                }
-                return new List<Order>();
+                var json = await CreateOrderFromBasketRawAsync(userId, basketId, discountAmount);
+                return JsonSerializer.Deserialize<List<Order>>(json, jsonOptions) ?? new List<Order>();
             }
             catch (Exception ex)
             {
@@ -127,8 +188,7 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var response = await httpClient.PutAsJsonAsync($"account/{user.Id}", user);
-                return response.IsSuccessStatusCode;
+                return await UpdateUserRawAsync(user);
             }
             catch (Exception ex)
             {
@@ -137,19 +197,13 @@ namespace MarketMinds.Shared.ProxyRepository
             }
         }
 
-        // Additional methods for user authentication that aren't part of IAccountRepository
+        // Additional authentication methods (not part of IAccountRepository)
         public async Task<bool> AuthenticateUserAsync(string username, string password)
         {
             try
             {
-                var loginRequest = new
-                {
-                    Username = username,
-                    Password = password
-                };
-
-                var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
-                return response.IsSuccessStatusCode;
+                await AuthenticateUserRawAsync(username, password);
+                return true;
             }
             catch (Exception ex)
             {
@@ -162,19 +216,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var loginRequest = new
-                {
-                    Username = username,
-                    Password = password
-                };
-
-                var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<User>(content, jsonOptions);
-                }
-                return null;
+                var json = await AuthenticateUserRawAsync(username, password);
+                return JsonSerializer.Deserialize<User>(json, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -187,13 +230,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var response = await httpClient.GetAsync($"users/{username}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<User>(content, jsonOptions);
-                }
-                return null;
+                var json = await GetUserByUsernameRawAsync(username);
+                return JsonSerializer.Deserialize<User>(json, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -206,13 +244,8 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var response = await httpClient.GetAsync($"users/by-email/{email}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<User>(content, jsonOptions);
-                }
-                return null;
+                var json = await GetUserByEmailRawAsync(email);
+                return JsonSerializer.Deserialize<User>(json, jsonOptions);
             }
             catch (Exception ex)
             {
@@ -225,20 +258,14 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var response = await httpClient.GetAsync($"users/check-username/{username}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<UsernameCheckResult>(content, jsonOptions);
-                    return result.Exists;
-                }
-                // Default to true (username taken) if there's an error
-                return true;
+                var json = await CheckUsernameRawAsync(username);
+                var result = JsonSerializer.Deserialize<UsernameCheckResult>(json, jsonOptions);
+                return result?.Exists ?? true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error checking if username is taken: {ex.Message}");
-                return true;
+                return true; // Default to true (username taken) if there's an error
             }
         }
 
@@ -246,50 +273,25 @@ namespace MarketMinds.Shared.ProxyRepository
         {
             try
             {
-                var existingUserByEmail = await GetUserByEmailAsync(user.Email);
-                if (existingUserByEmail != null)
+                // Basic null check - detailed validation in service layer
+                if (user == null)
                 {
-                    // Consider logging or returning a specific error/status
-                    return null; 
-                }
-
-                // Check if username exists
-                bool usernameTaken = await IsUsernameTakenAsync(user.Username);
-                if (usernameTaken)
-                {
-                    // Consider logging or returning a specific error/status
                     return null;
                 }
 
-                // Verify we're sending all required fields
                 var registerRequest = new
                 {
                     Username = user.Username,
                     Email = user.Email,
                     Password = user.Password
-                    // UserType is typically set server-side or has a default
                 };
-                var response = await httpClient.PostAsJsonAsync("users/register", registerRequest);
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    // The server returns the created user (without password hash)
-                    return JsonSerializer.Deserialize<User>(content, jsonOptions);
-                }
-                else
-                {
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"[UserRepository] Register API error response: {responseBody}");
-                    return null;
-                }
+
+                var json = await RegisterUserRawAsync(registerRequest);
+                return JsonSerializer.Deserialize<User>(json, jsonOptions);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[UserRepository] Error registering user: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Debug.WriteLine($"[UserRepository] Inner exception: {ex.InnerException.Message}");
-                }
+                Console.WriteLine($"Error registering user: {ex.Message}");
                 return null;
             }
         }

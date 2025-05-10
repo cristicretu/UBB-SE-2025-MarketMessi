@@ -20,38 +20,38 @@ namespace MarketMinds.Repositories.ReviewRepository
 
         public ObservableCollection<Review> GetAllReviewsByBuyer(User buyer)
         {
-            var reviews = context.Reviews
-                .Include(r => r.ReviewImages)
-                .Where(r => r.BuyerId == buyer.Id)
-                .ToList();
-
-            // Convert to ObservableCollection
-            var observableReviews = new ObservableCollection<Review>();
-            foreach (var review in reviews)
+            try
             {
-                review.LoadGenericImages();
-                observableReviews.Add(review);
-            }
+                var reviews = context.Reviews
+                    .Include(r => r.ReviewImages)
+                    .Where(r => r.BuyerId == buyer.Id)
+                    .ToList();
 
-            return observableReviews;
+                return new ObservableCollection<Review>(reviews);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting reviews for buyer {buyer.Id}: {ex.Message}");
+                throw;
+            }
         }
 
         public ObservableCollection<Review> GetAllReviewsBySeller(User seller)
         {
-            var reviews = context.Reviews
-                .Include(r => r.ReviewImages)
-                .Where(r => r.SellerId == seller.Id)
-                .ToList();
-
-            // Convert to ObservableCollection
-            var observableReviews = new ObservableCollection<Review>();
-            foreach (var review in reviews)
+            try
             {
-                review.LoadGenericImages();
-                observableReviews.Add(review);
-            }
+                var reviews = context.Reviews
+                    .Include(r => r.ReviewImages)
+                    .Where(r => r.SellerId == seller.Id)
+                    .ToList();
 
-            return observableReviews;
+                return new ObservableCollection<Review>(reviews);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting reviews for seller {seller.Id}: {ex.Message}");
+                throw;
+            }
         }
 
         public void CreateReview(Review review)
@@ -61,40 +61,21 @@ namespace MarketMinds.Repositories.ReviewRepository
                 throw new ArgumentNullException(nameof(review));
             }
 
-            // Store the original Images collection
-            var originalImages = new List<Image>(review.Images);
-
-            // Create a new review object without setting the ID - let the database generate it
-            var newReview = new Review
+            try
             {
-                Description = review.Description ?? string.Empty,
-                Rating = review.Rating,
-                SellerId = review.SellerId,
-                BuyerId = review.BuyerId
-            };
-
-            // Add the review to the context
-            context.Reviews.Add(newReview);
-            context.SaveChanges();
-
-            // Now that we have an ID, we can sync the images
-            // We need to restore the Images collection first since it might have been cleared by EF
-            if (originalImages != null && originalImages.Count > 0)
-            {
-                foreach (var image in originalImages)
-                {
-                    var reviewImage = ReviewImage.FromImage(image, newReview.Id);
-                    context.ReviewImages.Add(reviewImage);
-                }
+                context.Reviews.Add(review);
                 context.SaveChanges();
             }
-
-            // Update the original review object with the generated ID
-            review.Id = newReview.Id;
-
-            // Load the review images into the Images collection
-            newReview.LoadGenericImages();
-            review.Images = new List<Image>(newReview.Images);
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"EF Core CreateReview Error: {ex.InnerException?.Message ?? ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General CreateReview Error: {ex.Message}");
+                throw;
+            }
         }
 
         public void EditReview(Review review, double rating, string description)
@@ -104,46 +85,28 @@ namespace MarketMinds.Repositories.ReviewRepository
                 throw new ArgumentNullException(nameof(review));
             }
 
-            // Find the review in the database
-            var existingReview = context.Reviews
-                .Include(r => r.ReviewImages)
-                .FirstOrDefault(r => r.Id == review.Id);
-
-            if (existingReview == null)
+            try
             {
-                // If not found by ID, try to find by buyer, seller and description
-                existingReview = context.Reviews
-                    .Include(r => r.ReviewImages)
-                    .FirstOrDefault(r =>
-                        r.BuyerId == review.BuyerId &&
-                        r.SellerId == review.SellerId &&
-                        r.Description == review.Description);
-
-                if (existingReview == null)
-                {
-                    throw new KeyNotFoundException($"Review not found with ID {review.Id}");
-                }
+                review.Rating = rating;
+                review.Description = description;
+                context.Entry(review).State = EntityState.Modified;
+                context.SaveChanges();
             }
-
-            // Update fields
-            existingReview.Rating = rating;
-            existingReview.Description = description;
-
-            // Update images if provided
-            if (review.Images != null && review.Images.Count > 0)
+            catch (DbUpdateConcurrencyException ex)
             {
-                // Remove existing images
-                context.ReviewImages.RemoveRange(existingReview.ReviewImages);
-
-                // Add new images
-                foreach (var image in review.Images)
-                {
-                    var reviewImage = ReviewImage.FromImage(image, existingReview.Id);
-                    context.ReviewImages.Add(reviewImage);
-                }
+                Console.WriteLine($"Concurrency error updating review {review.Id}: {ex.Message}");
+                throw;
             }
-
-            context.SaveChanges();
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"EF Core EditReview Error: {ex.InnerException?.Message ?? ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General EditReview Error: {ex.Message}");
+                throw;
+            }
         }
 
         public void DeleteReview(Review review)
@@ -153,34 +116,21 @@ namespace MarketMinds.Repositories.ReviewRepository
                 throw new ArgumentNullException(nameof(review));
             }
 
-            // Find the review in the database
-            var existingReview = context.Reviews
-                .Include(r => r.ReviewImages)
-                .FirstOrDefault(r => r.Id == review.Id);
-
-            if (existingReview == null)
+            try
             {
-                // If not found by ID, try to find by buyer, seller and description
-                existingReview = context.Reviews
-                    .Include(r => r.ReviewImages)
-                    .FirstOrDefault(r =>
-                        r.BuyerId == review.BuyerId &&
-                        r.SellerId == review.SellerId &&
-                        r.Description == review.Description);
-
-                if (existingReview == null)
-                {
-                    throw new KeyNotFoundException($"Review not found with ID {review.Id}");
-                }
+                context.Reviews.Remove(review);
+                context.SaveChanges();
             }
-
-            // Remove related images first
-            context.ReviewImages.RemoveRange(existingReview.ReviewImages);
-
-            // Then remove the review
-            context.Reviews.Remove(existingReview);
-
-            context.SaveChanges();
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"EF Core DeleteReview Error: {ex.InnerException?.Message ?? ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General DeleteReview Error: {ex.Message}");
+                throw;
+            }
         }
     }
 }
