@@ -4,6 +4,7 @@ using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.BuyProductsService;
 using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ProductTagService;
@@ -37,9 +38,8 @@ builder.Services.AddHttpClient("ApiClient", client =>
 
 // Register repositories
 builder.Services.AddSingleton<AuctionProductsProxyRepository>();
-// Register repositories
-builder.Services.AddSingleton<AuctionProductsProxyRepository>();
 builder.Services.AddSingleton<BorrowProductsProxyRepository>();
+builder.Services.AddSingleton<BuyProductsProxyRepository>();
 builder.Services.AddSingleton<ProductCategoryProxyRepository>();
 builder.Services.AddSingleton<ProductConditionProxyRepository>();
 builder.Services.AddSingleton<ProductTagProxyRepository>();
@@ -47,6 +47,8 @@ builder.Services.AddSingleton<ProductTagProxyRepository>();
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
 builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Services.BorrowProductsService.BorrowProductsService>();
+builder.Services.AddTransient<IBuyProductsService, MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
+builder.Services.AddTransient<IProductService, MarketMinds.Shared.Services.BuyProductsService.BuyProductsService>();
 builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
 builder.Services.AddTransient<IProductTagService, ProductTagService>();
