@@ -1,0 +1,28 @@
+@model System.Collections.ObjectModel.ObservableCollection<MarketMinds.Shared.Models.Review>
+
+@{
+    ViewData["Title"] = "Reviews Given";
+}
+
+<div class="container mt-4">
+    <h1>Reviews Given</h1>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link" asp-action="ReviewsReceived">Reviews Received</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-action="ReviewsGiven">Reviews Given</a>
+        </li>
+    </ul>
+
+    <div class="row">
+        <div class="col-md-12">
+            <partial name="_ReviewListPartial" model="Model" />
+            
+            <div class="mt-3">
+                <a asp-action="Create" class="btn btn-primary">Write a New Review</a>
+            </div>
+        </div>
+    </div>
+</div> 
