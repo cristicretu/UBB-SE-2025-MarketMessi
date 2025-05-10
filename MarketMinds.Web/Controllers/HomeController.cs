@@ -68,13 +68,22 @@ namespace MarketMinds.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AuctionProduct auctionProduct, string productType, string tagIds, string imageUrls)
         {
+            if (auctionProduct.StartTime == default)
+            {
+                auctionProduct.StartTime = DateTime.Now;
+            }
+            
+            if (auctionProduct.EndTime == default)
+            {
+                auctionProduct.EndTime = DateTime.Now.AddDays(7);
+            }
+            
             if (ModelState.IsValid)
             {
                 try
                 {
                     _logger.LogInformation("Creating a new auction product");
                     
-                    // Process tags if provided
                     var productTags = new List<ProductTag>();
                     if (!string.IsNullOrEmpty(tagIds))
                     {
@@ -84,7 +93,6 @@ namespace MarketMinds.Web.Controllers
                         {
                             if (tagId.StartsWith("new_"))
                             {
-                                // This is a new tag to be created
                                 var tagTitle = tagId.Substring(4); // Remove "new_" prefix
                                 _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
                                 var newTag = _productTagService.CreateProductTag(tagTitle);
@@ -108,44 +116,130 @@ namespace MarketMinds.Web.Controllers
                     var productImages = new List<Image>();
                     if (!string.IsNullOrEmpty(imageUrls))
                     {
-                        _logger.LogInformation("Processing image URLs");
+                        _logger.LogInformation("Processing image URLs: {ImageUrls}", imageUrls);
                         productImages = _imageUploadService.ParseImagesString(imageUrls);
+                        _logger.LogInformation("Parsed {ImageCount} images", productImages.Count);
                         // Set the images to the product (implementation may vary based on your model)
                         auctionProduct.NonMappedImages = productImages.ToList();
                     }
                     
-                    // Set default values if not provided
-                    if (auctionProduct.StartTime == default)
+                    if (auctionProduct.SellerId <= 0)
                     {
-                        auctionProduct.StartTime = DateTime.Now;
+                        auctionProduct.SellerId = 1;
                     }
                     
-                    if (auctionProduct.EndTime == default)
+                    if (auctionProduct.CurrentPrice <= 0)
                     {
-                        auctionProduct.EndTime = DateTime.Now.AddDays(7);
+                        auctionProduct.CurrentPrice = auctionProduct.StartPrice;
                     }
                     
-                    // Ensure current price is set
-                    auctionProduct.CurrentPrice = auctionProduct.StartPrice;
+                    // Log detailed product info before creating
+                    _logger.LogInformation("Auction product details before creation: " +
+                        "Id={Id}, Title={Title}, Description={DescriptionLength}, " +
+                        "CategoryId={CategoryId}, ConditionId={ConditionId}, " +
+                        "StartPrice={StartPrice}, CurrentPrice={CurrentPrice}, " +
+                        "StartTime={StartTime}, EndTime={EndTime}, " +
+                        "SellerId={SellerId}, TagCount={TagCount}, ImageCount={ImageCount}",
+                        auctionProduct.Id,
+                        auctionProduct.Title,
+                        auctionProduct.Description?.Length ?? 0,
+                        auctionProduct.CategoryId,
+                        auctionProduct.ConditionId,
+                        auctionProduct.StartPrice,
+                        auctionProduct.CurrentPrice,
+                        auctionProduct.StartTime,
+                        auctionProduct.EndTime,
+                        auctionProduct.SellerId,
+                        productTags.Count,
+                        productImages.Count);
                     
-                    // Create the product
-                    var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
-                    
-                    if (result)
+                    // Check required fields before submitting
+                    if (string.IsNullOrWhiteSpace(auctionProduct.Title))
                     {
-                        _logger.LogInformation("Auction product created successfully");
-                        return RedirectToAction("Index", "AuctionProducts");
+                        ModelState.AddModelError("Title", "Title is required");
                     }
-                    else
+                    
+                    if (auctionProduct.CategoryId <= 0)
                     {
-                        _logger.LogWarning("Failed to create auction product");
-                        ModelState.AddModelError(string.Empty, "Failed to create product.");
+                        ModelState.AddModelError("CategoryId", "Please select a category");
+                    }
+                    
+                    if (auctionProduct.ConditionId <= 0)
+                    {
+                        ModelState.AddModelError("ConditionId", "Please select a condition");
+                    }
+                    
+                    if (auctionProduct.StartPrice <= 0)
+                    {
+                        ModelState.AddModelError("StartPrice", "Starting price must be greater than zero");
+                    }
+                    
+                    if (ModelState.IsValid)
+                    {
+                        try 
+                        {
+                            var testProduct = await _auctionProductService.GetAuctionProductByIdAsync(1);
+                            if (testProduct != null)
+                            {
+                                _logger.LogInformation("Service connectivity check: Successfully retrieved a test product");
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Service connectivity check: Retrieved null test product");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Service connectivity check failed");
+                        }
+                        
+                        bool result = false;
+                        try 
+                        {
+                            result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Exception thrown by CreateAuctionProductAsync");
+                            
+                            string errorMessage = ex.Message;
+                            if (ex.InnerException != null)
+                            {
+                                if (ex.InnerException.Message.Contains("400 (Bad Request)"))
+                                {
+                                    errorMessage = "Please check that all required fields are filled in correctly.";
+                                }
+                                else
+                                {
+                                    errorMessage = ex.InnerException.Message;
+                                }
+                            }
+                            
+                            ModelState.AddModelError(string.Empty, $"Failed to create product: {errorMessage}");
+                            throw;
+                        }
+                        
+                        if (result)
+                        {
+                            _logger.LogInformation("Auction product created successfully");
+                            return RedirectToAction("Index", "AuctionProducts");
+                        }
+                        else
+                        {
+                            _logger.LogWarning("CreateAuctionProductAsync returned false without throwing an exception");
+                            ModelState.AddModelError(string.Empty, "Failed to create product. Please check the logs for details.");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error creating product");
-                    ModelState.AddModelError(string.Empty, "An error occurred while creating the product.");
+                    
+                    // Provide a user-friendly error message
+                    if (!ModelState.Any(m => m.Value.Errors.Count > 0))
+                    {
+                        ModelState.AddModelError(string.Empty, "An error occurred while creating the product. Please check all fields and try again.");
+                    }
                 }
             }
             else

@@ -32,18 +32,18 @@
             </div>
             
             <div class="mb-5">
-                <label asp-for="Title" class="block text-gray-700 mb-2 font-medium">Title</label>
+                <label asp-for="Title" class="block text-gray-700 mb-2 font-medium">Title *</label>
                 <input asp-for="Title" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
                 <span asp-validation-for="Title" class="text-red-500 text-sm mt-1"></span>
             </div>
             
             <div class="mb-5">
-                <label class="block text-gray-700 mb-2 font-medium">Select Category</label>
-                <select asp-for="CategoryId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <label class="block text-gray-700 mb-2 font-medium">Select Category *</label>
+                <select asp-for="CategoryId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     <option value="">-- Select Category --</option>
                     @foreach (var category in categories)
                     {
-                        <option value="@category.Id">@category.DisplayTitle</option>
+                        <option value="@category.Id">@category.Name</option>
                     }
                 </select>
                 <span asp-validation-for="CategoryId" class="text-red-500 text-sm mt-1"></span>
@@ -57,9 +57,13 @@
             
             <div class="mb-5">
                 <label class="block text-gray-700 mb-2 font-medium">Tags</label>
-                <div class="flex items-center">
+                <div class="flex items-center space-x-2">
                     <input type="text" id="tagInput" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Add a tag and press Enter" />
+                    <button type="button" id="addTagBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+                        Add
+                    </button>
                 </div>
+                <p class="text-sm text-gray-500 mt-1">Tags help buyers find your item.</p>
                 <div id="selectedTags" class="flex flex-wrap gap-2 mt-2"></div>
                 <input type="hidden" id="tagIds" name="tagIds" />
             </div>
@@ -78,20 +82,23 @@
             </div>
             
             <div class="mb-5">
-                <label class="block text-gray-700 mb-2 font-medium">Select Condition</label>
-                <select asp-for="ConditionId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <label class="block text-gray-700 mb-2 font-medium">Select Condition *</label>
+                <select asp-for="ConditionId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                     <option value="">-- Select Condition --</option>
                     @foreach (var condition in conditions)
                     {
-                        <option value="@condition.Id">@condition.DisplayTitle</option>
+                        <option value="@condition.Id">@condition.Name</option>
                     }
                 </select>
                 <span asp-validation-for="ConditionId" class="text-red-500 text-sm mt-1"></span>
             </div>
             
             <div class="mb-5 auction-field">
-                <label asp-for="StartPrice" class="block text-gray-700 mb-2 font-medium">Starting Price</label>
-                <input asp-for="StartPrice" type="number" step="0.01" min="0" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <label asp-for="StartPrice" class="block text-gray-700 mb-2 font-medium">Starting Price *</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                    <input asp-for="StartPrice" type="number" step="0.01" min="0.01" class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                </div>
                 <span asp-validation-for="StartPrice" class="text-red-500 text-sm mt-1"></span>
             </div>
             
@@ -101,6 +108,7 @@
                 <span asp-validation-for="EndTime" class="text-red-500 text-sm mt-1"></span>
             </div>
             
+            <input type="hidden" asp-for="StartTime" value="@DateTime.Now" />
             <input type="hidden" asp-for="SellerId" value="1" />
             <input type="hidden" asp-for="CurrentPrice" id="CurrentPrice" />
             
@@ -108,6 +116,9 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                     Create Listing
                 </button>
+                <a asp-controller="Home" asp-action="Index" class="ml-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>
@@ -115,9 +126,7 @@
 
 @section Scripts {
     <script>
-        // Set default end time to 7 days from now
         document.addEventListener('DOMContentLoaded', function() {
-            // Set default end auction date to 7 days from now
             const endDateInput = document.getElementById('EndTime');
             if (!endDateInput.value) {
                 const endDate = new Date();
@@ -165,71 +174,116 @@
                 });
             }
             
-            // Tags handling
+            // COMPLETELY REWRITTEN TAG HANDLING
+            // --------------------------------------
             const tagInput = document.getElementById('tagInput');
+            const addTagBtn = document.getElementById('addTagBtn');
             const selectedTags = document.getElementById('selectedTags');
             const tagIdsInput = document.getElementById('tagIds');
-            const selectedTagIds = new Set();
+            
+            // Store selected tag IDs
+            const selectedTagIds = [];
             
             // Available tags from the backend
             const availableTags = @Html.Raw(Json.Serialize(allTags));
+            console.log("Available tags:", availableTags);
             
-            tagInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const tagText = tagInput.value.trim();
-                    if (tagText) {
-                        // Check if tag exists or create a new one
-                        let tagId = null;
-                        let tagTitle = tagText;
-                        const existingTag = availableTags.find(t => t.displayTitle.toLowerCase() === tagText.toLowerCase());
-                        
-                        if (existingTag) {
-                            tagId = existingTag.id;
-                            tagTitle = existingTag.displayTitle;
-                        } else {
-                            // This would ideally be an AJAX call to create a new tag
-                            // For now, we'll use a placeholder ID that will be handled server-side
-                            tagId = 'new_' + tagText;
-                        }
-                        
-                        if (!selectedTagIds.has(tagId)) {
-                            addTag(tagId, tagTitle);
-                        }
-                        
-                        tagInput.value = '';
-                    }
+            // Cancel form submission on Enter in tag input
+            tagInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    console.log("Enter key pressed");
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleAddTag();
+                    return false;
                 }
             });
             
-            function addTag(tagId, tagTitle) {
-                selectedTagIds.add(tagId);
+            // Add tag button click handler
+            addTagBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                handleAddTag();
+            });
+            
+            // Core function to add a tag
+            function handleAddTag() {
+                const tagText = tagInput.value.trim();
+                console.log("Adding tag:", tagText);
                 
+                if (!tagText) {
+                    console.log("Tag text is empty");
+                    return;
+                }
+                
+                // Find if tag already exists in available tags
+                let tagId, tagTitle, isNew = false;
+                const existingTag = availableTags.find(tag => 
+                    tag.Title && tag.Title.toLowerCase() === tagText.toLowerCase()
+                );
+                
+                if (existingTag) {
+                    tagId = existingTag.Id.toString();
+                    tagTitle = existingTag.Title;
+                    console.log("Found existing tag:", tagTitle, "with ID:", tagId);
+                } else {
+                    tagId = 'new_' + tagText;
+                    tagTitle = tagText;
+                    isNew = true;
+                    console.log("Creating new tag:", tagTitle, "with ID:", tagId);
+                }
+                
+                // Check if tag is already added
+                if (selectedTagIds.includes(tagId)) {
+                    console.log("Tag already added");
+                    tagInput.value = '';
+                    return;
+                }
+                
+                // Add the tag ID to our array
+                selectedTagIds.push(tagId);
+                
+                // Update the hidden input
+                tagIdsInput.value = selectedTagIds.join(',');
+                console.log("Updated tag IDs:", tagIdsInput.value);
+                
+                // Create tag UI element
                 const tagElement = document.createElement('div');
-                tagElement.className = 'bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center';
-                tagElement.dataset.tagId = tagId;
+                tagElement.className = isNew ? 
+                    'bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center' :
+                    'bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center';
                 
                 tagElement.innerHTML = `
-                    ${tagTitle}
-                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none" aria-label="Remove tag">
+                    <span>${tagTitle}</span>
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none" data-tag-id="${tagId}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 `;
                 
-                tagElement.querySelector('button').addEventListener('click', function() {
-                    selectedTagIds.delete(tagId);
+                // Add remove functionality
+                const removeBtn = tagElement.querySelector('button');
+                removeBtn.addEventListener('click', function() {
+                    const tagIdToRemove = this.getAttribute('data-tag-id');
+                    const index = selectedTagIds.indexOf(tagIdToRemove);
+                    
+                    if (index !== -1) {
+                        selectedTagIds.splice(index, 1);
+                        tagIdsInput.value = selectedTagIds.join(',');
+                        console.log("Removed tag, updated IDs:", tagIdsInput.value);
+                    }
+                    
                     tagElement.remove();
-                    updateTagIdsInput();
                 });
                 
+                // Add to DOM
                 selectedTags.appendChild(tagElement);
-                updateTagIdsInput();
-            }
-            
-            function updateTagIdsInput() {
-                tagIdsInput.value = Array.from(selectedTagIds).join(',');
+                
+                // Clear input
+                tagInput.value = '';
+                
+                // Focus back on input for adding more tags
+                tagInput.focus();
             }
             
             // Image upload handling
@@ -248,7 +302,7 @@
                 
                 const file = imageUpload.files[0];
                 const formData = new FormData();
-                formData.append('image', file);
+                formData.append('image', file);  // Important: Must match controller parameter name
                 
                 uploadStatus.innerHTML = '<div class="flex items-center"><div class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></div><span>Uploading image...</span></div>';
                 
