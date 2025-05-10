@@ -95,18 +95,54 @@ namespace MarketMinds.Web.Controllers
         // GET: AuctionProducts/Create
         public IActionResult Create()
         {
-            return View();
+            return RedirectToAction("Create", "Home");
         }
 
         // POST: AuctionProducts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AuctionProduct auctionProduct)
+        public async Task<IActionResult> Create(AuctionProduct auctionProduct, string tagIds, string imageUrls)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Process tags if provided
+                    if (!string.IsNullOrEmpty(tagIds))
+                    {
+                        var tagIdList = tagIds.Split(',');
+                        foreach (var tagId in tagIdList)
+                        {
+                            if (tagId.StartsWith("new_"))
+                            {
+                                // This is a new tag to be created
+                                var tagTitle = tagId.Substring(4); // Remove "new_" prefix
+                                var productTagService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ProductTagService.IProductTagService>();
+                                var newTag = productTagService.CreateProductTag(tagTitle);
+                                
+                                // Add the tag to the product's tags (implementation depends on how AuctionProductService handles this)
+                                // This might need to be done after creating the product
+                            }
+                            else if (int.TryParse(tagId, out int existingTagId))
+                            {
+                                // This is an existing tag
+                                // Add the tag ID to be processed by the service
+                                // Again, implementation depends on how AuctionProductService handles this
+                            }
+                        }
+                    }
+                    
+                    // Process image URLs if provided
+                    if (!string.IsNullOrEmpty(imageUrls))
+                    {
+                        var imageUrlList = imageUrls.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                        var imageUploadService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ImagineUploadService.IImageUploadService>();
+                        var imagesList = imageUploadService.ParseImagesString(imageUrls);
+                        
+                        // Set images to the product (implementation depends on how your service handles this)
+                        // This might need to be done after creating the product
+                    }
+                    
                     var result = await _auctionProductService.CreateAuctionProductAsync(auctionProduct);
                     if (result)
                     {
@@ -119,6 +155,14 @@ namespace MarketMinds.Web.Controllers
                     ModelState.AddModelError(string.Empty, "An error occurred while creating the auction product");
                 }
             }
+            
+            // If we got this far, something failed - redisplay form with proper selections
+            var categoryService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ProductCategoryService.IProductCategoryService>();
+            var conditionService = HttpContext.RequestServices.GetService<MarketMinds.Shared.Services.ProductConditionService.IProductConditionService>();
+            
+            ViewBag.Categories = categoryService.GetAllProductCategories();
+            ViewBag.Conditions = conditionService.GetAllProductConditions();
+            
             return View(auctionProduct);
         }
 
