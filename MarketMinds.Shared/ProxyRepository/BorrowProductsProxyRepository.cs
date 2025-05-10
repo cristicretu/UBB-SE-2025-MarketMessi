@@ -36,13 +36,18 @@ namespace MarketMinds.Shared.ProxyRepository
         public void CreateListing(Product product)
         {
             BorrowProduct borrowProduct = product as BorrowProduct;
+            
+            var sellerId = borrowProduct.Seller?.Id ?? borrowProduct.SellerId;
+            var conditionId = borrowProduct.Condition?.Id ?? borrowProduct.ConditionId;
+            var categoryId = borrowProduct.Category?.Id ?? borrowProduct.CategoryId;
+            
             var productToSend = new
             {
                 borrowProduct.Title,
                 borrowProduct.Description,
-                SellerId = borrowProduct.Seller?.Id ?? 0,
-                ConditionId = borrowProduct.Condition?.Id,
-                CategoryId = borrowProduct.Category?.Id,
+                SellerId = sellerId,
+                ConditionId = conditionId,
+                CategoryId = categoryId,
                 borrowProduct.DailyRate,
                 StartDate = borrowProduct.StartDate,
                 EndDate = borrowProduct.EndDate,
