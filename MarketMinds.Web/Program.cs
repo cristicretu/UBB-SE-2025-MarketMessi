@@ -1,54 +1,39 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.AspNetCore.Identity;
+using MarketMinds.Shared;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
+using MarketMinds.Shared.Services.AuctionProductsService;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Remove database connection and replace with services
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "defaultKeyForDevelopment12345678901234"))
-    };
-});
-
+// Register shared service clients
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/");
 });
 
 // Register AuctionProductService
-builder.Services.AddHttpClient<IAuctionProductService, AuctionProductService>(client =>
+builder.Services.AddHttpClient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/");
 });
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseDeveloperExceptionPage();
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -62,5 +47,6 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
-app.Run(); 
+app.Run();
