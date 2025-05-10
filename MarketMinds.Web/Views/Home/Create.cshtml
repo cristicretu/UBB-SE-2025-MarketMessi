@@ -1,40 +1,126 @@
 @model MarketMinds.Shared.Models.AuctionProduct
 
 @{
-    ViewData["Title"] = "Create Product";
+    ViewData["Title"] = "Create a Listing";
 }
 
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Create New Product</h1>
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <h1 class="text-3xl font-bold mb-6">Create a Listing</h1>
 
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <form asp-action="Create" method="post">
-            <div class="mb-4">
-                <label asp-for="Title" class="block text-gray-700 text-sm font-bold mb-2">Title</label>
-                <input asp-for="Title" class="shadow border rounded w-full py-2 px-3 text-gray-700" />
+    <div class="bg-white rounded-lg shadow p-6">
+        <form asp-action="CreateAuctionProduct" method="post" id="listingForm" enctype="multipart/form-data">
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">What type of listing do you wish to create?</label>
+                <select id="productType" name="productType" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="auction" selected>Auction</option>
+                    <option value="buy" disabled>Buy (Coming Soon)</option>
+                    <option value="borrow" disabled>Borrow (Coming Soon)</option>
+                </select>
             </div>
             
-            <div class="mb-4">
-                <label asp-for="Description" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
-                <textarea asp-for="Description" class="shadow border rounded w-full py-2 px-3 text-gray-700" rows="3"></textarea>
+            <div class="mb-5">
+                <label asp-for="Title" class="block text-gray-700 mb-2 font-medium">Title</label>
+                <input asp-for="Title" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
             </div>
             
-            <div class="mb-4">
-                <label asp-for="StartPrice" class="block text-gray-700 text-sm font-bold mb-2">Price ($)</label>
-                <input asp-for="StartPrice" class="shadow border rounded w-full py-2 px-3 text-gray-700" type="number" step="0.01" min="0" />
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Select Category</label>
+                <select asp-for="CategoryId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="1">Electronics</option>
+                    <option value="2">Home & Garden</option>
+                    <option value="3">Clothing</option>
+                    <option value="4">Sports & Outdoors</option>
+                    <option value="5">Toys & Games</option>
+                </select>
             </div>
             
-            <input type="hidden" asp-for="CategoryId" value="1" />
-            <input type="hidden" asp-for="ConditionId" value="1" />
+            <div class="mb-5">
+                <label asp-for="Description" class="block text-gray-700 mb-2 font-medium">Description</label>
+                <textarea asp-for="Description" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4"></textarea>
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Tags</label>
+                <input type="text" name="tags" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g. vintage, electronics, rare" />
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Upload Image</label>
+                <input type="file" name="imageFile" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none" />
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Select Condition</label>
+                <select asp-for="ConditionId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="1">New</option>
+                    <option value="2">Like New</option>
+                    <option value="3">Good</option>
+                    <option value="4">Fair</option>
+                    <option value="5">Poor</option>
+                </select>
+            </div>
+            
+            <div class="mb-5 auction-field">
+                <label asp-for="StartPrice" class="block text-gray-700 mb-2 font-medium">Starting Price</label>
+                <input asp-for="StartPrice" type="number" step="0.01" min="0" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+            </div>
+            
+            <div class="mb-5 auction-field">
+                <label asp-for="EndTime" class="block text-gray-700 mb-2 font-medium">End Auction Date</label>
+                <input asp-for="EndTime" type="datetime-local" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+            </div>
+            
             <input type="hidden" asp-for="SellerId" value="1" />
-            <input type="hidden" name="productType" value="auction" />
             
-            <div class="flex items-center mt-6">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Create
+            <div class="mb-5">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Create Listing
                 </button>
-                <a asp-action="Index" class="ml-4 text-blue-600 hover:text-blue-800">Back to List</a>
             </div>
         </form>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        // Set default end time to 7 days from now
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default end auction date to 7 days from now
+            const endDateInput = document.getElementById('EndTime');
+            if (!endDateInput.value) {
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 7);
+                endDateInput.value = endDate.toISOString().slice(0, 16);
+            }
+            
+            // Handle product type change
+            const productTypeSelect = document.getElementById('productType');
+            productTypeSelect.addEventListener('change', function() {
+                const form = document.getElementById('listingForm');
+                
+                // Update form action based on product type
+                switch (this.value) {
+                    case 'auction':
+                        form.action = '@Url.Action("CreateAuctionProduct", "Home")';
+                        showAuctionFields(true);
+                        break;
+                    case 'buy':
+                        form.action = '@Url.Action("CreateBuyProduct", "Home")';
+                        showAuctionFields(false);
+                        break;
+                    case 'borrow':
+                        form.action = '@Url.Action("CreateBorrowProduct", "Home")';
+                        showAuctionFields(false);
+                        break;
+                }
+            });
+            
+            function showAuctionFields(show) {
+                const auctionFields = document.querySelectorAll('.auction-field');
+                auctionFields.forEach(field => {
+                    field.style.display = show ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
+} 
