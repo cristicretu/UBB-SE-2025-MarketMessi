@@ -18,15 +18,15 @@ namespace MarketMinds.Repositories.MessageRepository
             this.context = dbContext;
         }
 
-        public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
+        public async Task<Message> CreateMessageAsync(CreateMessageDto newMessage)
         {
             var message = new Message
             {
-                ConversationId = conversationId,
-                UserId = userId,
-                Content = content
+                ConversationId = newMessage.ConversationId,
+                UserId = newMessage.UserId,
+                Content = newMessage.Content,
             };
-            
+
             await context.Messages.AddAsync(message);
             await context.SaveChangesAsync();
             return message;

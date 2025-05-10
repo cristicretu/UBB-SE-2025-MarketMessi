@@ -11,12 +11,11 @@ namespace MarketMinds.Shared.ProxyRepository
     public class ProductConditionProxyRepository : IProductConditionRepository
     {
         private readonly HttpClient httpClient;
-        private readonly string apiBaseUrl;
 
         public ProductConditionProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
             if (!apiBaseUrl.EndsWith("/"))
             {
                 apiBaseUrl += "/";
@@ -24,28 +23,14 @@ namespace MarketMinds.Shared.ProxyRepository
             httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
         }
 
-        public List<Condition> GetAllProductConditions()
+        public string GetAllProductConditionsRaw()
         {
             var response = httpClient.GetAsync("ProductCondition").Result;
             response.EnsureSuccessStatusCode();
-            var responseJson = response.Content.ReadAsStringAsync().Result;
-            var clientConditions = new List<Condition>();
-            var responseJsonArray = JsonNode.Parse(responseJson)?.AsArray();
-
-            if (responseJsonArray != null)
-            {
-                foreach (var responseJsonItem in responseJsonArray)
-                {
-                    var id = responseJsonItem["id"]?.GetValue<int>() ?? 0;
-                    var name = responseJsonItem["name"]?.GetValue<string>() ?? string.Empty;
-                    var description = responseJsonItem["description"]?.GetValue<string>() ?? string.Empty;
-                    clientConditions.Add(new Condition(id, name, description));
-                }
-            }
-            return clientConditions;
+            return response.Content.ReadAsStringAsync().Result;
         }
 
-        public Condition CreateProductCondition(string displayTitle, string description)
+        public string CreateProductConditionRaw(string displayTitle, string description)
         {
             var requestContent = new StringContent(
                 $"{{\"displayTitle\":\"{displayTitle}\",\"description\":\"{description}\"}}",
@@ -53,24 +38,29 @@ namespace MarketMinds.Shared.ProxyRepository
                 "application/json");
             var response = httpClient.PostAsync("ProductCondition", requestContent).Result;
             response.EnsureSuccessStatusCode();
-            var json = response.Content.ReadAsStringAsync().Result;
-            var jsonObject = JsonNode.Parse(json);
+            return response.Content.ReadAsStringAsync().Result;
+        }
 
-            if (jsonObject == null)
-            {
-                throw new InvalidOperationException("Failed to parse the server response.");
-            }
+        public void DeleteProductConditionRaw(string displayTitle)
+        {
+            var response = httpClient.DeleteAsync($"ProductCondition/{displayTitle}").Result;
+            response.EnsureSuccessStatusCode();
+        }
 
-            var id = jsonObject["id"]?.GetValue<int>() ?? 0;
-            var name = jsonObject["name"]?.GetValue<string>() ?? string.Empty;
-            var conditionDescription = jsonObject["description"]?.GetValue<string>() ?? string.Empty;
-            return new Condition(name, conditionDescription);
+        // Legacy implementations that delegate to service layer
+        public List<Condition> GetAllProductConditions()
+        {
+            throw new NotImplementedException("This method should be called from the service layer");
+        }
+
+        public Condition CreateProductCondition(string displayTitle, string description)
+        {
+            throw new NotImplementedException("This method should be called from the service layer");
         }
 
         public void DeleteProductCondition(string displayTitle)
         {
-            var response = httpClient.DeleteAsync($"ProductCondition/{displayTitle}").Result;
-            response.EnsureSuccessStatusCode();
+            throw new NotImplementedException("This method should be called from the service layer");
         }
     }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Repositories.ProductConditionRepository
 {
@@ -18,62 +19,44 @@ namespace MarketMinds.Repositories.ProductConditionRepository
 
         public List<Condition> GetAllProductConditions()
         {
-            try
-            {
-                var allConditions = databaseContext.ProductConditions.ToList();
-                return allConditions;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Error in GetAllProductConditions using EF: {exception.Message}");
-                throw;
-            }
+            return databaseContext.ProductConditions.ToList();
         }
 
         public Condition CreateProductCondition(string displayTitle, string description)
         {
-            try
-            {
-                var conditionToCreate = new Condition(displayTitle, description);
-                databaseContext.ProductConditions.Add(conditionToCreate);
-                databaseContext.SaveChanges();
-                return conditionToCreate;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Error in CreateProductCondition using EF: {exception.Message}");
-                throw;
-            }
+            var conditionToCreate = new Condition(displayTitle, description);
+            databaseContext.ProductConditions.Add(conditionToCreate);
+            databaseContext.SaveChanges();
+            return conditionToCreate;
         }
 
         public void DeleteProductCondition(string displayTitle)
         {
-            try
+            var conditionToDelete = databaseContext.ProductConditions.FirstOrDefault(condition => condition.Name == displayTitle);
+
+            if (conditionToDelete == null)
             {
-                // Debug: Log all conditions in the database
-                var allConditions = databaseContext.ProductConditions.ToList();
-                Console.WriteLine($"DEBUG: Found {allConditions.Count} conditions in database");
-                foreach (var condition in allConditions)
-                {
-                    Console.WriteLine($"DEBUG: Condition ID: {condition.Id}, Name: '{condition.Name}'");
-                }
-                Console.WriteLine($"DEBUG: Looking for condition with title: '{displayTitle}'");
-
-                var conditionToDelete = databaseContext.ProductConditions.FirstOrDefault(condition => condition.Name == displayTitle);
-
-                if (conditionToDelete == null)
-                {
-                    throw new KeyNotFoundException($"Product condition with title '{displayTitle}' not found.");
-                }
-
-                databaseContext.ProductConditions.Remove(conditionToDelete);
-                databaseContext.SaveChanges();
+                throw new KeyNotFoundException($"Product condition with title '{displayTitle}' not found.");
             }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Error in DeleteProductCondition using EF: {exception.Message}");
-                throw;
-            }
+
+            databaseContext.ProductConditions.Remove(conditionToDelete);
+            databaseContext.SaveChanges();
+        }
+
+        // Stub implementations for Raw methods (these won't be called server-side)
+        public string GetAllProductConditionsRaw()
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public string CreateProductConditionRaw(string displayTitle, string description)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
+        }
+
+        public void DeleteProductConditionRaw(string displayTitle)
+        {
+            throw new NotImplementedException("This method is only for client-side use");
         }
     }
 }

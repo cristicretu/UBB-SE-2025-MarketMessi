@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ProductCategoryRepository;
+using MarketMinds.Shared.IRepository;
 
 namespace MarketMinds.Controllers
 {
@@ -41,9 +41,9 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateProductCategory([FromBody] ProductCategoryRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.DisplayTitle) || !ModelState.IsValid)
+            if (request == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Request body cannot be null");
             }
 
             try

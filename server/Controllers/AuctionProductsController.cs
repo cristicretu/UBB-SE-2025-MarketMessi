@@ -69,7 +69,6 @@ namespace MarketMinds.Controllers
             try
             {
                 InitializeDates(product);
-                
                 var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
                 product.Images = new List<ProductImage>();
                 
@@ -155,7 +154,6 @@ namespace MarketMinds.Controllers
                     Price = bidDTO.Amount,
                     Timestamp = DateTime.Now
                 };
-
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
                 auctionProductsRepository.UpdateProduct(product);

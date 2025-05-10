@@ -15,44 +15,75 @@ namespace MarketMinds.Shared.ProxyRepository
     public class MessageProxyRepository : IMessageRepository
     {
         private readonly HttpClient httpClient;
+        private readonly string apiBaseUrl;
 
         public MessageProxyRepository(IConfiguration configuration)
         {
             httpClient = new HttpClient();
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-            if (string.IsNullOrEmpty(apiBaseUrl))
-            {
-                throw new InvalidOperationException("API base URL is null or empty");
-            }
-
-            if (!apiBaseUrl.EndsWith("/"))
-            {
-                apiBaseUrl += "/";
-            }
-            httpClient.BaseAddress = new Uri(apiBaseUrl + "api/");
+            apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
         }
 
+        public async Task<Message> CreateMessageAsync(CreateMessageDto newMessage)
+        {
+            try
+            {
+                var jsonContent = JsonConvert.SerializeObject(newMessage);
+                var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync($"{apiBaseUrl}/api/Message", stringContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var message = JsonConvert.DeserializeObject<Message>(responseContent);
+                    return message;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Failed to create message: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception in CreateMessageAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        // For backward compatibility
         public async Task<Message> CreateMessageAsync(int conversationId, int userId, string content)
         {
-            var createDto = new
+            var createDto = new CreateMessageDto
             {
                 ConversationId = conversationId,
                 UserId = userId,
                 Content = content
             };
 
-            var response = await httpClient.PostAsJsonAsync("message", createDto);
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadFromJsonAsync<Message>();
+            return await CreateMessageAsync(createDto);
         }
 
         public async Task<List<Message>> GetMessagesByConversationIdAsync(int conversationId)
         {
-            var response = await httpClient.GetAsync($"message/conversation/{conversationId}");
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var response = await httpClient.GetAsync($"{apiBaseUrl}/api/Message/conversation/{conversationId}");
 
-            return await response.Content.ReadFromJsonAsync<List<Message>>();
+                if (response.IsSuccessStatusCode)
+                {
+                    var messages = await response.Content.ReadFromJsonAsync<List<Message>>();
+                    return messages;
+                }
+                else
+                {
+                    throw new Exception($"Failed to get messages: {response.StatusCode}");
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

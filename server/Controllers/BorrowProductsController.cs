@@ -26,18 +26,10 @@ namespace Server.Controllers
             try
             {
                 var products = borrowProductsRepository.GetProducts();
-
-                // If products is empty, it could be due to an error
-                if (!products.Any())
-                {
-                    Console.WriteLine("Warning: No borrow products returned. This could be due to database connectivity issues or schema mismatches.");
-                }
-
                 return Ok(products);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting all borrow products: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -53,13 +45,12 @@ namespace Server.Controllers
                 var product = borrowProductsRepository.GetProductByID(id);
                 return Ok(product);
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting borrow product by ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
             }
         }
@@ -71,48 +62,13 @@ namespace Server.Controllers
         [Consumes("application/json")]
         public IActionResult CreateBorrowProduct([FromBody] CreateBorrowProductDTO productDTO)
         {
-            // Verify correct method is being called
-            Console.WriteLine("=== IMPORTANT VERIFICATION ===");
-            Console.WriteLine("THIS IS THE DTO VERSION OF CREATE BORROW PRODUCT");
-            Console.WriteLine("=== VERIFICATION COMPLETE ===");
-
-            // Diagnostic logging
-            Console.WriteLine("==== BORROW PRODUCT CREATION DIAGNOSTICS ====");
-            Console.WriteLine($"Received object type: {productDTO?.GetType().FullName ?? "null"}");
-            Console.WriteLine($"Model binding state: {(ModelState.IsValid ? "Valid" : "Invalid")}");
-            Console.WriteLine("ModelState errors:");
-            foreach (var error in ModelState)
-            {
-                Console.WriteLine($"- {error.Key}: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
-            }
-            Console.WriteLine($"Raw request content: {Request.Body}");
-            Console.WriteLine("Controller Assembly: " + this.GetType().Assembly.FullName);
-            Console.WriteLine("DTO Assembly: " + typeof(CreateBorrowProductDTO).Assembly.FullName);
-            Console.WriteLine("====================================");
-
-            Console.WriteLine($"Received borrow product DTO in API: {System.Text.Json.JsonSerializer.Serialize(productDTO)}");
-
-            // Explicitly ignore navigation property validation errors
-            ModelState.Remove("Seller");
-            ModelState.Remove("Category");
-            ModelState.Remove("Condition");
-            ModelState.Remove("Images");
-
-            // Check keys that might contain "Product" validation errors
-            foreach (var key in ModelState.Keys.Where(k => k.Contains("Product")).ToList())
-            {
-                ModelState.Remove(key);
-            }
-
             if (!ModelState.IsValid)
             {
-                Console.WriteLine($"Model State is Invalid: {System.Text.Json.JsonSerializer.Serialize(ModelState)}");
                 return BadRequest(ModelState);
             }
 
             try
             {
-                // Create a BorrowProduct from the DTO
                 var product = new BorrowProduct
                 {
                     Title = productDTO.Title,
@@ -126,49 +82,13 @@ namespace Server.Controllers
                     DailyRate = productDTO.DailyRate,
                     IsBorrowed = productDTO.IsBorrowed
                 };
-                if (product.StartDate == default(DateTime))
-                {
-                    product.StartDate = DateTime.Now;
-                    Console.WriteLine($"Server set default StartDate: {product.StartDate}");
-                }
-                else
-                {
-                    Console.WriteLine($"Server preserved client StartDate: {product.StartDate}");
-                }
 
-                if (product.EndDate == default(DateTime))
-                {
-                    product.EndDate = DateTime.Now.AddDays(7);
-                    Console.WriteLine($"Server set default EndDate: {product.EndDate}");
-                }
-                else
-                {
-                    Console.WriteLine($"Server preserved client EndDate: {product.EndDate}");
-                }
-
-                if (product.TimeLimit == default(DateTime))
-                {
-                    product.TimeLimit = DateTime.Now.AddDays(7);
-                    Console.WriteLine($"Server set default TimeLimit: {product.TimeLimit}");
-                }
-                else
-                {
-                    Console.WriteLine($"Server preserved client TimeLimit: {product.TimeLimit}");
-                }
-
-                Console.WriteLine($"Mapped DTO to product: SellerId={product.SellerId}, CategoryId={product.CategoryId}, ConditionId={product.ConditionId}");
-
-                // Add the product without images
                 borrowProductsRepository.AddProduct(product);
-                Console.WriteLine($"Added product with ID: {product.Id}");
 
-                // Process images if any
                 if (productDTO.Images != null && productDTO.Images.Any())
                 {
                     foreach (var imgDTO in productDTO.Images)
                     {
-                        Console.WriteLine($"Adding image with URL: {imgDTO.Url}");
-
                         var img = new BorrowProductImage
                         {
                             Url = imgDTO.Url,
@@ -177,36 +97,47 @@ namespace Server.Controllers
 
                         borrowProductsRepository.AddImageToProduct(product.Id, img);
                     }
-
-                    Console.WriteLine($"Images added to repository.");
-
-                    // Verify images were saved
-                    try
-                    {
-                        var savedProduct = borrowProductsRepository.GetProductByID(product.Id);
-                        Console.WriteLine($"Retrieved product has {savedProduct.Images.Count} image(s) after save");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error verifying images: {ex.Message}");
-                    }
                 }
 
                 return CreatedAtAction(nameof(GetBorrowProductById), new { id = product.Id }, product);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                Console.WriteLine($"Argument exception: {aex.Message}");
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating borrow product: {ex}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
+            }
+        }
+
+        [HttpPost("{id}/images")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public IActionResult AddImageToProduct(int id, [FromBody] BorrowProductImage image)
+        {
+            if (image == null || string.IsNullOrWhiteSpace(image.Url))
+            {
+                return BadRequest("Image URL cannot be empty.");
+            }
+
+            try
+            {
+                var product = borrowProductsRepository.GetProductByID(id);
+                
+                borrowProductsRepository.AddImageToProduct(id, image);
+                
+                return NoContent();
+            }
+            catch (KeyNotFoundException keyNotFoundException)
+            {
+                return NotFound(keyNotFoundException.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while adding the image.");
             }
         }
 
@@ -227,17 +158,16 @@ namespace Server.Controllers
                 borrowProductsRepository.UpdateProduct(product);
                 return NoContent();
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating borrow product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
         }
@@ -254,17 +184,16 @@ namespace Server.Controllers
                 borrowProductsRepository.DeleteProduct(productToDelete);
                 return NoContent();
             }
-            catch (KeyNotFoundException knfex)
+            catch (KeyNotFoundException keyNotFoundException)
             {
-                return NotFound(knfex.Message);
+                return NotFound(keyNotFoundException.Message);
             }
-            catch (ArgumentException aex)
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(aex.Message);
+                return BadRequest(argumentException.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting borrow product ID {id}: {ex}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
             }
         }

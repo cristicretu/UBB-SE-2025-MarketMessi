@@ -6,7 +6,7 @@ namespace ViewModelLayer.ViewModel;
 
 public class BorrowProductsViewModel
 {
-    private readonly BorrowProductsService borrowProductsService;
+    private readonly IBorrowProductsService borrowProductsService;
 
     public BorrowProductsViewModel(BorrowProductsService borrowProductsService)
     {

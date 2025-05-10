@@ -12,7 +12,7 @@ namespace ViewModelLayer.ViewModel
 {
     public class ProductConditionViewModel : INotifyPropertyChanged
     {
-        private ProductConditionService productConditionService;
+        private IProductConditionService productConditionService;
         private string conditionName;
         private string conditionDescription;
         private string errorMessage;
