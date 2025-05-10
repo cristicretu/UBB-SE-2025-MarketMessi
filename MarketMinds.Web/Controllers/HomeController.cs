@@ -767,7 +767,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
             
-            return View("Create", new AuctionProduct());
+            return View("Create", new BuyProduct());
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
