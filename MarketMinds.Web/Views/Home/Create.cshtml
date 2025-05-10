@@ -19,7 +19,7 @@
     <h1 class="text-3xl font-bold mb-6">Create a Listing</h1>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data" onsubmit="console.log('Form onsubmit triggered for action: ' + this.action); return false;">
+        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data" onsubmit="console.log('Form onsubmit triggered for action: ' + this.action);">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             
             <div class="mb-5">
