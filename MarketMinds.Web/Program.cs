@@ -4,7 +4,12 @@ using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
 using MarketMinds.Shared.Services.AuctionProductsService;
 using MarketMinds.Shared.Services.BorrowProductsService;
+using MarketMinds.Shared.Services.ProductCategoryService;
+using MarketMinds.Shared.Services.ProductConditionService;
+using MarketMinds.Shared.Services.ProductTagService;
+using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,18 +18,45 @@ builder.Services.AddControllersWithViews();
 // Register shared service clients
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000/api/");
+    // Get base URL from configuration
+    var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+    
+    if (string.IsNullOrEmpty(baseUrl))
+    {
+        baseUrl = "http://localhost:5001";
+    }
+    
+    // Make sure URL ends with slash
+    if (!baseUrl.EndsWith("/"))
+    {
+        baseUrl += "/";
+    }
+    
+    client.BaseAddress = new Uri(baseUrl + "api/");
 });
 
-// Register AuctionProductsProxyRepository
+// Register repositories
 builder.Services.AddSingleton<AuctionProductsProxyRepository>();
-// Register BorrowProductsProxyRepository
+// Register repositories
+builder.Services.AddSingleton<AuctionProductsProxyRepository>();
 builder.Services.AddSingleton<BorrowProductsProxyRepository>();
+builder.Services.AddSingleton<ProductCategoryProxyRepository>();
+builder.Services.AddSingleton<ProductConditionProxyRepository>();
+builder.Services.AddSingleton<ProductTagProxyRepository>();
 
-// Register AuctionProductService
+// Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
-// Register BorrowProductService
 builder.Services.AddTransient<IBorrowProductsService, MarketMinds.Shared.Services.BorrowProductsService.BorrowProductsService>();
+builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>();
+builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
+builder.Services.AddTransient<IProductTagService, ProductTagService>();
+builder.Services.AddTransient<IImageUploadService, ImageUploadService>();
+
+// Register repository interfaces
+builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
+builder.Services.AddTransient<IProductConditionRepository>(sp => sp.GetRequiredService<ProductConditionProxyRepository>());
+builder.Services.AddTransient<IProductTagRepository>(sp => sp.GetRequiredService<ProductTagProxyRepository>());
+
 
 var app = builder.Build();
 

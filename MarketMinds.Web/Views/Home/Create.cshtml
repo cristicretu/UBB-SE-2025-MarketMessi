@@ -1,0 +1,364 @@
+@model MarketMinds.Shared.Models.AuctionProduct
+@using MarketMinds.Shared.Services.ProductCategoryService
+@using MarketMinds.Shared.Services.ProductTagService
+@using MarketMinds.Shared.Services.ProductConditionService
+@using MarketMinds.Shared.Services.ImagineUploadService
+@inject IProductCategoryService CategoryService
+@inject IProductTagService TagService
+@inject IProductConditionService ConditionService
+@inject IImageUploadService ImageUploadService
+
+@{
+    ViewData["Title"] = "Create a Listing";
+    var categories = CategoryService.GetAllProductCategories();
+    var conditions = ConditionService.GetAllProductConditions();
+    var allTags = TagService.GetAllProductTags();
+}
+
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <h1 class="text-3xl font-bold mb-6">Create a Listing</h1>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">What type of listing do you wish to create?</label>
+                <select id="productType" name="productType" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="auction" selected>Auction</option>
+                    <option value="buy" disabled>Buy (Coming Soon)</option>
+                    <option value="borrow" disabled>Borrow (Coming Soon)</option>
+                </select>
+            </div>
+            
+            <div class="mb-5">
+                <label asp-for="Title" class="block text-gray-700 mb-2 font-medium">Title *</label>
+                <input asp-for="Title" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <span asp-validation-for="Title" class="text-red-500 text-sm mt-1"></span>
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Select Category *</label>
+                <select asp-for="CategoryId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    <option value="">-- Select Category --</option>
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-red-500 text-sm mt-1"></span>
+            </div>
+            
+            <div class="mb-5">
+                <label asp-for="Description" class="block text-gray-700 mb-2 font-medium">Description</label>
+                <textarea asp-for="Description" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-red-500 text-sm mt-1"></span>
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Tags</label>
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="tagInput" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Add a tag and press Enter" />
+                    <button type="button" id="addTagBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+                        Add
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">Tags help buyers find your item.</p>
+                <div id="selectedTags" class="flex flex-wrap gap-2 mt-2"></div>
+                <input type="hidden" id="tagIds" name="tagIds" />
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Upload Images</label>
+                <div class="flex items-center space-x-2">
+                    <input type="file" id="imageUpload" accept="image/*" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none" />
+                    <button type="button" id="uploadButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+                        Upload
+                    </button>
+                </div>
+                <div id="imagePreviewContainer" class="flex flex-wrap gap-3 mt-2"></div>
+                <input type="hidden" id="imageUrls" name="imageUrls" />
+                <div id="uploadStatus" class="mt-2"></div>
+            </div>
+            
+            <div class="mb-5">
+                <label class="block text-gray-700 mb-2 font-medium">Select Condition *</label>
+                <select asp-for="ConditionId" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    <option value="">-- Select Condition --</option>
+                    @foreach (var condition in conditions)
+                    {
+                        <option value="@condition.Id">@condition.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="ConditionId" class="text-red-500 text-sm mt-1"></span>
+            </div>
+            
+            <div class="mb-5 auction-field">
+                <label asp-for="StartPrice" class="block text-gray-700 mb-2 font-medium">Starting Price *</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                    <input asp-for="StartPrice" type="number" step="0.01" min="0.01" class="w-full border border-gray-300 rounded px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                </div>
+                <span asp-validation-for="StartPrice" class="text-red-500 text-sm mt-1"></span>
+            </div>
+            
+            <div class="mb-5 auction-field">
+                <label asp-for="EndTime" class="block text-gray-700 mb-2 font-medium">End Auction Date</label>
+                <input asp-for="EndTime" type="datetime-local" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                <span asp-validation-for="EndTime" class="text-red-500 text-sm mt-1"></span>
+            </div>
+            
+            <input type="hidden" asp-for="StartTime" value="@DateTime.Now" />
+            <input type="hidden" asp-for="SellerId" value="1" />
+            <input type="hidden" asp-for="CurrentPrice" id="CurrentPrice" />
+            
+            <div class="mb-5">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Create Listing
+                </button>
+                <a asp-controller="Home" asp-action="Index" class="ml-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const endDateInput = document.getElementById('EndTime');
+            if (!endDateInput.value) {
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 7);
+                endDateInput.value = endDate.toISOString().slice(0, 16);
+            }
+            
+            // Set current price equal to start price
+            const startPriceInput = document.getElementById('StartPrice');
+            const currentPriceInput = document.getElementById('CurrentPrice');
+            
+            startPriceInput.addEventListener('change', function() {
+                currentPriceInput.value = this.value;
+            });
+            
+            // Initial value
+            currentPriceInput.value = startPriceInput.value || 0;
+            
+            // Handle product type change
+            const productTypeSelect = document.getElementById('productType');
+            productTypeSelect.addEventListener('change', function() {
+                const form = document.getElementById('listingForm');
+                
+                // Update form action based on product type
+                switch (this.value) {
+                    case 'auction':
+                        form.action = '@Url.Action("Create", "Home")';
+                        showAuctionFields(true);
+                        break;
+                    case 'buy':
+                        form.action = '@Url.Action("CreateBuyProduct", "Home")';
+                        showAuctionFields(false);
+                        break;
+                    case 'borrow':
+                        form.action = '@Url.Action("CreateBorrowProduct", "Home")';
+                        showAuctionFields(false);
+                        break;
+                }
+            });
+            
+            function showAuctionFields(show) {
+                const auctionFields = document.querySelectorAll('.auction-field');
+                auctionFields.forEach(field => {
+                    field.style.display = show ? 'block' : 'none';
+                });
+            }
+            
+            // COMPLETELY REWRITTEN TAG HANDLING
+            // --------------------------------------
+            const tagInput = document.getElementById('tagInput');
+            const addTagBtn = document.getElementById('addTagBtn');
+            const selectedTags = document.getElementById('selectedTags');
+            const tagIdsInput = document.getElementById('tagIds');
+            
+            // Store selected tag IDs
+            const selectedTagIds = [];
+            
+            // Available tags from the backend
+            const availableTags = @Html.Raw(Json.Serialize(allTags));
+            console.log("Available tags:", availableTags);
+            
+            // Cancel form submission on Enter in tag input
+            tagInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    console.log("Enter key pressed");
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleAddTag();
+                    return false;
+                }
+            });
+            
+            // Add tag button click handler
+            addTagBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                handleAddTag();
+            });
+            
+            // Core function to add a tag
+            function handleAddTag() {
+                const tagText = tagInput.value.trim();
+                console.log("Adding tag:", tagText);
+                
+                if (!tagText) {
+                    console.log("Tag text is empty");
+                    return;
+                }
+                
+                // Find if tag already exists in available tags
+                let tagId, tagTitle, isNew = false;
+                const existingTag = availableTags.find(tag => 
+                    tag.Title && tag.Title.toLowerCase() === tagText.toLowerCase()
+                );
+                
+                if (existingTag) {
+                    tagId = existingTag.Id.toString();
+                    tagTitle = existingTag.Title;
+                    console.log("Found existing tag:", tagTitle, "with ID:", tagId);
+                } else {
+                    tagId = 'new_' + tagText;
+                    tagTitle = tagText;
+                    isNew = true;
+                    console.log("Creating new tag:", tagTitle, "with ID:", tagId);
+                }
+                
+                // Check if tag is already added
+                if (selectedTagIds.includes(tagId)) {
+                    console.log("Tag already added");
+                    tagInput.value = '';
+                    return;
+                }
+                
+                // Add the tag ID to our array
+                selectedTagIds.push(tagId);
+                
+                // Update the hidden input
+                tagIdsInput.value = selectedTagIds.join(',');
+                console.log("Updated tag IDs:", tagIdsInput.value);
+                
+                // Create tag UI element
+                const tagElement = document.createElement('div');
+                tagElement.className = isNew ? 
+                    'bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center' :
+                    'bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center';
+                
+                tagElement.innerHTML = `
+                    <span>${tagTitle}</span>
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none" data-tag-id="${tagId}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                `;
+                
+                // Add remove functionality
+                const removeBtn = tagElement.querySelector('button');
+                removeBtn.addEventListener('click', function() {
+                    const tagIdToRemove = this.getAttribute('data-tag-id');
+                    const index = selectedTagIds.indexOf(tagIdToRemove);
+                    
+                    if (index !== -1) {
+                        selectedTagIds.splice(index, 1);
+                        tagIdsInput.value = selectedTagIds.join(',');
+                        console.log("Removed tag, updated IDs:", tagIdsInput.value);
+                    }
+                    
+                    tagElement.remove();
+                });
+                
+                // Add to DOM
+                selectedTags.appendChild(tagElement);
+                
+                // Clear input
+                tagInput.value = '';
+                
+                // Focus back on input for adding more tags
+                tagInput.focus();
+            }
+            
+            // Image upload handling
+            const imageUpload = document.getElementById('imageUpload');
+            const uploadButton = document.getElementById('uploadButton');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const imageUrlsInput = document.getElementById('imageUrls');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadedUrls = [];
+            
+            uploadButton.addEventListener('click', async function() {
+                if (!imageUpload.files || imageUpload.files.length === 0) {
+                    uploadStatus.innerHTML = '<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 rounded">Please select an image first</div>';
+                    return;
+                }
+                
+                const file = imageUpload.files[0];
+                const formData = new FormData();
+                formData.append('image', file);  // Important: Must match controller parameter name
+                
+                uploadStatus.innerHTML = '<div class="flex items-center"><div class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></div><span>Uploading image...</span></div>';
+                
+                try {
+                    // Make AJAX request to upload the image
+                    const response = await fetch('/api/Images/Upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to upload image');
+                    }
+                    
+                    const data = await response.json();
+                    const imageUrl = data.url;
+                    
+                    if (imageUrl) {
+                        uploadedUrls.push(imageUrl);
+                        
+                        // Create image preview
+                        const imagePreview = document.createElement('div');
+                        imagePreview.className = 'relative';
+                        imagePreview.innerHTML = `
+                            <img src="${imageUrl}" alt="Uploaded image" class="h-24 w-24 object-cover rounded" />
+                            <button type="button" class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2" aria-label="Remove image">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        `;
+                        
+                        imagePreview.querySelector('button').addEventListener('click', function() {
+                            const index = uploadedUrls.indexOf(imageUrl);
+                            if (index !== -1) {
+                                uploadedUrls.splice(index, 1);
+                                updateImageUrlsInput();
+                            }
+                            imagePreview.remove();
+                        });
+                        
+                        imagePreviewContainer.appendChild(imagePreview);
+                        updateImageUrlsInput();
+                        
+                        uploadStatus.innerHTML = '<div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-2 rounded">Image uploaded successfully!</div>';
+                        imageUpload.value = ''; // Clear the file input
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    uploadStatus.innerHTML = `<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 rounded">Error uploading image: ${error.message}</div>`;
+                }
+            });
+            
+            function updateImageUrlsInput() {
+                imageUrlsInput.value = uploadedUrls.join('\n');
+            }
+        });
+    </script>
+} 
