@@ -261,12 +261,43 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         {
             try
             {
+                if (borrowProduct == null)
+                {
+                    throw new ArgumentNullException(nameof(borrowProduct), "BorrowProduct cannot be null");
+                }
+                
+                if (string.IsNullOrWhiteSpace(borrowProduct.Title))
+                {
+                    throw new ArgumentException("Title is required", nameof(borrowProduct.Title));
+                }
+                
+                if (borrowProduct.CategoryId <= 0)
+                {
+                    throw new ArgumentException("CategoryId must be greater than zero", nameof(borrowProduct.CategoryId));
+                }
+                
+                if (borrowProduct.ConditionId <= 0)
+                {
+                    throw new ArgumentException("ConditionId must be greater than zero", nameof(borrowProduct.ConditionId));
+                }
+                
+                if (borrowProduct.DailyRate <= 0)
+                {
+                    throw new ArgumentException("DailyRate must be greater than zero", nameof(borrowProduct.DailyRate));
+                }
+                
                 CreateListing(borrowProduct);
                 return true;
             }
             catch (Exception exception)
             {
-                return false;
+                Console.WriteLine($"Error in CreateBorrowProductAsync: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
+                }
+                
+                throw;
             }
         }
 
