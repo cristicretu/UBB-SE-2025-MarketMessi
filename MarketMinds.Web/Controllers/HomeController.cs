@@ -526,12 +526,7 @@ namespace MarketMinds.Web.Controllers
             ViewBag.Conditions = _conditionService.GetAllProductConditions();
             ViewBag.Tags = _productTagService.GetAllProductTags();
             
-            return View("Create", new BorrowProduct
-            {
-                Categories = _categoryService.GetAllProductCategories(),
-                Conditions = _conditionService.GetAllProductConditions(),
-                Tags = _productTagService.GetAllProductTags()
-            }); // Return to Create view with empty borrow product
+            return View("Create", new BorrowProduct());
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
