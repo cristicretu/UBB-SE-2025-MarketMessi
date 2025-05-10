@@ -19,7 +19,7 @@
     <h1 class="text-3xl font-bold mb-6">Create a Listing</h1>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data" onsubmit="console.log('Form onsubmit triggered for action: ' + this.action);">
+        <form asp-action="Create" method="post" id="listingForm" enctype="multipart/form-data" onsubmit="console.log('Form onsubmit triggered for action: ' + this.action); return false;">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             
             <div class="mb-5">
@@ -29,6 +29,14 @@
                     <option value="buy" disabled>Buy (Coming Soon)</option>
                     <option value="borrow">Borrow</option>
                 </select>
+                
+                <!-- Product type indicators -->
+                <div id="auctionTypeIndicator" class="auction-field mt-2 px-3 py-1 bg-blue-100 text-blue-800 inline-block rounded-full text-sm">
+                    <span class="font-medium">Auction Mode</span> - Set a starting price and end date for bidding
+                </div>
+                <div id="borrowTypeIndicator" class="borrow-field mt-2 px-3 py-1 bg-purple-100 text-purple-800 inline-block rounded-full text-sm" style="display: none;">
+                    <span class="font-medium">Borrow Mode</span> - Set availability dates and daily rates
+                </div>
             </div>
             
             <div class="mb-5">
@@ -137,9 +145,21 @@
             <input type="hidden" asp-for="CurrentPrice" id="CurrentPrice" />
             
             <div class="mb-5">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                    Create Listing
+                <!-- Main submit buttons with icons -->
+                <button type="button" id="auctionSubmitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 auction-field flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    Create Auction Listing
                 </button>
+                
+                <button type="button" id="borrowSubmitBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg text-lg shadow focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 borrow-field flex items-center" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    Create Borrow Listing
+                </button>
+                
                 <a asp-controller="Home" asp-action="Index" class="ml-2 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50">
                     Cancel
                 </a>
@@ -275,54 +295,66 @@
                 }
             }
             
-            // Before form submission, validate based on product type
-            form.addEventListener('submit', function(event) {
-                const productType = productTypeSelect.value;
-                console.log("Form submission attempt - productType:", productType);
+            // Direct button click events with specific form submission
+            document.getElementById('auctionSubmitBtn').addEventListener('click', function(e) {
+                e.preventDefault();
                 
-                if (productType === 'borrow') {
-                    // Check if borrow-specific fields are filled
-                    const availableFrom = document.getElementById('AvailableFrom').value;
-                    const availableTo = document.getElementById('AvailableTo').value;
-                    const dailyRate = document.getElementById('DailyRate').value;
-                    
-                    console.log("Borrow form values:", {
-                        availableFrom,
-                        availableTo,
-                        dailyRate,
-                        formAction: form.action,
-                        method: form.method
-                    });
-                    
-                    if (!availableFrom || !availableTo || !dailyRate) {
-                        event.preventDefault();
-                        alert('Please fill all required fields for borrowing');
-                        console.error("Borrow form validation failed - missing required fields");
-                        return false;
-                    }
-                    
-                    // Set TimeLimit - using AvailableTo as TimeLimit
-                    const timeLimitDate = new Date(availableTo);
-                    document.getElementById('TimeLimit').value = timeLimitDate.toISOString();
-                    
-                    console.log("Borrow form ready for submission", {
-                        productType,
-                        availableFrom,
-                        availableTo,
-                        dailyRate,
-                        timeLimit: document.getElementById('TimeLimit').value,
-                        isBorrowed: document.getElementById('IsBorrowed').value,
-                        formAction: form.action
-                    });
-                    
-                    // Debug log all form fields
-                    const formData = new FormData(form);
-                    const formValues = {};
-                    for (let [key, value] of formData.entries()) {
-                        formValues[key] = value;
-                    }
-                    console.log("All form values being submitted:", formValues);
+                if (productTypeSelect.value !== 'auction') {
+                    console.log("Switching to auction type");
+                    productTypeSelect.value = 'auction';
+                    productTypeSelect.dispatchEvent(new Event('change'));
                 }
+                
+                // Set form action explicitly
+                form.action = '@Url.Action("Create", "Home")';
+                console.log("Auction submit button clicked, form action:", form.action);
+                
+                // Submit the form after a short delay to ensure changes propagate
+                setTimeout(() => {
+                    form.submit();
+                }, 50);
+            });
+            
+            document.getElementById('borrowSubmitBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (productTypeSelect.value !== 'borrow') {
+                    console.log("Switching to borrow type");
+                    productTypeSelect.value = 'borrow';
+                    productTypeSelect.dispatchEvent(new Event('change'));
+                }
+                
+                // Check if borrow-specific fields are filled
+                const availableFrom = document.getElementById('AvailableFrom').value;
+                const availableTo = document.getElementById('AvailableTo').value;
+                const dailyRate = document.getElementById('DailyRate').value;
+                
+                if (!availableFrom || !availableTo || !dailyRate) {
+                    alert('Please fill all required fields for borrowing');
+                    console.error("Borrow form validation failed - missing required fields");
+                    return false;
+                }
+                
+                // Set required values including TimeLimit
+                const timeLimitDate = new Date(availableTo);
+                document.getElementById('TimeLimit').value = timeLimitDate.toISOString();
+                
+                // Set form action explicitly
+                form.action = '@Url.Action("CreateBorrowProduct", "Home")';
+                console.log("Borrow submit button clicked, form action:", form.action);
+                
+                // Debug log all form fields
+                const formData = new FormData(form);
+                const formValues = {};
+                for (let [key, value] of formData.entries()) {
+                    formValues[key] = value;
+                }
+                console.log("Borrow form fields being submitted:", formValues);
+                
+                // Submit the form after a short delay to ensure changes propagate
+                setTimeout(() => {
+                    form.submit();
+                }, 50);
             });
             
             // COMPLETELY REWRITTEN TAG HANDLING

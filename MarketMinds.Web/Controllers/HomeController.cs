@@ -88,6 +88,7 @@ namespace MarketMinds.Web.Controllers
                 {
                     _logger.LogInformation("Creating a new auction product");
                     
+                    // Process tags with error resilience
                     var productTags = new List<ProductTag>();
                     if (!string.IsNullOrEmpty(tagIds))
                     {
@@ -95,36 +96,70 @@ namespace MarketMinds.Web.Controllers
                         var tagIdList = tagIds.Split(',');
                         foreach (var tagId in tagIdList)
                         {
-                            if (tagId.StartsWith("new_"))
+                            try
                             {
-                                var tagTitle = tagId.Substring(4); // Remove "new_" prefix
-                                _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
-                                var newTag = _productTagService.CreateProductTag(tagTitle);
-                                productTags.Add(newTag);
-                            }
-                            else if (int.TryParse(tagId, out int existingTagId))
-                            {
-                                // This is an existing tag
-                                // Get the tag from the service
-                                var allTags = _productTagService.GetAllProductTags();
-                                var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
-                                if (tag != null)
+                                if (tagId.StartsWith("new_"))
                                 {
-                                    productTags.Add(tag);
+                                    var tagTitle = tagId.Substring(4); // Remove "new_" prefix
+                                    _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
+                                    try
+                                    {
+                                        var newTag = _productTagService.CreateProductTag(tagTitle);
+                                        productTags.Add(newTag);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to create new tag '{TagTitle}', skipping it", tagTitle);
+                                        // Don't stop the whole process for a tag creation failure
+                                    }
                                 }
+                                else if (int.TryParse(tagId, out int existingTagId))
+                                {
+                                    try
+                                    {
+                                        var allTags = _productTagService.GetAllProductTags();
+                                        var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
+                                        if (tag != null)
+                                        {
+                                            productTags.Add(tag);
+                                        }
+                                        else
+                                        {
+                                            _logger.LogWarning("Tag with ID {TagId} not found, skipping it", existingTagId);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogWarning(ex, "Failed to process existing tag with ID {TagId}, skipping it", existingTagId);
+                                        // Don't stop the whole process for a tag processing failure
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error processing tag ID: {TagId}", tagId);
+                                // Don't stop the whole process if one tag fails
                             }
                         }
                     }
                     
-                    // Process image URLs if provided
+                    // Process image URLs with error resilience 
                     var productImages = new List<Image>();
                     if (!string.IsNullOrEmpty(imageUrls))
                     {
                         _logger.LogInformation("Processing image URLs: {ImageUrls}", imageUrls);
-                        productImages = _imageUploadService.ParseImagesString(imageUrls);
-                        _logger.LogInformation("Parsed {ImageCount} images", productImages.Count);
-                        // Set the images to the product (implementation may vary based on your model)
-                        auctionProduct.NonMappedImages = productImages.ToList();
+                        try
+                        {
+                            productImages = _imageUploadService.ParseImagesString(imageUrls);
+                            _logger.LogInformation("Parsed {ImageCount} images", productImages.Count);
+                            // Set the images to the product (implementation may vary based on your model)
+                            auctionProduct.NonMappedImages = productImages.ToList();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error parsing image URLs");
+                            // Continue without images rather than failing the entire request
+                        }
                     }
                     
                     if (auctionProduct.SellerId <= 0)
@@ -345,7 +380,7 @@ namespace MarketMinds.Web.Controllers
                 borrowProduct.EndDate = DateTime.Now.AddMonths(1);
             }
             
-            // Process tags
+            // Process tags - Error resilient version that won't fail the entire request if tag processing fails
             var productTags = new List<ProductTag>();
             if (!string.IsNullOrEmpty(tagIds))
             {
@@ -353,21 +388,49 @@ namespace MarketMinds.Web.Controllers
                 var tagIdList = tagIds.Split(',');
                 foreach (var tagId in tagIdList)
                 {
-                    if (tagId.StartsWith("new_"))
+                    try
                     {
-                        var tagTitle = tagId.Substring(4); // Remove "new_" prefix
-                        _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
-                        var newTag = _productTagService.CreateProductTag(tagTitle);
-                        productTags.Add(newTag);
-                    }
-                    else if (int.TryParse(tagId, out int existingTagId))
-                    {
-                        var allTags = _productTagService.GetAllProductTags();
-                        var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
-                        if (tag != null)
+                        if (tagId.StartsWith("new_"))
                         {
-                            productTags.Add(tag);
+                            var tagTitle = tagId.Substring(4); // Remove "new_" prefix
+                            _logger.LogInformation("Creating new tag: {TagTitle}", tagTitle);
+                            try
+                            {
+                                var newTag = _productTagService.CreateProductTag(tagTitle);
+                                productTags.Add(newTag);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to create new tag '{TagTitle}', skipping it", tagTitle);
+                                // Don't stop the whole process for a tag creation failure
+                            }
                         }
+                        else if (int.TryParse(tagId, out int existingTagId))
+                        {
+                            try
+                            {
+                                var allTags = _productTagService.GetAllProductTags();
+                                var tag = allTags.FirstOrDefault(t => t.Id == existingTagId);
+                                if (tag != null)
+                                {
+                                    productTags.Add(tag);
+                                }
+                                else
+                                {
+                                    _logger.LogWarning("Tag with ID {TagId} not found, skipping it", existingTagId);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to process existing tag with ID {TagId}, skipping it", existingTagId);
+                                // Don't stop the whole process for a tag processing failure
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing tag ID: {TagId}", tagId);
+                        // Don't stop the whole process if one tag fails
                     }
                 }
             }
@@ -377,9 +440,17 @@ namespace MarketMinds.Web.Controllers
             if (!string.IsNullOrEmpty(imageUrls))
             {
                 _logger.LogInformation("Processing image URLs: {ImageUrls}", imageUrls);
-                productImages = _imageUploadService.ParseImagesString(imageUrls);
-                _logger.LogInformation("Parsed {ImageCount} images", productImages.Count);
-                borrowProduct.NonMappedImages = productImages.ToList();
+                try
+                {
+                    productImages = _imageUploadService.ParseImagesString(imageUrls);
+                    _logger.LogInformation("Parsed {ImageCount} images", productImages.Count);
+                    borrowProduct.NonMappedImages = productImages.ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error parsing image URLs");
+                    // Continue without images rather than failing the entire request
+                }
             }
             
             if (ModelState.IsValid)
