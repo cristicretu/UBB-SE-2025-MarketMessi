@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Shopping Basket";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Shopping Basket</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-lg text-gray-600">
+            Your shopping basket is currently empty.
+        </p>
+        
+        <div class="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <p class="text-blue-700">
+                <strong>Note:</strong> Shopping basket functionality is under development. Check back soon!
+            </p>
+        </div>
+        
+        <div class="mt-8">
+            <a href="@Url.Action("Index", "Home")" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Continue Shopping
+            </a>
+        </div>
+    </div>
+</div> 

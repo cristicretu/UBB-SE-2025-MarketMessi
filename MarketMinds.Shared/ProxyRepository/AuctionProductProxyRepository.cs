@@ -34,33 +34,84 @@ namespace MarketMinds.Shared.ProxyRepository
                 throw new ArgumentException("Product must be an AuctionProduct.", nameof(product));
             }
             
+            if (string.IsNullOrWhiteSpace(auctionProduct.Title))
+            {
+                throw new ArgumentException("Title cannot be empty", nameof(auctionProduct.Title));
+            }
+
+            if (auctionProduct.CategoryId <= 0)
+            {
+                throw new ArgumentException("CategoryId must be specified", nameof(auctionProduct.CategoryId));
+            }
+
+            if (auctionProduct.ConditionId <= 0)
+            {
+                throw new ArgumentException("ConditionId must be specified", nameof(auctionProduct.ConditionId));
+            }
+
+            if (auctionProduct.StartPrice <= 0)
+            {
+                throw new ArgumentException("StartPrice must be greater than zero", nameof(auctionProduct.StartPrice));
+            }
+
+            // Ensure we have a valid SellerId
+            if (auctionProduct.SellerId <= 0)
+            {
+                // For demo purposes, use a default SellerId if none provided
+                auctionProduct.SellerId = 1;
+            }
+            
+            // Filter out any null URLs in images
+            var imagesList = new List<object>();
+            if (auctionProduct.NonMappedImages != null && auctionProduct.NonMappedImages.Any())
+            {
+                imagesList = auctionProduct.NonMappedImages
+                    .Where(img => !string.IsNullOrWhiteSpace(img.Url))
+                    .Select(img => new { Url = img.Url })
+                    .Cast<object>()
+                    .ToList();
+            }
+            else if (auctionProduct.Images != null && auctionProduct.Images.Any())
+            {
+                imagesList = auctionProduct.Images
+                    .Where(img => !string.IsNullOrWhiteSpace(img.Url))
+                    .Select(img => new { Url = img.Url })
+                    .Cast<object>()
+                    .ToList();
+            }
+            
             var productToSend = new
             {
                 auctionProduct.Title,
-                auctionProduct.Description,
-                SellerId = auctionProduct.Seller?.Id ?? 0,
-                ConditionId = auctionProduct.Condition?.Id,
-                CategoryId = auctionProduct.Category?.Id,
+                Description = auctionProduct.Description ?? string.Empty,
+                SellerId = auctionProduct.SellerId,
+                ConditionId = auctionProduct.ConditionId,
+                CategoryId = auctionProduct.CategoryId,
                 StartTime = auctionProduct.StartTime,
                 EndTime = auctionProduct.EndTime,
                 StartPrice = auctionProduct.StartPrice,
                 CurrentPrice = auctionProduct.CurrentPrice,
-                Images = auctionProduct.Images == null || !auctionProduct.Images.Any()
-                       ? (auctionProduct.NonMappedImages != null && auctionProduct.NonMappedImages.Any()
-                          ? auctionProduct.NonMappedImages.Select(img => new { Url = img.Url ?? string.Empty }).Cast<object>().ToList()
-                          : new List<object>())
-                       : auctionProduct.Images.Select(img => new { img.Url }).Cast<object>().ToList()
+                Images = imagesList
             };
 
-            var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var errorContent = response.Content.ReadAsStringAsync().Result;
-                response.EnsureSuccessStatusCode();
-            }
-            else
-            {
+                var response = httpClient.PostAsJsonAsync("auctionproducts", productToSend).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = response.Content.ReadAsStringAsync().Result;
+                    throw new HttpRequestException($"Failed to create auction product. Status: {(int)response.StatusCode} {response.ReasonPhrase}. Error: {errorContent}");
+                }
+                
                 var responseContent = response.Content.ReadAsStringAsync().Result;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error creating auction product: {ex.Message}", ex);
             }
         }
 

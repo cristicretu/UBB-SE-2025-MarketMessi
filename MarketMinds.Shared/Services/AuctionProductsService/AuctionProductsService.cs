@@ -333,7 +333,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             }
             catch (Exception exception)
             {
-                return false;
+                throw new Exception($"Error creating auction product: {exception.Message}", exception);
             }
         }
 
