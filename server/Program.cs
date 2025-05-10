@@ -36,8 +36,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddSingleton<DataBaseConnection>();
 
 // EntityFramework database connection setup
+var initialCatalog = builder.Configuration["InitialCatalog"];
+var localDataSource = builder.Configuration["LocalDataSource"];
+var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;";
 builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // Register all repositories
 builder.Services.AddScoped<IAuctionProductsRepository, AuctionProductsRepository>();
@@ -66,14 +69,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-// Initialize the database with test data
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    DbInitializer.Initialize(context);
-}
 
 if (app.Environment.IsDevelopment())
 {
