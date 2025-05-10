@@ -7,21 +7,28 @@ using Microsoft.EntityFrameworkCore;
 using DataAccessLayer;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.IRepository;
+using Microsoft.AspNetCore.Identity;
 
 namespace Server.MarketMinds.Repositories.AccountRepository
 {
     public class AccountRepository : IAccountRepository
     {
         private readonly DataAccessLayer.ApplicationDbContext context;
+        private readonly UserManager<User> userManager;
 
-        public AccountRepository(DataAccessLayer.ApplicationDbContext context)
+        public AccountRepository(
+            DataAccessLayer.ApplicationDbContext context,
+            UserManager<User> userManager)
         {
             this.context = context;
+            this.userManager = userManager;
         }
 
         public async Task<User> GetUserByIdAsync(int userId)
         {
-            var user = await context.Users.FindAsync(userId);
+            // Convert int ID to string for Identity
+            var stringId = userId.ToString();
+            var user = await userManager.FindByIdAsync(stringId);
             return user;
         }
 
@@ -88,9 +95,9 @@ namespace Server.MarketMinds.Repositories.AccountRepository
 
             try
             {
-                context.Entry(user).State = EntityState.Modified;
-                await context.SaveChangesAsync();
-                return true;
+                // Use Identity UserManager to update user
+                var result = await userManager.UpdateAsync(user);
+                return result.Succeeded;
             }
             catch (Exception)
             {
@@ -112,7 +119,7 @@ namespace Server.MarketMinds.Repositories.AccountRepository
             }
 
             // Get user to make sure they exist
-            var user = await context.Users.FindAsync(userId);
+            var user = await GetUserByIdAsync(userId);
             if (user == null)
             {
                 throw new ArgumentException($"User with ID {userId} not found", nameof(userId));

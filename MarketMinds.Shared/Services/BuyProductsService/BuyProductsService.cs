@@ -66,7 +66,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 throw new ArgumentException("Price cannot be negative.", nameof(product.Price));
             }
 
-            if (product.Seller == null || product.Seller.Id == 0)
+            if (product.Seller == null || product.Seller.IntId == 0)
             {
                 throw new ArgumentException("Valid seller is required.", nameof(product.Seller));
             }
@@ -77,7 +77,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 {
                     product.Title,
                     product.Description,
-                    SellerId = product.Seller?.Id ?? 0,
+                    SellerId = product.Seller?.IntId ?? 0,
                     ConditionId = product.Condition?.Id,
                     CategoryId = product.Category?.Id,
                     product.Price,

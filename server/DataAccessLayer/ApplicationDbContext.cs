@@ -1,17 +1,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using MarketMinds.Shared.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Server.DataAccessLayer
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<Condition> ProductConditions { get; set; }
         public DbSet<Category> ProductCategories { get; set; }
         public DbSet<ProductTag> ProductTags { get; set; }
@@ -45,17 +46,57 @@ namespace Server.DataAccessLayer
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Call base method first to set up Identity tables
             base.OnModelCreating(modelBuilder);
 
-            // Configure entity relationships and constraints
-            // Users
-            modelBuilder.Entity<User>().ToTable("Users");
-            modelBuilder.Entity<User>().HasKey(user => user.Id);
-            modelBuilder.Entity<User>().Property(user => user.Email).IsRequired();
-            modelBuilder.Entity<User>().Property(user => user.Username).IsRequired();
-            modelBuilder.Entity<User>().HasIndex(user => user.Email).IsUnique();
-            modelBuilder.Entity<User>().HasIndex(user => user.Username).IsUnique();
+            // Customize the ASP.NET Identity model
+            modelBuilder.Entity<User>(entity =>
+            {
+                // Map User entity to Users table
+                entity.ToTable("Users");
+                entity.Property(user => user.Email).IsRequired();
+                entity.Property(user => user.UserName).IsRequired();
+                entity.HasIndex(user => user.Email).IsUnique();
+                entity.HasIndex(user => user.UserName).IsUnique();
+                
+                // Define LegacyId as an alternate key for compatibility
+                entity.HasAlternateKey(user => user.LegacyId);
+            });
 
+            // Update all relationships that previously used User.Id to now use User.LegacyId
+            
+            // Configure AuctionProduct -> User relationship via LegacyId
+            modelBuilder.Entity<AuctionProduct>()
+                .HasOne(ap => ap.Seller)
+                .WithMany(u => u.SellingItems)
+                .HasForeignKey(ap => ap.SellerId)
+                .HasPrincipalKey(u => u.LegacyId);
+            
+            // Configure Bid -> User (Bidder) relationship via LegacyId
+            modelBuilder.Entity<Bid>()
+                .HasOne(b => b.Bidder)
+                .WithMany(u => u.Bids)
+                .HasForeignKey(b => b.BidderId)
+                .HasPrincipalKey(u => u.LegacyId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Order -> User (Seller) relationship via LegacyId
+            modelBuilder.Entity<Order>()
+                .HasOne(order => order.Seller)
+                .WithMany()
+                .HasForeignKey(order => order.SellerId)
+                .HasPrincipalKey(u => u.LegacyId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Message -> User relationship via LegacyId
+            modelBuilder.Entity<Message>()
+                .HasOne(message => message.User)
+                .WithMany()
+                .HasForeignKey(message => message.UserId)
+                .HasPrincipalKey(u => u.LegacyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure entity relationships and constraints
             // Reviews
             modelBuilder.Entity<Review>().ToTable("Reviews");
             modelBuilder.Entity<Review>().HasKey(review => review.Id);
@@ -90,15 +131,6 @@ namespace Server.DataAccessLayer
 
             modelBuilder.Entity<AuctionProductProductTag>().ToTable("AuctionProductProductTags");
             modelBuilder.Entity<AuctionProductProductTag>().HasKey(productTag => productTag.Id);
-
-            modelBuilder.Entity<Bid>().ToTable("Bids");
-            modelBuilder.Entity<Bid>().HasKey(bid => bid.Id);
-
-            modelBuilder.Entity<Bid>()
-                .HasOne(b => b.Bidder)
-                .WithMany(u => u.Bids)
-                .HasForeignKey(b => b.BidderId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // Buy products
             modelBuilder.Entity<BuyProduct>().ToTable("BuyProducts");
@@ -197,31 +229,13 @@ namespace Server.DataAccessLayer
             modelBuilder.Entity<Order>().Property(order => order.SellerId).IsRequired();
             modelBuilder.Entity<Order>().Property(order => order.BuyerId).IsRequired();
 
-            modelBuilder.Entity<Order>()
-                .HasOne(order => order.Seller)
-                .WithMany()
-                .HasForeignKey(order => order.SellerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // modelBuilder.Entity<Order>()
-            //     .HasOne(order => order.Buyer)
-            //     .WithMany()
-            //     .HasForeignKey(order => order.BuyerId)
-            //     .OnDelete(DeleteBehavior.Restrict); // Would fail if BuyerId is -1
             // Conversations
             modelBuilder.Entity<Conversation>().ToTable("Conversations");
             modelBuilder.Entity<Conversation>().HasKey(conversation => conversation.Id);
 
             // Messages
             modelBuilder.Entity<Message>().ToTable("Messages");
-
             modelBuilder.Entity<Message>().HasKey(message => message.Id);
-
-            modelBuilder.Entity<Message>()
-                .HasOne(message => message.User)
-                .WithMany()
-                .HasForeignKey(message => message.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

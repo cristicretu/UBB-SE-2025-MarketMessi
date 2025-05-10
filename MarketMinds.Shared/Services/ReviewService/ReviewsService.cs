@@ -41,7 +41,7 @@ namespace MarketMinds.Shared.Services.ReviewService
 
         private async Task<string> GetUsernameForIdAsync(int userId)
         {
-            if (currentUser != null && currentUser.Id == userId)
+            if (currentUser != null && currentUser.LegacyId == userId)
             {
                 return currentUser.Username;
             }
@@ -87,7 +87,8 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
-                var jsonResponse = repository.GetReviewsBySellerRaw(seller.Id);
+                var sellerId = seller.LegacyId;
+                var jsonResponse = repository.GetReviewsBySellerRaw(sellerId);
                 var sharedReviews = JsonSerializer.Deserialize<List<Review>>(jsonResponse, jsonOptions);
                 var domainReviews = new List<Review>();
 
@@ -124,7 +125,8 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             try
             {
-                var jsonResponse = repository.GetReviewsByBuyerRaw(buyer.Id);
+                var buyerId = buyer.LegacyId;
+                var jsonResponse = repository.GetReviewsByBuyerRaw(buyerId);
                 var sharedReviews = JsonSerializer.Deserialize<List<Review>>(jsonResponse, jsonOptions);
                 var domainReviews = new List<Review>();
 
@@ -180,8 +182,8 @@ namespace MarketMinds.Shared.Services.ReviewService
                     Description = description,
                     Images = ConvertToSharedImages(images ?? new List<Image>()),
                     Rating = validRating,
-                    SellerId = seller.Id,
-                    BuyerId = buyer.Id
+                    SellerId = seller.LegacyId,
+                    BuyerId = buyer.LegacyId
                 };
 
                 repository.CreateReviewRaw(reviewToCreate);
@@ -296,7 +298,7 @@ namespace MarketMinds.Shared.Services.ReviewService
 
             return new MarketMinds.Shared.Models.User
             {
-                Id = domainUser.Id,
+                LegacyId = domainUser.LegacyId,
                 Username = domainUser.Username,
                 Email = domainUser.Email,
                 PasswordHash = domainUser.PasswordHash,

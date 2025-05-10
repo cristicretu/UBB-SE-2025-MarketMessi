@@ -40,7 +40,7 @@ namespace MarketMinds.Shared.ProxyRepository
             {
                 borrowProduct.Title,
                 borrowProduct.Description,
-                SellerId = borrowProduct.Seller?.Id ?? 0,
+                SellerId = borrowProduct.Seller?.IntId ?? 0,
                 ConditionId = borrowProduct.Condition?.Id,
                 CategoryId = borrowProduct.Category?.Id,
                 borrowProduct.DailyRate,

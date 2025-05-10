@@ -2,24 +2,52 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace MarketMinds.Shared.Models
 {
     [Table("Users")]
-    public class User
+    public class User : IdentityUser
     {
-        [Key]
-        [Column("id")]
-        public int Id { get; set; }
+        // Identity properties are inherited:
+        // Id (string), UserName, NormalizedUserName, Email, NormalizedEmail
+        // PasswordHash, SecurityStamp, ConcurrencyStamp, PhoneNumber, etc.
 
+        // Keep legacy integer ID as a separate column for backwards compatibility
+        [Column("legacy_id")]
+        public int LegacyId { get; set; }
+
+        // For backward compatibility with code that expects Id to be an int
+        [NotMapped]
+        public int IntId 
+        { 
+            get => LegacyId;
+            set => LegacyId = value; 
+        }
+
+        // Override UserName for compatibility with existing Username property
+        [NotMapped]
+        public new string UserName
+        {
+            get => base.UserName ?? string.Empty;
+            set => base.UserName = value;
+        }
+
+        // Keep existing Username property but map it to UserName
         [Column("username")]
-        public string Username { get; set; }
+        public string Username
+        {
+            get => UserName;
+            set => UserName = value;
+        }
 
-        [Column("email")]
-        public string Email { get; set; }
-
-        [Column("passwordHash")]
-        public string? PasswordHash { get; set; }
+        // Override PasswordHash to maintain compatibility
+        [NotMapped]
+        public new string PasswordHash
+        {
+            get => base.PasswordHash ?? string.Empty;
+            set => base.PasswordHash = value;
+        }
 
         [NotMapped]
         public string Password { get; set; } = string.Empty;
@@ -44,8 +72,6 @@ namespace MarketMinds.Shared.Models
 
         public User()
         {
-            Username = string.Empty;
-            Email = string.Empty;
             Token = string.Empty;
             Password = string.Empty;
             SellingItems = new List<AuctionProduct>();
@@ -54,7 +80,7 @@ namespace MarketMinds.Shared.Models
 
         public User(string username, string email, string passwordHash)
         {
-            Username = username;
+            UserName = username;
             Email = email;
             PasswordHash = passwordHash;
             Token = string.Empty;
@@ -63,10 +89,10 @@ namespace MarketMinds.Shared.Models
             Bids = new List<Bid>();
         }
 
-        public User(int id, string username, string email, string token)
+        public User(int legacyId, string username, string email, string token)
         {
-            Id = id;
-            Username = username;
+            LegacyId = legacyId;
+            UserName = username;
             Email = email;
             Token = token;
             Password = string.Empty;

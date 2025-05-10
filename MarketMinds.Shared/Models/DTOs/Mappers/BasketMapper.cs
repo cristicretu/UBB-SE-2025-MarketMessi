@@ -11,19 +11,65 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
         private static int undefined_balance = 0;
         private static int undefined_rating = 0;
         private static int undefined_password = 0;
-        public static BasketDTO ToDTO(Basket basket)
+        public static BasketDTO ToDTO(Basket entity)
         {
-            if (basket == null)
+            if (entity == null)
             {
                 return null;
             }
 
             return new BasketDTO
             {
-                Id = basket.Id,
-                BuyerId = basket.BuyerId,
-                Items = basket.Items?.Select(item => ToDTO(item)).ToList() ?? new List<BasketItemDTO>()
+                Id = entity.Id,
+                BuyerId = entity.BuyerId,
+                Items = entity.Items?.Select(i => new BasketItemDTO
+                {
+                    Id = i.Id,
+                    ProductId = i.ProductId,
+                    BasketId = i.BasketId,
+                    Quantity = i.Quantity,
+                    Price = i.Price,
+                    Product = i.Product != null ? new ProductDTO
+                    {
+                        Id = i.Product.Id,
+                        Title = i.Product.Title,
+                        Description = i.Product.Description,
+                        Price = i.Product.Price,
+                        Seller = i.Product.Seller != null ? new UserDTO
+                        {
+                            Id = i.Product.Seller.LegacyId,
+                            Username = i.Product.Seller.Username,
+                            Email = i.Product.Seller.Email,
+                            UserType = 0,
+                            Balance = 0,
+                            Rating = 0,
+                            Password = 0
+                        } : null,
+                        Condition = i.Product.Condition != null ? new ConditionDTO
+                        {
+                            Id = i.Product.Condition.Id,
+                            DisplayTitle = i.Product.Condition.Name,
+                            Description = i.Product.Condition.Description
+                        } : null,
+                        Category = i.Product.Category != null ? new CategoryDTO
+                        {
+                            Id = i.Product.Category.Id,
+                            DisplayTitle = i.Product.Category.Name,
+                            Description = i.Product.Category.Description
+                        } : null,
+                        Images = i.Product.Images?.Select(img => new ImageDTO
+                        {
+                            Url = img.Url
+                        }).ToList() ?? new List<ImageDTO>(),
+                        Tags = new List<ProductTagDTO>()
+                    } : null
+                }).ToList() ?? new List<BasketItemDTO>()
             };
+        }
+
+        public static List<BasketDTO> ToDTOList(IEnumerable<Basket> entities)
+        {
+            return entities?.Select(e => ToDTO(e)).ToList() ?? new List<BasketDTO>();
         }
 
         public static BasketItemDTO ToDTO(BasketItem item)
@@ -59,7 +105,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 Price = product.Price,
                 Seller = product.Seller != null ? new UserDTO
                 {
-                    Id = product.Seller.Id,
+                    Id = product.Seller.LegacyId,
                     Username = product.Seller.Username,
                     Email = product.Seller.Email,
                     // Set default values for other UserDTO properties
@@ -94,6 +140,5 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 }).ToList() ?? new List<ImageDTO>()
             };
         }
-
     }
 }

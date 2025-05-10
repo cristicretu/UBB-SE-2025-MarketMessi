@@ -36,7 +36,7 @@ namespace MarketMinds.Shared.Models
 
         public UserDto(MarketMinds.Shared.Models.User user)
         {
-            Id = user.Id;
+            Id = user.LegacyId;
             Username = user.Username;
             Email = user.Email;
             PasswordHash = user.PasswordHash ?? string.Empty;
@@ -49,7 +49,7 @@ namespace MarketMinds.Shared.Models
         {
             var user = new MarketMinds.Shared.Models.User(Username, Email, PasswordHash)
             {
-                Id = Id,
+                LegacyId = Id,
                 UserType = UserType,
                 Balance = Balance,
                 Rating = Rating

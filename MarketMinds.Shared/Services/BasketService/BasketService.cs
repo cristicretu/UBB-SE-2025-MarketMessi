@@ -111,7 +111,7 @@ namespace MarketMinds.Shared.Services.BasketService
 
         public Basket GetBasketByUser(User user)
         {
-            if (user == null || user.Id <= MINIMUM_USER_ID)
+            if (user == null || user.IntId <= MINIMUM_USER_ID)
             {
                 throw new ArgumentException("Valid user must be provided");
             }
@@ -121,7 +121,7 @@ namespace MarketMinds.Shared.Services.BasketService
                 if (basketRepository.GetType().Name.Contains("Proxy"))
                 {
                     // Use the proxy repository to get the raw JSON response
-                    var responseJson = ((BasketProxyRepository)basketRepository).GetBasketByUserRaw(user.Id);
+                    var responseJson = ((BasketProxyRepository)basketRepository).GetBasketByUserRaw(user.IntId);
 
                     try
                     {
@@ -153,7 +153,7 @@ namespace MarketMinds.Shared.Services.BasketService
                         {
                             foreach (var item in basket.Items)
                             {
-                                if (item.Product != null && item.ProductId == MINIMUM_PRODUCT_ID)
+                                if (item.Product != null && item.ProductId <= MINIMUM_PRODUCT_ID)
                                 {
                                     // If ProductId is not set, set it from the Product object
                                     item.ProductId = item.Product.Id;
@@ -166,14 +166,14 @@ namespace MarketMinds.Shared.Services.BasketService
                     catch (JsonException ex)
                     {
                         // Try to fallback to a simpler deserialization
-                        var fallbackBasket = new Basket { Id = user.Id, Items = new List<BasketItem>() };
+                        var fallbackBasket = new Basket { Id = user.IntId, Items = new List<BasketItem>() };
                         return fallbackBasket;
                     }
                 }
                 else
                 {
                     // Use the standard interface method
-                    return basketRepository.GetBasketByUserId(user.Id);
+                    return basketRepository.GetBasketByUserId(user.IntId);
                 }
             }
             catch (HttpRequestException ex)
@@ -200,7 +200,7 @@ namespace MarketMinds.Shared.Services.BasketService
             {
                 foreach (var item in basket.Items)
                 {
-                    if (item.Product != null && item.ProductId == MINIMUM_PRODUCT_ID)
+                    if (item.Product != null && item.ProductId <= MINIMUM_PRODUCT_ID)
                     {
                         // If ProductId is not set, set it from the Product object
                         item.ProductId = item.Product.Id;
@@ -223,7 +223,7 @@ namespace MarketMinds.Shared.Services.BasketService
             // Ensure each item has ProductId set
             foreach (var item in items)
             {
-                if (item.Product != null && item.ProductId == MINIMUM_ITEM_ID)
+                if (item.Product != null && item.ProductId <= MINIMUM_PRODUCT_ID)
                 {
                     // If ProductId is not set, set it from the Product object
                     item.ProductId = item.Product.Id;
@@ -829,7 +829,7 @@ namespace MarketMinds.Shared.Services.BasketService
                 {
                     foreach (var item in basketEntity.Items)
                     {
-                        if (item.Product != null && item.ProductId == MINIMUM_PRODUCT_ID)
+                        if (item.Product != null && item.ProductId <= MINIMUM_PRODUCT_ID)
                         {
                             // If ProductId is not set, set it from the Product object
                             item.ProductId = item.Product.Id;

@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.IO;
 using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.Models.Helpers;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
@@ -197,16 +198,25 @@ public class ChatbotService : IChatbotService
                 return "Hello! I'm your shopping assistant. How can I help you today?";
             }
 
-            int? userId = currentUser?.Id;
+            int userId = currentUser?.LegacyId ?? 0;
             var apiKey = GetGeminiApiKey();
             var hasApiKey = !string.IsNullOrEmpty(apiKey);
-            if (userId == null || !hasApiKey)
+            
+            // If no API key is found or no user ID is available, fall back to repository
+            // But this should return generic message or error
+            if (userId == 0 || !hasApiKey)
             {
+                if (hasApiKey)
+                {
+                    // We have API key but no user ID, so we can use Gemini with generic context
+                    return await GetGenericResponseAsync(userMessage);
+                }
+                // No API key available, resort to repository
                 var repoResponse = await chatbotRepository.GetBotResponseAsync(userMessage, userId);
                 return repoResponse;
             }
 
-            if (userId.Value < MINIMUM_USER_ID)
+            if (userId < MINIMUM_USER_ID)
             {
                 return await GetGenericResponseAsync(userMessage);
             }
@@ -214,11 +224,16 @@ public class ChatbotService : IChatbotService
             string userContext;
             try 
             {
-                userContext = await GetUserContextAsync(userId.Value);      
+                userContext = await GetUserContextAsync(userId);      
             }
             catch (Exception exception) 
             {
-                return await chatbotRepository.GetBotResponseAsync(userMessage, userId);
+                // On error, try to use Gemini without context
+                if (hasApiKey)
+                {
+                    return await GetGenericResponseAsync(userMessage);
+                }
+                return "I'm sorry, I couldn't retrieve your information at this time.";
             }
 
             string prompt = FormatPromptWithContext(userContext);
@@ -235,101 +250,74 @@ public class ChatbotService : IChatbotService
     {
         try
         {
-            if (userId <= 0)
-            {
-                return "No valid user ID provided.";
-            }
-
-            var user = await chatbotRepository.GetUserAsync(userId);
-            if (user == null)
-            {
-                return $"User with ID {userId} not found.";
-            }
-
+            // Get user data
             var basket = await chatbotRepository.GetUserBasketAsync(userId);
-            List<BasketItem> basketItems = null;
-            Dictionary<int, BuyProduct> products = new Dictionary<int, BuyProduct>();
+            var basketItems = await chatbotRepository.GetBasketItemsAsync(basket?.Id ?? -1);
+            var productIds = basketItems?.Select(bi => bi.ProductId).ToList() ?? new List<int>();
+            var products = new Dictionary<int, BuyProduct>();
             
-            if (basket != null)
+            // Get products individually since we don't have a batch method
+            foreach (var productId in productIds)
             {
-                basketItems = await chatbotRepository.GetBasketItemsAsync(basket.Id);
-                
-                foreach (var item in basketItems)
+                var product = await chatbotRepository.GetBuyProductAsync(productId);
+                if (product != null)
                 {
-                    if (!products.ContainsKey(item.ProductId))
-                    {
-                        var product = await chatbotRepository.GetBuyProductAsync(item.ProductId);
-                        if (product != null)
-                        {
-                            products[item.ProductId] = product;
-                        }
-                    }
+                    products[product.Id] = product;
                 }
             }
-            
+
+            // Get reviews the user has given
             var reviewsGiven = await chatbotRepository.GetReviewsGivenByUserAsync(userId);
+
+            // Get reviews the user has received
+            var reviewsReceived = await chatbotRepository.GetReviewsReceivedByUserAsync(userId);
+
+            // Get unique seller/buyer IDs from all the reviews
             var sellerIds = reviewsGiven.Select(r => r.SellerId).Distinct().ToList();
+            var buyerIds = reviewsReceived.Select(r => r.BuyerId).Distinct().ToList();
+
+            // Get seller/buyer user info
             var sellers = new Dictionary<int, User>();
-            
             foreach (var sellerId in sellerIds)
             {
                 var seller = await chatbotRepository.GetUserByIdAsync(sellerId);
                 if (seller != null)
                 {
-                    sellers[sellerId] = seller;
+                    sellers[seller.LegacyId] = seller;
                 }
             }
             
-            var reviewsReceived = await chatbotRepository.GetReviewsReceivedByUserAsync(userId);
-            var buyerIds = reviewsReceived.Select(r => r.BuyerId).Distinct().ToList();
             var buyers = new Dictionary<int, User>();
-            
             foreach (var buyerId in buyerIds)
             {
                 var buyer = await chatbotRepository.GetUserByIdAsync(buyerId);
                 if (buyer != null)
                 {
-                    buyers[buyerId] = buyer;
-                }
-            }
-            
-            var buyerOrders = await chatbotRepository.GetBuyerOrdersAsync(userId);
-            var sellerIdsFromOrders = buyerOrders.Select(o => o.SellerId).Distinct().ToList();
-            
-            foreach (var sellerId in sellerIdsFromOrders)
-            {
-                if (!sellers.ContainsKey(sellerId))
-                {
-                    var seller = await chatbotRepository.GetUserByIdAsync(sellerId);
-                    if (seller != null)
-                    {
-                        sellers[sellerId] = seller;
-                    }
-                }
-            }
-            
-            var sellerOrders = await chatbotRepository.GetSellerOrdersAsync(userId);
-            var buyerIdsFromOrders = sellerOrders.Select(o => o.BuyerId).Distinct().ToList();
-            
-            foreach (var buyerId in buyerIdsFromOrders)
-            {
-                if (!buyers.ContainsKey(buyerId))
-                {
-                    var buyer = await chatbotRepository.GetUserByIdAsync(buyerId);
-                    if (buyer != null)
-                    {
-                        buyers[buyerId] = buyer;
-                    }
+                    buyers[buyer.LegacyId] = buyer;
                 }
             }
 
-            return FormatUserContext(user, basket, basketItems, products, 
-                reviewsGiven, sellers, reviewsReceived, buyers, 
-                buyerOrders, sellerOrders);
+            // Get orders
+            var buyerOrders = await chatbotRepository.GetBuyerOrdersAsync(userId);
+            var sellerOrders = await chatbotRepository.GetSellerOrdersAsync(userId);
+
+            return FormatUserContext(
+                currentUser,
+                basket,
+                basketItems,
+                products,
+                reviewsGiven,
+                sellers,
+                reviewsReceived,
+                buyers,
+                buyerOrders,
+                sellerOrders
+            );
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            return "Error retrieving user information. Please try again later.";
+            Console.WriteLine($"Error getting user context: {exception.Message}");
+            return "Failed to retrieve user context";
         }
     }
 

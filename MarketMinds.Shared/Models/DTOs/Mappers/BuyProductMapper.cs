@@ -28,7 +28,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 {
                     Id = entity.Condition.Id,
                     DisplayTitle = entity.Condition.Name,
-                    Description = null
+                    Description = entity.Condition.Description
                 }
                 : null,
                 Category = entity.Category != null ? new CategoryDTO
@@ -38,10 +38,10 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                     Description = entity.Category.Description
                 }
                 : null,
-                Tags = entity.ProductTags?.Select(pt => new ProductTagDTO
+                Tags = entity.ProductTags?.Select(t => new ProductTagDTO
                 {
-                    Id = pt.Tag.Id,
-                    DisplayTitle = pt.Tag.Title
+                    Id = t.Tag.Id,
+                    DisplayTitle = t.Tag.Title
                 }).ToList() ?? new List<ProductTagDTO>(),
                 Images = entity.Images?.Select(i => new ImageDTO
                 {
@@ -54,7 +54,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 new List<ImageDTO>(),
                 Seller = entity.Seller != null ? new UserDTO
                 {
-                    Id = entity.Seller.Id,
+                    Id = entity.Seller.LegacyId,
                     Username = entity.Seller.Username,
                     Email = entity.Seller.Email,
                     UserType = undefined_user_type,

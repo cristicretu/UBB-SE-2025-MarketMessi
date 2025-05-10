@@ -26,7 +26,7 @@ namespace MarketMinds.Shared.Services.ReviewCreationService
             }
 
             reviewsService.AddReview(description, images, rating, seller, buyer);
-            return new Review(-1, description, images, rating, seller.Id, buyer.Id);
+            return new Review(-1, description, images, rating, seller.IntId, buyer.IntId);
         }
 
         public void UpdateReview(Review currentReview, string newDescription, double newRating)

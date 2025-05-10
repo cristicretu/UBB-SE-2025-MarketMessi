@@ -33,7 +33,7 @@ namespace MarketMinds.Shared.Services
                 switch (propertyName.ToLower())
                 {
                     case "id":
-                        user.Id = reader.GetInt32();
+                        user.LegacyId = reader.GetInt32();
                         break;
                     case "username":
                         user.Username = reader.GetString();
@@ -61,7 +61,16 @@ namespace MarketMinds.Shared.Services
 
         public override void Write(Utf8JsonWriter writer, User value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            writer.WriteStartObject();
+            
+            writer.WriteNumber("id", value.LegacyId);
+            writer.WriteString("username", value.Username);
+            writer.WriteString("email", value.Email);
+            writer.WriteNumber("userType", value.UserType);
+            writer.WriteNumber("balance", value.Balance);
+            writer.WriteNumber("rating", value.Rating);
+            
+            writer.WriteEndObject();
         }
     }
 }

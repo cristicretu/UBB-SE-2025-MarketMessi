@@ -61,7 +61,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
             
             try
             {
-                var bid = new Bid(bidder.Id, auction.Id, bidAmount)
+                var bid = new Bid(bidder.IntId, auction.Id, bidAmount)
                 {
                     Product = auction,
                     Bidder = bidder
@@ -139,12 +139,12 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 throw new Exception("Cannot bid on an unsaved auction");
             }
             
-            if (bidder.Id <= 0)
+            if (bidder.IntId <= 0)
             {
                 throw new Exception("Cannot bid with an unsaved user profile");
             }
             
-            if (bidder.Id == auction.SellerId)
+            if (bidder.IntId == auction.SellerId)
             {
                 throw new Exception("You cannot bid on your own auction");
             }
@@ -159,7 +159,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 throw new Exception($"Auction hasn't started yet. Starts at {auction.StartTime}");
             }
             
-            double minimumBid = auction.Bids.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
+            double minimumBid = auction.Bids.Count <= 0 ? auction.StartPrice : auction.CurrentPrice + 1;
 
             if (bidAmount < minimumBid)
             {
@@ -204,7 +204,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                 throw new InvalidOperationException($"Auction hasn't started yet. Starts at {auction.StartTime}");
             }
             
-            double minimumBid = auction.Bids?.Count == NULL_BID_AMOUNT ? auction.StartPrice : auction.CurrentPrice + 1;
+            double minimumBid = auction.Bids?.Count <= 0 ? auction.StartPrice : auction.CurrentPrice + 1;
 
             if (bidAmount < minimumBid)
             {
@@ -361,7 +361,7 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
                         Timestamp = DateTime.Now
                     };
 
-                    var bidder = new User { Id = bidderId };
+                    var bidder = new User { IntId = bidderId, Id = bidderId.ToString() };
                     
                     auctionProductsRepository.PlaceBid(auction, bidder, bidAmount);
                     return true;

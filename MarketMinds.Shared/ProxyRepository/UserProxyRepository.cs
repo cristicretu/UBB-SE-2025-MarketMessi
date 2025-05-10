@@ -46,20 +46,26 @@ namespace MarketMinds.Shared.ProxyRepository
         // Raw data access methods
         public async Task<string> GetUserByIdRawAsync(int userId)
         {
-            var response = await httpClient.GetAsync($"account/{userId}");
+            var response = await httpClient.GetAsync($"account/user");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
 
         public async Task<string> GetUserOrdersRawAsync(int userId)
         {
-            var response = await httpClient.GetAsync($"account/{userId}/orders");
+            // Check if we have a token (authorization header)
+            EnsureAuthorization();
+            
+            var response = await httpClient.GetAsync($"account/orders");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
 
         public async Task<string> GetBasketTotalRawAsync(int userId, int basketId)
         {
+            // Check if we have a token (authorization header)
+            EnsureAuthorization();
+            
             var response = await httpClient.GetAsync($"account/{userId}/basket/{basketId}/total");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
@@ -67,6 +73,9 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public async Task<string> CreateOrderFromBasketRawAsync(int userId, int basketId, double discountAmount = 0)
         {
+            // Check if we have a token (authorization header)
+            EnsureAuthorization();
+            
             var orderRequest = new
             {
                 UserId = userId,
@@ -81,22 +90,42 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public async Task<bool> UpdateUserRawAsync(User user)
         {
+            // Check if we have a token (authorization header)
+            EnsureAuthorization();
+            
             var response = await httpClient.PutAsJsonAsync($"account/{user.Id}", user);
             response.EnsureSuccessStatusCode();
             return true;
         }
 
-        public async Task<string> AuthenticateUserRawAsync(string username, string password)
+        public async Task<string> AuthenticateUserRawAsync(string usernameOrEmail, string password)
         {
             var loginRequest = new
             {
-                Username = username,
+                UsernameOrEmail = usernameOrEmail,
                 Password = password
             };
 
-            var response = await httpClient.PostAsJsonAsync("users/login", loginRequest);
+            var response = await httpClient.PostAsJsonAsync("account/login", loginRequest);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var authResponse = JsonSerializer.Deserialize<AuthResponse>(responseJson, jsonOptions);
+            
+            if (authResponse != null && authResponse.Success && authResponse.User != null)
+            {
+                // Save the token for future requests
+                if (!string.IsNullOrEmpty(authResponse.Token))
+                {
+                    httpClient.DefaultRequestHeaders.Remove("Authorization");
+                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {authResponse.Token}");
+                }
+                
+                // Return only the user part
+                return JsonSerializer.Serialize(authResponse.User, jsonOptions);
+            }
+            
+            throw new HttpRequestException("Authentication failed: " + authResponse?.Message);
         }
 
         public async Task<string> GetUserByUsernameRawAsync(string username)
@@ -115,16 +144,56 @@ namespace MarketMinds.Shared.ProxyRepository
 
         public async Task<string> CheckUsernameRawAsync(string username)
         {
-            var response = await httpClient.GetAsync($"users/check-username/{username}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            // For the new Identity API, we will check if a user exists with this username
+            try
+            {
+                var response = await httpClient.GetAsync($"users/{username}");
+                
+                // If successful, it means the username exists
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonSerializer.Serialize(new UsernameCheckResult { Exists = true }, jsonOptions);
+                }
+                
+                // If 404, username doesn't exist
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return JsonSerializer.Serialize(new UsernameCheckResult { Exists = false }, jsonOptions);
+                }
+                
+                // For other errors, throw an exception
+                response.EnsureSuccessStatusCode();
+                return null;
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            {
+                // Username doesn't exist
+                return JsonSerializer.Serialize(new UsernameCheckResult { Exists = false }, jsonOptions);
+            }
         }
 
         public async Task<string> RegisterUserRawAsync(object registerRequest)
         {
-            var response = await httpClient.PostAsJsonAsync("users/register", registerRequest);
+            var response = await httpClient.PostAsJsonAsync("account/register", registerRequest);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var authResponse = JsonSerializer.Deserialize<AuthResponse>(responseJson, jsonOptions);
+            
+            if (authResponse != null && authResponse.Success && authResponse.User != null)
+            {
+                // Save the token for future requests
+                if (!string.IsNullOrEmpty(authResponse.Token))
+                {
+                    httpClient.DefaultRequestHeaders.Remove("Authorization");
+                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {authResponse.Token}");
+                }
+                
+                // Return only the user part
+                return JsonSerializer.Serialize(authResponse.User, jsonOptions);
+            }
+            
+            throw new HttpRequestException("Registration failed: " + authResponse?.Message);
         }
 
         // IAccountRepository implementation - these now just call the service methods
@@ -294,6 +363,22 @@ namespace MarketMinds.Shared.ProxyRepository
                 Console.WriteLine($"Error registering user: {ex.Message}");
                 return null;
             }
+        }
+
+        private void EnsureAuthorization()
+        {
+            if (!httpClient.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                throw new UnauthorizedAccessException("You must be logged in to perform this operation.");
+            }
+        }
+
+        private class AuthResponse
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public string Token { get; set; }
+            public User User { get; set; }
         }
 
         private class UsernameCheckResult

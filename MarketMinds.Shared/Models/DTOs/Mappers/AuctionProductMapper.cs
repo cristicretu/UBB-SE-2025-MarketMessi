@@ -34,7 +34,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                     Timestamp = b.Timestamp,
                     Bidder = b.Bidder != null ? new UserDTO
                     {
-                        Id = b.Bidder.Id,
+                        Id = b.Bidder.LegacyId,
                         Username = b.Bidder.Username,
                         Email = b.Bidder.Email,
                         UserType = undefined_user_type,
@@ -65,7 +65,7 @@ namespace MarketMinds.Shared.Models.DTOs.Mappers
                 }).ToList() ?? new List<ImageDTO>(),
                 Seller = entity.Seller != null ? new UserDTO
                 {
-                    Id = entity.Seller.Id,
+                    Id = entity.Seller.LegacyId,
                     Username = entity.Seller.Username,
                     Email = entity.Seller.Email,
                     UserType = 0,

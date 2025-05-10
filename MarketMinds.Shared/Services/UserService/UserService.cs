@@ -314,7 +314,7 @@ namespace MarketMinds.Shared.Services.UserService
                 throw new ArgumentNullException(nameof(user), "User cannot be null.");
             }
 
-            if (user.Id <= 0)
+            if (user.IntId <= 0)
             {
                 throw new ArgumentException("User ID must be a positive number.", nameof(user.Id));
             }

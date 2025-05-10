@@ -148,7 +148,7 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
         public async Task<User> GetCurrentLoggedInUserAsync(User currentUser)
         {
             // Get user ID from currentUser parameter
-            int currentUserId = currentUser?.Id ?? 0;
+            int currentUserId = currentUser?.IntId ?? 0;
             Debug.WriteLine($"Getting data for current user ID: {currentUserId}");
 
             if (currentUserId <= 0)
@@ -270,7 +270,9 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
                 return null;
             }
 
-            var copy = new User(source.Id, source.Username, source.Email, source.Token);
+            var copy = new User(source.IntId, source.Username, source.Email, source.Token);
+            copy.IntId = source.IntId;
+            copy.Id = source.IntId.ToString();
             copy.UserType = source.UserType;
             copy.Balance = source.Balance;
             copy.Rating = source.Rating;
@@ -372,7 +374,9 @@ namespace Marketplace_SE.Services.DreamTeam // Consider moving to MarketMinds.Sh
 
                 if (root.TryGetProperty("id", out var idProp) && idProp.ValueKind == JsonValueKind.Number)
                 {
-                    user.Id = idProp.GetInt32();
+                    int idValue = idProp.GetInt32();
+                    user.IntId = idValue;
+                    user.Id = idValue.ToString();
                 }
 
                 if (root.TryGetProperty("username", out var usernameProp) && usernameProp.ValueKind == JsonValueKind.String)
