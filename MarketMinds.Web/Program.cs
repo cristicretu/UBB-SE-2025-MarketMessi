@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using MarketMinds.Shared;
 using MarketMinds.Shared.Services;
 using MarketMinds.Shared.Services.Interfaces;
@@ -7,12 +8,23 @@ using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(1);
+        options.SlidingExpiration = true;
+    });
 
 // Register shared service clients
 builder.Services.AddHttpClient("ApiClient", client =>
@@ -39,6 +51,7 @@ builder.Services.AddSingleton<AuctionProductsProxyRepository>();
 builder.Services.AddSingleton<ProductCategoryProxyRepository>();
 builder.Services.AddSingleton<ProductConditionProxyRepository>();
 builder.Services.AddSingleton<ProductTagProxyRepository>();
+builder.Services.AddSingleton<UserProxyRepository>();
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, AuctionProductsService>();
@@ -46,11 +59,13 @@ builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>()
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
 builder.Services.AddTransient<IProductTagService, ProductTagService>();
 builder.Services.AddTransient<IImageUploadService, ImageUploadService>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
 builder.Services.AddTransient<IProductConditionRepository>(sp => sp.GetRequiredService<ProductConditionProxyRepository>());
 builder.Services.AddTransient<IProductTagRepository>(sp => sp.GetRequiredService<ProductTagProxyRepository>());
+builder.Services.AddTransient<IAccountRepository>(sp => sp.GetRequiredService<UserProxyRepository>());
 
 var app = builder.Build();
 
