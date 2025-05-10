@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Models.DTOs;
 
@@ -47,5 +48,53 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
         /// <param name="id">The ID of the product to retrieve.</param>
         /// <returns>The product with the specified ID.</returns>
         Product GetProductById(int id);
+
+        /// <summary>
+        /// Gets all borrow products asynchronously.
+        /// </summary>
+        /// <returns>A list of all borrow products.</returns>
+        Task<List<BorrowProduct>> GetAllBorrowProductsAsync();
+        
+        /// <summary>
+        /// Gets a borrow product by ID asynchronously.
+        /// </summary>
+        /// <param name="id">The ID of the product to retrieve.</param>
+        /// <returns>The borrow product with the specified ID or null if not found.</returns>
+        Task<BorrowProduct> GetBorrowProductByIdAsync(int id);
+        
+        /// <summary>
+        /// Creates a new borrow product asynchronously.
+        /// </summary>
+        /// <param name="borrowProduct">The borrow product to create.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        Task<bool> CreateBorrowProductAsync(BorrowProduct borrowProduct);
+        
+        /// <summary>
+        /// Creates a new borrow product from a DTO asynchronously.
+        /// </summary>
+        /// <param name="productDTO">The DTO containing product information.</param>
+        /// <returns>The created BorrowProduct with its ID set or null if failed.</returns>
+        Task<BorrowProduct> CreateProductAsync(CreateBorrowProductDTO productDTO);
+        
+        /// <summary>
+        /// Updates an existing borrow product asynchronously.
+        /// </summary>
+        /// <param name="borrowProduct">The borrow product with updated values.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        Task<bool> UpdateBorrowProductAsync(BorrowProduct borrowProduct);
+        
+        /// <summary>
+        /// Deletes a borrow product by ID asynchronously.
+        /// </summary>
+        /// <param name="id">The ID of the product to delete.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        Task<bool> DeleteBorrowProductAsync(int id);
+        
+        /// <summary>
+        /// Validates the product DTO asynchronously.
+        /// </summary>
+        /// <param name="productDTO">The DTO to validate.</param>
+        /// <returns>A dictionary of validation errors, if any.</returns>
+        Task<Dictionary<string, string[]>> ValidateProductDTOAsync(CreateBorrowProductDTO productDTO);
     }
 }
