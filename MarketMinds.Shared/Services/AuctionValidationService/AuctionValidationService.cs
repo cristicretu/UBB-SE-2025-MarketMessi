@@ -15,12 +15,39 @@ namespace MarketMinds.Shared.Services.AuctionValidationService
 
         public void ValidateAndPlaceBid(AuctionProduct product, User bidder, string enteredBidText)
         {
-            if (!float.TryParse(enteredBidText, out float bidAmount))
+            if (product == null)
             {
-                throw new ArgumentException("Invalid bid amount");
+                throw new ArgumentNullException(nameof(product), "Auction product cannot be null");
+            }
+            
+            if (bidder == null)
+            {
+                throw new ArgumentNullException(nameof(bidder), "Bidder cannot be null");
+            }
+            
+            if (string.IsNullOrWhiteSpace(enteredBidText))
+            {
+                throw new ArgumentException("Bid amount is required");
+            }
+            
+            if (!double.TryParse(enteredBidText, out double bidAmount))
+            {
+                throw new ArgumentException($"Invalid bid format: '{enteredBidText}' is not a valid number");
+            }
+            
+            if (bidAmount <= 0)
+            {
+                throw new ArgumentException("Bid amount must be positive");
             }
 
-            auctionProductsService.PlaceBid(product, bidder, bidAmount);
+            try
+            {
+                auctionProductsService.PlaceBid(product, bidder, bidAmount);
+            }
+            catch (Exception exception)
+            {
+                throw new Exception($"Bid failed: {exception.Message}", exception);
+            }
         }
 
         public void ValidateAndConcludeAuction(AuctionProduct product)

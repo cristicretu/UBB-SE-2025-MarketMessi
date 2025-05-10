@@ -13,6 +13,7 @@ namespace MarketMinds.Controllers
     {
         private readonly IAuctionProductsRepository auctionProductsRepository;
         private readonly static int NULL_PRODUCT_ID = 0;
+        private readonly static DateTime MINIMUM_SQL_DATETIME = new DateTime(1753, 1, 1);
 
         public AuctionProductsController(IAuctionProductsRepository auctionProductsRepository)
         {
@@ -48,10 +49,6 @@ namespace MarketMinds.Controllers
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return Ok(auctionProductDTO);
             }
-            catch (KeyNotFoundException keyNotFoundException)
-            {
-                return NotFound(keyNotFoundException.Message);
-            }
             catch (Exception exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred.");
@@ -64,18 +61,14 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult CreateAuctionProduct([FromBody] AuctionProduct product)
         {
-            if (product == null || !ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            
-            if (product.Id != NULL_PRODUCT_ID)
+            if (product?.Id != NULL_PRODUCT_ID)
             {
                 return BadRequest("Product ID should not be provided when creating a new product.");
             }
             
             try
             {
+                InitializeDates(product);
                 var incomingImages = product.Images?.ToList() ?? new List<ProductImage>();
                 product.Images = new List<ProductImage>();
                 
@@ -95,10 +88,6 @@ namespace MarketMinds.Controllers
                 var auctionProductDTO = AuctionProductMapper.ToDTO(product);
                 return CreatedAtAction(nameof(GetAuctionProductById), new { id = product.Id }, auctionProductDTO);
             }
-            catch (ArgumentException argumentException)
-            {
-                return BadRequest(argumentException.Message);
-            }
             catch (Exception exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while creating the product.");
@@ -112,24 +101,18 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult UpdateAuctionProduct(int id, [FromBody] AuctionProduct product)
         {
-            if (product == null || id != product.Id || !ModelState.IsValid)
+            if (id != product?.Id)
             {
-                return BadRequest("Product data is invalid or ID mismatch.");
+                return BadRequest("ID mismatch between route and product.");
             }
+            
             try
             {
+                InitializeDates(product);
                 auctionProductsRepository.UpdateProduct(product);
                 return NoContent();
             }
-            catch (KeyNotFoundException keyNotFoundException)
-            {
-                return NotFound(keyNotFoundException.Message);
-            }
-            catch (ArgumentException argumentException)
-            {
-                return BadRequest(argumentException.Message);
-            }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while updating the product.");
             }
@@ -147,14 +130,6 @@ namespace MarketMinds.Controllers
                 auctionProductsRepository.DeleteProduct(productToDelete);
                 return NoContent();
             }
-            catch (KeyNotFoundException keyNotFoundException)
-            {
-                return NotFound(keyNotFoundException.Message);
-            }
-            catch (ArgumentException argumentException)
-            {
-                return BadRequest(argumentException.Message);
-            }
             catch (Exception exception)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while deleting the product.");
@@ -168,12 +143,8 @@ namespace MarketMinds.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public IActionResult PlaceBid(int id, [FromBody] CreateBidDTO bidDTO)
         {
-            if (bidDTO == null || id != bidDTO.ProductId)
-            {
-                return BadRequest("Invalid bid data or ID mismatch.");
-            }
             try
-            {
+            {   
                 var product = auctionProductsRepository.GetProductByID(id);
                 
                 var bid = new Bid
@@ -181,22 +152,46 @@ namespace MarketMinds.Controllers
                     BidderId = bidDTO.BidderId,
                     ProductId = id,
                     Price = bidDTO.Amount,
-                    Timestamp = bidDTO.Timestamp
+                    Timestamp = DateTime.Now
                 };
-                
                 product.Bids.Add(bid);
                 product.CurrentPrice = bidDTO.Amount;
                 auctionProductsRepository.UpdateProduct(product);
                 
                 return Ok(new { Success = true, Message = $"Bid of ${bidDTO.Amount} placed successfully." });
             }
-            catch (KeyNotFoundException keyNotFoundException)
-            {
-                return NotFound(keyNotFoundException.Message);
-            }
             catch (Exception exception)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "An internal error occurred while placing the bid.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, $"An internal error occurred: {exception.Message}");
+            }
+        }
+        
+        private void InitializeDates(AuctionProduct product)
+        {
+            var now = DateTime.Now;
+            
+            if (product.StartTime == default || product.StartTime < MINIMUM_SQL_DATETIME)
+            {
+                product.StartTime = now;
+            }
+            
+            if (product.EndTime == default || product.EndTime < MINIMUM_SQL_DATETIME)
+            {
+                product.EndTime = now.AddDays(7);
+            }
+            
+            if (product.EndTime < product.StartTime)
+            {
+                product.EndTime = product.StartTime.AddDays(7);
+            }
+            
+            if (product.StartPrice <= 0 && product.CurrentPrice > 0)
+            {
+                product.StartPrice = product.CurrentPrice;
+            }
+            else if (product.CurrentPrice <= 0 && product.StartPrice > 0)
+            {
+                product.CurrentPrice = product.StartPrice;
             }
         }
     }
