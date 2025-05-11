@@ -75,6 +75,9 @@
             
             <div class="mt-6 text-gray-600">
                 <p>Seller: @(Model.Seller?.Username ?? "Unknown seller")</p>
+                <a href="/Reviews/Create?sellerId=@Model.Seller?.Id" class="inline-block mt-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
+                    Review Seller
+                </a>
             </div>
         </div>
     </div>

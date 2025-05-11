@@ -39,7 +39,7 @@ builder.Services.AddSingleton<DataBaseConnection>();
 // EntityFramework database connection setup
 var initialCatalog = builder.Configuration["InitialCatalog"];
 var localDataSource = builder.Configuration["LocalDataSource"];
-var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;";
+var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;TrustServerCertificate=True";
 builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
