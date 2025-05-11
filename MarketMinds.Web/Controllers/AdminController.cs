@@ -19,6 +19,27 @@ namespace MarketMinds.Web.Controllers
             _conditionService = conditionService;
         }
 
+        private IActionResult HandleAddOperation(string name, string description, string emptyNameError, string successMessage, System.Action action)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                TempData["Error"] = emptyNameError;
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                action();
+                TempData["Success"] = successMessage;
+            }
+            catch (System.Exception ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
         public IActionResult Index()
         {
             var categories = _categoryService.GetAllProductCategories();
@@ -33,45 +54,25 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult AddCategory(string name, string description)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                TempData["Error"] = "Category name cannot be empty";
-                return RedirectToAction("Index");
-            }
-
-            try
-            {
-                _categoryService.CreateProductCategory(name, description);
-                TempData["Success"] = "Category added successfully";
-            }
-            catch (System.Exception ex)
-            {
-                TempData["Error"] = $"Error adding category: {ex.Message}";
-            }
-
-            return RedirectToAction("Index");
+            return HandleAddOperation(
+                name,
+                description,
+                "Category name cannot be empty",
+                "Category added successfully",
+                () => _categoryService.CreateProductCategory(name, description)
+            );
         }
 
         [HttpPost]
         public IActionResult AddCondition(string name, string description)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                TempData["Error"] = "Condition name cannot be empty";
-                return RedirectToAction("Index");
-            }
-
-            try
-            {
-                _conditionService.CreateProductCondition(name, description);
-                TempData["Success"] = "Condition added successfully";
-            }
-            catch (System.Exception ex)
-            {
-                TempData["Error"] = $"Error adding condition: {ex.Message}";
-            }
-
-            return RedirectToAction("Index");
+            return HandleAddOperation(
+                name,
+                description,
+                "Condition name cannot be empty",
+                "Condition added successfully",
+                () => _conditionService.CreateProductCondition(name, description)
+            );
         }
 
         [HttpPost]
