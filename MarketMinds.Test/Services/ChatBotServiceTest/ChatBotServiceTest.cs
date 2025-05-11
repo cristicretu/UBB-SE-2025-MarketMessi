@@ -3,23 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Shared.Services.ChatBotService;
-using MarketMinds.Repositories.ChatBotRepository;
-using MarketMinds.Test.Services.ChatBotServiceTest;
+using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
 
 namespace MarketMinds.Tests.Services.ChatBotServiceTest
 {
     [TestFixture]
     public class ChatBotServiceTest
     {
-        private ChatBotService _chatBotService;
+        private IChatbotService _chatBotService;
         private ChatBotRepositoryMock _chatBotRepositoryMock;
 
         [SetUp]
         public void Setup()
         {
             _chatBotRepositoryMock = new ChatBotRepositoryMock();
-            _chatBotService = new ChatBotService(_chatBotRepositoryMock);
+            _chatBotService = new ChatbotService(_chatBotRepositoryMock);
         }
 
         [Test]
