@@ -94,17 +94,15 @@
 }
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
     <script>
         // Format dates for datetime-local inputs
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Format the datetime values for the inputs
             const startTime = new Date('@Model.StartTime.ToString("o")');
             const endTime = new Date('@Model.EndTime.ToString("o")');
             
-            $("#StartTime").val(startTime.toISOString().slice(0, 16));
-            $("#EndTime").val(endTime.toISOString().slice(0, 16));
+            document.getElementById("StartTime").value = startTime.toISOString().slice(0, 16);
+            document.getElementById("EndTime").value = endTime.toISOString().slice(0, 16);
         });
     </script>
 } 
