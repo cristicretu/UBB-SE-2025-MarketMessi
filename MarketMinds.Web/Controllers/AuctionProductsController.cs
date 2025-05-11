@@ -125,9 +125,10 @@ namespace MarketMinds.Web.Controllers
                     }
                     else
                     {
-                        // Fallback to a hardcoded user ID for testing - remove this in production
-                        userId = 1; // Default test user ID
-                        _logger.LogWarning("Using default user ID as no valid user ID found in claims");
+                        // Handle missing user ID gracefully
+                        _logger.LogWarning("No valid user ID found in claims. Redirecting to login.");
+                        TempData["ErrorMessage"] = "You must be logged in to place a bid.";
+                        return RedirectToAction("Login", "Account");
                     }
                 }
                 
