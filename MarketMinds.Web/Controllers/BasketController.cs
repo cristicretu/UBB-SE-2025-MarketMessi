@@ -4,9 +4,12 @@ using MarketMinds.Shared.Services.BasketService;
 using System;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using MarketMinds.Web.Models;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class BasketController : Controller
     {
         private readonly IBasketService _basketService;
@@ -19,8 +22,8 @@ namespace MarketMinds.Web.Controllers
         // GET: Basket
         public IActionResult Index()
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -30,6 +33,31 @@ namespace MarketMinds.Web.Controllers
                 
                 // Calculate basket totals with no promo code
                 var basketTotals = _basketService.CalculateBasketTotals(basket.Id, null);
+                
+                // Add debug info to diagnose the issue with basketTotals
+                if (basketTotals == null)
+                {
+                    Debug.WriteLine("ERROR: basketTotals is null");
+                    basketTotals = new BasketTotals(); // Create a default object to avoid null reference
+                }
+                else
+                {
+                    Debug.WriteLine($"DEBUG: basketTotals - Subtotal: {basketTotals.Subtotal}, Discount: {basketTotals.Discount}, Total: {basketTotals.TotalAmount}");
+                }
+                
+                // Recalculate subtotal if needed by summing basket items
+                if (basketTotals.Subtotal <= 0 && basket.Items != null && basket.Items.Count > 0)
+                {
+                    double calculatedSubtotal = 0;
+                    foreach (var item in basket.Items)
+                    {
+                        calculatedSubtotal += (item.Price * item.Quantity);
+                    }
+                    
+                    Debug.WriteLine($"DEBUG: Had to recalculate subtotal: {calculatedSubtotal}");
+                    basketTotals.Subtotal = calculatedSubtotal;
+                    basketTotals.TotalAmount = calculatedSubtotal - basketTotals.Discount;
+                }
                 
                 // Pass the basket and totals to the view
                 ViewBag.BasketTotals = basketTotals;
@@ -42,7 +70,12 @@ namespace MarketMinds.Web.Controllers
                 Debug.WriteLine($"Error getting basket: {ex.Message}");
                 
                 // Return an empty basket if there was an error
-                return View(new Basket { Id = 0, Items = new System.Collections.Generic.List<BasketItem>() });
+                var emptyBasket = new Basket { Id = 0, Items = new System.Collections.Generic.List<BasketItem>() };
+                
+                // Create default basket totals to avoid null reference in the view
+                ViewBag.BasketTotals = new BasketTotals();
+                
+                return View(emptyBasket);
             }
         }
 
@@ -50,8 +83,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult AddItem(int productId, int quantity = 1)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -82,8 +115,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult RemoveItem(int productId)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -108,8 +141,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -143,8 +176,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult IncreaseQuantity(int productId)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -169,8 +202,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult DecreaseQuantity(int productId)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -195,8 +228,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult ClearBasket()
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -221,8 +254,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public IActionResult ApplyPromoCode(string promoCode)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
@@ -260,8 +293,8 @@ namespace MarketMinds.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Checkout(string promoCode)
         {
-            // For demo purposes, assume the user ID is 1
-            int userId = 1;
+            // Get the current user's ID from claims
+            int userId = User.GetCurrentUserId();
             
             try
             {
