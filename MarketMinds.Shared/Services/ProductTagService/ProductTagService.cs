@@ -14,6 +14,15 @@ namespace MarketMinds.Shared.Services.ProductTagService
         private readonly ProductTagProxyRepository repository;
         private readonly JsonSerializerOptions jsonOptions;
 
+        public ProductTagService(ProductTagProxyRepository repository)
+        {
+            this.repository = repository;
+            jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+        }
+
         public ProductTagService(IConfiguration configuration)
         {
             repository = new ProductTagProxyRepository(configuration);

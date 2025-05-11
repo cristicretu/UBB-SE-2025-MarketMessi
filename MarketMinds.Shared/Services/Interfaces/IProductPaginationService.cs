@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MarketMinds.Shared.Services
+namespace MarketMinds.Shared.Services.ProductPaginationService
 {
     /// <summary>
     /// Interface for ProductPaginationService to manage product pagination and filtering.
