@@ -11,9 +11,11 @@ using MarketMinds.Shared.Services.BorrowProductsService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class BorrowProductsController : Controller
     {
         private readonly ILogger<BorrowProductsController> _logger;
@@ -28,6 +30,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: BorrowProducts
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             try
@@ -45,6 +48,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: BorrowProducts/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             try

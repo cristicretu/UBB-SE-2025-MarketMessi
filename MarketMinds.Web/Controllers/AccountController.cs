@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
@@ -23,6 +24,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Account/Login
+        [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
@@ -32,6 +34,7 @@ namespace MarketMinds.Web.Controllers
         // POST: Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(string username, string password, string returnUrl = null)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
@@ -72,6 +75,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Account/Register
+        [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
@@ -80,6 +84,7 @@ namespace MarketMinds.Web.Controllers
         // POST: Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(User user)
         {
             if (ModelState.IsValid)
@@ -125,7 +130,6 @@ namespace MarketMinds.Web.Controllers
 
         // POST: Account/Logout
         [HttpPost]
-        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
@@ -135,6 +139,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Account/AccessDenied
+        [AllowAnonymous]
         public IActionResult AccessDenied()
         {
             return View();
