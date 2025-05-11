@@ -22,8 +22,17 @@ namespace MarketMinds.Web.Controllers
         private readonly IMessageService _messageService;
         private readonly IChatbotService _chatbotService;
         
+        // User ID constants
         private const int DefaultUserId = 1;
+        private const int BotUserId = 1; // System bot user ID
+        
+        // Message constants
         private const string WelcomeMessage = "Hello! I'm your shopping assistant. How can I help you today?";
+        private const string ErrorResponseMessage = "I'm sorry, I'm having trouble understanding right now. Please try again later.";
+        
+        // Index constants
+        private const int FirstConversationIndex = 0;
+        private const int MinimumValidId = 1;
 
         public ChatBotController(
             ILogger<ChatBotController> logger,
@@ -74,7 +83,7 @@ namespace MarketMinds.Web.Controllers
                 }
                 
                 // Select the requested conversation if specified
-                if (conversationId.HasValue && conversationId.Value > 0)
+                if (conversationId.HasValue && conversationId.Value > MinimumValidId - 1)
                 {
                     try
                     {
@@ -98,7 +107,7 @@ namespace MarketMinds.Web.Controllers
                 {
                     try
                     {
-                        viewModel.CurrentConversation = viewModel.Conversations[0];
+                        viewModel.CurrentConversation = viewModel.Conversations[FirstConversationIndex];
                         
                         _logger.LogInformation("Getting messages for conversation {ConversationId}", viewModel.CurrentConversation.Id);
                         viewModel.Messages = await _messageService.GetMessagesLegacyAsync(viewModel.CurrentConversation.Id);
@@ -133,7 +142,7 @@ namespace MarketMinds.Web.Controllers
                 
                 // Add welcome message
                 _logger.LogInformation("Adding welcome message to conversation {ConversationId}", conversation.Id);
-                var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, DefaultUserId, WelcomeMessage);
+                var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, BotUserId, WelcomeMessage);
                 _logger.LogInformation("Added welcome message with ID: {MessageId}", welcomeMessage.Id);
                 
                 // Update the view model with the new conversation
@@ -167,7 +176,7 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogInformation("Created conversation with ID: {ConversationId}", conversation.Id);
                 
                 // Add welcome message
-                var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, DefaultUserId, WelcomeMessage);
+                var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, BotUserId, WelcomeMessage);
                 _logger.LogInformation("Added welcome message with ID: {MessageId}", welcomeMessage.Id);
                 
                 return RedirectToAction("Index", new { conversationId = conversation.Id });
@@ -218,7 +227,7 @@ namespace MarketMinds.Web.Controllers
                     // Send bot response as a message
                     if (!string.IsNullOrEmpty(botResponse))
                     {
-                        var botMessage = await _messageService.CreateMessageAsync(conversationId, DefaultUserId, botResponse);
+                        var botMessage = await _messageService.CreateMessageAsync(conversationId, BotUserId, botResponse);
                         _logger.LogInformation("Created bot message with ID: {MessageId}", botMessage.Id);
                     }
                 }
@@ -227,8 +236,7 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogError(ex, "Error getting bot response: {Message}", ex.Message);
                     
                     // Send a fallback response if the bot service fails
-                    var errorMessage = "I'm sorry, I'm having trouble understanding right now. Please try again later.";
-                    await _messageService.CreateMessageAsync(conversationId, DefaultUserId, errorMessage);
+                    await _messageService.CreateMessageAsync(conversationId, BotUserId, ErrorResponseMessage);
                     _logger.LogInformation("Created error message for failed bot response");
                 }
             }
