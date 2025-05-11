@@ -12,7 +12,7 @@ namespace MarketMinds.Tests.Services.BasketServiceTest
     public class BasketServiceTest
     {
         // Constants for user details
-        private const int TEST_USER_ID = 1;
+        private const string TEST_USER_ID = "1";
         private const string TEST_USER_NAME = "Test User";
         private const string TEST_USER_EMAIL = "test@example.com";
 
