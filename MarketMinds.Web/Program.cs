@@ -10,6 +10,7 @@ using MarketMinds.Shared.Services.ProductCategoryService;
 using MarketMinds.Shared.Services.ProductConditionService;
 using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.ImagineUploadService;
+using MarketMinds.Shared.Services.BasketService;
 using MarketMinds.Shared.Services.UserService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
@@ -55,6 +56,7 @@ builder.Services.AddSingleton<BuyProductsProxyRepository>();
 builder.Services.AddSingleton<ProductCategoryProxyRepository>();
 builder.Services.AddSingleton<ProductConditionProxyRepository>();
 builder.Services.AddSingleton<ProductTagProxyRepository>();
+builder.Services.AddSingleton<BasketProxyRepository>();
 builder.Services.AddSingleton<UserProxyRepository>();
 
 // Register services
@@ -66,12 +68,14 @@ builder.Services.AddTransient<IProductCategoryService, ProductCategoryService>()
 builder.Services.AddTransient<IProductConditionService, ProductConditionService>();
 builder.Services.AddTransient<IProductTagService, ProductTagService>();
 builder.Services.AddTransient<IImageUploadService, ImageUploadService>();
+builder.Services.AddTransient<IBasketService, BasketService>();
 builder.Services.AddTransient<IUserService, UserService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
 builder.Services.AddTransient<IProductConditionRepository>(sp => sp.GetRequiredService<ProductConditionProxyRepository>());
 builder.Services.AddTransient<IProductTagRepository>(sp => sp.GetRequiredService<ProductTagProxyRepository>());
+builder.Services.AddTransient<IBasketRepository>(sp => sp.GetRequiredService<BasketProxyRepository>());
 builder.Services.AddTransient<IAccountRepository>(sp => sp.GetRequiredService<UserProxyRepository>());
 
 
