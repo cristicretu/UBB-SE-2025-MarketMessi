@@ -20,7 +20,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: Basket
-        public IActionResult Index()
+        public IActionResult Index(string promoCode = null)
         {
             // Get the current user's ID from claims
             int userId = User.GetCurrentUserId();
@@ -31,14 +31,13 @@ namespace MarketMinds.Web.Controllers
                 var user = new User { Id = userId };
                 var basket = _basketService.GetBasketByUser(user);
                 
-                // Calculate basket totals with no promo code
-                var basketTotals = _basketService.CalculateBasketTotals(basket.Id, null);
+                var basketTotals = _basketService.CalculateBasketTotals(basket.Id, promoCode);
                 
                 // Add debug info to diagnose the issue with basketTotals
                 if (basketTotals == null)
                 {
                     Debug.WriteLine("ERROR: basketTotals is null");
-                    basketTotals = new BasketTotals(); // Create a default object to avoid null reference
+                    basketTotals = new MarketMinds.Shared.Services.BasketService.BasketTotals(); // Create a default object to avoid null reference
                 }
                 else
                 {
@@ -46,7 +45,7 @@ namespace MarketMinds.Web.Controllers
                 }
                 
                 // Recalculate subtotal if needed by summing basket items
-                if (basketTotals.Subtotal <= 0 && basket.Items != null && basket.Items.Count > 0)
+                if (basket.Items != null && basket.Items.Count > 0)
                 {
                     double calculatedSubtotal = 0;
                     foreach (var item in basket.Items)
@@ -54,13 +53,34 @@ namespace MarketMinds.Web.Controllers
                         calculatedSubtotal += (item.Price * item.Quantity);
                     }
                     
-                    Debug.WriteLine($"DEBUG: Had to recalculate subtotal: {calculatedSubtotal}");
-                    basketTotals.Subtotal = calculatedSubtotal;
-                    basketTotals.TotalAmount = calculatedSubtotal - basketTotals.Discount;
+                    if (basketTotals.Subtotal <= 0 || Math.Abs(basketTotals.Subtotal - calculatedSubtotal) > 0.01)
+                    {
+                        Debug.WriteLine($"DEBUG: Had to recalculate subtotal: {calculatedSubtotal}");
+                        basketTotals.Subtotal = calculatedSubtotal;
+                    }
+                    
+                    if (!string.IsNullOrEmpty(promoCode))
+                    {
+                        try
+                        {
+                            double discountAmount = _basketService.GetPromoCodeDiscount(promoCode, calculatedSubtotal);
+                            if (Math.Abs(basketTotals.Discount - discountAmount) > 0.01)
+                            {
+                                Debug.WriteLine($"DEBUG: Recalculated discount: {discountAmount}");
+                                basketTotals.Discount = discountAmount;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"DEBUG: Error calculating discount: {ex.Message}");
+                        }
+                    }
+                    
+                    basketTotals.TotalAmount = basketTotals.Subtotal - basketTotals.Discount;
                 }
                 
-                // Pass the basket and totals to the view
                 ViewBag.BasketTotals = basketTotals;
+                ViewBag.AppliedPromoCode = promoCode;
                 
                 return View(basket);
             }
@@ -73,7 +93,7 @@ namespace MarketMinds.Web.Controllers
                 var emptyBasket = new Basket { Id = 0, Items = new System.Collections.Generic.List<BasketItem>() };
                 
                 // Create default basket totals to avoid null reference in the view
-                ViewBag.BasketTotals = new BasketTotals();
+                ViewBag.BasketTotals = new MarketMinds.Shared.Services.BasketService.BasketTotals();
                 
                 return View(emptyBasket);
             }
@@ -259,24 +279,51 @@ namespace MarketMinds.Web.Controllers
             
             try
             {
+                if (string.IsNullOrWhiteSpace(promoCode))
+                {
+                    TempData["ErrorMessage"] = "Please enter a promo code.";
+                    return RedirectToAction("Index");
+                }
+                
+                promoCode = promoCode.Trim().ToUpper();
+                
                 // Get the user's basket
                 var user = new User { Id = userId };
                 var basket = _basketService.GetBasketByUser(user);
                 
-                // Apply the promo code
-                _basketService.ApplyPromoCode(basket.Id, promoCode);
-                
-                // Redirect to the basket page with the applied promo code
-                return RedirectToAction("Index", new { promoCode });
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Log the error
-                Debug.WriteLine($"Invalid promo code: {ex.Message}");
-                
-                // Return to the basket page with an error message
-                TempData["ErrorMessage"] = "Invalid promo code. Please try again.";
-                return RedirectToAction("Index");
+                try
+                {
+                    _basketService.ApplyPromoCode(basket.Id, promoCode);
+                    
+                    double subtotal = 0;
+                    if (basket.Items != null)
+                    {
+                        foreach (var item in basket.Items)
+                        {
+                            subtotal += (item.Price * item.Quantity);
+                        }
+                    }
+                    
+                    double discount = _basketService.GetPromoCodeDiscount(promoCode, subtotal);
+                    
+                    if (discount > 0)
+                    {
+                        int percentage = (int)Math.Round(discount / subtotal * 100);
+                        TempData["SuccessMessage"] = $"Promo code '{promoCode}' applied for {percentage}% discount!";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Promo code applied, but no discount was awarded.";
+                    }
+                    
+                    return RedirectToAction("Index", new { promoCode });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Debug.WriteLine($"Invalid promo code: {ex.Message}");
+                    TempData["ErrorMessage"] = $"Invalid promo code: {ex.Message}";
+                    return RedirectToAction("Index");
+                }
             }
             catch (Exception ex)
             {
@@ -295,6 +342,7 @@ namespace MarketMinds.Web.Controllers
         {
             // Get the current user's ID from claims
             int userId = User.GetCurrentUserId();
+            Debug.WriteLine($"DEBUG: Checkout called with promoCode: {promoCode}");
             
             try
             {
@@ -303,31 +351,45 @@ namespace MarketMinds.Web.Controllers
                 var basket = _basketService.GetBasketByUser(user);
                 
                 // Validate the basket before checkout
+                if (basket.Items == null || basket.Items.Count == 0)
+                {
+                    TempData["ErrorMessage"] = "Your basket is empty. Please add items before checkout.";
+                    return RedirectToAction("Index");
+                }
+                
                 if (!_basketService.ValidateBasketBeforeCheckOut(basket.Id))
                 {
                     TempData["ErrorMessage"] = "Your basket is invalid for checkout. Please ensure all items have valid quantities.";
                     return RedirectToAction("Index");
                 }
                 
-                // Calculate the totals with any applied promo code
-                var basketTotals = _basketService.CalculateBasketTotals(basket.Id, promoCode);
-                
-                // Manually calculate the subtotal and total to ensure accuracy
-                double calculatedSubtotal = 0;
-                if (basket.Items != null && basket.Items.Count > 0)
+                // Calculate subtotal
+                double subtotal = 0;
+                foreach (var item in basket.Items)
                 {
-                    foreach (var item in basket.Items)
-                    {
-                        calculatedSubtotal += (item.Price * item.Quantity);
-                    }
-                    
-                    Debug.WriteLine($"DEBUG: Manually calculated subtotal: {calculatedSubtotal}");
-                    basketTotals.Subtotal = calculatedSubtotal;
-                    basketTotals.TotalAmount = calculatedSubtotal - basketTotals.Discount;
+                    subtotal += (item.Price * item.Quantity);
                 }
                 
+                double discount = 0;
+                if (!string.IsNullOrEmpty(promoCode))
+                {
+                    try
+                    {
+                        discount = _basketService.GetPromoCodeDiscount(promoCode, subtotal);
+                        Debug.WriteLine($"DEBUG: Applied promo code {promoCode} with discount: ${discount:F2}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"DEBUG: Error applying promo code during checkout: {ex.Message}");
+                    }
+                }
+                
+                double total = subtotal - discount;
+                
+                Debug.WriteLine($"DEBUG: Proceeding to checkout - Subtotal: ${subtotal:F2}, Discount: ${discount:F2}, Total: ${total:F2}");
+                
                 // Perform the checkout
-                bool success = await _basketService.CheckoutBasketAsync(userId, basket.Id, basketTotals.Discount, basketTotals.TotalAmount);
+                bool success = await _basketService.CheckoutBasketAsync(userId, basket.Id, discount, total);
                 
                 if (success)
                 {
@@ -339,7 +401,7 @@ namespace MarketMinds.Web.Controllers
                 {
                     // Return to the basket page with an error message
                     TempData["ErrorMessage"] = "Checkout failed. Please try again.";
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Index", new { promoCode });
                 }
             }
             catch (InvalidOperationException ex)
@@ -349,7 +411,7 @@ namespace MarketMinds.Web.Controllers
                 
                 // Return to the basket page with the specific error message
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { promoCode });
             }
             catch (Exception ex)
             {
@@ -358,7 +420,7 @@ namespace MarketMinds.Web.Controllers
                 
                 // Return to the basket page with an error message
                 TempData["ErrorMessage"] = "An error occurred during checkout. Please try again.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { promoCode });
             }
         }
 

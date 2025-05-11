@@ -2,6 +2,27 @@
 @using System.Linq
 @{
     ViewData["Title"] = "Shopping Basket";
+    
+    double subtotal = 0;
+    double discount = 0;
+    double total = 0;
+    string promoCode = ViewBag.AppliedPromoCode;
+    
+    if (Model.Items != null && Model.Items.Count > 0)
+    {
+        foreach (var item in Model.Items)
+        {
+            subtotal += (item.Price * item.Quantity);
+        }
+        
+        if (ViewBag.BasketTotals != null)
+        {
+            discount = ViewBag.BasketTotals.Discount;
+        }
+        
+        // Calculate total
+        total = subtotal - discount;
+    }
 }
 
 <div class="container mx-auto my-8">
@@ -128,39 +149,28 @@
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
                     
-                    @{
-                        // Calculate subtotal directly from basket items
-                        double calculatedSubtotal = 0;
-                        if (Model.Items != null)
-                        {
-                            foreach (var item in Model.Items)
-                            {
-                                calculatedSubtotal += (item.Price * item.Quantity);
-                            }
-                        }
-                    }
-                    
                     <div class="flex justify-between py-2 border-b">
                         <span>Subtotal</span>
-                        <span>@string.Format("${0:F2}", calculatedSubtotal)</span>
+                        <span>@string.Format("${0:F2}", subtotal)</span>
                     </div>
                     
-                    @if (ViewBag.BasketTotals.Discount > 0)
+                    @if (discount > 0)
                     {
                         <div class="flex justify-between py-2 border-b text-green-600">
-                            <span>Discount</span>
-                            <span>-@string.Format("${0:F2}", ViewBag.BasketTotals.Discount)</span>
+                            <span>Discount @(!string.IsNullOrEmpty(promoCode) ? $"({promoCode})" : "")</span>
+                            <span>-@string.Format("${0:F2}", discount)</span>
                         </div>
                     }
                     
                     <div class="flex justify-between py-2 border-b font-bold">
                         <span>Total</span>
-                        <span>@string.Format("${0:F2}", calculatedSubtotal - ViewBag.BasketTotals.Discount)</span>
+                        <span>@string.Format("${0:F2}", total)</span>
                     </div>
                     
                     <form asp-action="ApplyPromoCode" method="post" class="mt-4">
                         <div class="flex space-x-2">
-                            <input type="text" name="promoCode" placeholder="Promo code" class="flex-grow px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <input type="text" name="promoCode" placeholder="Promo code" class="flex-grow px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary" 
+                                   value="@promoCode" />
                             <button type="submit" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
                                 Apply
                             </button>
@@ -168,6 +178,13 @@
                     </form>
                     
                     <form asp-action="Checkout" method="post" class="mt-6">
+                        @if (!string.IsNullOrEmpty(promoCode))
+                        {
+                            <input type="hidden" name="promoCode" value="@promoCode" />
+                            <div class="mb-4 bg-green-50 p-2 rounded text-sm text-green-700">
+                                <span class="font-semibold">Promo code applied:</span> @promoCode
+                            </div>
+                        }
                         <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition">
                             Proceed to Checkout
                         </button>
