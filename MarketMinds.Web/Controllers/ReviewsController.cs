@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class ReviewsController : Controller
     {
         private readonly ILogger<ReviewsController> _logger;
@@ -337,8 +340,32 @@ namespace MarketMinds.Web.Controllers
         // Helper method to get the current user
         private async Task<User> GetCurrentUserAsync()
         {
-            // For now, we'll just use a mock user with ID 1 until authentication is implemented
-            int userId = 1;
+            // Get the user ID from claims
+            int userId;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out userId))
+            {
+                // User ID found in the standard claim
+                _logger.LogInformation($"Got user ID {userId} from standard claim");
+            }
+            else
+            {
+                // Try to get the user ID from a custom claim if needed
+                var customIdClaim = User.FindFirst("UserId");
+                if (customIdClaim != null && int.TryParse(customIdClaim.Value, out userId))
+                {
+                    _logger.LogInformation($"Got user ID {userId} from custom claim");
+                }
+                else
+                {
+                    // No valid user ID found in claims
+                    _logger.LogWarning("No valid user ID found in claims");
+                    return null;
+                }
+            }
+            
+            // Get the user from the service
             return await _userService.GetUserByIdAsync(userId);
         }
     }
