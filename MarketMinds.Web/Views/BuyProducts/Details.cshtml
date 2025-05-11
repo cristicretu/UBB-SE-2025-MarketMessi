@@ -61,6 +61,7 @@
             
             <div class="flex space-x-4 mt-6">
                 <form asp-controller="Basket" asp-action="AddItem" method="post">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="productId" value="@Model.Id" />
                     <input type="hidden" name="quantity" value="1" />
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg flex items-center">
