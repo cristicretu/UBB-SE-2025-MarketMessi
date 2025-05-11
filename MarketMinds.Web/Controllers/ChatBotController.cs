@@ -4,135 +4,112 @@ using Microsoft.AspNetCore.Http;
 using MarketMinds.Web.Models;
 using MarketMinds.Shared.Services.DreamTeam.ChatService;
 using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.Services.ConversationService;
+using MarketMinds.Shared.Services.MessageService;
+using MarketMinds.Shared.Models;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace MarketMinds.Web.Controllers
 {
     public class ChatBotController : Controller
     {
         private readonly ILogger<ChatBotController> _logger;
-        private readonly IChatService _chatService;
+        private readonly IConversationService _conversationService;
+        private readonly IMessageService _messageService;
         private readonly IChatbotService _chatbotService;
+        
+        private const int DefaultUserId = 1;
+        private const string WelcomeMessage = "Hello! I'm your shopping assistant. How can I help you today?";
 
         public ChatBotController(
             ILogger<ChatBotController> logger,
-            IChatService chatService,
+            IConversationService conversationService,
+            IMessageService messageService,
             IChatbotService chatbotService)
         {
             _logger = logger;
-            _chatService = chatService;
+            _conversationService = conversationService;
+            _messageService = messageService;
             _chatbotService = chatbotService;
         }
 
         [AllowAnonymous]
-        public IActionResult Index(int? conversationId = null)
+        public async Task<IActionResult> Index(int? conversationId = null)
         {
             var viewModel = new ChatViewModel();
             
             try
             {
                 // Get current user ID
-                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1;
+                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : DefaultUserId;
                 
-                // Get conversation data from session
-                string conversationsJson = HttpContext.Session.GetString("UserConversations");
-                List<MarketMinds.Shared.Models.Conversation> userConversations;
-                
-                if (!string.IsNullOrEmpty(conversationsJson))
+                // Set the current user for the chatbot service
+                if (User.Identity.IsAuthenticated)
                 {
-                    userConversations = JsonConvert.DeserializeObject<List<MarketMinds.Shared.Models.Conversation>>(conversationsJson);
+                    _chatbotService.SetCurrentUser(new User { Id = userId });
                 }
-                else
+                
+                // Get all conversations for the user
+                try
                 {
-                    // Create initial mock conversations
-                    userConversations = new List<MarketMinds.Shared.Models.Conversation>();
-                    for (int i = 1; i <= 3; i++)
-                    {
-                        userConversations.Add(new MarketMinds.Shared.Models.Conversation
-                        {
-                            Id = i,
-                            UserId = userId
-                        });
-                    }
+                    _logger.LogInformation("Getting conversations for user ID: {UserId}", userId);
+                    viewModel.Conversations = await _conversationService.GetUserConversationsAsync(userId);
+                    _logger.LogInformation("Retrieved {Count} conversations", viewModel.Conversations.Count);
                     
-                    // Save to session
-                    HttpContext.Session.SetString("UserConversations", JsonConvert.SerializeObject(userConversations));
+                    // If no conversations exist, create one automatically
+                    if (viewModel.Conversations.Count == 0)
+                    {
+                        _logger.LogInformation("No conversations found, creating a new conversation");
+                        await CreateNewConversationWithWelcomeMessage(userId, viewModel);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting user conversations: {Message}", ex.Message);
+                    viewModel.Conversations = new List<Conversation>();
                 }
                 
-                viewModel.Conversations = userConversations;
-                
-                // If a specific conversation is selected
+                // Select the requested conversation if specified
                 if (conversationId.HasValue && conversationId.Value > 0)
                 {
-                    // Find the selected conversation in our list
-                    viewModel.CurrentConversation = viewModel.Conversations.FirstOrDefault(c => c.Id == conversationId.Value);
-                    
-                    // If it's not in our list but has a valid ID, create it
-                    if (viewModel.CurrentConversation == null)
+                    try
                     {
-                        viewModel.CurrentConversation = new MarketMinds.Shared.Models.Conversation
-                        {
-                            Id = conversationId.Value,
-                            UserId = userId
-                        };
+                        // Get the specific conversation
+                        _logger.LogInformation("Getting conversation ID: {ConversationId}", conversationId.Value);
+                        viewModel.CurrentConversation = await _conversationService.GetConversationByIdAsync(conversationId.Value);
                         
-                        userConversations.Add(viewModel.CurrentConversation);
-                        HttpContext.Session.SetString("UserConversations", JsonConvert.SerializeObject(userConversations));
+                        // Get messages for this conversation
+                        viewModel.Messages = await _messageService.GetMessagesLegacyAsync(conversationId.Value);
+                        _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}", 
+                            viewModel.Messages?.Count ?? 0, conversationId.Value);
                     }
-                    
-                    // Get messages for this conversation
-                    string messagesKey = $"Messages_{conversationId.Value}";
-                    string messagesJson = HttpContext.Session.GetString(messagesKey);
-                    
-                    if (!string.IsNullOrEmpty(messagesJson))
+                    catch (Exception ex)
                     {
-                        var sessionMessages = JsonConvert.DeserializeObject<List<MessageViewModel>>(messagesJson);
-                        
-                        // Convert MessageViewModel to Message
-                        viewModel.Messages = sessionMessages.Select(m => new MarketMinds.Shared.Models.Message
-                        {
-                            Id = m.Id,
-                            ConversationId = m.ConversationId,
-                            UserId = m.UserId,
-                            Content = m.Content
-                        }).ToList();
-                    }
-                    else
-                    {
-                        // Create empty message list
-                        viewModel.Messages = new List<MarketMinds.Shared.Models.Message>();
+                        _logger.LogError(ex, "Error getting conversation {ConversationId}: {Message}", 
+                            conversationId.Value, ex.Message);
                     }
                 }
-                // If user has conversations, select the first one by default
-                else if (viewModel.Conversations.Count > 0)
+                // If no specific conversation requested, select the first one by default
+                else if (viewModel.Conversations != null && viewModel.Conversations.Count > 0)
                 {
-                    viewModel.CurrentConversation = viewModel.Conversations[0];
-                    
-                    // Get messages for this conversation
-                    string messagesKey = $"Messages_{viewModel.CurrentConversation.Id}";
-                    string messagesJson = HttpContext.Session.GetString(messagesKey);
-                    
-                    if (!string.IsNullOrEmpty(messagesJson))
+                    try
                     {
-                        var sessionMessages = JsonConvert.DeserializeObject<List<MessageViewModel>>(messagesJson);
+                        viewModel.CurrentConversation = viewModel.Conversations[0];
                         
-                        // Convert MessageViewModel to Message
-                        viewModel.Messages = sessionMessages.Select(m => new MarketMinds.Shared.Models.Message
-                        {
-                            Id = m.Id,
-                            ConversationId = m.ConversationId,
-                            UserId = m.UserId,
-                            Content = m.Content
-                        }).ToList();
+                        _logger.LogInformation("Getting messages for conversation {ConversationId}", viewModel.CurrentConversation.Id);
+                        viewModel.Messages = await _messageService.GetMessagesLegacyAsync(viewModel.CurrentConversation.Id);
+                        _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}", 
+                            viewModel.Messages?.Count ?? 0, viewModel.CurrentConversation.Id);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        // Create empty message list
-                        viewModel.Messages = new List<MarketMinds.Shared.Models.Message>();
+                        _logger.LogError(ex, "Error getting messages for conversation {ConversationId}: {Message}", 
+                            viewModel.CurrentConversation.Id, ex.Message);
+                        viewModel.Messages = new List<Message>();
                     }
                 }
             }
@@ -144,60 +121,64 @@ namespace MarketMinds.Web.Controllers
             
             return View(viewModel);
         }
+        
+        private async Task CreateNewConversationWithWelcomeMessage(int userId, ChatViewModel viewModel)
+        {
+            try
+            {
+                // Create the conversation
+                _logger.LogInformation("Creating new conversation for user {UserId}", userId);
+                var conversation = await _conversationService.CreateConversationAsync(userId);
+                _logger.LogInformation("Created conversation with ID: {ConversationId}", conversation.Id);
+                
+                // Add welcome message
+                _logger.LogInformation("Adding welcome message to conversation {ConversationId}", conversation.Id);
+                var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, DefaultUserId, WelcomeMessage);
+                _logger.LogInformation("Added welcome message with ID: {MessageId}", welcomeMessage.Id);
+                
+                // Update the view model with the new conversation
+                viewModel.Conversations.Add(conversation);
+                viewModel.CurrentConversation = conversation;
+                
+                viewModel.Messages = new List<Message> { welcomeMessage };
+                _logger.LogInformation("View model updated with new conversation and welcome message");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating new conversation with welcome message: {Message}", ex.Message);
+                throw; // Re-throw to be handled by the calling method
+            }
+        }
 
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateConversation()
         {
-            _logger.LogInformation("Creating a new conversation");
+            _logger.LogInformation("CreateConversation action called");
             
             try
             {
                 // Get current user ID
-                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1;
-                
-                // Get existing conversations from session
-                string conversationsJson = HttpContext.Session.GetString("UserConversations");
-                List<MarketMinds.Shared.Models.Conversation> userConversations;
-                
-                if (!string.IsNullOrEmpty(conversationsJson))
-                {
-                    userConversations = JsonConvert.DeserializeObject<List<MarketMinds.Shared.Models.Conversation>>(conversationsJson);
-                }
-                else
-                {
-                    userConversations = new List<MarketMinds.Shared.Models.Conversation>();
-                }
-                
-                // Generate a new conversation ID (making sure it's unique)
-                int newId = 1;
-                if (userConversations.Any())
-                {
-                    newId = userConversations.Max(c => c.Id) + 1;
-                }
+                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : DefaultUserId;
                 
                 // Create a new conversation
-                var newConversation = new MarketMinds.Shared.Models.Conversation
-                {
-                    Id = newId,
-                    UserId = userId
-                };
+                var conversation = await _conversationService.CreateConversationAsync(userId);
+                _logger.LogInformation("Created conversation with ID: {ConversationId}", conversation.Id);
                 
-                // Add to the list and save to session
-                userConversations.Add(newConversation);
-                HttpContext.Session.SetString("UserConversations", JsonConvert.SerializeObject(userConversations));
+                // Add welcome message
+                var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, DefaultUserId, WelcomeMessage);
+                _logger.LogInformation("Added welcome message with ID: {MessageId}", welcomeMessage.Id);
                 
-                _logger.LogInformation("Created new conversation with ID: {ConversationId}", newId);
-                
-                return RedirectToAction("Index", new { conversationId = newId });
+                return RedirectToAction("Index", new { conversationId = conversation.Id });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating conversation: {Message}", ex.Message);
+                
+                // Redirect to index without a specific conversation ID
+                return RedirectToAction("Index");
             }
-            
-            return RedirectToAction("Index");
         }
 
         [HttpPost]
@@ -209,67 +190,47 @@ namespace MarketMinds.Web.Controllers
             
             try
             {
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    return RedirectToAction("Index", new { conversationId });
+                }
+                
                 // Get current user ID
-                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1;
+                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : DefaultUserId;
                 
-                // Get existing messages from session
-                string messagesKey = $"Messages_{conversationId}";
-                string messagesJson = HttpContext.Session.GetString(messagesKey);
-                List<MessageViewModel> messages;
+                // Send user message
+                var userMessage = await _messageService.CreateMessageAsync(conversationId, userId, content);
+                _logger.LogInformation("Created user message with ID: {MessageId}", userMessage.Id);
                 
-                if (!string.IsNullOrEmpty(messagesJson))
-                {
-                    messages = JsonConvert.DeserializeObject<List<MessageViewModel>>(messagesJson);
-                }
-                else
-                {
-                    messages = new List<MessageViewModel>();
-                }
-                
-                // Add the user's message
-                messages.Add(new MessageViewModel
-                {
-                    Id = messages.Count + 1,
-                    ConversationId = conversationId,
-                    UserId = userId,
-                    Content = content,
-                    IsFromUser = true
-                });
-                
-                // Try to get a bot response
+                // Get bot response
                 try
                 {
-                    string botResponse = await _chatbotService.GetBotResponseAsync(content);
-                    
-                    // Add the bot's response
-                    messages.Add(new MessageViewModel
+                    // Set the current user for the chatbot service if authenticated
+                    if (User.Identity.IsAuthenticated)
                     {
-                        Id = messages.Count + 1,
-                        ConversationId = conversationId,
-                        UserId = 0, // Bot user ID
-                        Content = botResponse ?? "I'm sorry, I couldn't process your request.",
-                        IsFromUser = false
-                    });
+                        _chatbotService.SetCurrentUser(new User { Id = userId });
+                    }
                     
-                    _logger.LogInformation("Bot response: {Response}", botResponse);
+                    // Get bot response
+                    string botResponse = await _chatbotService.GetBotResponseAsync(content);
+                    _logger.LogInformation("Received bot response: {Response}", botResponse);
+                    
+                    // Send bot response as a message
+                    if (!string.IsNullOrEmpty(botResponse))
+                    {
+                        var botMessage = await _messageService.CreateMessageAsync(conversationId, DefaultUserId, botResponse);
+                        _logger.LogInformation("Created bot message with ID: {MessageId}", botMessage.Id);
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error getting bot response: {Message}", ex.Message);
                     
-                    // Add a fallback response if the bot service fails
-                    messages.Add(new MessageViewModel
-                    {
-                        Id = messages.Count + 1,
-                        ConversationId = conversationId,
-                        UserId = 0, // Bot user ID
-                        Content = "I'm sorry, I'm having trouble understanding right now. Please try again later.",
-                        IsFromUser = false
-                    });
+                    // Send a fallback response if the bot service fails
+                    var errorMessage = "I'm sorry, I'm having trouble understanding right now. Please try again later.";
+                    await _messageService.CreateMessageAsync(conversationId, DefaultUserId, errorMessage);
+                    _logger.LogInformation("Created error message for failed bot response");
                 }
-                
-                // Save updated messages to session
-                HttpContext.Session.SetString(messagesKey, JsonConvert.SerializeObject(messages));
             }
             catch (Exception ex)
             {

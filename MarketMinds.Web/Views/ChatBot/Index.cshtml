@@ -1,6 +1,7 @@
 @model MarketMinds.Web.Models.ChatViewModel
 @{
     ViewData["Title"] = "ChatBot";
+    const int DefaultUserId = 1;
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -29,7 +30,7 @@
                                ? "bg-primary/10 border-l-4 border-primary hover:bg-primary/20" 
                                : "bg-gray-100 hover:bg-gray-200") rounded-md cursor-pointer">
                             <p class="font-medium">Conversation @conversation.Id</p>
-                            <p class="text-sm text-gray-600 truncate">User ID: @conversation.UserId</p>
+                            <p class="text-sm text-gray-600 truncate">@(DateTime.Now.AddDays(-conversation.Id % 7).ToString("MMM dd, yyyy"))</p>
                         </a>
                     }
                 }
@@ -60,12 +61,15 @@
             </div>
             
             <!-- Messages Container -->
-            <div class="flex-1 p-4 overflow-y-auto space-y-4">
+            <div class="flex-1 p-4 overflow-y-auto space-y-4" id="messagesContainer">
                 @if (Model.Messages != null && Model.Messages.Any())
                 {
-                    @foreach (var message in Model.Messages)
+                    @for (int i = 0; i < Model.Messages.Count; i++)
                     {
-                        if (message.UserId == (User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1))
+                        var message = Model.Messages[i];
+                        var isUserMessage = i % 2 == 1; // Odd indices are user messages, even indices are bot messages
+                        
+                        if (isUserMessage)
                         {
                             <!-- User Message -->
                             <div class="flex justify-end mb-2">
@@ -109,6 +113,7 @@
                         <input 
                             type="text" 
                             name="content"
+                            id="messageInput"
                             class="flex-1 border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" 
                             placeholder="Type your message here..."
                             required
@@ -135,4 +140,22 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        // Scroll to bottom of messages on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Auto-focus the message input if a conversation is selected
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.focus();
+            }
+        });
+    </script>
+} 

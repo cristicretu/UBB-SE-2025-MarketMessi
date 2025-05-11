@@ -12,6 +12,8 @@ using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.BasketService;
 using MarketMinds.Shared.Services.UserService;
+using MarketMinds.Shared.Services.ConversationService;
+using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
 
@@ -62,6 +64,8 @@ builder.Services.AddSingleton<BasketProxyRepository>();
 builder.Services.AddSingleton<UserProxyRepository>();
 builder.Services.AddSingleton<ChatProxyRepository>();
 builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRepository>();
+builder.Services.AddSingleton<ConversationProxyRepository>();
+builder.Services.AddSingleton<MessageProxyRepository>();
 
 // Register services
 builder.Services.AddTransient<IAuctionProductService, MarketMinds.Shared.Services.AuctionProductsService.AuctionProductsService>();
@@ -76,6 +80,8 @@ builder.Services.AddTransient<IBasketService, BasketService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatService.IChatService, MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService>();
 builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService, MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService>();
+builder.Services.AddTransient<IConversationService, ConversationService>();
+builder.Services.AddTransient<IMessageService, MessageService>();
 
 // Register repository interfaces
 builder.Services.AddTransient<IProductCategoryRepository>(sp => sp.GetRequiredService<ProductCategoryProxyRepository>());
@@ -85,6 +91,8 @@ builder.Services.AddTransient<IBasketRepository>(sp => sp.GetRequiredService<Bas
 builder.Services.AddTransient<IAccountRepository>(sp => sp.GetRequiredService<UserProxyRepository>());
 builder.Services.AddTransient<IChatRepository>(sp => sp.GetRequiredService<ChatProxyRepository>());
 builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>(sp => sp.GetRequiredService<MarketMinds.Shared.ProxyRepository.ChatbotProxyRepository>());
+builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
+builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 
 var app = builder.Build();
 
