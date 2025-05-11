@@ -66,10 +66,13 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 throw new ArgumentException("Price cannot be negative.", nameof(product.Price));
             }
 
-            if (product.Seller == null || product.Seller.Id == 0)
+            if (product.SellerId <= 0)
             {
-                throw new ArgumentException("Valid seller is required.", nameof(product.Seller));
+                throw new ArgumentException("Valid seller ID is required.", nameof(product.SellerId));
             }
+
+            Console.WriteLine($"Creating buy product with SellerId={product.SellerId}, " +
+                             $"Seller object: {(product.Seller != null ? $"Id={product.Seller.Id}" : "null")}");
 
             try
             {
@@ -77,7 +80,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                 {
                     product.Title,
                     product.Description,
-                    SellerId = product.Seller?.Id ?? 0,
+                    SellerId = product.SellerId,
                     ConditionId = product.Condition?.Id,
                     CategoryId = product.Category?.Id,
                     product.Price,
@@ -88,6 +91,7 @@ namespace MarketMinds.Shared.Services.BuyProductsService
                            : product.Images.Select(img => new { img.Url }).Cast<object>().ToList()
                 };
 
+                Console.WriteLine($"Sending to API: SellerId={productToSend.SellerId}");
                 var responseJson = buyProductsRepository.CreateListing(productToSend);
                 // Could deserialize response if needed
             }

@@ -5,9 +5,11 @@ using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.BuyProductsService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class BuyProductsController : Controller
     {
         private readonly ILogger<BuyProductsController> _logger;
@@ -25,6 +27,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: BuyProducts
+        [AllowAnonymous]
         public IActionResult Index()
         {
             try
@@ -52,6 +55,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: BuyProducts/Details/5
+        [AllowAnonymous]
         public IActionResult Details(int id)
         {
             try
