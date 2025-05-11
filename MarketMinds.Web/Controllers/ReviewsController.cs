@@ -153,14 +153,24 @@ namespace MarketMinds.Web.Controllers
                         return View(review);
                     }
 
-                    _reviewsService.AddReview(
-                        review.Description,
-                        reviewImages,
-                        review.Rating,
-                        seller,
-                        currentUser);
-
-                    return RedirectToAction(nameof(ReviewsGiven));
+                    try {
+                        _reviewsService.AddReview(
+                            review.Description,
+                            reviewImages,
+                            review.Rating,
+                            seller,
+                            currentUser);
+                        
+                        _logger.LogInformation($"Review created successfully for seller: {seller.Id} by buyer: {currentUser.Id}");
+                        return RedirectToAction(nameof(ReviewsGiven));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error creating review: {ex.Message}");
+                        ModelState.AddModelError("", $"Error creating review: {ex.Message}");
+                        ViewBag.Seller = seller;
+                        return View(review);
+                    }
                 }
 
                 var sellerForView = await _userService.GetUserByIdAsync(review.SellerId);
