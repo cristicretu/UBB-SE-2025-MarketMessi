@@ -24,7 +24,7 @@ namespace MarketMinds.Test.Services
         private Mock<IBuyProductsService> _mockBuyService;
         private Mock<IBorrowProductsService> _mockBorrowService;
         private Mock<IAuctionProductsService> _mockAuctionService;
-        private ListingCreationService _service;
+        private IListingCreationService _service;
         private Product _testProduct;
 
         [SetUp]
