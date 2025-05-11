@@ -16,7 +16,6 @@ using MarketMinds.Shared.Services.BorrowProductsService;
 using MarketMinds.Shared.Services.BuyProductsService;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using MarketMinds.Shared.Services.DreamTeam.ChatService;
 
 namespace MarketMinds.Web.Controllers
 {
@@ -30,7 +29,6 @@ namespace MarketMinds.Web.Controllers
         private readonly IProductConditionService _conditionService;
         private readonly IImageUploadService _imageUploadService;
         private readonly IBorrowProductsService _borrowProductsService;
-        private readonly IChatService _chatService;
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -39,8 +37,7 @@ namespace MarketMinds.Web.Controllers
             IProductCategoryService categoryService,
             IProductConditionService conditionService,
             IImageUploadService imageUploadService,
-            IBorrowProductsService borrowProductsService,
-            IChatService chatService)
+            IBorrowProductsService borrowProductsService)
         {
             _logger = logger;
             _auctionProductService = auctionProductService;
@@ -49,7 +46,6 @@ namespace MarketMinds.Web.Controllers
             _conditionService = conditionService;
             _imageUploadService = imageUploadService;
             _borrowProductsService = borrowProductsService;
-            _chatService = chatService;
         }
 
         [AllowAnonymous]
@@ -62,86 +58,6 @@ namespace MarketMinds.Web.Controllers
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        [AllowAnonymous]
-        public async Task<IActionResult> Chat(int? conversationId = null)
-        {
-            var viewModel = new ChatViewModel();
-            
-            try
-            {
-                // Get current user ID
-                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1;
-                
-                // Get all conversations for the user
-                viewModel.Conversations = await _chatService.GetUserConversationsAsync(userId);
-                
-                // If a specific conversation is selected
-                if (conversationId.HasValue && conversationId.Value > 0)
-                {
-                    viewModel.CurrentConversation = await _chatService.GetConversationAsync(conversationId.Value);
-                    viewModel.Messages = await _chatService.GetMessagesAsync(conversationId.Value);
-                }
-                // If user has conversations, select the first one by default
-                else if (viewModel.Conversations.Count > 0)
-                {
-                    viewModel.CurrentConversation = viewModel.Conversations[0];
-                    viewModel.Messages = await _chatService.GetMessagesAsync(viewModel.CurrentConversation.Id);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading chat data");
-                // Continue with empty data
-            }
-            
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> CreateConversation()
-        {
-            try
-            {
-                // Get current user ID
-                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1;
-                
-                // Create a new conversation
-                var conversation = await _chatService.CreateConversationAsync(userId);
-                
-                if (conversation != null)
-                {
-                    return RedirectToAction("Chat", new { conversationId = conversation.Id });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating conversation");
-            }
-            
-            return RedirectToAction("Chat");
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> SendMessage(int conversationId, string content)
-        {
-            try
-            {
-                // Get current user ID
-                int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : 1;
-                
-                // Send message
-                await _chatService.SendMessageAsync(conversationId, userId, content);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending message");
-            }
-            
-            return RedirectToAction("Chat", new { conversationId });
         }
 
         // GET: Home/Account
