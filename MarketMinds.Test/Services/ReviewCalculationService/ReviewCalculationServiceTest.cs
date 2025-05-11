@@ -55,7 +55,7 @@ namespace MarketMinds.Test.Services
         private const int EXPECTED_COUNT_THREE = 3;
         private const int EXPECTED_COUNT_TWO = 2;
 
-        private ReviewCalculationService _service;
+        private IReviewCalculationService _service;
 
 
         [SetUp]
