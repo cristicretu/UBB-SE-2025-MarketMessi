@@ -312,6 +312,20 @@ namespace MarketMinds.Web.Controllers
                 // Calculate the totals with any applied promo code
                 var basketTotals = _basketService.CalculateBasketTotals(basket.Id, promoCode);
                 
+                // Manually calculate the subtotal and total to ensure accuracy
+                double calculatedSubtotal = 0;
+                if (basket.Items != null && basket.Items.Count > 0)
+                {
+                    foreach (var item in basket.Items)
+                    {
+                        calculatedSubtotal += (item.Price * item.Quantity);
+                    }
+                    
+                    Debug.WriteLine($"DEBUG: Manually calculated subtotal: {calculatedSubtotal}");
+                    basketTotals.Subtotal = calculatedSubtotal;
+                    basketTotals.TotalAmount = calculatedSubtotal - basketTotals.Discount;
+                }
+                
                 // Perform the checkout
                 bool success = await _basketService.CheckoutBasketAsync(userId, basket.Id, basketTotals.Discount, basketTotals.TotalAmount);
                 

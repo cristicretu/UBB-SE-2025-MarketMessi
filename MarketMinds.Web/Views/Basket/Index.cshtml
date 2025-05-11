@@ -128,9 +128,21 @@
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
                     
+                    @{
+                        // Calculate subtotal directly from basket items
+                        double calculatedSubtotal = 0;
+                        if (Model.Items != null)
+                        {
+                            foreach (var item in Model.Items)
+                            {
+                                calculatedSubtotal += (item.Price * item.Quantity);
+                            }
+                        }
+                    }
+                    
                     <div class="flex justify-between py-2 border-b">
                         <span>Subtotal</span>
-                        <span>@string.Format("${0:F2}", ViewBag.BasketTotals.Subtotal)</span>
+                        <span>@string.Format("${0:F2}", calculatedSubtotal)</span>
                     </div>
                     
                     @if (ViewBag.BasketTotals.Discount > 0)
@@ -143,7 +155,7 @@
                     
                     <div class="flex justify-between py-2 border-b font-bold">
                         <span>Total</span>
-                        <span>@string.Format("${0:F2}", ViewBag.BasketTotals.TotalAmount)</span>
+                        <span>@string.Format("${0:F2}", calculatedSubtotal - ViewBag.BasketTotals.Discount)</span>
                     </div>
                     
                     <form asp-action="ApplyPromoCode" method="post" class="mt-4">
