@@ -556,12 +556,9 @@ public async Task<IActionResult> CreateBuyProduct(BuyProduct buyProduct, string 
 {
     _logger.LogInformation("Creating a new buy product");
     
-    // Log all available claims to see what we have
-    _logger.LogInformation("User authentication status: {IsAuthenticated}", User.Identity?.IsAuthenticated);
-    foreach (var claim in User.Claims)
-    {
-        _logger.LogInformation("Claim found - Type: {ClaimType}, Value: {ClaimValue}", claim.Type, claim.Value);
-    }
+    // Log user authentication status and count of claims
+    _logger.LogInformation("User authentication status: {IsAuthenticated}, Claims count: {ClaimsCount}", 
+        User.Identity?.IsAuthenticated, User.Claims?.Count() ?? 0);
     
     // Debug log all received values
     _logger.LogInformation("Initial buyProduct.SellerId: {SellerId}", buyProduct?.SellerId);
