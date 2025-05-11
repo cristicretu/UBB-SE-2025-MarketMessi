@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +40,7 @@ namespace MarketMinds.Web.Controllers
         }
     }
 
+    [Authorize]
     public class AuctionProductsController : Controller
     {
         private readonly ILogger<AuctionProductsController> _logger;
@@ -53,6 +55,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: AuctionProducts
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             try
@@ -70,6 +73,7 @@ namespace MarketMinds.Web.Controllers
         }
 
         // GET: AuctionProducts/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             try
