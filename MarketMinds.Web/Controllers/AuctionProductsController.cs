@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -93,6 +94,82 @@ namespace MarketMinds.Web.Controllers
             {
                 _logger.LogError(ex, $"Error fetching auction product {id}");
                 return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: AuctionProducts/PlaceBid
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [Route("AuctionProducts/PlaceBid")]
+        public async Task<IActionResult> PlaceBid(int id, int bidAmount)
+        {
+            try
+            {
+                _logger.LogInformation($"Placing bid of {bidAmount} on auction {id}");
+
+                // Get the current user's ID from claims
+                int userId;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out userId))
+                {
+                    // Continue with the bid
+                }
+                else
+                {
+                    // Try to get the user ID from a custom claim if needed
+                    var customIdClaim = User.FindFirst("UserId");
+                    if (customIdClaim != null && int.TryParse(customIdClaim.Value, out userId))
+                    {
+                        // Continue with the bid
+                    }
+                    else
+                    {
+                        // Handle missing user ID gracefully
+                        _logger.LogWarning("No valid user ID found in claims. Redirecting to login.");
+                        TempData["ErrorMessage"] = "You must be logged in to place a bid.";
+                        return RedirectToAction("Login", "Account");
+                    }
+                }
+                
+                // Validate the auction exists
+                var auction = await _auctionProductService.GetAuctionProductByIdAsync(id);
+                if (auction == null || auction.Id == 0)
+                {
+                    _logger.LogWarning($"Auction product with ID {id} not found when placing bid");
+                    TempData["ErrorMessage"] = "Auction not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+                
+                // Validate bid is positive
+                if (bidAmount <= 0)
+                {
+                    _logger.LogWarning($"Invalid bid amount: {bidAmount}");
+                    TempData["ErrorMessage"] = "Bid amount must be positive.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
+                // Place the bid
+                bool success = await _auctionProductService.PlaceBidAsync(id, userId, bidAmount);
+                
+                if (success)
+                {
+                    _logger.LogInformation($"Bid successfully placed on auction {id}");
+                    TempData["SuccessMessage"] = "Your bid was successfully placed!";
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to place bid on auction {id}");
+                    TempData["ErrorMessage"] = "Failed to place bid. It may be too low or the auction has ended.";
+                }
+                
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error placing bid on auction {id}");
+                TempData["ErrorMessage"] = $"Error placing bid: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
             }
         }
 

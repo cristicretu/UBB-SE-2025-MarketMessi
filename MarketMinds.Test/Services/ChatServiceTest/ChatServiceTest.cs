@@ -77,3 +77,4 @@ namespace MarketMinds.Tests.Services.ChatServiceTest
         }
     }
 }
+

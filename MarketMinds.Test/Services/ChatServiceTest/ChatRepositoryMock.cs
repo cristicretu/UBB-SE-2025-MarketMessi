@@ -58,3 +58,4 @@ namespace MarketMinds.Test.Services.ChatServiceTest
         public void AddTestMessages(IEnumerable<Message> m) => _messages.AddRange(m);
     }
 }
+
