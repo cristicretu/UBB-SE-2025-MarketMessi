@@ -1,11 +1,14 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ReviewService;
+using MarketMinds.Shared.Services.UserService;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace MarketMinds.Test.Services.ReviewService
 {
@@ -13,11 +16,11 @@ namespace MarketMinds.Test.Services.ReviewService
     internal class ReviewServiceTest
     {
         // Constants for User IDs
-        private const int SELLER_1_ID = 1;
-        private const int SELLER_2_ID = 2;
-        private const int BUYER_ID = 3;
-        private const int BUYER_1_ID = 2;
-        private const int BUYER_2_ID = 3;
+        private const string SELLER_1_ID = "1";
+        private const string SELLER_2_ID = "2";
+        private const string BUYER_ID = "3";
+        private const string BUYER_1_ID = "2";
+        private const string BUYER_2_ID = "3";
 
         // Constants for User names
         private const string SELLER_1_NAME = "Marcel";
@@ -64,9 +67,14 @@ namespace MarketMinds.Test.Services.ReviewService
         [Test]
         public void GetAllReviewsBySeller_ShouldReturnOnlySellerReviews()
         {
+
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockUserService = new Mock<IUserService>();
+            var currentUser = new User("1", "TestUser", "test@mail.com");
+
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
-            _reviewsService = new ReviewsService(_mockRepository);
+            _reviewsService = new ReviewsService(mockConfiguration.Object, mockUserService.Object, currentUser);
 
             var seller1 = new User(SELLER_1_ID, SELLER_1_NAME, SELLER_1_EMAIL);
             var seller2 = new User(SELLER_2_ID, SELLER_2_NAME, SELLER_2_EMAIL);
@@ -87,9 +95,13 @@ namespace MarketMinds.Test.Services.ReviewService
         [Test]
         public void GetReviewsByBuyer_ShouldReturnOnlyBuyerReviews()
         {
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockUserService = new Mock<IUserService>();
+            var currentUser = new User("1", "TestUser", "test@mail.com");
+
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
-            _reviewsService = new ReviewsService(_mockRepository);
+            _reviewsService = new ReviewsService(mockConfiguration.Object, mockUserService.Object, currentUser);
 
             var seller = new User(SELLER_1_ID, SELLER_1_NAME, SELLER_1_EMAIL);
             var buyer1 = new User(BUYER_1_ID, SELLER_2_NAME, SELLER_2_EMAIL); // Reusing Seller2 constants for buyer1
@@ -110,9 +122,13 @@ namespace MarketMinds.Test.Services.ReviewService
         [Test]
         public void AddReview_ShouldAddReviewToRepository()
         {
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockUserService = new Mock<IUserService>();
+            var currentUser = new User("1", "TestUser", "test@mail.com");
+
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
-            _reviewsService = new ReviewsService(_mockRepository);
+            _reviewsService = new ReviewsService(mockConfiguration.Object, mockUserService.Object, currentUser);
 
             var seller = new User(SELLER_1_ID, SELLER_LUCA_NAME, SELLER_LUCA_EMAIL);
             var buyer = new User(BUYER_1_ID, BUYER_CRISTI_NAME, BUYER_CRISTI_EMAIL);
@@ -134,9 +150,15 @@ namespace MarketMinds.Test.Services.ReviewService
         [Test]
         public void EditReview_ShouldUpdateReviewInRepository()
         {
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockUserService = new Mock<IUserService>();
+            var currentUser = new User("1", "TestUser", "test@mail.com");
+
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
-            _reviewsService = new ReviewsService(_mockRepository);
+            _reviewsService = new ReviewsService(mockConfiguration.Object, mockUserService.Object, currentUser);
+
+
 
             var seller = new User(SELLER_1_ID, SELLER_LUCA_NAME, SELLER_LUCA_EMAIL);
             var buyer = new User(BUYER_1_ID, BUYER_CRISTI_NAME, BUYER_CRISTI_EMAIL);
@@ -161,9 +183,13 @@ namespace MarketMinds.Test.Services.ReviewService
         [Test]
         public void DeleteReview_ShouldRemoveReviewFromRepository()
         {
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockUserService = new Mock<IUserService>();
+            var currentUser = new User("1", "TestUser", "test@mail.com");
+
             // Arrange
             _mockRepository = new ReviewRepositoryMock();
-            _reviewsService = new ReviewsService(_mockRepository);
+            _reviewsService = new ReviewsService(mockConfiguration.Object, mockUserService.Object, currentUser);
 
             var seller = new User(SELLER_1_ID, SELLER_LUCA_NAME, SELLER_LUCA_EMAIL);
             var buyer = new User(BUYER_1_ID, BUYER_CRISTI_NAME, BUYER_CRISTI_EMAIL);

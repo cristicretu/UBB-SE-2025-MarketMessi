@@ -1,0 +1,93 @@
+title Login Success Sequence
+
+actor User
+participant "AccountController\n(MarketMinds.Web)" as WebAC
+participant "UserService\n(MarketMinds.Shared)" as UserService
+participant "UserProxyRepository\n(MarketMinds.Shared)" as UserProxy
+participant "UsersController\n(Server.Controllers)" as ServerUC
+database "Database" as DB
+
+== User Login Process ==
+
+User -> WebAC: Submit login form with username/password
+activate WebAC
+
+WebAC -> WebAC: Validate input fields
+note over WebAC: Check if username and password are not empty
+
+WebAC -> UserService: GetUserByCredentialsAsync(username, password)
+activate UserService
+
+UserService -> UserService: Validate parameters
+note over UserService: Check username and password are not empty/whitespace
+
+UserService -> UserProxy: AuthenticateUserRawAsync(username, password)
+activate UserProxy
+
+UserProxy -> UserProxy: Create login request object
+note over UserProxy: Create JSON payload with username/password
+
+UserProxy -> ServerUC: POST /api/users/login
+activate ServerUC
+
+ServerUC -> ServerUC: Validate login request
+note over ServerUC: Check if request, username, or password are null/empty
+
+ServerUC -> DB: Query user with username
+activate DB
+DB --> ServerUC: Return user data (or null if not found)
+deactivate DB
+
+alt User not found
+    ServerUC --> UserProxy: HTTP 404 NotFound
+    UserProxy --> UserService: Throw exception
+    UserService --> WebAC: Return null
+    WebAC --> User: Display "Invalid login attempt" error
+else User found
+    ServerUC -> ServerUC: VerifyPassword(password, user.PasswordHash)
+    note over ServerUC: Hash input password and compare with stored hash
+    
+    alt Invalid Password
+        ServerUC --> UserProxy: HTTP 401 Unauthorized
+        UserProxy --> UserService: Throw exception
+        UserService --> WebAC: Return null
+        WebAC --> User: Display "Invalid login attempt" error
+    else Valid Password
+        ServerUC -> ServerUC: Create user response object
+        note over ServerUC: Include Id, Username, Email, UserType, Balance, Rating
+        
+        ServerUC --> UserProxy: HTTP 200 OK with user data JSON
+        deactivate ServerUC
+        
+        UserProxy -> UserProxy: Extract response content
+        UserProxy --> UserService: Return user data JSON
+        deactivate UserProxy
+        
+        UserService -> UserService: Deserialize JSON to User object
+        UserService -> UserService: ConvertToDomainUser(user)
+        UserService --> WebAC: Return authenticated User object
+        deactivate UserService
+        
+        WebAC -> WebAC: SignInUserAsync(user)
+        activate WebAC
+        
+        WebAC -> WebAC: Create claims with user info
+        note over WebAC: Claims include NameIdentifier (Id), Name (Username), Email
+        
+        WebAC -> WebAC: Create ClaimsIdentity with authentication scheme
+        WebAC -> WebAC: Create ClaimsPrincipal
+        
+        WebAC -> WebAC: HttpContext.SignInAsync(scheme, principal)
+        note over WebAC: Sign in user using cookie authentication
+        
+        WebAC -> WebAC: Log successful login
+        
+        alt Has return URL
+            WebAC --> User: Redirect to return URL
+        else No return URL
+            WebAC --> User: Redirect to Home Index page
+        end
+        deactivate WebAC
+    end
+end
+deactivate WebAC

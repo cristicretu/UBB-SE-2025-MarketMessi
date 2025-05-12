@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - MarketMinds</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
         tailwind.config = {
             theme: {
@@ -50,6 +51,9 @@
                                     </svg>
                                 </a>
                             </li>
+                                <li>
+                                    <a class="hover:text-primary-light transition" asp-controller="Admin" asp-action="Index">Admin</a>
+                                </li>
                             <li class="relative group">
                                 <a class="hover:text-primary-light transition flex items-center" href="#">
                                     <span>@User.Identity.Name</span>
@@ -97,6 +101,7 @@
         </div>
     </footer>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -1,74 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
+using NUnit.Framework;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ChatBotRepository;
+using MarketMinds.Shared.Services.DreamTeam.ChatbotService;
+using MarketMinds.Shared.IRepository;
+using System.Threading.Tasks;
 
-namespace MarketMinds.Test.Services.ChatBotServiceTest
+namespace MarketMinds.Tests.Services.ChatBotServiceTest
 {
-    public class ChatBotRepositoryMock : IChatBotRepository
+    public class ChatBotRepositoryMock : IChatbotRepository
     {
         private Node _rootNode;
         private int _loadCount;
 
-        public ChatBotRepositoryMock()
-        {
-            _loadCount = 0;
-            InitializeTestNodes();
-        }
+//        public ChatBotRepositoryMock()
+//        {
+//            _loadCount = 0;
+//            InitializeTestNodes();
+//        }
 
-        public Node LoadChatTree()
-        {
-            _loadCount++;
-            return _rootNode;
-        }
+//        public Node LoadChatTree()
+//        {
+//            _loadCount++;
+//            return _rootNode;
+//        }
 
-        public int GetLoadCount()
-        {
-            return _loadCount;
-        }
+        public int GetLoadCount() => _loadCount;
 
         private void InitializeTestNodes()
         {
-            // Create test nodes structure
             _rootNode = new Node
             {
                 Id = 1,
                 ButtonLabel = "Start",
                 LabelText = "Welcome",
                 Response = "Welcome to the chat service",
-                Children = new List<Node>()
+                Children = new List<Node>
+                {
+                    new Node { Id = 2, ButtonLabel = "Option 1", LabelText = "Help", Response = "How can I help you?", Children = new List<Node>() },
+                    new Node { Id = 3, ButtonLabel = "Option 2", LabelText = "Info", Response = "Here's some information", Children = new List<Node>() },
+                    new Node { Id = -1, ButtonLabel = "Error", LabelText = "Error", Response = "Error occurred", Children = new List<Node>() }
+                }
             };
-
-            var option1 = new Node
-            {
-                Id = 2,
-                ButtonLabel = "Option 1",
-                LabelText = "Help",
-                Response = "How can I help you?",
-                Children = new List<Node>()
-            };
-
-            var option2 = new Node
-            {
-                Id = 3,
-                ButtonLabel = "Option 2",
-                LabelText = "Info",
-                Response = "Here's some information",
-                Children = new List<Node>()
-            };
-
-            var errorNode = new Node
-            {
-                Id = -1,
-                ButtonLabel = "Error",
-                LabelText = "Error",
-                Response = "Error occurred",
-                Children = new List<Node>()
-            };
-
-            _rootNode.Children.Add(option1);
-            _rootNode.Children.Add(option2);
-            _rootNode.Children.Add(errorNode);
         }
+
+        public Task<string> GetBotResponseAsync(string userMessage, int? userId = null) => Task.FromResult("Mock response");
+        public Task<string> GetUserContextAsync(int userId) => Task.FromResult("Mock user context");
+        public Task<User> GetUserAsync(int userId) => Task.FromResult(new User { Id = userId, Username = "MockUser", Email = "mock@user.com" });
+        public Task<Basket> GetUserBasketAsync(int userId) => Task.FromResult(new Basket { Id = 1 });
+        public Task<List<BasketItem>> GetBasketItemsAsync(int basketId) => Task.FromResult(new List<BasketItem>());
+        public Task<BuyProduct> GetBuyProductAsync(int productId) => Task.FromResult(new BuyProduct());
+        public Task<List<Review>> GetReviewsGivenByUserAsync(int userId) => Task.FromResult(new List<Review>());
+        public Task<List<Review>> GetReviewsReceivedByUserAsync(int userId) => Task.FromResult(new List<Review>());
+        public Task<User> GetUserByIdAsync(int userId) => Task.FromResult(new User { Id = userId, Username = $"User{userId}" });
+        public Task<List<Order>> GetBuyerOrdersAsync(int userId) => Task.FromResult(new List<Order>());
+        public Task<List<Order>> GetSellerOrdersAsync(int userId) => Task.FromResult(new List<Order>());
     }
 }

@@ -1,0 +1,248 @@
+title Chatbot: New Conversation and Ask About Recent Orders 
+
+actor User
+
+participant "ChatBotController\n(MarketMinds.Web)" as WebChatBotC
+participant "ChatbotService (Client)\n(MarketMinds.Shared.Services)" as SharedChatbotS
+participant "ChatbotProxyRepository\n(MarketMinds.Shared.ProxyRepository)" as SharedChatbotRP
+participant "ChatbotController (Server)\n(server.Controllers)" as ServerChatbotC
+participant "ChatbotRepository (Server)\n(server.MarketMinds.Repositories)" as ServerChatbotRP
+participant "Gemini LLM API" as Gemini
+
+database "Database" as DB
+
+== User starts a new chatbot conversation ==
+User -> WebChatBotC : Opens chatbot page (GET /ChatBot/Index)
+activate WebChatBotC
+
+WebChatBotC -> SharedChatbotS : SetCurrentUser(user)
+activate SharedChatbotS
+SharedChatbotS -> SharedChatbotS : Set user context
+SharedChatbotS --> WebChatBotC : void
+deactivate SharedChatbotS
+
+WebChatBotC -> SharedChatbotS : InitializeChat()
+activate SharedChatbotS
+SharedChatbotS -> SharedChatbotS : Prepare chatbot state
+SharedChatbotS --> WebChatBotC : void
+deactivate SharedChatbotS
+
+WebChatBotC -> SharedChatbotS : GetCurrentResponse()
+activate SharedChatbotS
+SharedChatbotS -> SharedChatbotS : Return welcome message
+SharedChatbotS --> WebChatBotC : "Hello! I'm your shopping assistant..."
+deactivate SharedChatbotS
+
+WebChatBotC -> WebChatBotC : Render chat UI with welcome message
+WebChatBotC --> User : Shows welcome message
+
+deactivate WebChatBotC
+
+== User asks about recent orders ==
+User -> WebChatBotC : Sends message "Show my recent orders"
+activate WebChatBotC
+
+WebChatBotC -> SharedChatbotS : GetBotResponseAsync("Show my recent orders")
+activate SharedChatbotS
+
+note right of SharedChatbotS : Gather full user context for LLM prompt
+
+'--- User context fetch phase ---
+SharedChatbotS -> SharedChatbotRP : GetUserAsync(userId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/User/{userId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetUserAsync(userId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch user by ID
+activate DB
+DB --> ServerChatbotRP : User object
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : User object
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (User JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : User object
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetUserBasketAsync(userId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/UserBasket/{userId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetUserBasketAsync(userId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch basket by BuyerId
+activate DB
+DB --> ServerChatbotRP : Basket object
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : Basket object
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (Basket JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : Basket object
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetBasketItemsAsync(basketId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/BasketItems/{basketId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetBasketItemsAsync(basketId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch basket items by BasketId
+activate DB
+DB --> ServerChatbotRP : List<BasketItem>
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : List<BasketItem>
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (BasketItem JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : List<BasketItem>
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetBuyProductAsync(productId) (for each basket item)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/Product/{productId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetBuyProductAsync(productId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch product by ID
+activate DB
+DB --> ServerChatbotRP : BuyProduct object
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : BuyProduct object
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (BuyProduct JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : BuyProduct object
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetReviewsGivenByUserAsync(userId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/ReviewsGiven/{userId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetReviewsGivenByUserAsync(userId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch reviews by BuyerId
+activate DB
+DB --> ServerChatbotRP : List<Review>
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : List<Review>
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (Review JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : List<Review>
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetReviewsReceivedByUserAsync(userId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/ReviewsReceived/{userId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetReviewsReceivedByUserAsync(userId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch reviews by SellerId
+activate DB
+DB --> ServerChatbotRP : List<Review>
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : List<Review>
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (Review JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : List<Review>
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetBuyerOrdersAsync(userId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/BuyerOrders/{userId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetBuyerOrdersAsync(userId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch orders by BuyerId
+activate DB
+DB --> ServerChatbotRP : List<Order>
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : List<Order>
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (Order JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : List<Order>
+deactivate SharedChatbotRP
+
+SharedChatbotS -> SharedChatbotRP : GetSellerOrdersAsync(userId)
+activate SharedChatbotRP
+SharedChatbotRP -> ServerChatbotC : GET /api/Chatbot/SellerOrders/{userId}
+activate ServerChatbotC
+ServerChatbotC -> ServerChatbotRP : GetSellerOrdersAsync(userId)
+activate ServerChatbotRP
+ServerChatbotRP -> DB : Fetch orders by SellerId
+activate DB
+DB --> ServerChatbotRP : List<Order>
+deactivate DB
+ServerChatbotRP --> ServerChatbotC : List<Order>
+deactivate ServerChatbotRP
+ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (Order JSON)
+deactivate ServerChatbotC
+SharedChatbotRP --> SharedChatbotS : List<Order>
+deactivate SharedChatbotRP
+
+'--- End user context fetch phase ---
+
+SharedChatbotS -> SharedChatbotS : Format prompt with full user context
+
+alt Gemini API key missing
+    SharedChatbotS -> SharedChatbotRP : GetBotResponseAsync(userMessage, userId)
+    activate SharedChatbotRP
+    SharedChatbotRP -> ServerChatbotC : POST /api/Chatbot { Message, UserId }
+    activate ServerChatbotC
+    ServerChatbotC -> ServerChatbotRP : GetBotResponseAsync(userMessage, userId)
+    activate ServerChatbotRP
+    ServerChatbotRP -> ServerChatbotRP : Return fallback/generic response
+    ServerChatbotRP --> ServerChatbotC : "I'm sorry, I couldn't process your request at this time."
+    deactivate ServerChatbotRP
+    ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (fallback message)
+    deactivate ServerChatbotC
+    SharedChatbotRP --> SharedChatbotS : fallback message
+    deactivate SharedChatbotRP
+    SharedChatbotS --> WebChatBotC : fallback message
+    deactivate SharedChatbotS
+    WebChatBotC -> WebChatBotC : Add fallback to chat UI
+    WebChatBotC --> User : Shows fallback/error message
+    deactivate WebChatBotC
+else Error fetching user context (e.g. server down, network error)
+    SharedChatbotS -> SharedChatbotRP : GetBotResponseAsync(userMessage, userId)
+    activate SharedChatbotRP
+    SharedChatbotRP -> ServerChatbotC : POST /api/Chatbot { Message, UserId }
+    activate ServerChatbotC
+    ServerChatbotC -> ServerChatbotRP : GetBotResponseAsync(userMessage, userId)
+    activate ServerChatbotRP
+    ServerChatbotRP -> ServerChatbotRP : Return fallback/generic response
+    ServerChatbotRP --> ServerChatbotC : "I'm sorry, I couldn't process your request at this time."
+    deactivate ServerChatbotRP
+    ServerChatbotC --> SharedChatbotRP : HTTP 200 OK (fallback message)
+    deactivate ServerChatbotC
+    SharedChatbotRP --> SharedChatbotS : fallback message
+    deactivate SharedChatbotRP
+    SharedChatbotS --> WebChatBotC : fallback message
+    deactivate SharedChatbotS
+    WebChatBotC -> WebChatBotC : Add fallback to chat UI
+    WebChatBotC --> User : Shows fallback/error message
+    deactivate WebChatBotC
+else
+    SharedChatbotS -> Gemini : CallGeminiApiAsync(prompt, userMessage)
+    activate Gemini
+    alt Gemini returns valid response
+        Gemini --> SharedChatbotS : LLM response (summary, orders, or 'no orders')
+        SharedChatbotS --> WebChatBotC : LLM response
+        deactivate SharedChatbotS
+        WebChatBotC -> WebChatBotC : Add LLM response to chat UI
+        WebChatBotC --> User : Shows LLM response
+        deactivate WebChatBotC
+    else Gemini (LLM) call fails
+        Gemini --> SharedChatbotS : [Error/Exception]
+        SharedChatbotS -> SharedChatbotS : Catch exception, prepare fallback message
+        SharedChatbotS --> WebChatBotC : "I'm sorry, I couldn't process your request at this time."
+        deactivate SharedChatbotS
+        WebChatBotC -> WebChatBotC : Add fallback to chat UI
+        WebChatBotC --> User : Shows fallback/error message
+        deactivate WebChatBotC
+    end
+end 

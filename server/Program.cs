@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using DataAccessLayer; // Add namespace for DataBaseConnection
+using DataAccessLayer;
 using MarketMinds.Repositories.AuctionProductsRepository;
 using MarketMinds.Repositories.BuyProductsRepository;
 using MarketMinds.Repositories.BasketRepository;
@@ -7,14 +7,15 @@ using MarketMinds.Repositories.ReviewRepository;
 using MarketMinds.Repositories.ProductCategoryRepository;
 using MarketMinds.Repositories.ProductConditionRepository;
 using MarketMinds.Repositories.ProductTagRepository;
-using MarketMinds.Repositories.ConversationRepository; // Added from luca
-using MarketMinds.Repositories.MessageRepository;      // Added from luca
-using MarketMinds.Repositories.ChatbotRepository;      // Added new ChatbotRepository
-using MarketMinds.Shared.IRepository; // Added for shared interfaces
+using MarketMinds.Repositories.ConversationRepository;
+using MarketMinds.Repositories.MessageRepository;
+using MarketMinds.Repositories.ChatbotRepository;
+using MarketMinds.Shared.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Server.DataAccessLayer;
 using Server.MarketMinds.Repositories.BorrowProductsRepository;
 using Server.MarketMinds.Repositories.AccountRepository;
+using Server.MarketMinds.Repositories.UserRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,7 @@ builder.Services.AddSingleton<DataBaseConnection>();
 // EntityFramework database connection setup
 var initialCatalog = builder.Configuration["InitialCatalog"];
 var localDataSource = builder.Configuration["LocalDataSource"];
-var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;";
+var connectionString = $"Server={localDataSource};Database={initialCatalog};Trusted_Connection=True;TrustServerCertificate=True";
 builder.Services.AddDbContext<Server.DataAccessLayer.ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -56,6 +57,7 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

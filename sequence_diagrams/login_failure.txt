@@ -1,0 +1,115 @@
+title Login Failure Sequence
+
+actor User
+
+participant "LoginController\n(WebMarketplace)" as ClientLC
+participant "UserService\n(SharedClassLibrary)" as ClientUS
+participant "UserProxyRepository\n(SharedClassLibrary)" as ClientRP
+participant "UsersController\n(Server)" as ServerAPI
+participant "UserRepository\n(Server)" as ServerRP
+database "Database" as DB
+
+== Login attempt with wrong password ==
+User -> ClientLC : Enters credentials, Submits Login(model)
+activate ClientLC
+
+ClientLC -> ClientUS : AuthenticateUserAsync(model.Username, model.Password)
+activate ClientUS
+ClientUS -> ClientRP : AuthenticateUserRawAsync(model.Username, model.Password)
+activate ClientRP
+ClientRP -> ServerAPI : POST /api/users/login
+activate ServerAPI
+ServerAPI -> ServerRP : FindUserByUsernameAsync(model.Username)
+activate ServerRP
+ServerRP -> DB : Query user by username
+activate DB
+DB --> ServerRP : User data
+deactivate DB
+ServerRP --> ServerAPI : User object
+deactivate ServerRP
+
+note over ServerAPI : VerifyPassword fails: hashedInput != user.PasswordHash
+ServerAPI --> ClientRP : HTTP 401 Unauthorized ("Invalid credentials.")
+deactivate ServerAPI
+ClientRP --> ClientUS : HttpRequestException("Invalid credentials.")
+deactivate ClientRP
+ClientUS --> ClientLC : false (authentication failed)
+deactivate ClientUS
+
+ClientLC -> ClientLC : Set error message "Invalid username or password"
+ClientLC --> User : Return to login page with error
+deactivate ClientLC
+
+== Login attempt with non-existent username ==
+User -> ClientLC : Enters credentials, Submits Login(model)
+activate ClientLC
+
+ClientLC -> ClientUS : AuthenticateUserAsync(model.Username, model.Password)
+activate ClientUS
+ClientUS -> ClientRP : AuthenticateUserRawAsync(model.Username, model.Password)
+activate ClientRP
+ClientRP -> ServerAPI : POST /api/users/login
+activate ServerAPI
+ServerAPI -> ServerRP : FindUserByUsernameAsync(model.Username)
+activate ServerRP
+ServerRP -> DB : Query user by username
+activate DB
+DB --> ServerRP : No user found
+deactivate DB
+ServerRP --> ServerAPI : null
+deactivate ServerRP
+ServerAPI --> ClientRP : HTTP 404 Not Found ("User not found.")
+deactivate ServerAPI
+ClientRP --> ClientUS : HttpRequestException("User not found.")
+deactivate ClientRP
+ClientUS --> ClientLC : false (authentication failed)
+deactivate ClientUS
+
+ClientLC -> ClientLC : Set error message "User not found"
+ClientLC --> User : Return to login page with error
+deactivate ClientLC
+
+== Login attempt with empty credentials ==
+User -> ClientLC : Submits empty Login(model)
+activate ClientLC
+
+ClientLC -> ClientUS : AuthenticateUserAsync(model.Username, model.Password)
+activate ClientUS
+note over ClientUS : ArgumentException("Username cannot be null or empty.")
+ClientUS --> ClientLC : Exception("Username cannot be null or empty.")
+deactivate ClientUS
+
+ClientLC -> ClientLC : Set error message "Username and password are required"
+ClientLC --> User : Return to login page with error
+deactivate ClientLC
+
+== Successful login ==
+User -> ClientLC : Enters credentials, Submits Login(model)
+activate ClientLC
+
+ClientLC -> ClientUS : AuthenticateUserAsync(model.Username, model.Password)
+activate ClientUS
+ClientUS -> ClientRP : AuthenticateUserRawAsync(model.Username, model.Password)
+activate ClientRP
+ClientRP -> ServerAPI : POST /api/users/login
+activate ServerAPI
+ServerAPI -> ServerRP : FindUserByUsernameAsync(model.Username)
+activate ServerRP
+ServerRP -> DB : Query user by username
+activate DB
+DB --> ServerRP : User data
+deactivate DB
+ServerRP --> ServerAPI : User object
+deactivate ServerRP
+
+note over ServerAPI : VerifyPassword succeeds: hashedInput == user.PasswordHash
+ServerAPI --> ClientRP : HTTP 200 OK with user data
+deactivate ServerAPI
+ClientRP --> ClientUS : Success response with user data
+deactivate ClientRP
+ClientUS --> ClientLC : true (authentication successful)
+deactivate ClientUS
+
+ClientLC -> ClientLC : Set user session with user data
+ClientLC --> User : Redirect to dashboard
+deactivate ClientLC
