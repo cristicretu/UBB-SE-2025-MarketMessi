@@ -11,15 +11,15 @@ namespace MarketMinds.Shared.Services.AuctionProductsService
 {
     public class AuctionProductsService : IAuctionProductsService, IProductService, IAuctionProductService
     {
-        private readonly AuctionProductsProxyRepository auctionProductsRepository;
-
         private const int NULL_BID_AMOUNT = 0;
         private const int MAX_AUCTION_TIME = 5;
         private const double DEFAULT_MIN_PRICE = 1.0;
         private const int EMPTY_COLLECTION_COUNT = 0;
         private const double MINIMUM_PRICE = 0.0;
 
-        public AuctionProductsService(AuctionProductsProxyRepository auctionProductsRepository)
+        private readonly IAuctionProductsService auctionProductsRepository;
+
+        public AuctionProductsService(IAuctionProductsService auctionProductsRepository)
         {
             this.auctionProductsRepository = auctionProductsRepository;
         }
