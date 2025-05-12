@@ -15,6 +15,7 @@ using System.Diagnostics;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class ChatBotController : Controller
     {
         private readonly ILogger<ChatBotController> _logger;
@@ -24,7 +25,7 @@ namespace MarketMinds.Web.Controllers
         
         // User ID constants
         private const int DefaultUserId = 1;
-        private const int BotUserId = 1; // System bot user ID
+        private const int BotUserId = -1; // System bot user ID
         
         // Message constants
         private const string WelcomeMessage = "Hello! I'm your shopping assistant. How can I help you today?";
@@ -50,7 +51,6 @@ namespace MarketMinds.Web.Controllers
             _chatbotService = chatbotService;
         }
 
-        [AllowAnonymous]
         public async Task<IActionResult> Index(int? conversationId = null)
         {
             var viewModel = new ChatViewModel();
@@ -164,7 +164,6 @@ namespace MarketMinds.Web.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateConversation()
         {
@@ -195,7 +194,6 @@ namespace MarketMinds.Web.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(int conversationId, string content)
         {

@@ -1,8 +1,10 @@
 @model MarketMinds.Web.Models.ChatViewModel
+@using MarketMinds.Web.Models
 @{
     ViewData["Title"] = "ChatBot";
-    const int DefaultBotId = 1;
+    const int BotUserId = -1;
     const int StartIndex = 0;
+    var currentUserId = User.GetCurrentUserId();
 }
 
 <div class="container mx-auto px-4 py-8">
@@ -68,9 +70,9 @@
                     @for (int messageIndex = StartIndex; messageIndex < Model.Messages.Count; messageIndex++)
                     {
                         var message = Model.Messages[messageIndex];
-                        var isUserMessage = message.UserId != DefaultBotId; // Message is from user if UserId is not 1 (bot)
+                        var isUserMessage = message.UserId != BotUserId; // Message is from user if not from bot
                         
-                        if (isUserMessage)
+                        @if (isUserMessage)
                         {
                             <!-- User Message -->
                             <div class="flex justify-end mb-2">
