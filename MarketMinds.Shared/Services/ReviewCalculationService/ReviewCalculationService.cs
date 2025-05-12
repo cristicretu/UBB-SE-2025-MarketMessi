@@ -16,7 +16,7 @@ namespace MarketMinds.Shared.Services.ReviewCalculationService
 
         public double CalculateAverageRating(ObservableCollection<Review> reviews)
         {
-            if (reviews == null || reviews.Count == NO_REVIEWS)
+            if (reviews == null || reviews.Count == 0)
             {
                 return 0;
             }
@@ -33,13 +33,13 @@ namespace MarketMinds.Shared.Services.ReviewCalculationService
 
         public int GetReviewCount(ObservableCollection<Review> reviews)
         {
-            int count = reviews?.Count ?? NO_REVIEWS;
+            int count = reviews?.Count ?? 0;
             return count;
         }
 
         public bool AreReviewsEmpty(ObservableCollection<Review> reviews)
         {
-            bool isEmpty = reviews == null || reviews.Count == NO_REVIEWS;
+            bool isEmpty = reviews == null || reviews.Count == 0;
             return isEmpty;
         }
     }

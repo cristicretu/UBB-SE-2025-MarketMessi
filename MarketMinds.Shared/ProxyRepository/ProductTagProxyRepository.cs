@@ -37,14 +37,14 @@ namespace MarketMinds.Shared.ProxyRepository
         }
 
         // Raw methods for API access
-        public virtual string GetAllProductTagsRaw()
+        public string GetAllProductTagsRaw()
         {
             var response = httpClient.GetAsync("ProductTag").Result;
             response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public virtual string CreateProductTagRaw(string displayTitle)
+        public string CreateProductTagRaw(string displayTitle)
         {
             var requestContent = new StringContent(
                 $"{{\"displayTitle\":\"{displayTitle}\"}}",
@@ -55,7 +55,7 @@ namespace MarketMinds.Shared.ProxyRepository
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public virtual void DeleteProductTag(string displayTitle)
+        public void DeleteProductTag(string displayTitle)
         {
             var response = httpClient.DeleteAsync($"ProductTag/{displayTitle}").Result;
             response.EnsureSuccessStatusCode();
