@@ -1,5 +1,5 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ReviewRepository;
+using MarketMinds.Shared.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,7 +23,7 @@ namespace MarketMinds.Test.Services.ReviewService
             Reviews.Add(review);
         }
 
-        public void EditReview(Review review, float rating, string description)
+        public void EditReview(Review review, double rating, string description)
         {
             Review reviewToEdit = Reviews.FirstOrDefault(r =>
                 r.Description == review.Description &&

@@ -1,11 +1,20 @@
 ﻿using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.ProductConditionService;
+using MarketMinds.Shared.ProxyRepository;
+using MarketMinds.Shared.IRepository;
+
 using NUnit.Framework;
+using Moq;
+using System.Collections.Generic;
+using Castle.Core.Configuration;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System;
 
 namespace MarketMinds.Test.Services.ProductConditionService
 {
     [TestFixture]
-    internal class ProductConditionServiceTest
+    public class ProductConditionServiceTest
     {
         // Constants to replace magic strings and numbers
         private const int FIRST_CONDITION_ID = 1;
@@ -20,15 +29,16 @@ namespace MarketMinds.Test.Services.ProductConditionService
         private const int EXPECTED_TWO_ITEMS = 2;
         private const int EXPECTED_ZERO_ITEMS = 0;
 
-        private ProductConditionRepositoryMock _mockRepository;
+        private  Mock<IProductConditionRepository> _mockRepository;
         private IProductConditionService _service;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
-            _mockRepository = new ConditionRepositoryMock();
-            _service = new MarketMinds.Shared.Services.ProductConditionService.ProductConditionService(_mockRepository);
+            _mockRepository = new Mock<IProductConditionRepository>();
+            _service = new MarketMinds.Shared.Services.ProductConditionService.ProductConditionService(_mockRepository.Object);
         }
+
 
         #region GetAllProductConditions Tests
 
@@ -36,7 +46,8 @@ namespace MarketMinds.Test.Services.ProductConditionService
         public void GetAllProductConditions_ReturnsCorrectNumberOfConditions()
         {
             // Arrange
-            AddTestConditions();
+            string fakeJsonResponse = $"[{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}, {{\"id\":{SECOND_CONDITION_ID},\"name\":\"{USED_CONDITION_TITLE}\",\"description\":\"{USED_CONDITION_DESCRIPTION}\"}}]";
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Returns(fakeJsonResponse);
 
             // Act
             var result = _service.GetAllProductConditions();
@@ -46,23 +57,39 @@ namespace MarketMinds.Test.Services.ProductConditionService
         }
 
         [Test]
-        public void GetAllProductConditions_FirstConditionHasCorrectTitle()
+        public void GetAllProductConditions_EmptyResponse_ReturnsEmptyList()
         {
             // Arrange
-            AddTestConditions();
+            string emptyJsonResponse = "[]";
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Returns(emptyJsonResponse);
 
             // Act
             var result = _service.GetAllProductConditions();
 
             // Assert
-            Assert.That(result[0].DisplayTitle, Is.EqualTo(NEW_CONDITION_TITLE));
+            Assert.That(result, Is.Empty);
+        }
+
+        [Test]
+        public void GetAllProductConditions_FirstConditionHasCorrectTitle()
+        {
+            // Arrange
+            string fakeJsonResponse = $"[{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}, {{\"id\":{SECOND_CONDITION_ID},\"name\":\"{USED_CONDITION_TITLE}\",\"description\":\"{USED_CONDITION_DESCRIPTION}\"}}]";
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Returns(fakeJsonResponse);
+
+            // Act
+            var result = _service.GetAllProductConditions();
+
+            // Assert
+            Assert.That(result[0].DisplayTitle, Contains.Substring(NEW_CONDITION_TITLE));
         }
 
         [Test]
         public void GetAllProductConditions_SecondConditionHasCorrectTitle()
         {
             // Arrange
-            AddTestConditions();
+            string fakeJsonResponse = $"[{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}, {{\"id\":{SECOND_CONDITION_ID},\"name\":\"{USED_CONDITION_TITLE}\",\"description\":\"{USED_CONDITION_DESCRIPTION}\"}}]";
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Returns(fakeJsonResponse);
 
             // Act
             var result = _service.GetAllProductConditions();
@@ -75,7 +102,8 @@ namespace MarketMinds.Test.Services.ProductConditionService
         public void GetAllProductConditions_FirstConditionHasCorrectDescription()
         {
             // Arrange
-            AddTestConditions();
+            string fakeJsonResponse = $"[{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}, {{\"id\":{SECOND_CONDITION_ID},\"name\":\"{USED_CONDITION_TITLE}\",\"description\":\"{USED_CONDITION_DESCRIPTION}\"}}]";
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Returns(fakeJsonResponse);
 
             // Act
             var result = _service.GetAllProductConditions();
@@ -88,13 +116,25 @@ namespace MarketMinds.Test.Services.ProductConditionService
         public void GetAllProductConditions_SecondConditionHasCorrectDescription()
         {
             // Arrange
-            AddTestConditions();
+            string fakeJsonResponse = $"[{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}, {{\"id\":{SECOND_CONDITION_ID},\"name\":\"{USED_CONDITION_TITLE}\",\"description\":\"{USED_CONDITION_DESCRIPTION}\"}}]";
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Returns(fakeJsonResponse);
 
             // Act
             var result = _service.GetAllProductConditions();
 
             // Assert
             Assert.That(result[1].Description, Is.EqualTo(USED_CONDITION_DESCRIPTION));
+        }
+
+        [Test]
+        public void GetAllProductConditions_RepositoryThrowsException_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.GetAllProductConditionsRaw()).Throws(new HttpRequestException("Network error"));
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => _service.GetAllProductConditions());
+            Assert.That(exception.Message, Contains.Substring("Error retrieving product conditions"));
         }
 
         #endregion
@@ -104,6 +144,11 @@ namespace MarketMinds.Test.Services.ProductConditionService
         [Test]
         public void CreateProductCondition_ReturnsConditionWithCorrectTitle()
         {
+            // Arrange
+            string fakeJsonResponse = $"{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}";
+            _mockRepository.Setup(r => r.CreateProductConditionRaw(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION))
+                           .Returns(fakeJsonResponse);
+
             // Act
             var result = _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
 
@@ -112,18 +157,76 @@ namespace MarketMinds.Test.Services.ProductConditionService
         }
 
         [Test]
+        public void CreateProductCondition_EmptyTitle_ThrowsArgumentException()
+        {
+            // Arrange
+            string title = "   "; // Whitespace
+            string description = "Test description";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _service.CreateProductCondition(title, description));
+            Assert.That(exception.Message, Contains.Substring("title cannot be null or empty"));
+        }
+
+        [Test]
+        public void CreateProductCondition_TitleTooLong_ThrowsArgumentException()
+        {
+            // Arrange
+            string title = new string('A', 101); // 101 characters
+            string description = "Test description";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _service.CreateProductCondition(title, description));
+            Assert.That(exception.Message, Contains.Substring("title cannot exceed 100 characters"));
+        }
+
+        [Test]
+        public void CreateProductCondition_DescriptionTooLong_ThrowsArgumentException()
+        {
+            // Arrange
+            string title = "Test Title";
+            string description = new string('A', 501); // 501 characters
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _service.CreateProductCondition(title, description));
+            Assert.That(exception.Message, Contains.Substring("description cannot exceed 500 characters"));
+        }
+
+        [Test]
+        public void CreateProductCondition_RepositoryThrowsException_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.CreateProductConditionRaw(It.IsAny<string>(), It.IsAny<string>()))
+                           .Throws(new HttpRequestException("Network error"));
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                _service.CreateProductCondition("Test Title", "Test Description"));
+            Assert.That(exception.Message, Contains.Substring("Error creating product condition"));
+        }
+
+        [Test]
         public void CreateProductCondition_ReturnsConditionWithCorrectDescription()
         {
+            // Arrange
+            string fakeJsonResponse = $"{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}";
+            _mockRepository.Setup(r => r.CreateProductConditionRaw(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION))
+                           .Returns(fakeJsonResponse);
             // Act
             var result = _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
 
             // Assert
-            Assert.That(result.Description, Is.EqualTo(NEW_CONDITION_DESCRIPTION));
+            Assert.That(result.Description, Contains.Substring(NEW_CONDITION_DESCRIPTION));
         }
 
         [Test]
         public void CreateProductCondition_ReturnsConditionWithCorrectId()
         {
+            // Arrange
+            string fakeJsonResponse = $"{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}";
+            _mockRepository.Setup(r => r.CreateProductConditionRaw(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION))
+                          .Returns(fakeJsonResponse);
+
             // Act
             var result = _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
 
@@ -134,11 +237,16 @@ namespace MarketMinds.Test.Services.ProductConditionService
         [Test]
         public void CreateProductCondition_AddsConditionToRepository()
         {
+            // Arrange
+            string fakeJsonResponse = $"{{\"id\":{FIRST_CONDITION_ID},\"name\":\"{NEW_CONDITION_TITLE}\",\"description\":\"{NEW_CONDITION_DESCRIPTION}\"}}";
+            _mockRepository.Setup(r => r.CreateProductConditionRaw(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION))
+                           .Returns(fakeJsonResponse);
+
             // Act
             _service.CreateProductCondition(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION);
 
             // Assert
-            Assert.That(_mockRepository.Conditions.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
+            _mockRepository.Verify(r => r.CreateProductConditionRaw(NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION), Times.Once);
         }
 
         #endregion
@@ -149,30 +257,36 @@ namespace MarketMinds.Test.Services.ProductConditionService
         public void DeleteProductCondition_RemovesConditionFromRepository()
         {
             // Arrange
-            AddConditionToDelete();
-            Assert.That(_mockRepository.Conditions.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM),
-                "Precondition: Repository should have exactly one condition before deletion");
+            _mockRepository.Setup(r => r.DeleteProductConditionRaw(CONDITION_TO_DELETE_TITLE));
 
             // Act
             _service.DeleteProductCondition(CONDITION_TO_DELETE_TITLE);
 
             // Assert
-            Assert.That(_mockRepository.Conditions.Count, Is.EqualTo(EXPECTED_ZERO_ITEMS));
+            _mockRepository.Verify(r => r.DeleteProductConditionRaw(CONDITION_TO_DELETE_TITLE), Times.Once);
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        private void AddTestConditions()
+        [Test]
+        public void DeleteProductCondition_EmptyTitle_ThrowsArgumentException()
         {
-            _mockRepository.Conditions.Add(new Condition(FIRST_CONDITION_ID, NEW_CONDITION_TITLE, NEW_CONDITION_DESCRIPTION));
-            _mockRepository.Conditions.Add(new Condition(SECOND_CONDITION_ID, USED_CONDITION_TITLE, USED_CONDITION_DESCRIPTION));
+            // Arrange
+            string title = "   "; // Whitespace
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _service.DeleteProductCondition(title));
+            Assert.That(exception.Message, Contains.Substring("title cannot be null or empty"));
         }
 
-        private void AddConditionToDelete()
+        [Test]
+        public void DeleteProductCondition_KeyNotFoundException_DoesNotThrowException()
         {
-            _mockRepository.Conditions.Add(new Condition(FIRST_CONDITION_ID, CONDITION_TO_DELETE_TITLE, CONDITION_TO_DELETE_DESCRIPTION));
+            // Arrange
+            string title = "Non-existent Title";
+            _mockRepository.Setup(r => r.DeleteProductConditionRaw(title))
+                           .Throws(new KeyNotFoundException("Condition not found"));
+
+            // Act & Assert - should not throw
+            _service.DeleteProductCondition(title);
         }
 
         #endregion

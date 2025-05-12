@@ -76,6 +76,49 @@ namespace MarketMinds.Web.Controllers
             }
         }
 
+        // POST: BorrowProducts/CalculatePrice
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> CalculatePrice(int productId, DateTime endDate)
+        {
+            try
+            {
+                var borrowProduct = await _borrowProductsService.GetBorrowProductByIdAsync(productId);
+                
+                if (borrowProduct == null || borrowProduct.Id == 0)
+                {
+                    return Json(new { success = false, error = "Product not found" });
+                }
+                
+                DateTime startDate = borrowProduct.StartDate ?? DateTime.Now;
+                
+                if (endDate < startDate)
+                {
+                    return Json(new { success = false, error = "End date cannot be before start date" });
+                }
+                
+                if (endDate > borrowProduct.TimeLimit)
+                {
+                    return Json(new { success = false, error = "End date cannot exceed the time limit" });
+                }
+                
+                int days = (int)Math.Ceiling((endDate - startDate).TotalDays);
+                double totalPrice = days * borrowProduct.DailyRate;
+                
+                return Json(new { 
+                    success = true, 
+                    price = totalPrice,
+                    formattedPrice = totalPrice.ToString("C"),
+                    days = days
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error calculating price for product {productId}");
+                return Json(new { success = false, error = "An error occurred while calculating the price" });
+            }
+        }
+
         // GET: BorrowProducts/Create
         public IActionResult Create()
         {

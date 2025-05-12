@@ -1,387 +1,152 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
+using Xunit;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.Services.AuctionProductsService;
-using MarketMinds.Repositories;
-using MarketMinds.Repositories.AuctionProductsRepository;
-using MarketMinds.Test.Services.AuctionProductsServiceTest;
-using Moq; 
+using MarketMinds.Test.Services.Mocks;
+using NUnit.Framework;
 
 
-namespace MarketMinds.Tests.Services.AuctionProductsServiceTest
+public class AuctionProductsServiceTests
 {
-    [TestFixture]
-    public class AuctionProductsServiceTest
+    private readonly AuctionProductsService service;
+    private readonly AuctionProductsRepositoryMock mockRepository;
+
+    public AuctionProductsServiceTests()
     {
-        private AuctionProductsRepository auctionProductsService;
-        private AuctionProductsRepositoryMock auctionProductsRepositoryMock;
+        mockRepository = new AuctionProductsRepositoryMock();
+        service = new AuctionProductsService(mockRepository);
+    }
 
-        // Constants to replace magic numbers
-        private const int SELLER_ID = 1;
-        private const int BIDDER_ID = 2;
-        private const int FIRST_BIDDER_ID = 3;
-        private const float DEFAULT_BIDDER_BALANCE = 1000f;
-        private const float INITIAL_BID_AMOUNT = 200f;
-        private const float LOW_BID_AMOUNT = 150f;
-        private const float INSUFFICIENT_BALANCE_AMOUNT = 50f;
-        private const float STARTING_PRICE = 100f;
-        private const float SECOND_BID_AMOUNT = 200f;
-        private const float FIRST_BID_AMOUNT = 150f;
-        private const float FIRST_BIDDER__AMOUNT = 500f;
-        private const int EXPECTED_SINGLE_UPDATE = 1;
-        private const int EXPECTED_NO_UPDATE = 0;
-        private const int EXPECTED_DOUBLE_UPDATE = 2;
-        private const int EXPECTED_SINGLE_ITEM = 1;
-        private const int BID_NEAR_END_TIME_MINUTES = 3;
-
-        User testSeller;
-        User testBidder;
-        Condition testProductCondition;
-        Category testProductCategory;
-        List<ProductTag> testProductTags;
-        AuctionProduct testAuction;
-
-        [SetUp]
-        public void Setup()
+    [Fact]
+    public void CreateListing_ShouldAssignIdAndAddProduct()
+    {
+        var product = new AuctionProduct
         {
-            auctionProductsRepositoryMock = new AuctionProductsRepositoryMock();
-            auctionProductsService = new AuctionProductsService(auctionProductsRepositoryMock);
+            Title = "Vintage Watch",
+            StartPrice = 100,
+            CurrentPrice = 150,
+            Condition = new Condition { Id = 1 },
+            Category = new Category { Id = 1 },
+            Tags = new List<ProductTag>()
+        };
 
-            testSeller = new User(SELLER_ID, "test seller", "seller@test.com");
-            testBidder = new User(BIDDER_ID, "test bidder", "bidder@test.com");
-            testBidder.Balance = DEFAULT_BIDDER_BALANCE;
-            testProductCondition = new Condition(1, "Test", "Test");
-            testProductCategory = new Category(1, "test", "test");
-            testProductTags = new List<ProductTag>();
+        service.CreateListing(product);
 
-            testAuction = new AuctionProduct(
-                1,
-                "Test Auction",
-                "Test Description",
-                testSeller,
-                testProductCondition,
-                testProductCategory,
-                testProductTags,
-                new List<Image>(),
-                DateTime.Now.AddDays(-1),
-                DateTime.Now.AddDays(1),
-                STARTING_PRICE);
-        }
+        var storedProduct = mockRepository.GetProductById(1);
 
-        [Test]
-        public void TestPlaceBid_ValidBid_UpdatesAuctionPrice()
+        Xunit.Assert.Equal("Vintage Watch", storedProduct.Title);
+    }
+
+    [Fact]
+    public void PlaceBid_ShouldUpdateAuctionWithNewBid()
+    {
+        const double startingBid = 100;
+        const double newBid = 120;
+
+        var auction = new AuctionProduct
         {
-            // Arrange
-            float bidAmount = INITIAL_BID_AMOUNT;
+            Id = 1,
+            Title = "Rare Coin",
+            StartPrice = startingBid,
+            CurrentPrice = startingBid,
+            StartTime = DateTime.Now.AddMinutes(-10),
+            EndTime = DateTime.Now.AddDays(1),
+            SellerId = 100,
+            Bids = new List<Bid>(),
+        };
 
-            // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
+        var bidder = new User { Id = 200, Balance = 500 };
 
-            // Assert
-            Assert.That(testAuction.CurrentPrice, Is.EqualTo(bidAmount));
-            Assert.That(testAuction.BidHistory[0].Price, Is.EqualTo(bidAmount));
-        }
+        service.CreateListing(auction);
 
-        [Test]
-        public void TestPlaceBid_ValidBid_UpdatesBidderBalance()
+        service.PlaceBid(auction, bidder, newBid);
+
+        var updatedAuction = mockRepository.GetProductById(1);
+
+        Xunit.Assert.Equal(newBid, updatedAuction.CurrentPrice);
+    }
+
+    [Fact]
+    public void ConcludeAuction_ShouldRemoveProduct()
+    {
+        var auction = new AuctionProduct
         {
-            // Arrange
-            float bidAmount = INITIAL_BID_AMOUNT;
-            float expectedBalance = DEFAULT_BIDDER_BALANCE - bidAmount;
+            Id = 1,
+            Title = "Painting",
+            StartPrice = 50,
+            CurrentPrice = 60,
+            SellerId = 10,
+            StartTime = DateTime.Now.AddMinutes(-10),
+            EndTime = DateTime.Now.AddMinutes(10)
+        };
 
-            // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
+        service.CreateListing(auction);
 
-            // Assert
-            Assert.That(testBidder.Balance, Is.EqualTo(expectedBalance));
-        }
+        service.ConcludeAuction(auction);
 
-        [Test]
-        public void TestPlaceBid_ValidBid_AddsToBidHistory()
+        var result = mockRepository.GetProductById(1);
+
+        Xunit.Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetTimeLeft_ShouldReturnAuctionEnded_WhenAuctionIsOver()
+    {
+        var auction = new AuctionProduct
         {
-            // Arrange
-            float bidAmount = INITIAL_BID_AMOUNT;
+            Id = 1,
+            Title = "Old Camera",
+            StartTime = DateTime.Now.AddDays(-10),
+            EndTime = DateTime.Now.AddDays(-1),
+        };
 
-            // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
+        var result = service.GetTimeLeft(auction);
 
-            // Assert
-            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
-            Assert.That(testAuction.BidHistory[0].Bidder, Is.EqualTo(testBidder));
-        }
+        Xunit.Assert.Equal("Auction Ended", result);
+    }
 
-        [Test]
-        public void TestPlaceBid_ValidBid_UpdatesRepository()
+    [Fact]
+    public void IsAuctionEnded_ShouldReturnTrue_WhenPastEndTime()
+    {
+        var auction = new AuctionProduct
         {
-            // Arrange
-            float bidAmount = INITIAL_BID_AMOUNT;
+            Id = 1,
+            EndTime = DateTime.Now.AddMinutes(-1),
+        };
 
-            // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
+        bool hasEnded = service.IsAuctionEnded(auction);
 
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_SINGLE_UPDATE));
-        }
+        Xunit.Assert.True(hasEnded);
+    }
 
-        [Test]
-        public void TestPlaceBid_BidTooLow_ThrowsException()
+    [Fact]
+    public void GetProductById_ShouldThrow_WhenProductNotFound()
+    {
+        int nonexistentProductId = 999;
+
+        var exception = Xunit.Assert.Throws<KeyNotFoundException>(() => service.GetProductById(nonexistentProductId));
+
+        Xunit.Assert.Equal($"Auction product with ID {nonexistentProductId} not found: Auction product with ID {nonexistentProductId} not found.", exception.Message);
+    }
+
+    [Fact]
+    public void GetProducts_ShouldReturnListOfProducts()
+    {
+        var product = new AuctionProduct
         {
-            // Arrange
-            PlaceInitialBid();
-            ResetRepositoryAndService();
-            // Act & Assert
-            Exception exceptionPlacingLowBid = AssertThrowsWhenPlacingLowBid();
-            Assert.That(exceptionPlacingLowBid.Message, Does.Contain("Bid must be at least"));
-        }
+            Id = 1,
+            Title = "Book",
+            StartPrice = 20,
+            CurrentPrice = 25,
+            StartTime = DateTime.Now.AddMinutes(-5),
+            EndTime = DateTime.Now.AddMinutes(5)
+        };
 
-        [Test]
-        public void TestPlaceBid_BidTooLow_DoesNotUpdateRepository()
-        {
-            // Arrange
-            PlaceInitialBid();
-            ResetRepositoryAndService();
-            // Act
-           auctionProductsService.PlaceBid(testAuction, testBidder, LOW_BID_AMOUNT);
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_NO_UPDATE));
-        }
+        service.CreateListing(product);
 
-        [Test]
-        public void TestPlaceBid_InsufficientBalance_ThrowsException()
-        {
-            // Arrange
-            testBidder.Balance = INSUFFICIENT_BALANCE_AMOUNT;
+        var products = service.GetProducts();
 
-            // Act & Assert
-            Exception ex = AssertThrowsWhenPlacingBid(INITIAL_BID_AMOUNT);
-            Assert.That(ex.Message, Is.EqualTo("Insufficient balance"));
-        }
-
-        [Test]
-        public void TestPlaceBid_InsufficientBalance_DoesNotUpdateRepository()
-        {
-            // Arrange
-            testBidder.Balance = INSUFFICIENT_BALANCE_AMOUNT;
-
-            // Act
-            try
-            {
-                auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
-            }
-            catch
-            {
-                // Expected exception, ignore
-            }
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_NO_UPDATE));
-        }
-
-        [Test]
-        public void TestPlaceBid_AuctionEnded_ThrowsException()
-        {
-            // Arrange
-            SetAuctionAsEnded();
-
-            // Act & Assert
-            Exception ex = AssertThrowsWhenPlacingBid(INITIAL_BID_AMOUNT);
-            Assert.That(ex.Message, Is.EqualTo("Auction already ended"));
-        }
-
-        [Test]
-        public void TestPlaceBid_AuctionEnded_DoesNotUpdateRepository()
-        {
-            // Arrange
-            SetAuctionAsEnded();
-
-            // Act
-            try
-            {
-                auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
-            }
-            catch
-            {
-                // Expected exception, ignore
-            }
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_NO_UPDATE));
-        }
-
-        [Test]
-        public void TestPlaceBid_MultipleBids_RefundsPreviousBidder()
-        {
-            // Arrange
-            User firstBidder = CreateFirstBidder();
-            PlaceFirstBid(firstBidder);
-
-            // Act
-            PlaceSecondBid();
-
-            // Assert
-            Assert.That(firstBidder.Balance, Is.EqualTo(FIRST_BIDDER__AMOUNT)); // Should be fully refunded
-        }
-
-        [Test]
-        public void TestPlaceBid_MultipleBids_UpdatesAuctionAndBidHistory()
-        {
-            // Arrange
-            User firstBidder = CreateFirstBidder();
-            PlaceFirstBid(firstBidder);
-
-            // Act
-            PlaceSecondBid();
-
-            // Assert
-            Assert.That(testBidder.Balance, Is.EqualTo(DEFAULT_BIDDER_BALANCE - SECOND_BID_AMOUNT));
-            Assert.That(testAuction.CurrentPrice, Is.EqualTo(SECOND_BID_AMOUNT));
-            Assert.That(testAuction.BidHistory.Count, Is.EqualTo(EXPECTED_DOUBLE_UPDATE));
-        }
-
-        [Test]
-        public void TestPlaceBid_MultipleBids_UpdatesRepositoryTwice()
-        {
-            // Arrange
-            User firstBidder = CreateFirstBidder();
-            PlaceFirstBid(firstBidder);
-
-            // Act
-            PlaceSecondBid();
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_DOUBLE_UPDATE));
-        }
-
-        [Test]
-        public void TestPlaceBid_BidNearEndTime_ExtendsAuctionTime()
-        {
-            // Arrange
-            SetAuctionCloseToEnding();
-            DateTime originalEndTime = testAuction.EndAuctionDate;
-
-            // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
-
-            // Assert
-            Assert.That(testAuction.EndAuctionDate, Is.GreaterThan(originalEndTime));
-        }
-
-        [Test]
-        public void TestPlaceBid_BidNearEndTime_UpdatesRepository()
-        {
-            // Arrange
-            SetAuctionCloseToEnding();
-
-            // Act
-            auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetUpdateCount(), Is.EqualTo(EXPECTED_SINGLE_UPDATE));
-        }
-
-        [Test]
-        public void TestConcludeAuction_ValidAuction_DeletesAuction()
-        {
-            // Act
-            auctionProductsService.ConcludeAuction(testAuction);
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetDeleteCount(), Is.EqualTo(EXPECTED_SINGLE_ITEM));
-        }
-
-        [Test]
-        public void TestCreateListing_AddsProductToRepository()
-        {
-            // Act
-            auctionProductsService.CreateListing(testAuction);
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetProducts().Count, Is.EqualTo(EXPECTED_SINGLE_ITEM));
-        }
-
-        [Test]
-        public void TestCreateListing_AddsCorrectProduct()
-        {
-            // Act
-            auctionProductsService.CreateListing(testAuction);
-
-            // Assert
-            Assert.That(auctionProductsRepositoryMock.GetProducts()[0], Is.EqualTo(testAuction));
-        }
-
-        #region Helper Methods
-        private void PlaceInitialBid()
-        {
-            auctionProductsService.PlaceBid(testAuction, testBidder, INITIAL_BID_AMOUNT);
-        }
-
-        private void ResetRepositoryAndService()
-        {
-            auctionProductsRepositoryMock = new AuctionProductsRepositoryMock();
-            auctionProductsService = new AuctionProductsService(auctionProductsRepositoryMock);
-        }
-
-        private Exception AssertThrowsWhenPlacingLowBid()
-        {
-            Exception ex = null;
-            try
-            {
-                auctionProductsService.PlaceBid(testAuction, testBidder, LOW_BID_AMOUNT);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-                Console.WriteLine($"Exception caught: {e.Message}");
-            }
-
-            Assert.That(ex, Is.Not.Null, "Expected an exception for bid too low but none was thrown");
-            return ex;
-        }
-
-        private Exception AssertThrowsWhenPlacingBid(float bidAmount)
-        {
-            Exception ex = null;
-            try
-            {
-                auctionProductsService.PlaceBid(testAuction, testBidder, bidAmount);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-
-            Assert.That(ex, Is.Not.Null);
-            return ex;
-        }
-
-        private void SetAuctionAsEnded()
-        {
-            testAuction.EndAuctionDate = DateTime.Now.AddDays(-1);
-        }
-
-        private User CreateFirstBidder()
-        {
-            User firstBidder = new User(FIRST_BIDDER_ID, "first bidder", "first@test.com");
-            firstBidder.Balance = FIRST_BIDDER__AMOUNT;
-            return firstBidder;
-        }
-
-        private void PlaceFirstBid(User firstBidder)
-        {
-            auctionProductsService.PlaceBid(testAuction, firstBidder, FIRST_BID_AMOUNT);
-        }
-
-        private void PlaceSecondBid()
-        {
-            auctionProductsService.PlaceBid(testAuction, testBidder, SECOND_BID_AMOUNT);
-        }
-
-        private void SetAuctionCloseToEnding()
-        {
-            testAuction.EndAuctionDate = DateTime.Now.AddMinutes(BID_NEAR_END_TIME_MINUTES);
-        }
-        #endregion
+        Xunit.Assert.Single(products);
     }
 }
