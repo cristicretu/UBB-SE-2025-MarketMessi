@@ -25,7 +25,7 @@ namespace MarketMinds.Web.Controllers
         
         // User ID constants
         private const int DefaultUserId = 1;
-        private const int BotUserId = -1; // System bot user ID
+        private const int BotUserId = 1; // System bot user ID
         
         // Message constants
         private const string WelcomeMessage = "Hello! I'm your shopping assistant. How can I help you today?";
