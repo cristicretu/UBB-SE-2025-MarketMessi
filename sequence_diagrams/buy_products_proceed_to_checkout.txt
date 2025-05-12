@@ -1,0 +1,105 @@
+sequenceDiagram
+title Buy Products -> Checkout Flow
+
+actor User
+participant "BuyProductsController\n(Server.Controllers)" as BPC
+participant "BuyProductsRepository\n(Server.Repository)" as BPR
+participant "BasketController\n(Server.Controllers)" as BC
+participant "BasketRepository\n(Server.Repository)" as BR
+participant "AccountController\n(Server.Controllers)" as AC
+participant "AccountRepository\n(Server.Repository)" as AR
+database "Database" as DB
+
+== Browse and Add Products to Basket ==
+User -> BPC : View Products
+activate BPC
+BPC -> BPR : GetProducts()
+activate BPR
+BPR -> DB : Query BuyProducts with includes
+DB --> BPR : Products data
+deactivate BPR
+BPC --> User : Display products
+deactivate BPC
+
+User -> BPC : Select Product
+activate BPC
+BPC -> BPR : GetProductByID(productId)
+activate BPR
+BPR -> DB : Query BuyProduct with includes
+DB --> BPR : Product data
+deactivate BPR
+BPC --> User : Display product details
+deactivate BPC
+
+User -> BC : Add to Basket(productId, quantity)
+activate BC
+BC -> BR : GetBasketByUserId(userId)
+activate BR
+BR -> DB : Query/Create Basket
+DB --> BR : Basket data
+deactivate BR
+
+BC -> BR : AddItemToBasket(basketId, productId, quantity)
+activate BR
+BR -> DB : Add/Update BasketItem
+DB --> BR : Success
+deactivate BR
+BC --> User : Success response
+deactivate BC
+
+== Proceed to Checkout ==
+User -> BC : View Basket
+activate BC
+BC -> BR : GetBasketItems(basketId)
+activate BR
+BR -> DB : Query BasketItems with includes
+DB --> BR : Basket items data
+deactivate BR
+BC --> User : Display basket contents
+deactivate BC
+
+User -> BC : Apply Promo Code
+activate BC
+BC -> BC : CalculateBasketTotals(basketId, promoCode)
+BC --> User : Updated totals with discount
+deactivate BC
+
+User -> BC : Proceed to Checkout
+activate BC
+BC -> BC : ValidateBasketBeforeCheckout(basketId)
+BC --> User : Validation result
+deactivate BC
+
+User -> AC : Create Order
+activate AC
+AC -> AR : GetUserByIdAsync(userId)
+activate AR
+AR -> DB : Query User
+DB --> AR : User data
+deactivate AR
+
+AC -> AR : GetBasketTotalAsync(userId, basketId)
+activate AR
+AR -> DB : Calculate basket total
+DB --> AR : Total amount
+deactivate AR
+
+note over AC : Check user balance
+
+AC -> AR : CreateOrderFromBasketAsync(userId, basketId, discountAmount)
+activate AR
+AR -> DB : Begin Transaction
+AR -> DB : Create Orders grouped by seller
+AR -> DB : Clear basket items
+AR -> DB : Commit Transaction
+DB --> AR : Created orders
+deactivate AR
+
+AC -> AR : UpdateUserAsync(user)
+activate AR
+AR -> DB : Update user balance
+DB --> AR : Success
+deactivate AR
+
+AC --> User : Order confirmation
+deactivate AC
