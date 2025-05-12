@@ -96,7 +96,6 @@ namespace MarketMinds.Web.Controllers
             {
                 try
                 {
-                    // Check if username is taken
                     var isUsernameTaken = await _userService.IsUsernameTakenAsync(user.Username);
                     if (isUsernameTaken)
                     {
@@ -104,20 +103,10 @@ namespace MarketMinds.Web.Controllers
                         return View(user);
                     }
 
-                    // Check if email is taken
-                    var existingUserByEmail = await _userService.GetUserByEmailAsync(user.Email);
-                    if (existingUserByEmail != null && existingUserByEmail.Id != 0)
-                    {
-                        ModelState.AddModelError("Email", "This email is already registered.");
-                        return View(user);
-                    }
-
                     var registeredUser = await _userService.RegisterUserAsync(user);
-                    
                     if (registeredUser != null && registeredUser.Id != 0)
                     {
                         await SignInUserAsync(registeredUser);
-                        _logger.LogInformation($"User {user.Username} registered successfully");
                         return RedirectToAction("Index", "Home");
                     }
                     
@@ -125,7 +114,6 @@ namespace MarketMinds.Web.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Error during registration for user {user.Username}");
                     ModelState.AddModelError(string.Empty, "An error occurred during registration. Please try again.");
                 }
             }
