@@ -1,0 +1,98 @@
+@startuml
+title Auction Product Functionality Sequence
+
+actor User
+
+participant "AuctionProductsController\n(Web.Controllers)" as ClientAPIC
+participant "AuctionProductsController (Server)\n(Server.Controllers)" as ServerAPIC
+participant "AuctionProductsRepository (Server)\n(Server.Repository)" as ServerRepo
+database "Database" as DB
+
+== User creates a new auction product ==
+
+User -> ClientAPIC : Fills form, submits new AuctionProduct (POST /api/AuctionProducts)
+activate ClientAPIC
+
+ClientAPIC -> ServerAPIC : HTTP POST /api/AuctionProducts (AuctionProduct JSON)
+activate ServerAPIC
+
+ServerAPIC -> ServerAPIC : InitializeDates(product), Validate input
+note right of ServerAPIC : Sets start/end dates, prices
+
+ServerAPIC -> ServerRepo : AddProduct(product)
+activate ServerRepo
+ServerRepo -> DB : Insert AuctionProduct (EF/SQL)
+activate DB
+DB --> ServerRepo : Product saved, new ProductId
+deactivate DB
+ServerRepo --> ServerAPIC : Product with new Id
+deactivate ServerRepo
+
+alt Product has images
+    ServerAPIC -> ServerAPIC : Assign ProductId to images
+    ServerAPIC -> ServerRepo : UpdateProduct(product with images)
+    activate ServerRepo
+    ServerRepo -> DB : Update AuctionProduct with images
+    activate DB
+    DB --> ServerRepo : Images saved
+    deactivate DB
+    ServerRepo --> ServerAPIC : Product updated
+    deactivate ServerRepo
+end
+
+ServerAPIC -> ServerAPIC : Map to AuctionProductDTO
+ServerAPIC --> ClientAPIC : HTTP 201 Created (AuctionProductDTO)
+deactivate ServerAPIC
+
+ClientAPIC --> User : Show confirmation, new product details
+deactivate ClientAPIC
+
+== User retrieves auction product details ==
+
+User -> ClientAPIC : Requests product details (GET /api/AuctionProducts/{id})
+activate ClientAPIC
+ClientAPIC -> ServerAPIC : HTTP GET /api/AuctionProducts/{id}
+activate ServerAPIC
+ServerAPIC -> ServerRepo : GetProductByID(id)
+activate ServerRepo
+ServerRepo -> DB : Query AuctionProduct by id
+activate DB
+DB --> ServerRepo : AuctionProduct data
+deactivate DB
+ServerRepo --> ServerAPIC : AuctionProduct
+deactivate ServerRepo
+ServerAPIC -> ServerAPIC : Map to AuctionProductDTO
+ServerAPIC --> ClientAPIC : HTTP 200 OK (AuctionProductDTO)
+deactivate ServerAPIC
+ClientAPIC --> User : Show product details
+deactivate ClientAPIC
+
+== User places a bid ==
+
+User -> ClientAPIC : Enters bid, submits (POST /api/AuctionProducts/{id}/bids)
+activate ClientAPIC
+ClientAPIC -> ServerAPIC : HTTP POST /api/AuctionProducts/{id}/bids (CreateBidDTO)
+activate ServerAPIC
+ServerAPIC -> ServerRepo : GetProductByID(id)
+activate ServerRepo
+ServerRepo -> DB : Query AuctionProduct by id
+activate DB
+DB --> ServerRepo : AuctionProduct (with Bids)
+deactivate DB
+ServerRepo --> ServerAPIC : AuctionProduct
+deactivate ServerRepo
+ServerAPIC -> ServerAPIC : Create Bid, add to product.Bids, update CurrentPrice
+ServerAPIC -> ServerRepo : UpdateProduct(product)
+activate ServerRepo
+ServerRepo -> DB : Save updated AuctionProduct (with new Bid)
+activate DB
+DB --> ServerRepo : Success
+deactivate DB
+ServerRepo --> ServerAPIC : Product updated
+deactivate ServerRepo
+ServerAPIC --> ClientAPIC : HTTP 200 OK (bid placed)
+deactivate ServerAPIC
+ClientAPIC --> User : Show bid confirmation
+deactivate ClientAPIC
+
+@enduml
