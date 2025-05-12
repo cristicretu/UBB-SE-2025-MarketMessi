@@ -1,14 +1,17 @@
 ﻿using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ProductTagRepository;
+using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
+using Microsoft.Extensions.Configuration;
+using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace MarketMinds.Test.Services.ProductTagService
 {
     [TestFixture]
-    public class ProductTagServiceTests
+    public class ProductTagServiceTest
     {
         // Constants to replace magic strings and numbers
         private const int TAG_ID_1 = 1;
@@ -23,14 +26,30 @@ namespace MarketMinds.Test.Services.ProductTagService
         private const int EXPECTED_SINGLE_TAG_COUNT = 1;
         private const int EXPECTED_THREE_TAGS_COUNT = 3;
 
-        private ProductTagRepositoryMock _repositoryMock;
+        private Mock<IConfiguration> _mockConfiguration;
+        private Mock<ProductTagProxyRepository> _mockRepository;
         private IProductTagService _service;
+        private JsonSerializerOptions _testJsonOptions;
 
         [SetUp]
         public void Setup()
         {
-            _repositoryMock = new ProductTagRepositoryMock();
-            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService(_repositoryMock);
+            _mockConfiguration = new Mock<IConfiguration>();
+
+            var mockConigurationSection = new Mock<IConfigurationSection>();
+            mockConigurationSection.Setup(x => x.Value)
+                                   .Returns("http://localhost:5000");
+            _mockConfiguration.Setup(x => x.GetSection("ApiSettings:BaseUrl"))
+                              .Returns(mockConigurationSection.Object);
+
+            _mockRepository = new Mock<ProductTagProxyRepository>(_mockConfiguration.Object);
+            _service = new MarketMinds.Shared.Services.ProductTagService.ProductTagService(_mockRepository.Object);
+
+            _testJsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
         }
 
         #region GetAllProductTags Tests
@@ -39,7 +58,14 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetAllProductTags_ReturnsNonNullResult()
         {
             // Arrange
-            AddThreeSampleTags();
+            var tagsToReturn = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE),
+                new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(tagsToReturn));
 
             // Act
             var result = _service.GetAllProductTags();
@@ -52,7 +78,14 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetAllProductTags_ReturnsCorrectNumberOfTags()
         {
             // Arrange
-            AddThreeSampleTags();
+            var tagsToReturn = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE),
+                new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(tagsToReturn));
 
             // Act
             var result = _service.GetAllProductTags();
@@ -65,7 +98,14 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetAllProductTags_ReturnsCorrectFirstTagTitle()
         {
             // Arrange
-            AddThreeSampleTags();
+            var tagsToReturn = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE),
+                new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(tagsToReturn));
 
             // Act
             var result = _service.GetAllProductTags();
@@ -78,7 +118,14 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetAllProductTags_ReturnsCorrectSecondTagTitle()
         {
             // Arrange
-            AddThreeSampleTags();
+            var tagsToReturn = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE),
+                new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(tagsToReturn));
 
             // Act
             var result = _service.GetAllProductTags();
@@ -91,8 +138,14 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void GetAllProductTags_ReturnsCorrectThirdTagTitle()
         {
             // Arrange
-            AddThreeSampleTags();
-
+            var tagsToReturn = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE),
+                new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(tagsToReturn));
             // Act
             var result = _service.GetAllProductTags();
 
@@ -103,6 +156,10 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void GetAllProductTags_WithEmptyRepository_ReturnsNonNullResult()
         {
+            // Arrange
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns("[]");
+
             // Act
             var result = _service.GetAllProductTags();
 
@@ -113,6 +170,21 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void GetAllProductTags_WithEmptyRepository_ReturnsEmptyList()
         {
+            // Arrange
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns("[]");
+            // Act
+            var result = _service.GetAllProductTags();
+
+            // Assert
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_EMPTY_COUNT));
+        }
+        [Test]
+        public void GetAllProductTags_RepositoryThrowsException_ReturnsEmptyList()
+        {
+            // Arrange
+            _mockRepository.Setup(r => r.GetAllProductTagsRaw()).Throws(new System.Net.Http.HttpRequestException("Network error"));
+
             // Act
             var result = _service.GetAllProductTags();
 
@@ -127,6 +199,10 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_ReturnsNonNullResult()
         {
+            // Arrange
+            var createdTag = new ProductTag(TAG_ID_1, GAMING_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(GAMING_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag));
             // Act
             var result = _service.CreateProductTag(GAMING_TAG_TITLE);
 
@@ -137,6 +213,11 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_ReturnsTagWithCorrectTitle()
         {
+            // Arrange
+            var createdTag = new ProductTag(TAG_ID_1, GAMING_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(GAMING_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag));
+
             // Act
             var result = _service.CreateProductTag(GAMING_TAG_TITLE);
 
@@ -147,6 +228,10 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_ReturnsTagWithCorrectId()
         {
+            // Arrange
+            var createdTag = new ProductTag(TAG_ID_1, GAMING_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(GAMING_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag));
             // Act
             var result = _service.CreateProductTag(GAMING_TAG_TITLE);
 
@@ -157,21 +242,34 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_AddsTagToRepository()
         {
+            // Arrange
+            var createdTag = new ProductTag(TAG_ID_1, GAMING_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(GAMING_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag));
             // Act
             _service.CreateProductTag(GAMING_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT));
+            _mockRepository.Verify(repo => repo.CreateProductTagRaw(GAMING_TAG_TITLE), Times.Once);
         }
 
         [Test]
         public void CreateProductTag_AddsTagWithCorrectTitleToRepository()
         {
+            // Arrange
+            var createdTag = new ProductTag(TAG_ID_1, GAMING_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(GAMING_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag));
+
             // Act
             _service.CreateProductTag(GAMING_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(GAMING_TAG_TITLE));
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                            .Returns(SerializeTags(new List<ProductTag> { createdTag }));
+            var result = _service.GetAllProductTags();
+
+            Assert.That(result.First().DisplayTitle, Is.EqualTo(GAMING_TAG_TITLE));
         }
 
         #endregion
@@ -181,6 +279,10 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_MultipleTags_FirstTagHasCorrectId()
         {
+            // Arrange
+            var createdTag = new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(ELECTRONICS_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag));
             // Act
             var tag1 = _service.CreateProductTag(ELECTRONICS_TAG_TITLE);
 
@@ -191,6 +293,15 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_MultipleTags_SecondTagHasCorrectId()
         {
+            // Arrange
+            var createdTag1 = new ProductTag(TAG_ID_2, ELECTRONICS_TAG_TITLE);
+            var createdTag2 = new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE);
+
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(ELECTRONICS_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag1));
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(CLOTHING_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag2));
+            
             // Act
             _service.CreateProductTag(ELECTRONICS_TAG_TITLE);
             var tag2 = _service.CreateProductTag(CLOTHING_TAG_TITLE);
@@ -202,6 +313,17 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_MultipleTags_ThirdTagHasCorrectId()
         {
+            // Arrange
+            var createdTag1 = new ProductTag(TAG_ID_3, ELECTRONICS_TAG_TITLE);
+            var createdTag2 = new ProductTag(TAG_ID_3, CLOTHING_TAG_TITLE);
+            var createdTag3 = new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(ELECTRONICS_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag1));
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(CLOTHING_TAG_TITLE))
+                            .Returns(SerializeTag(createdTag2));
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(BOOKS_TAG_TITLE))
+                            .Returns(SerializeTag(createdTag3));
+
             // Act
             _service.CreateProductTag(ELECTRONICS_TAG_TITLE);
             _service.CreateProductTag(CLOTHING_TAG_TITLE);
@@ -214,18 +336,41 @@ namespace MarketMinds.Test.Services.ProductTagService
         [Test]
         public void CreateProductTag_MultipleTags_AddsAllTagsToRepository()
         {
+            // Arrange
+            var createdTag1 = new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
+            var createdTag2 = new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE);
+            var createdTag3 = new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE);
+
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(ELECTRONICS_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag1));
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(CLOTHING_TAG_TITLE))
+                            .Returns(SerializeTag(createdTag2));
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(BOOKS_TAG_TITLE))
+                            .Returns(SerializeTag(createdTag3));
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                            .Returns(SerializeTags(new List<ProductTag> { createdTag1, createdTag2, createdTag3 }));
+
             // Act
             _service.CreateProductTag(ELECTRONICS_TAG_TITLE);
             _service.CreateProductTag(CLOTHING_TAG_TITLE);
             _service.CreateProductTag(BOOKS_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_THREE_TAGS_COUNT));
+            var result = _service.GetAllProductTags();
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_THREE_TAGS_COUNT));
         }
 
         [Test]
         public void CreateProductTag_MultipleTags_EnsuresUniqueIds()
         {
+            // Arrange
+            var createdTag1 = new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
+            var createdTag2 = new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(ELECTRONICS_TAG_TITLE))
+                           .Returns(SerializeTag(createdTag1));
+            _mockRepository.Setup(repo => repo.CreateProductTagRaw(CLOTHING_TAG_TITLE))
+                            .Returns(SerializeTag(createdTag2));
+
             // Act
             var tag1 = _service.CreateProductTag(ELECTRONICS_TAG_TITLE);
             var tag2 = _service.CreateProductTag(CLOTHING_TAG_TITLE);
@@ -242,126 +387,166 @@ namespace MarketMinds.Test.Services.ProductTagService
         public void DeleteProductTag_ExistingTag_RemovesTagFromRepository()
         {
             // Arrange
-            AddSingleTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT),
-                "Precondition: Repository should have one tag before deletion");
+            _mockRepository.Setup(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE));
 
             // Act
             _service.DeleteProductTag(ELECTRONICS_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_EMPTY_COUNT));
+            _mockRepository.Verify(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE), Times.Once);
         }
 
         [Test]
         public void DeleteProductTag_ExistingTag_RemovesCorrectTag()
         {
             // Arrange
-            AddSingleTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE));
 
             // Act
             _service.DeleteProductTag(ELECTRONICS_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Any(t => t.DisplayTitle == ELECTRONICS_TAG_TITLE), Is.False);
+            var result = _service.GetAllProductTags();
+            _mockRepository.Verify(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE), Times.Once);
+            Assert.That(result.Any(t => t.DisplayTitle == ELECTRONICS_TAG_TITLE), Is.False);
         }
 
         [Test]
         public void DeleteProductTag_NonExistentTag_DoesNotChangeRepositoryCount()
         {
             // Arrange
-            AddSingleTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT),
-                "Precondition: Repository should have one tag before operation");
+            _mockRepository.Setup(repo => repo.DeleteProductTag(FURNITURE_TAG_TITLE));
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(new List<ProductTag> { new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE) }));
 
             // Act
             _service.DeleteProductTag(FURNITURE_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT));
+            var result = _service.GetAllProductTags();
+            _mockRepository.Verify(repo => repo.DeleteProductTag(FURNITURE_TAG_TITLE), Times.Once);
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT));
         }
 
         [Test]
         public void DeleteProductTag_NonExistentTag_KeepsExistingTagUnchanged()
         {
             // Arrange
-            AddSingleTag(TAG_ID_1, ELECTRONICS_TAG_TITLE);
+            _mockRepository.Setup(repo => repo.DeleteProductTag(FURNITURE_TAG_TITLE));
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(new List<ProductTag> { new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE) }));
 
             // Act
             _service.DeleteProductTag(FURNITURE_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(ELECTRONICS_TAG_TITLE));
+            var result = _service.GetAllProductTags();
+            _mockRepository.Verify(repo => repo.DeleteProductTag(FURNITURE_TAG_TITLE), Times.Once);
+            Assert.That(result.First().DisplayTitle, Is.EqualTo(ELECTRONICS_TAG_TITLE));
         }
 
         [Test]
         public void DeleteProductTag_WithMultipleTagsWithSameTitle_RemovesAllMatchingTags()
         {
             // Arrange
-            AddTagsWithDuplicateTitle();
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_THREE_TAGS_COUNT),
-                "Precondition: Repository should have three tags before deletion");
+            var duplicateTags = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, BOOKS_TAG_TITLE),
+                new ProductTag(TAG_ID_3, ELECTRONICS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(duplicateTags));
+            _mockRepository.Setup(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE));
 
+            var remainingTags = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_2, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(remainingTags));
             // Act
             _service.DeleteProductTag(ELECTRONICS_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT));
+            var result = _service.GetAllProductTags();
+            _mockRepository.Verify(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE), Times.Once);
+            Assert.That(result.Count, Is.EqualTo(EXPECTED_SINGLE_TAG_COUNT));
         }
 
         [Test]
         public void DeleteProductTag_WithMultipleTagsWithSameTitle_KeepsNonMatchingTags()
         {
             // Arrange
-            AddTagsWithDuplicateTitle();
+            var duplicateTags = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, BOOKS_TAG_TITLE),
+                new ProductTag(TAG_ID_3, ELECTRONICS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(duplicateTags));
+            _mockRepository.Setup(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE));
+
+            var remainingTags = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_2, BOOKS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTags(remainingTags));
 
             // Act
             _service.DeleteProductTag(ELECTRONICS_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.First().DisplayTitle, Is.EqualTo(BOOKS_TAG_TITLE));
+            var result = _service.GetAllProductTags();
+            _mockRepository.Verify(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE), Times.Once);
+            Assert.That(result.First().DisplayTitle, Is.EqualTo(BOOKS_TAG_TITLE));
         }
 
         [Test]
         public void DeleteProductTag_WithMultipleTagsWithSameTitle_RemovesAllInstancesOfMatchingTitle()
         {
             // Arrange
-            AddTagsWithDuplicateTitle();
+            var duplicateTags = new List<ProductTag>
+            {
+                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
+                new ProductTag(TAG_ID_2, BOOKS_TAG_TITLE),
+                new ProductTag(TAG_ID_3, ELECTRONICS_TAG_TITLE)
+            };
+            _mockRepository.Setup(repo => repo.GetAllProductTagsRaw())
+                           .Returns(SerializeTag(duplicateTags[1]));
+            _mockRepository.Setup(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE));
 
             // Act
             _service.DeleteProductTag(ELECTRONICS_TAG_TITLE);
 
             // Assert
-            Assert.That(_repositoryMock.Tags.Any(t => t.DisplayTitle == ELECTRONICS_TAG_TITLE), Is.False);
+            var result = _service.GetAllProductTags();
+            _mockRepository.Verify(repo => repo.DeleteProductTag(ELECTRONICS_TAG_TITLE), Times.Once);
+            Assert.That(result.Any(t => t.DisplayTitle == ELECTRONICS_TAG_TITLE), Is.False);
         }
 
         #endregion
 
         #region Helper Methods
 
-        private void AddThreeSampleTags()
+        private string SerializeTags(List<ProductTag> tags)
         {
-            _repositoryMock.Tags.AddRange(new List<ProductTag>
+            if (tags == null)
             {
-                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
-                new ProductTag(TAG_ID_2, CLOTHING_TAG_TITLE),
-                new ProductTag(TAG_ID_3, BOOKS_TAG_TITLE)
-            });
+                return "[]";
+            }
+            return JsonSerializer.Serialize(tags, _testJsonOptions);
         }
 
-        private void AddSingleTag(int id, string title)
+        private string SerializeTag(ProductTag tag)
         {
-            _repositoryMock.Tags.Add(new ProductTag(id, title));
-        }
-
-        private void AddTagsWithDuplicateTitle()
-        {
-            _repositoryMock.Tags.AddRange(new List<ProductTag>
+            if (tag == null)
             {
-                new ProductTag(TAG_ID_1, ELECTRONICS_TAG_TITLE),
-                new ProductTag(TAG_ID_2, BOOKS_TAG_TITLE),
-                new ProductTag(TAG_ID_3, ELECTRONICS_TAG_TITLE)
-            });
+                return null;
+            }
+            return JsonSerializer.Serialize(tag, _testJsonOptions);
         }
 
         #endregion

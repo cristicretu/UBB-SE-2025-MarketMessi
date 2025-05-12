@@ -3,6 +3,8 @@ using MarketMinds.Shared.Services;
 using NUnit.Framework;
 using System.Collections.Generic;
 using MarketMinds.Shared.Services.ReviewCalculationService;
+using System.Collections.ObjectModel;
+using Moq;
 
 namespace MarketMinds.Test.Services
 {
@@ -53,12 +55,14 @@ namespace MarketMinds.Test.Services
         private const int EXPECTED_COUNT_THREE = 3;
         private const int EXPECTED_COUNT_TWO = 2;
 
-        private ReviewCalculationService _service;
+        private IReviewCalculationService _service;
+
 
         [SetUp]
         public void Setup()
         {
             _service = new ReviewCalculationService();
+
         }
 
         private Review CreateReview(int id, string text, List<Image> images, float rating, int authorId)
@@ -77,8 +81,11 @@ namespace MarketMinds.Test.Services
                 CreateReview(REVIEW_ID_3, AVERAGE_TEXT, new List<Image>(), THREE_STAR_RATING, SELLER_ID_3)
             };
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            float result = _service.CalculateAverageRating(reviews);
+            double result = _service.CalculateAverageRating(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_FOUR_STARS));
@@ -90,8 +97,11 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>();
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            float result = _service.CalculateAverageRating(reviews);
+            double result = _service.CalculateAverageRating(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_ZERO));
@@ -103,8 +113,11 @@ namespace MarketMinds.Test.Services
             // Arrange
             List<Review> reviews = null;
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            float result = _service.CalculateAverageRating(reviews);
+            double result = _service.CalculateAverageRating(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_ZERO));
@@ -121,8 +134,11 @@ namespace MarketMinds.Test.Services
                 CreateReview(REVIEW_ID_3, TERRIBLE_TEXT, new List<Image>(), ZERO_STAR_RATING, SELLER_ID_3)
             };
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            float result = _service.CalculateAverageRating(reviews);
+            double result = _service.CalculateAverageRating(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_ZERO));
@@ -139,8 +155,11 @@ namespace MarketMinds.Test.Services
                 CreateReview(REVIEW_ID_3, HORRIBLE_TEXT, new List<Image>(), NEGATIVE_THREE_STAR_RATING, SELLER_ID_3)
             };
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            float result = _service.CalculateAverageRating(reviews);
+            double result = _service.CalculateAverageRating(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_AVERAGE_NEGATIVE_TWO));
@@ -157,8 +176,12 @@ namespace MarketMinds.Test.Services
                 CreateReview(REVIEW_ID_3, THIRD_REVIEW_TEXT, new List<Image>(), THREE_STAR_RATING, SELLER_ID_3)
             };
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            int result = _service.GetReviewCount(reviews);
+            int result = _service.GetReviewCount(observableReviews);
+
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_COUNT_THREE));
@@ -170,8 +193,11 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>();
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            int result = _service.GetReviewCount(reviews);
+            int result = _service.GetReviewCount(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_COUNT_ZERO));
@@ -183,8 +209,11 @@ namespace MarketMinds.Test.Services
             // Arrange
             List<Review> reviews = null;
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
+
             // Act
-            int result = _service.GetReviewCount(reviews);
+            int result = _service.GetReviewCount(observableReviews);
 
             // Assert
             Assert.That(result, Is.EqualTo(EXPECTED_COUNT_ZERO));
@@ -200,8 +229,12 @@ namespace MarketMinds.Test.Services
                 CreateReview(REVIEW_ID_2, SECOND_REVIEW_TEXT, new List<Image>(), FIVE_STAR_RATING, SELLER_ID_2)
             };
 
+
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
             // Act
-            bool result = _service.AreReviewsEmpty(reviews);
+            bool result = _service.AreReviewsEmpty(observableReviews);
+
 
             // Assert
             Assert.That(result, Is.False);
@@ -213,8 +246,10 @@ namespace MarketMinds.Test.Services
             // Arrange
             var reviews = new List<Review>();
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
             // Act
-            bool result = _service.AreReviewsEmpty(reviews);
+            bool result = _service.AreReviewsEmpty(observableReviews);
 
             // Assert
             Assert.That(result, Is.True);
@@ -226,8 +261,10 @@ namespace MarketMinds.Test.Services
             // Arrange
             List<Review> reviews = null;
 
+            var observableReviews = new ObservableCollection<Review>(reviews);
+
             // Act
-            bool result = _service.AreReviewsEmpty(reviews);
+            bool result = _service.AreReviewsEmpty(observableReviews);
 
             // Assert
             Assert.That(result, Is.True);

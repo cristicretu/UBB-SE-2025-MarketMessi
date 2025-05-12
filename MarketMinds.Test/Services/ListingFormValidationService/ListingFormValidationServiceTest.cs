@@ -52,7 +52,7 @@ namespace MarketMinds.Test.Services
         private const int PAST_DAY_LONG = -30;
         private const int PAST_DAYS_SORT = -7;
 
-        private ListingFormValidationService _validationService;
+        private IListingFormValidationService _validationService;
         private Category _validCategory;
         private Condition _validCondition;
         private ObservableCollection<string> _validTags;
