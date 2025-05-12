@@ -1,0 +1,49 @@
+title Create New Product and Borrow Product Sequence
+
+actor User
+
+participant "ProductController (WebMarketplace)" as ClientPC
+participant "BuyProductsService (Shared)\n(SharedClassLibrary)" as BuyService
+participant "BorrowProductsService (Shared)\n(SharedClassLibrary)" as BorrowService
+participant "BuyProductsRepository (Shared)\n(SharedClassLibrary)" as BuyRepo
+participant "BorrowProductsRepository (Shared)\n(SharedClassLibrary)" as BorrowRepo
+database "Database" as DB
+
+== Create New Product ==
+User -> ClientPC : Submit new product details
+activate ClientPC
+
+ClientPC -> BuyService : Validate and create product
+activate BuyService
+BuyService -> BuyService : Validate(product.Title, product.Price, ...)
+note right of BuyService : Ensures product details are valid
+
+BuyService -> BuyRepo : CreateListing(BuyProduct)
+activate BuyRepo
+BuyRepo -> DB : Insert product record
+DB --> BuyRepo : Success
+deactivate BuyRepo
+
+BuyService --> ClientPC : Product created successfully
+deactivate BuyService
+ClientPC --> User : Confirmation of creation
+deactivate ClientPC
+
+== Borrow Product ==
+User -> ClientPC : Request to borrow product
+activate ClientPC
+
+ClientPC -> BorrowService : Validate and create borrow product
+activate BorrowService
+BorrowService -> BorrowService : Map DTO to BorrowProduct
+BorrowService -> BorrowRepo : CreateListing(BorrowProduct)
+activate BorrowRepo
+BorrowRepo -> DB : Insert borrow product record
+DB --> BorrowRepo : Success
+BorrowRepo -> BorrowRepo : AddImageToProduct
+deactivate BorrowRepo
+
+BorrowService --> ClientPC : Borrow product created successfully
+deactivate BorrowService
+ClientPC --> User : Confirmation of borrowing
+deactivate ClientPC
