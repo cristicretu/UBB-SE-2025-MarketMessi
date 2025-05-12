@@ -1,0 +1,97 @@
+title Create New Buy Product Sequence
+
+actor User
+participant "Create.cshtml\n(MarketMinds.Web)" as View
+participant "HomeController\n(MarketMinds.Web)" as HomeCtrl
+participant "BuyProductsService\n(MarketMinds.Shared)" as BuySvc
+participant "BuyProductsProxyRepository\n(MarketMinds.Shared)" as BuyRepo
+participant "Server API\n(BuyProductsController)" as ServerAPI
+database "Database" as DB
+
+== Create New Buy Product Flow ==
+
+User -> View: Fill out buy product form
+note over User, View: Enter title, description, category, condition,\nprice, upload images, add tags
+
+User -> View: Click "Create Buy Listing" button
+activate View
+
+View -> HomeCtrl: POST /Home/CreateBuyProduct(buyProduct, tagIds, imageUrls)
+activate HomeCtrl
+
+HomeCtrl -> HomeCtrl: Log received form data
+note over HomeCtrl: Log title, description, categoryId, conditionId, \nprice, etc.
+
+HomeCtrl -> HomeCtrl: Validate and set default values
+note over HomeCtrl: Ensure SellerId, CategoryId, ConditionId are valid\nEnsure Price > 0
+
+HomeCtrl -> HomeCtrl: Process tags
+note over HomeCtrl: Convert tag IDs to ProductTag objects\nCreate new tags if needed
+
+HomeCtrl -> HomeCtrl: Process images
+note over HomeCtrl: Parse image URLs from form\nAttach to product as NonMappedImages
+
+alt Invalid Form Data
+    HomeCtrl --> View: Return View with validation errors
+    View --> User: Display validation errors
+else Valid Form Data
+    HomeCtrl -> HomeCtrl: Set Category and Condition objects
+    note over HomeCtrl: Ensure Category and Condition objects exist\nwith proper IDs
+
+    HomeCtrl -> HomeCtrl: Prepare simplified API object
+    note over HomeCtrl: Create clean object with all required fields\nformatted for API consumption
+
+    alt Use Reflection Method
+        HomeCtrl -> HomeCtrl: Get BuyProductsService via RequestServices
+        HomeCtrl -> HomeCtrl: Use reflection to access repository
+        note over HomeCtrl: Access private repository field in service\nGet CreateListing method from repository
+        
+        HomeCtrl -> BuyRepo: Direct repository method call
+        activate BuyRepo
+    else Use Standard Method
+        HomeCtrl -> BuySvc: CreateListing(buyProduct)
+        activate BuySvc
+        
+        BuySvc -> BuySvc: Validate buy product
+        note over BuySvc: Check title, sellerId, price
+        
+        BuySvc -> BuySvc: Prepare product for API
+        note over BuySvc: Extract proper IDs and format data
+        
+        BuySvc -> BuyRepo: CreateListing(productToSend)
+        activate BuyRepo
+    end
+    
+    BuyRepo -> ServerAPI: POST /api/buyproducts
+    activate ServerAPI
+    
+    ServerAPI -> ServerAPI: Validate request
+    
+    ServerAPI -> DB: Insert new buy product
+    activate DB
+    
+    DB --> ServerAPI: Return product ID
+    deactivate DB
+    
+    ServerAPI -> ServerAPI: Process tags and images
+    note over ServerAPI: Associate tags with product\nStore image references
+    
+    ServerAPI --> BuyRepo: HTTP 200 OK with created product
+    deactivate ServerAPI
+    
+    BuyRepo --> BuySvc: Return response JSON
+    deactivate BuyRepo
+    alt Direct Repository Call
+        BuySvc --> HomeCtrl: Return success
+        deactivate BuySvc
+    end
+    
+    HomeCtrl -> HomeCtrl: Log success
+    note over HomeCtrl: "Buy product created successfully"
+    
+    HomeCtrl --> View: RedirectToAction("Index", "BuyProducts")
+    deactivate HomeCtrl
+    
+    View --> User: Redirect to buy products listing page
+end
+deactivate View

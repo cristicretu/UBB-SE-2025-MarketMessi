@@ -1,0 +1,89 @@
+title Create New Borrow Product Sequence
+
+actor User
+participant "Create.cshtml\n(MarketMinds.Web)" as View
+participant "HomeController\n(MarketMinds.Web)" as HomeCtrl
+participant "BorrowProductsService\n(MarketMinds.Shared)" as BorrowSvc
+participant "BorrowProductsProxyRepository\n(MarketMinds.Shared)" as BorrowRepo
+participant "Server API\n(BorrowProductsController)" as ServerAPI
+database "Database" as DB
+
+== Create New Borrow Product Flow ==
+
+User -> View: Fill out borrow product form
+note over User, View: Enter title, description, category, condition,\ndaily rate, start date, end date, time limit,\nupload images, add tags
+
+User -> View: Click "Create Borrow Listing" button
+activate View
+
+View -> HomeCtrl: POST /Home/CreateBorrowProduct(borrowProduct, tagIds, imageUrls)
+activate HomeCtrl
+
+HomeCtrl -> HomeCtrl: Log received form data
+note over HomeCtrl: Log title, description, categoryId, conditionId, \ndaily rate, dates, etc.
+
+HomeCtrl -> HomeCtrl: Validate and set default values
+note over HomeCtrl: Ensure SellerId, CategoryId, ConditionId are valid\nSet default dates if not provided\nSet DailyRate > 0
+
+HomeCtrl -> HomeCtrl: Process tags
+note over HomeCtrl: Convert tag IDs to ProductTag objects\nCreate new tags if needed
+
+HomeCtrl -> HomeCtrl: Process images
+note over HomeCtrl: Parse image URLs from form\nAttach to product as NonMappedImages
+
+alt Invalid Form Data
+    HomeCtrl --> View: Return View with validation errors
+    View --> User: Display validation errors
+else Valid Form Data
+    HomeCtrl -> BorrowSvc: CreateBorrowProductAsync(borrowProduct)
+    activate BorrowSvc
+    
+    BorrowSvc -> BorrowSvc: Validate borrow product
+    note over BorrowSvc: Check title, categoryId, conditionId,\ndailyRate are valid
+    
+    BorrowSvc -> BorrowSvc: CreateListing(borrowProduct)
+    
+    BorrowSvc -> BorrowSvc: ApplyDefaultDates(borrowProduct)
+    note over BorrowSvc: Ensure start/end dates and time limit\nare set and consistent
+    
+    BorrowSvc -> BorrowRepo: CreateListing(borrowProduct)
+    activate BorrowRepo
+    
+    BorrowRepo -> BorrowRepo: Prepare product for API
+    note over BorrowRepo: Extract sellerId, conditionId, categoryId\nFromat images and build clean API object
+    
+    BorrowRepo -> BorrowRepo: Create serializer options
+    note over BorrowRepo: Configure JSON serialization options
+    
+    BorrowRepo -> ServerAPI: POST /api/borrowproducts
+    activate ServerAPI
+    
+    ServerAPI -> ServerAPI: Validate request
+    
+    ServerAPI -> DB: Insert new borrow product
+    activate DB
+    
+    DB --> ServerAPI: Return product ID
+    deactivate DB
+    
+    ServerAPI -> ServerAPI: Process tags and images
+    note over ServerAPI: Associate tags with product\nStore image references
+    
+    ServerAPI --> BorrowRepo: HTTP 200 OK with created product
+    deactivate ServerAPI
+    
+    BorrowRepo --> BorrowSvc: Return success
+    deactivate BorrowRepo
+    
+    BorrowSvc --> HomeCtrl: Return true
+    deactivate BorrowSvc
+    
+    HomeCtrl -> HomeCtrl: Log success
+    note over HomeCtrl: "Borrow product created successfully"
+    
+    HomeCtrl --> View: RedirectToAction("Index", "BorrowProducts")
+    deactivate HomeCtrl
+    
+    View --> User: Redirect to borrow products listing page
+end
+deactivate View

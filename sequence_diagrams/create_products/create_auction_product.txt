@@ -1,0 +1,86 @@
+title Create New Auction Product Sequence
+
+actor User
+participant "Create.cshtml\n(MarketMinds.Web)" as View
+participant "HomeController\n(MarketMinds.Web)" as HomeCtrl
+participant "AuctionProductsService\n(MarketMinds.Shared)" as AuctionSvc
+participant "AuctionProductsProxyRepository\n(MarketMinds.Shared)" as AuctionRepo
+participant "Server API\n(AuctionProductsController)" as ServerAPI
+database "Database" as DB
+
+== Create New Auction Product Flow ==
+
+User -> View: Fill out auction product form
+note over User, View: Enter title, description, category, condition,\nstart price, end date, upload images, add tags
+
+User -> View: Click "Create Auction Listing" button
+activate View
+
+View -> HomeCtrl: POST /Home/Create(auctionProduct, productType, tagIds, imageUrls)
+activate HomeCtrl
+
+HomeCtrl -> HomeCtrl: Validate form data
+note over HomeCtrl: Check title, category, condition, price
+
+HomeCtrl -> HomeCtrl: Process tags
+note over HomeCtrl: Convert tag IDs to ProductTag objects\nCreate new tags if needed
+
+HomeCtrl -> HomeCtrl: Process images
+note over HomeCtrl: Parse image URLs from form\nAttach to product as NonMappedImages
+
+HomeCtrl -> HomeCtrl: Set default values
+note over HomeCtrl: Set start time to now if not provided\nSet end time to +7 days if not provided\nSet current price = start price\nSet seller ID from authenticated user or default
+
+alt Invalid Form Data
+    HomeCtrl --> View: Return View with validation errors
+    View --> User: Display validation errors
+else Valid Form Data
+    HomeCtrl -> AuctionSvc: CreateAuctionProductAsync(auctionProduct)
+    activate AuctionSvc
+    
+    AuctionSvc -> AuctionSvc: SetDefaultAuctionTimes(auctionProduct)
+    note over AuctionSvc: Ensure start/end times are set properly
+    
+    AuctionSvc -> AuctionSvc: SetDefaultPricing(auctionProduct)
+    note over AuctionSvc: Ensure start/current prices are valid
+    
+    AuctionSvc -> AuctionSvc: CreateListing(auctionProduct)
+    
+    AuctionSvc -> AuctionRepo: CreateListing(auctionProduct)
+    activate AuctionRepo
+    
+    AuctionRepo -> AuctionRepo: Validate product data
+    note over AuctionRepo: Check title, category, condition, price
+    
+    AuctionRepo -> AuctionRepo: Prepare product for API
+    note over AuctionRepo: Create clean object with all\nrequired properties and images
+    
+    AuctionRepo -> ServerAPI: POST /api/auctionproducts
+    activate ServerAPI
+    
+    ServerAPI -> ServerAPI: Validate request
+    
+    ServerAPI -> DB: Insert new auction product
+    activate DB
+    
+    DB --> ServerAPI: Return product ID
+    deactivate DB
+    
+    ServerAPI -> ServerAPI: Process tags and images
+    note over ServerAPI: Associate tags with product\nStore image references
+    
+    ServerAPI --> AuctionRepo: HTTP 200 OK with created product
+    deactivate ServerAPI
+    
+    AuctionRepo --> AuctionSvc: Return success
+    deactivate AuctionRepo
+    
+    AuctionSvc --> HomeCtrl: Return true
+    deactivate AuctionSvc
+    
+    HomeCtrl --> View: RedirectToAction("Index", "AuctionProducts")
+    deactivate HomeCtrl
+    
+    View --> User: Redirect to product listing page
+end
+deactivate View
