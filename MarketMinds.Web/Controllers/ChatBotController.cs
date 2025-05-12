@@ -15,6 +15,7 @@ using System.Diagnostics;
 
 namespace MarketMinds.Web.Controllers
 {
+    [Authorize]
     public class ChatBotController : Controller
     {
         private readonly ILogger<ChatBotController> _logger;
@@ -32,7 +33,11 @@ namespace MarketMinds.Web.Controllers
         
         // Index constants
         private const int FirstConversationIndex = 0;
+
+        private const int NoConversation = 0;
         private const int MinimumValidId = 1;
+
+        private const int SingleUnit = 1;
 
         public ChatBotController(
             ILogger<ChatBotController> logger,
@@ -46,22 +51,21 @@ namespace MarketMinds.Web.Controllers
             _chatbotService = chatbotService;
         }
 
-        [AllowAnonymous]
         public async Task<IActionResult> Index(int? conversationId = null)
         {
             var viewModel = new ChatViewModel();
-            
+
             try
             {
                 // Get current user ID
                 int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : DefaultUserId;
-                
+
                 // Set the current user for the chatbot service
                 if (User.Identity.IsAuthenticated)
                 {
                     _chatbotService.SetCurrentUser(new User { Id = userId });
                 }
-                
+
                 // Get all conversations for the user
                 try
                 {
@@ -70,7 +74,7 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogInformation("Retrieved {Count} conversations", viewModel.Conversations.Count);
                     
                     // If no conversations exist, create one automatically
-                    if (viewModel.Conversations.Count == 0)
+                    if (viewModel.Conversations.Count == NoConversation)
                     {
                         _logger.LogInformation("No conversations found, creating a new conversation");
                         await CreateNewConversationWithWelcomeMessage(userId, viewModel);
@@ -81,9 +85,9 @@ namespace MarketMinds.Web.Controllers
                     _logger.LogError(ex, "Error getting user conversations: {Message}", ex.Message);
                     viewModel.Conversations = new List<Conversation>();
                 }
-                
+
                 // Select the requested conversation if specified
-                if (conversationId.HasValue && conversationId.Value > MinimumValidId - 1)
+                if (conversationId.HasValue && conversationId.Value > MinimumValidId - SingleUnit)
                 {
                     try
                     {
@@ -103,12 +107,12 @@ namespace MarketMinds.Web.Controllers
                     }
                 }
                 // If no specific conversation requested, select the first one by default
-                else if (viewModel.Conversations != null && viewModel.Conversations.Count > 0)
+                else if (viewModel.Conversations != null && viewModel.Conversations.Count > NoConversation)
                 {
                     try
                     {
                         viewModel.CurrentConversation = viewModel.Conversations[FirstConversationIndex];
-                        
+
                         _logger.LogInformation("Getting messages for conversation {ConversationId}", viewModel.CurrentConversation.Id);
                         viewModel.Messages = await _messageService.GetMessagesLegacyAsync(viewModel.CurrentConversation.Id);
                         _logger.LogInformation("Retrieved {Count} messages for conversation {ConversationId}", 
@@ -127,10 +131,10 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogError(ex, "Error loading chat data: {Message}", ex.Message);
                 // Continue with empty data
             }
-            
+
             return View(viewModel);
         }
-        
+
         private async Task CreateNewConversationWithWelcomeMessage(int userId, ChatViewModel viewModel)
         {
             try
@@ -139,16 +143,16 @@ namespace MarketMinds.Web.Controllers
                 _logger.LogInformation("Creating new conversation for user {UserId}", userId);
                 var conversation = await _conversationService.CreateConversationAsync(userId);
                 _logger.LogInformation("Created conversation with ID: {ConversationId}", conversation.Id);
-                
+
                 // Add welcome message
                 _logger.LogInformation("Adding welcome message to conversation {ConversationId}", conversation.Id);
                 var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, BotUserId, WelcomeMessage);
                 _logger.LogInformation("Added welcome message with ID: {MessageId}", welcomeMessage.Id);
-                
+
                 // Update the view model with the new conversation
                 viewModel.Conversations.Add(conversation);
                 viewModel.CurrentConversation = conversation;
-                
+
                 viewModel.Messages = new List<Message> { welcomeMessage };
                 _logger.LogInformation("View model updated with new conversation and welcome message");
             }
@@ -160,57 +164,55 @@ namespace MarketMinds.Web.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateConversation()
         {
             _logger.LogInformation("CreateConversation action called");
-            
+
             try
             {
                 // Get current user ID
                 int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : DefaultUserId;
-                
+
                 // Create a new conversation
                 var conversation = await _conversationService.CreateConversationAsync(userId);
                 _logger.LogInformation("Created conversation with ID: {ConversationId}", conversation.Id);
-                
+
                 // Add welcome message
                 var welcomeMessage = await _messageService.CreateMessageAsync(conversation.Id, BotUserId, WelcomeMessage);
                 _logger.LogInformation("Added welcome message with ID: {MessageId}", welcomeMessage.Id);
-                
+
                 return RedirectToAction("Index", new { conversationId = conversation.Id });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating conversation: {Message}", ex.Message);
-                
+
                 // Redirect to index without a specific conversation ID
                 return RedirectToAction("Index");
             }
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(int conversationId, string content)
         {
             _logger.LogInformation("Sending message in conversation {ConversationId}: {Content}", conversationId, content);
-            
+
             try
             {
                 if (string.IsNullOrWhiteSpace(content))
                 {
                     return RedirectToAction("Index", new { conversationId });
                 }
-                
+
                 // Get current user ID
                 int userId = User.Identity.IsAuthenticated ? User.GetCurrentUserId() : DefaultUserId;
-                
+
                 // Send user message
                 var userMessage = await _messageService.CreateMessageAsync(conversationId, userId, content);
                 _logger.LogInformation("Created user message with ID: {MessageId}", userMessage.Id);
-                
+
                 // Get bot response
                 try
                 {
@@ -219,11 +221,11 @@ namespace MarketMinds.Web.Controllers
                     {
                         _chatbotService.SetCurrentUser(new User { Id = userId });
                     }
-                    
+
                     // Get bot response
                     string botResponse = await _chatbotService.GetBotResponseAsync(content);
                     _logger.LogInformation("Received bot response: {Response}", botResponse);
-                    
+
                     // Send bot response as a message
                     if (!string.IsNullOrEmpty(botResponse))
                     {
@@ -234,7 +236,7 @@ namespace MarketMinds.Web.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error getting bot response: {Message}", ex.Message);
-                    
+
                     // Send a fallback response if the bot service fails
                     await _messageService.CreateMessageAsync(conversationId, BotUserId, ErrorResponseMessage);
                     _logger.LogInformation("Created error message for failed bot response");
