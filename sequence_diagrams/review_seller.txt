@@ -1,0 +1,152 @@
+title Giving a Review to a Seller Sequence
+
+actor User
+participant "ReviewsController\n(MarketMinds.Web)" as ClientRC
+participant "UserService\n(MarketMinds.Shared)" as ClientUS
+participant "ReviewsService\n(MarketMinds.Shared)" as ClientRS
+participant "ReviewProxyRepository\n(MarketMinds.Shared)" as ClientRP
+participant "ReviewController\n(Server.Controllers)" as ServerAPI
+participant "ReviewRepository\n(Server.MarketMinds)" as ServerRP
+database "Database" as DB
+
+== Initiating the Review Process ==
+
+User -> ClientRC : Clicks "Review Seller" button (sellerId parameter)
+activate ClientRC
+
+ClientRC -> ClientUS : GetUserByIdAsync(sellerId)
+activate ClientUS
+ClientUS -> ClientUS : Internal HTTP call to fetch seller details
+ClientUS --> ClientRC : Returns Seller object
+deactivate ClientUS
+
+ClientRC -> ClientRC : Prepare Review creation view
+ClientRC --> User : Display review form with seller info
+deactivate ClientRC
+
+== Submitting the Review ==
+
+User -> ClientRC : Fills out review form and submits (description, rating, images)
+activate ClientRC
+
+ClientRC -> ClientRC : Validate the model state
+note over ClientRC : Check if ModelState.IsValid
+
+ClientRC -> ClientRC : GetCurrentUserAsync()
+note over ClientRC : Get the current user (buyer) from session
+
+alt Current user is null
+    ClientRC --> User : Redirect to login
+else Current user exists
+    
+    ClientRC -> ClientUS : GetUserByIdAsync(review.SellerId)
+    activate ClientUS
+    ClientUS -> ClientUS : Internal HTTP call to fetch seller details
+    ClientUS --> ClientRC : Returns Seller object (seller)
+    deactivate ClientUS
+    
+    alt Seller not found
+        ClientRC --> User : Return NotFound()
+    else Seller exists
+    
+        ClientRC -> ClientRC : Process uploaded image with _imageUploadService
+        note over ClientRC : Process image
+        
+        ClientRC -> ClientRC : Validate rating range (0-5)
+        
+        alt Rating invalid
+            ClientRC --> User : Return to form with error message
+        else Rating valid
+        
+            ClientRC -> ClientRS : AddReview(description, reviewImage, rating, seller, currentUser)
+            activate ClientRS
+            
+            ClientRS -> ClientRS : Validate inputs
+            note over ClientRS : Check for null seller, buyer, or description
+            
+            ClientRS -> ClientRS : Ensure rating is within expected range (0-5)
+            
+            ClientRS -> ClientRS : Create Review object
+            note over ClientRS : Set description, images, rating, sellerId, buyerId
+            
+            ClientRS -> ClientRP : CreateReviewRaw(reviewToCreate)
+            activate ClientRP
+            
+            ClientRP -> ServerAPI : POST /api/review (with review JSON in body)
+            activate ServerAPI
+            
+            ServerAPI -> ServerAPI : Validate review data
+            
+            ServerAPI -> ServerRP : CreateReview(review)
+            activate ServerRP
+            
+            ServerRP -> DB : Add review to database
+            activate DB
+            DB --> ServerRP : Success
+            deactivate DB
+            
+            ServerRP --> ServerAPI : Return created review
+            deactivate ServerRP
+            
+            ServerAPI --> ClientRP : HTTP 201 Created
+            deactivate ServerAPI
+            
+            ClientRP --> ClientRS : Success
+            deactivate ClientRP
+            
+            ClientRS -> ClientRS : Clear user cache to refresh data
+            ClientRS --> ClientRC : Review added successfully
+            deactivate ClientRS
+            
+            ClientRC --> User : Redirect to ReviewsGiven page
+        end
+    end
+end
+deactivate ClientRC
+
+== Viewing Reviews Given ==
+
+User -> ClientRC : Visits "My Reviews" page
+activate ClientRC
+
+ClientRC -> ClientRC : GetCurrentUserAsync()
+note over ClientRC : Get the current user from session
+
+ClientRC -> ClientRS : GetReviewsByBuyer(currentUser)
+activate ClientRS
+
+ClientRS -> ClientRP : GetReviewsByBuyerRaw(buyer.Id)
+activate ClientRP
+
+ClientRP -> ServerAPI : GET /api/review/buyer/{buyerId}
+activate ServerAPI
+
+ServerAPI -> ServerRP : GetAllReviewsByBuyer(buyer)
+activate ServerRP
+
+ServerRP -> DB : Query reviews where BuyerId = buyer.Id
+activate DB
+DB --> ServerRP : Review data with ReviewImages
+deactivate DB
+
+ServerRP --> ServerAPI : Collection of reviews
+deactivate ServerRP
+
+ServerAPI -> ServerAPI : For each review, call LoadGenericImages()
+note over ServerAPI : Convert ReviewImages to generic Images
+
+ServerAPI -> ServerAPI : Map reviews to DTOs using ReviewMapper
+ServerAPI --> ClientRP : HTTP 200 OK with review DTOs
+deactivate ServerAPI
+
+ClientRP --> ClientRS : JSON review data
+deactivate ClientRP
+
+ClientRS -> ClientRS : Deserialize and process reviews
+note over ClientRS : For each review, add seller and buyer usernames
+
+ClientRS --> ClientRC : Observable collection of reviews
+deactivate ClientRS
+
+ClientRC --> User : Display list of reviews given by user
+deactivate ClientRC

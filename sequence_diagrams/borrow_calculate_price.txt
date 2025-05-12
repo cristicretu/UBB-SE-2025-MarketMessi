@@ -1,0 +1,68 @@
+title Borrow Product Price Calculation Sequence
+
+actor User
+participant "BorrowProductsController\n(MarketMinds.Web)" as Controller
+participant "BorrowProductsService\n(MarketMinds.Shared)" as Service
+participant "BorrowProductsProxyRepository\n(MarketMinds.Shared)" as ProxyRepo
+participant "BorrowProductsRepository\n(Server.MarketMinds)" as Repository
+database "Database" as DB
+
+== User selects end date for borrowing ==
+
+User -> Controller : Enters end date & clicks "Calculate Price" button
+activate Controller
+
+Controller -> Service : GetBorrowProductByIdAsync(productId)
+activate Service
+Service -> ProxyRepo : GetProductById(productId)
+activate ProxyRepo
+ProxyRepo -> Repository : GET /api/borrowproducts/{productId}
+activate Repository
+Repository -> DB : Query BorrowProduct with EF
+activate DB
+DB --> Repository : BorrowProduct data (including dailyRate)
+deactivate DB
+Repository --> ProxyRepo : HTTP 200 OK (BorrowProduct JSON)
+deactivate Repository
+ProxyRepo --> Service : BorrowProduct object
+deactivate ProxyRepo
+Service --> Controller : BorrowProduct object
+deactivate Service
+
+== Validate end date input ==
+
+Controller -> Controller : Validate end date is not null
+Controller -> Controller : Get startDate (borrowProduct.StartDate ?? DateTime.Now)
+
+note over Controller : Check if endDate < startDate
+
+alt endDate is before startDate
+    Controller --> User : Error: "End date cannot be before start date"
+else endDate is after startDate
+    Controller -> Controller : Continue validation
+end
+
+Controller -> Controller : Check if endDate > borrowProduct.TimeLimit
+
+alt endDate exceeds product's TimeLimit
+    Controller --> User : Error: "End date cannot exceed the time limit"
+else endDate is valid
+    Controller -> Controller : Proceed with calculation
+end
+
+== Calculate final price ==
+
+Controller -> Controller : Calculate days between dates:\nduration = endDate - startDate\ndays = (int)Math.Ceiling(duration.TotalDays)
+
+Controller -> Controller : Calculate total price:\ntotalPrice = days * borrowProduct.DailyRate
+
+Controller --> User : Return calculated price details:\n- Total price (formatted as currency)\n- Number of days\n- Price per day
+deactivate Controller
+
+== User confirms borrowing ==
+
+User -> Controller : Confirms borrowing at calculated price
+activate Controller
+note over Controller : Process borrowing transaction (not shown)
+Controller --> User : Borrowing confirmation
+deactivate Controller
