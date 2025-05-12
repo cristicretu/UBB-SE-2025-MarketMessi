@@ -15,8 +15,7 @@ namespace MarketMinds.Shared.Services.ProductConditionService
 
         public ProductConditionService(IProductConditionRepository repository)
         {
-            productConditionRepository = repository as ProductConditionProxyRepository
-                ?? throw new ArgumentException("Repository must be of type ProductConditionProxyRepository");
+            productConditionRepository = repository  ?? throw new ArgumentNullException(nameof(repository));
         }
 
         public List<Condition> GetAllProductConditions()

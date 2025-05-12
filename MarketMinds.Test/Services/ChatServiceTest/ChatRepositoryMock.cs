@@ -1,81 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using MarketMinds.Shared.IRepository;
 using MarketMinds.Shared.Models;
-using MarketMinds.Repositories.ChatRepository;
 
 namespace MarketMinds.Test.Services.ChatServiceTest
 {
     public class ChatRepositoryMock : IChatRepository
     {
-        private List<Conversation> _conversations;
-        private List<Message> _messages;
-        private int _getConversationCount;
-        private int _createConversationCount;
-        private int _getMessagesCount;
-        private int _addMessageCount;
+        private readonly List<Conversation> _conversations = new();
+        private readonly List<Message> _messages = new();
 
-        public ChatRepositoryMock()
+        public Task<Conversation> CreateConversationAsync(int userId)
         {
-            _conversations = new List<Conversation>();
-            _messages = new List<Message>();
-            _getConversationCount = 0;
-            _createConversationCount = 0;
-            _getMessagesCount = 0;
-            _addMessageCount = 0;
-        }
-
-        public Conversation? GetConversation(int userId1, int userId2)
-        {
-            _getConversationCount++;
-            return _conversations.FirstOrDefault(c =>
-                (c.UserId1 == userId1 && c.UserId2 == userId2) ||
-                (c.UserId1 == userId2 && c.UserId2 == userId1));
-        }
-
-        public Conversation CreateConversation(int userId1, int userId2)
-        {
-            _createConversationCount++;
-            var newConversation = new Conversation
+            var conversation = new Conversation
             {
                 Id = _conversations.Count + 1,
-                UserId1 = userId1,
-                UserId2 = userId2
+                UserId = userId
             };
-            _conversations.Add(newConversation);
-            return newConversation;
-        }
-
-        public List<Message> GetMessages(int conversationId, long sinceTimestamp = 0)
-        {
-            _getMessagesCount++;
-            return _messages
-                .Where(m => m.ConversationId == conversationId && m.Timestamp > sinceTimestamp)
-                .OrderBy(m => m.Timestamp)
-                .ToList();
-        }
-
-        public bool AddMessage(Message message)
-        {
-            _addMessageCount++;
-            _messages.Add(message);
-            return true;
-        }
-
-        // Helper methods for testing
-        public int GetConversationCount => _getConversationCount;
-        public int CreateConversationCount => _createConversationCount;
-        public int GetMessagesCount => _getMessagesCount;
-        public int AddMessageCount => _addMessageCount;
-
-        public void AddTestConversation(Conversation conversation)
-        {
             _conversations.Add(conversation);
+            return Task.FromResult(conversation);
         }
 
-        public void AddTestMessages(List<Message> messages)
+        public Task<Conversation> GetConversationAsync(int conversationId)
         {
-            _messages.AddRange(messages);
+            var conversation = _conversations.FirstOrDefault(c => c.Id == conversationId);
+            return Task.FromResult(conversation);
         }
+
+        public Task<List<Conversation>> GetUserConversationsAsync(int userId)
+        {
+            var list = _conversations.Where(c => c.UserId == userId).ToList();
+            return Task.FromResult(list);
+        }
+
+        public Task<Message> SendMessageAsync(int conversationId, int userId, string content)
+        {
+            var message = new Message
+            {
+                Id = _messages.Count + 1,
+                ConversationId = conversationId,
+                UserId = userId,
+                Content = content
+            };
+            _messages.Add(message);
+            return Task.FromResult(message);
+        }
+
+        public Task<List<Message>> GetMessagesAsync(int conversationId)
+        {
+            var msgs = _messages.Where(m => m.ConversationId == conversationId).ToList();
+            return Task.FromResult(msgs);
+        }
+
+        // Helpers for test control
+        public void AddTestConversation(Conversation c) => _conversations.Add(c);
+        public void AddTestMessages(IEnumerable<Message> m) => _messages.AddRange(m);
     }
 }
+

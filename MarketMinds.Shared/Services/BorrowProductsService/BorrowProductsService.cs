@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.Services.ProductTagService;
@@ -222,5 +223,135 @@ namespace MarketMinds.Shared.Services.BorrowProductsService
             }
             return productResultSet;
         }
+
+        #region Async Methods
+
+        public async Task<List<BorrowProduct>> GetAllBorrowProductsAsync()
+        {
+            try
+            {
+                var products = GetProducts();
+                var borrowProducts = products.Select(p => p as BorrowProduct).Where(p => p != null).ToList();
+                return borrowProducts;
+            }
+            catch (Exception exception)
+            {
+                return new List<BorrowProduct>();
+            }
+        }
+
+        public async Task<BorrowProduct> GetBorrowProductByIdAsync(int id)
+        {
+            try
+            {
+                var product = GetProductById(id);
+                if (product is BorrowProduct borrowProduct)
+                {
+                    return borrowProduct;
+                }
+                return null;
+            }
+            catch (Exception exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> CreateBorrowProductAsync(BorrowProduct borrowProduct)
+        {
+            try
+            {
+                if (borrowProduct == null)
+                {
+                    throw new ArgumentNullException(nameof(borrowProduct), "BorrowProduct cannot be null");
+                }
+                
+                if (string.IsNullOrWhiteSpace(borrowProduct.Title))
+                {
+                    throw new ArgumentException("Title is required", nameof(borrowProduct.Title));
+                }
+                
+                if (borrowProduct.CategoryId <= 0)
+                {
+                    throw new ArgumentException("CategoryId must be greater than zero", nameof(borrowProduct.CategoryId));
+                }
+                
+                if (borrowProduct.ConditionId <= 0)
+                {
+                    throw new ArgumentException("ConditionId must be greater than zero", nameof(borrowProduct.ConditionId));
+                }
+                
+                if (borrowProduct.DailyRate <= 0)
+                {
+                    throw new ArgumentException("DailyRate must be greater than zero", nameof(borrowProduct.DailyRate));
+                }
+                
+                CreateListing(borrowProduct);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Error in CreateBorrowProductAsync: {exception.Message}");
+                if (exception.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {exception.InnerException.Message}");
+                }
+                
+                throw;
+            }
+        }
+
+        public async Task<BorrowProduct> CreateProductAsync(CreateBorrowProductDTO productDTO)
+        {
+            try
+            {
+                return CreateProduct(productDTO);
+            }
+            catch (Exception exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdateBorrowProductAsync(BorrowProduct borrowProduct)
+        {
+            try
+            {
+                CreateListing(borrowProduct);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteBorrowProductAsync(int id)
+        {
+            try
+            {
+                var product = GetProductById(id);
+                DeleteListing(product);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<Dictionary<string, string[]>> ValidateProductDTOAsync(CreateBorrowProductDTO productDTO)
+        {
+            try
+            {
+                return ValidateProductDTO(productDTO);
+            }
+            catch (Exception)
+            {
+                return new Dictionary<string, string[]>();
+            }
+        }
+
+        #endregion
     }
 }
