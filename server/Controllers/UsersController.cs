@@ -1,13 +1,11 @@
 using System;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using MarketMinds.Shared.Models;
+using MarketMinds.Shared.IRepository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Server.DataAccessLayer;
 
 namespace Server.Controllers
 {
@@ -15,15 +13,15 @@ namespace Server.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<UsersController> _logger;
         private const int BuyerTypeValue = 1;
         private const int BaseBalance = 0;
         private const int BaseRating = 0;
 
-        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
+        public UsersController(IUserRepository userRepository, ILogger<UsersController> logger)
         {
-            _context = context;
+            _userRepository = userRepository;
             _logger = logger;
         }
 
@@ -42,25 +40,21 @@ namespace Server.Controllers
 
             try
             {
-                if (await _context.Users.AnyAsync(user => user.Username == request.Username))
+                if (await _userRepository.UsernameExistsAsync(request.Username))
                 {
                     return Conflict("Username is already taken.");
                 }
 
-                if (await _context.Users.AnyAsync(user => user.Email == request.Email))
+                if (await _userRepository.EmailExistsAsync(request.Email))
                 {
                     return Conflict("Email is already registered.");
                 }
 
-                var user = new User(request.Username, request.Email, HashPassword(request.Password))
-                {
-                    Balance = BaseBalance,
-                    Rating = BaseRating,
-                    UserType = BuyerTypeValue
-                };
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                var user = await _userRepository.RegisterUserAsync(
+                    request.Username, 
+                    request.Email, 
+                    HashPassword(request.Password)
+                );
 
                 var userResponse = new
                 {
@@ -96,7 +90,7 @@ namespace Server.Controllers
 
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
+                var user = await _userRepository.FindUserByUsernameAsync(request.Username);
 
                 if (user == null)
                 {
@@ -140,7 +134,7 @@ namespace Server.Controllers
 
             try
             {
-                bool exists = await _context.Users.AnyAsync(user => user.Username == username);
+                bool exists = await _userRepository.UsernameExistsAsync(username);
                 return Ok(new { exists });
             }
             catch (Exception ex)
