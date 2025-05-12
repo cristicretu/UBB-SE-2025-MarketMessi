@@ -12,6 +12,8 @@ using MarketMinds.Shared.Services.ProductTagService;
 using MarketMinds.Shared.Services.ImagineUploadService;
 using MarketMinds.Shared.Services.BasketService;
 using MarketMinds.Shared.Services.UserService;
+using MarketMinds.Shared.Services.ConversationService;
+using MarketMinds.Shared.Services.MessageService;
 using MarketMinds.Shared.Services.ReviewService;
 using MarketMinds.Shared.ProxyRepository;
 using MarketMinds.Shared.IRepository;
@@ -19,6 +21,8 @@ using MarketMinds.Shared.IRepository;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -35,18 +39,15 @@ builder.Services.AddHttpClient("ApiClient", client =>
 {
     // Get base URL from configuration
     var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
-    
     if (string.IsNullOrEmpty(baseUrl))
     {
         baseUrl = "http://localhost:5001";
     }
-    
     // Make sure URL ends with slash
     if (!baseUrl.EndsWith("/"))
     {
         baseUrl += "/";
     }
-    
     client.BaseAddress = new Uri(baseUrl + "api/");
 });
 
@@ -59,6 +60,10 @@ builder.Services.AddSingleton<ProductConditionProxyRepository>();
 builder.Services.AddSingleton<ProductTagProxyRepository>();
 builder.Services.AddSingleton<BasketProxyRepository>();
 builder.Services.AddSingleton<UserProxyRepository>();
+builder.Services.AddSingleton<ChatProxyRepository>();
+builder.Services.AddSingleton<MarketMinds.Shared.ProxyRepository.ChatbotProxyRepository>();
+builder.Services.AddSingleton<ConversationProxyRepository>();
+builder.Services.AddSingleton<MessageProxyRepository>();
 builder.Services.AddSingleton<ReviewProxyRepository>();
 
 // Register services
@@ -72,6 +77,10 @@ builder.Services.AddTransient<IProductTagService, ProductTagService>();
 builder.Services.AddTransient<IImageUploadService, ImageUploadService>();
 builder.Services.AddTransient<IBasketService, BasketService>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatService.IChatService, MarketMinds.Shared.Services.DreamTeam.ChatService.ChatService>();
+builder.Services.AddTransient<MarketMinds.Shared.Services.DreamTeam.ChatbotService.IChatbotService, MarketMinds.Shared.Services.DreamTeam.ChatbotService.ChatbotService>();
+builder.Services.AddTransient<IConversationService, ConversationService>();
+builder.Services.AddTransient<IMessageService, MessageService>();
 builder.Services.AddTransient<IReviewsService, ReviewsService>();
 
 // Register repository interfaces
@@ -80,6 +89,10 @@ builder.Services.AddTransient<IProductConditionRepository>(sp => sp.GetRequiredS
 builder.Services.AddTransient<IProductTagRepository>(sp => sp.GetRequiredService<ProductTagProxyRepository>());
 builder.Services.AddTransient<IBasketRepository>(sp => sp.GetRequiredService<BasketProxyRepository>());
 builder.Services.AddTransient<IAccountRepository>(sp => sp.GetRequiredService<UserProxyRepository>());
+builder.Services.AddTransient<IChatRepository>(sp => sp.GetRequiredService<ChatProxyRepository>());
+builder.Services.AddTransient<MarketMinds.Shared.IRepository.IChatbotRepository>(sp => sp.GetRequiredService<MarketMinds.Shared.ProxyRepository.ChatbotProxyRepository>());
+builder.Services.AddTransient<IConversationRepository>(sp => sp.GetRequiredService<ConversationProxyRepository>());
+builder.Services.AddTransient<IMessageRepository>(sp => sp.GetRequiredService<MessageProxyRepository>());
 builder.Services.AddTransient<IReviewRepository>(sp => sp.GetRequiredService<ReviewProxyRepository>());
 
 var app = builder.Build();
@@ -101,6 +114,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

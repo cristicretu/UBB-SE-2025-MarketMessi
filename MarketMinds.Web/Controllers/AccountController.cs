@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MarketMinds.Web.Models;
+using MarketMinds.Shared.IRepository;
+using System.Collections.Generic;
 
 namespace MarketMinds.Web.Controllers
 {
@@ -15,11 +18,13 @@ namespace MarketMinds.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IAccountRepository _accountRepository;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IUserService userService, ILogger<AccountController> logger)
+        public AccountController(IUserService userService, IAccountRepository accountRepository, ILogger<AccountController> logger)
         {
             _userService = userService;
+            _accountRepository = accountRepository;
             _logger = logger;
         }
 
@@ -143,6 +148,62 @@ namespace MarketMinds.Web.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+        // GET: Account/Index
+        public async Task<IActionResult> Index()
+        {
+            // Get current user ID from claims
+            int userId = User.GetCurrentUserId();
+            
+            // If not authenticated, redirect to login
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login");
+            }
+
+            try
+            {
+                // Fetch user data
+                var user = await _accountRepository.GetUserByIdAsync(userId);
+                
+                // Fetch orders 
+                var orders = await _accountRepository.GetUserOrdersAsync(userId);
+                
+                // Create view model with null checks
+                var model = new AccountViewModel
+                {
+                    User = user != null ? new MarketMinds.Shared.Models.UserDto(user) : new MarketMinds.Shared.Models.UserDto 
+                    {
+                        Id = userId,
+                        Username = User.Identity?.Name ?? "Unknown",
+                        Email = User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty,
+                        Balance = 0
+                    },
+                    Orders = orders ?? new List<MarketMinds.Shared.Models.UserOrder>()
+                };
+                
+                return View("~/Views/Home/Account.cshtml", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving account data for user {UserId}", userId);
+                
+                // Create fallback model with data from claims
+                var fallbackModel = new AccountViewModel
+                {
+                    User = new MarketMinds.Shared.Models.UserDto
+                    {
+                        Id = userId,
+                        Username = User.Identity?.Name ?? "Unknown",
+                        Email = User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty,
+                        Balance = 0
+                    },
+                    Orders = new List<MarketMinds.Shared.Models.UserOrder>()
+                };
+                
+                return View("~/Views/Home/Account.cshtml", fallbackModel);
+            }
         }
 
         // Helper method to sign in a user
