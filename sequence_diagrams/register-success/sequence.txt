@@ -1,0 +1,99 @@
+title User Registration Success Sequence
+actor User
+participant "MarketMinds.Web/Controllers/AccountController.cs" as WebAccountController
+participant "MarketMinds.Shared/Services/UserService/UserService.cs" as SharedUserService
+participant "MarketMinds.Shared/ProxyRepository/UserProxyRepository.cs" as SharedUserProxyRepository
+participant "server/Controllers/UsersController.cs" as ServerUsersController
+participant "server/MarketMinds/Repositories/UserRepository/UserRepository.cs" as UserRepository
+participant "server/DataAccessLayer/ApplicationDbContext.cs" as ServerApplicationDatabaseContext
+database "Database" as Database
+User -> WebAccountController : Enters registration details & submits Register(user)
+activate WebAccountController
+WebAccountController -> WebAccountController : ModelState.IsValid check
+
+WebAccountController -> SharedUserService : IsUsernameTakenAsync(user.Username)
+activate SharedUserService
+SharedUserService -> SharedUserProxyRepository : CheckUsernameRawAsync(username)
+activate SharedUserProxyRepository
+SharedUserProxyRepository -> ServerUsersController : GET api/users/check-username/{username}
+activate ServerUsersController
+ServerUsersController -> UserRepository : UsernameExistsAsync(username)
+activate UserRepository
+UserRepository -> ServerApplicationDatabaseContext : context.Users.AnyAsync(user => user.Username == username)
+activate ServerApplicationDatabaseContext
+ServerApplicationDatabaseContext -> Database : Query for username
+activate Database
+Database --> ServerApplicationDatabaseContext : Result (false - username not taken)
+deactivate Database
+ServerApplicationDatabaseContext --> UserRepository : false
+deactivate ServerApplicationDatabaseContext
+UserRepository --> ServerUsersController : false
+deactivate UserRepository
+ServerUsersController --> SharedUserProxyRepository : HTTP 200 OK (JSON: {"exists": false})
+deactivate ServerUsersController
+SharedUserProxyRepository --> SharedUserService : UsernameCheckResult (exists=false)
+deactivate SharedUserProxyRepository
+SharedUserService --> WebAccountController : false
+deactivate SharedUserService
+WebAccountController -> SharedUserService : RegisterUserAsync(user)
+activate SharedUserService
+SharedUserService -> SharedUserService : Validate user data
+SharedUserService -> SharedUserProxyRepository : RegisterUserRawAsync(registerRequest)
+activate SharedUserProxyRepository
+SharedUserProxyRepository -> ServerUsersController : POST /api/users/register (Body: registerRequest JSON)
+activate ServerUsersController
+ServerUsersController -> ServerUsersController : Validate request data
+ServerUsersController -> UserRepository : UsernameExistsAsync(request.Username)
+activate UserRepository
+UserRepository -> ServerApplicationDatabaseContext : context.Users.AnyAsync(u => u.Username == request.Username)
+activate ServerApplicationDatabaseContext
+ServerApplicationDatabaseContext -> Database : Query for username
+Database --> ServerApplicationDatabaseContext : Result (false - username not taken)
+deactivate Database
+ServerApplicationDatabaseContext --> UserRepository : false
+deactivate ServerApplicationDatabaseContext
+UserRepository --> ServerUsersController : false
+deactivate UserRepository
+ServerUsersController -> UserRepository : EmailExistsAsync(request.Email)
+activate UserRepository
+UserRepository -> ServerApplicationDatabaseContext : context.Users.AnyAsync(user => user.Email == request.Email)
+activate ServerApplicationDatabaseContext
+ServerApplicationDatabaseContext -> Database : Query for email
+activate Database
+Database --> ServerApplicationDatabaseContext : Result (false - email not taken)
+deactivate Database
+ServerApplicationDatabaseContext --> UserRepository : false
+deactivate ServerApplicationDatabaseContext
+UserRepository --> ServerUsersController : false
+deactivate UserRepository
+ServerUsersController -> ServerUsersController : HashPassword(request.Password)
+ServerUsersController -> UserRepository : RegisterUserAsync(request.Username, request.Email, hashedPassword)
+activate UserRepository
+UserRepository -> ServerApplicationDatabaseContext : context.Users.Add(user)
+activate ServerApplicationDatabaseContext
+ServerApplicationDatabaseContext -> Database : Insert new user
+activate Database
+Database --> ServerApplicationDatabaseContext : Success
+deactivate Database
+ServerApplicationDatabaseContext --> UserRepository : Success
+deactivate ServerApplicationDatabaseContext
+UserRepository -> ServerApplicationDatabaseContext : context.SaveChangesAsync()
+activate ServerApplicationDatabaseContext
+ServerApplicationDatabaseContext -> Database : Commit transaction
+activate Database
+Database --> ServerApplicationDatabaseContext : Success (userId generated)
+deactivate Database
+ServerApplicationDatabaseContext --> UserRepository : Success
+deactivate ServerApplicationDatabaseContext
+UserRepository --> ServerUsersController : userResponse 
+deactivate UserRepository
+ServerUsersController --> SharedUserProxyRepository : HTTP 201 Created (User JSON)
+deactivate ServerUsersController
+SharedUserProxyRepository --> SharedUserService : User object
+deactivate SharedUserProxyRepository
+SharedUserService --> WebAccountController : registeredUser
+deactivate SharedUserService
+WebAccountController -> WebAccountController : SignInUserAsync(registeredUser)
+note over WebAccountController : Creates claims and signs in user with cookie authentication
+WebAccountController --> User : RedirectToAction("Index", "Home")
+deactivate WebAccountController
