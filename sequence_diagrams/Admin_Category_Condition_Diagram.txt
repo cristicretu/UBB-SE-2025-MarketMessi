@@ -1,0 +1,100 @@
+title Admin Create Category and Conditions Sequence
+
+actor Admin
+
+participant "CategoryController\n(MarketMinds.Web)" as WebCatC
+participant "CategoryService (Client)\n(MarketMinds.Shared.Services)" as SharedCatS
+participant "CategoryProxyRepository\n(MarketMinds.Shared.ProxyRepository)" as SharedCatRP
+participant "CategoryController (Server)\n(server.Controllers)" as ServerCatC
+participant "CategoryRepository (Server)\n(server.MarketMinds.Repositories)" as ServerCatRP
+
+database "Database" as DB
+
+== Admin navigates to Create Category page ==
+Admin -> WebCatC : Navigates to category creation (GET /Category/Create)
+activate WebCatC
+
+WebCatC -> WebCatC : Prepare empty CategoryViewModel
+WebCatC --> Admin : Display category creation form
+deactivate WebCatC
+
+== Admin submits new category with conditions ==
+Admin -> WebCatC : Submits form with category data & conditions (POST)
+activate WebCatC
+
+WebCatC -> WebCatC : ValidateModelState()
+note right of WebCatC : Checks if all required fields are filled\nand data formats are correct
+
+alt Model validation fails
+    WebCatC -> WebCatC : Add validation errors to ModelState
+    WebCatC --> Admin : Return view with validation errors
+else Model validation passes
+    
+    WebCatC -> SharedCatS : CreateCategoryAsync(categoryViewModel)
+    activate SharedCatS
+    
+    SharedCatS -> SharedCatS : MapViewModelToEntity(categoryViewModel)
+    note right of SharedCatS : Converts form data to domain entity
+    
+    SharedCatS -> SharedCatRP : CreateCategoryAsync(categoryEntity)
+    activate SharedCatRP
+    
+    SharedCatRP -> ServerCatC : POST /api/Category (Body: category JSON)
+    activate ServerCatC
+    
+    ServerCatC -> ServerCatC : ValidateCategory(categoryFromRequest)
+    
+    ServerCatC -> ServerCatRP : CreateCategoryAsync(categoryEntity)
+    activate ServerCatRP
+    
+    ServerCatRP -> DB : Insert new Category with EF
+    activate DB
+    DB --> ServerCatRP : Category with generated ID
+    deactivate DB
+    
+    ServerCatRP --> ServerCatC : Category with ID
+    deactivate ServerCatRP
+    
+    ServerCatC --> SharedCatRP : HTTP 201 Created (Category JSON with ID)
+    deactivate ServerCatC
+    
+    SharedCatRP --> SharedCatS : Category with ID
+    deactivate SharedCatRP
+    
+    note right of SharedCatS : Now process each condition for this category
+    
+    loop For each condition in categoryViewModel.Conditions
+        SharedCatS -> SharedCatRP : CreateConditionAsync(condition, categoryId)
+        activate SharedCatRP
+        
+        SharedCatRP -> ServerCatC : POST /api/Category/{categoryId}/Conditions (Body: condition JSON)
+        activate ServerCatC
+        
+        ServerCatC -> ServerCatC : ValidateCondition(conditionFromRequest)
+        
+        ServerCatC -> ServerCatRP : CreateConditionAsync(conditionEntity, categoryId)
+        activate ServerCatRP
+        
+        ServerCatRP -> DB : Insert new Condition with EF
+        activate DB
+        DB --> ServerCatRP : Condition with generated ID
+        deactivate DB
+        
+        ServerCatRP --> ServerCatC : Condition with ID
+        deactivate ServerCatRP
+        
+        ServerCatC --> SharedCatRP : HTTP 201 Created (Condition JSON with ID)
+        deactivate ServerCatC
+        
+        SharedCatRP --> SharedCatS : Condition with ID
+        deactivate SharedCatRP
+    end
+    
+    SharedCatS --> WebCatC : Category created successfully
+    deactivate SharedCatS
+    
+    WebCatC -> WebCatC : TempData["SuccessMessage"] = "Category created successfully."
+    WebCatC --> Admin : RedirectToAction("Index", "Category") with success message
+end
+
+deactivate WebCatC
