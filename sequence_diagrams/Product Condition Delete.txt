@@ -1,0 +1,113 @@
+@startuml
+title Product Condition Deletion with Constraint Check
+
+actor User
+participant "ProductConditionController\n(Client)" as ClientController
+participant "ProductConditionService (Client)\n(SharedClassLibrary)" as ClientService
+participant "ProductConditionProxyRepository\n(SharedClassLibrary)" as ClientProxy
+participant "ProductConditionApiController (Server)\n(Server.Controllers)" as ServerAPI
+participant "ProductConditionService (Server)\n(SharedClassLibrary)" as ServerService
+participant "ProductConditionRepository (Server)\n(Server.Repository)" as ServerRepo
+database "Database" as DB
+
+== Successful Deletion ==
+User -> ClientController : Requests to delete condition\n(displayTitle)
+activate ClientController
+
+ClientController -> ClientService : DeleteProductCondition(displayTitle)
+activate ClientService
+
+ClientService -> ClientService : Validate displayTitle\n(check not empty)
+note right of ClientService : If invalid, throw here
+
+ClientService -> ClientProxy : DeleteProductConditionRaw(displayTitle)
+activate ClientProxy
+
+ClientProxy -> ServerAPI : DELETE /api/product-conditions/{displayTitle}
+activate ServerAPI
+
+ServerAPI -> ServerService : DeleteProductCondition(displayTitle)
+activate ServerService
+
+ServerService -> ServerRepo : DeleteProductCondition(displayTitle)
+activate ServerRepo
+
+ServerRepo -> DB : SELECT WHERE Name = displayTitle
+activate DB
+DB --> ServerRepo : Condition exists
+deactivate DB
+
+ServerRepo -> DB : DELETE condition
+activate DB
+DB --> ServerRepo : Success (no references)
+deactivate DB
+
+ServerRepo --> ServerService : Success
+deactivate ServerRepo
+
+ServerService --> ServerAPI : Success
+deactivate ServerService
+
+ServerAPI --> ClientProxy : HTTP 200 OK
+deactivate ServerAPI
+
+ClientProxy --> ClientService : Success
+deactivate ClientProxy
+
+ClientService --> ClientController : Success
+deactivate ClientService
+
+ClientController --> User : Show success message
+deactivate ClientController
+
+== Deletion with Foreign Key Constraint ==
+User -> ClientController : Requests to delete\nused condition
+activate ClientController
+
+ClientController -> ClientService : DeleteProductCondition(displayTitle)
+activate ClientService
+
+ClientService -> ClientProxy : DeleteProductConditionRaw(displayTitle)
+activate ClientProxy
+
+ClientProxy -> ServerAPI : DELETE /api/product-conditions/{displayTitle}
+activate ServerAPI
+
+ServerAPI -> ServerService : DeleteProductCondition(displayTitle)
+activate ServerService
+
+ServerService -> ServerRepo : DeleteProductCondition(displayTitle)
+activate ServerRepo
+
+ServerRepo -> DB : SELECT WHERE Name = displayTitle
+activate DB
+DB --> ServerRepo : Condition exists
+deactivate DB
+
+ServerRepo -> DB : DELETE condition
+activate DB
+DB --> ServerRepo : ERROR: Foreign key constraint
+deactivate DB
+
+ServerRepo --> ServerService : Throw DB exception
+deactivate ServerRepo
+
+ServerService --> ServerAPI : Propagate constraint error
+deactivate ServerService
+
+ServerAPI --> ClientProxy : HTTP 409 Conflict\nwith error details
+deactivate ServerAPI
+
+ClientProxy --> ClientService : Throw exception
+deactivate ClientProxy
+
+ClientService -> ClientService : Catch exception\nCheck for FK constraint
+note right of ClientService : ex.Message.Contains("REFERENCE constraint")
+
+ClientService --> ClientController : Throw "Condition in use" error
+deactivate ClientService
+
+ClientController -> ClientController : Show error message
+ClientController --> User : Display "Cannot delete - in use by products"
+deactivate ClientController
+@enduml
