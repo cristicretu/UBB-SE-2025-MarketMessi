@@ -4,55 +4,70 @@ title Auction Product Functionality Sequence
 actor User
 
 participant "AuctionProductsController\n(Web.Controllers)" as ClientAPIC
-participant "AuctionProductsController (Server)\n(Server.Controllers)" as ServerAPIC
-participant "AuctionProductsRepository (Server)\n(Server.Repository)" as ServerRepo
+participant "AuctionProductService\n(Shared.Services)" as ProductService
+participant "AuctionProductProxyRepository\n(Shared.ProxyRepository)" as ProxyRepo
+participant "ServerController\n(Server.Controllers)" as ServerAPIC
+participant "AuctionProductsRepository\n(Server.Repository)" as ServerRepo
 database "Database" as DB
 
 == User creates a new auction product ==
 
-User -> ClientAPIC : Fills form, submits new AuctionProduct (POST /api/AuctionProducts)
+User -> ClientAPIC : Fills form, submits new AuctionProduct
 activate ClientAPIC
 
-ClientAPIC -> ServerAPIC : HTTP POST /api/AuctionProducts (AuctionProduct JSON)
+ClientAPIC -> ClientAPIC : Validate ModelState
+ClientAPIC -> ClientAPIC : Process tags and images
+
+ClientAPIC -> ProductService : CreateAuctionProductAsync(auctionProduct)
+activate ProductService
+
+ProductService -> ProxyRepo : CreateListing(product)
+activate ProxyRepo
+
+ProxyRepo -> ProxyRepo : Validate product properties
+ProxyRepo -> ProxyRepo : Format data for API
+
+ProxyRepo -> ServerAPIC : HTTP POST /api/auctionproducts (JSON)
 activate ServerAPIC
 
-ServerAPIC -> ServerAPIC : InitializeDates(product), Validate input
-note right of ServerAPIC : Sets start/end dates, prices
+ServerAPIC -> ServerAPIC : Validate input
 
 ServerAPIC -> ServerRepo : AddProduct(product)
 activate ServerRepo
-ServerRepo -> DB : Insert AuctionProduct (EF/SQL)
+ServerRepo -> DB : Insert AuctionProduct
 activate DB
 DB --> ServerRepo : Product saved, new ProductId
 deactivate DB
 ServerRepo --> ServerAPIC : Product with new Id
 deactivate ServerRepo
 
-alt Product has images
-    ServerAPIC -> ServerAPIC : Assign ProductId to images
-    ServerAPIC -> ServerRepo : UpdateProduct(product with images)
-    activate ServerRepo
-    ServerRepo -> DB : Update AuctionProduct with images
-    activate DB
-    DB --> ServerRepo : Images saved
-    deactivate DB
-    ServerRepo --> ServerAPIC : Product updated
-    deactivate ServerRepo
-end
-
 ServerAPIC -> ServerAPIC : Map to AuctionProductDTO
-ServerAPIC --> ClientAPIC : HTTP 201 Created (AuctionProductDTO)
+ServerAPIC --> ProxyRepo : HTTP 201 Created (AuctionProductDTO)
 deactivate ServerAPIC
 
-ClientAPIC --> User : Show confirmation, new product details
+ProxyRepo --> ProductService : Return success
+deactivate ProxyRepo
+
+ProductService --> ClientAPIC : return result (boolean)
+deactivate ProductService
+
+ClientAPIC --> User : Redirect to Index (success) or show form with errors
 deactivate ClientAPIC
 
 == User retrieves auction product details ==
 
-User -> ClientAPIC : Requests product details (GET /api/AuctionProducts/{id})
+User -> ClientAPIC : Requests product details (id)
 activate ClientAPIC
-ClientAPIC -> ServerAPIC : HTTP GET /api/AuctionProducts/{id}
+
+ClientAPIC -> ProductService : GetAuctionProductByIdAsync(id)
+activate ProductService
+
+ProductService -> ProxyRepo : GetProductById(id)
+activate ProxyRepo
+
+ProxyRepo -> ServerAPIC : HTTP GET /api/auctionproducts/{id}
 activate ServerAPIC
+
 ServerAPIC -> ServerRepo : GetProductByID(id)
 activate ServerRepo
 ServerRepo -> DB : Query AuctionProduct by id
@@ -61,38 +76,93 @@ DB --> ServerRepo : AuctionProduct data
 deactivate DB
 ServerRepo --> ServerAPIC : AuctionProduct
 deactivate ServerRepo
+
 ServerAPIC -> ServerAPIC : Map to AuctionProductDTO
-ServerAPIC --> ClientAPIC : HTTP 200 OK (AuctionProductDTO)
+ServerAPIC --> ProxyRepo : HTTP 200 OK (AuctionProductDTO)
 deactivate ServerAPIC
-ClientAPIC --> User : Show product details
+
+ProxyRepo -> ProxyRepo : Deserialize JSON to AuctionProduct
+ProxyRepo --> ProductService : Return AuctionProduct
+deactivate ProxyRepo
+
+ProductService --> ClientAPIC : Return AuctionProduct
+deactivate ProductService
+
+ClientAPIC --> User : Show product details view
 deactivate ClientAPIC
 
 == User places a bid ==
 
-User -> ClientAPIC : Enters bid, submits (POST /api/AuctionProducts/{id}/bids)
+User -> ClientAPIC : Enters bid amount, submits
 activate ClientAPIC
-ClientAPIC -> ServerAPIC : HTTP POST /api/AuctionProducts/{id}/bids (CreateBidDTO)
+
+ClientAPIC -> ClientAPIC : Extract userId from claims
+note right of ClientAPIC: Validate user is logged in
+
+ClientAPIC -> ProductService : GetAuctionProductByIdAsync(id)
+activate ProductService
+ProductService -> ProxyRepo : GetProductById(id)
+activate ProxyRepo
+ProxyRepo -> ServerAPIC : HTTP GET /api/auctionproducts/{id}
 activate ServerAPIC
 ServerAPIC -> ServerRepo : GetProductByID(id)
 activate ServerRepo
-ServerRepo -> DB : Query AuctionProduct by id
+ServerRepo -> DB : Query by id
 activate DB
-DB --> ServerRepo : AuctionProduct (with Bids)
+DB --> ServerRepo : AuctionProduct
 deactivate DB
 ServerRepo --> ServerAPIC : AuctionProduct
 deactivate ServerRepo
-ServerAPIC -> ServerAPIC : Create Bid, add to product.Bids, update CurrentPrice
+ServerAPIC --> ProxyRepo : AuctionProduct
+deactivate ServerAPIC
+ProxyRepo --> ProductService : AuctionProduct
+deactivate ProxyRepo
+ProductService --> ClientAPIC : AuctionProduct
+deactivate ProductService
+
+ClientAPIC -> ClientAPIC : Validate bid amount > 0
+
+ClientAPIC -> ProductService : PlaceBidAsync(id, userId, bidAmount)
+activate ProductService
+
+ProductService -> ProxyRepo : PlaceBid(auction, bidder, bidAmount)
+activate ProxyRepo
+
+ProxyRepo -> ServerAPIC : HTTP POST /api/auctionproducts/{id}/bids
+activate ServerAPIC
+
+ServerAPIC -> ServerRepo : GetProductByID(id)
+activate ServerRepo
+ServerRepo -> DB : Query AuctionProduct
+activate DB
+DB --> ServerRepo : AuctionProduct with Bids
+deactivate DB
+ServerRepo --> ServerAPIC : AuctionProduct
+deactivate ServerRepo
+
+ServerAPIC -> ServerAPIC : Validate bid (amount > currentPrice, auction active)
+ServerAPIC -> ServerAPIC : Create new Bid, update currentPrice
+
 ServerAPIC -> ServerRepo : UpdateProduct(product)
 activate ServerRepo
-ServerRepo -> DB : Save updated AuctionProduct (with new Bid)
+ServerRepo -> DB : Update AuctionProduct with new Bid
 activate DB
 DB --> ServerRepo : Success
 deactivate DB
 ServerRepo --> ServerAPIC : Product updated
 deactivate ServerRepo
-ServerAPIC --> ClientAPIC : HTTP 200 OK (bid placed)
+
+ServerAPIC --> ProxyRepo : HTTP 200 OK (success)
 deactivate ServerAPIC
-ClientAPIC --> User : Show bid confirmation
+
+ProxyRepo --> ProductService : Return success
+deactivate ProxyRepo
+
+ProductService --> ClientAPIC : return success (boolean)
+deactivate ProductService
+
+ClientAPIC -> ClientAPIC : Set TempData success/error message
+ClientAPIC --> User : Redirect to Details with success/error message
 deactivate ClientAPIC
 
 @enduml
