@@ -1,0 +1,65 @@
+@startuml
+title Auction Bidding Process - MarketMessi
+
+actor "User" as User
+participant "Web Browser" as Browser
+participant "MVC AuctionProductsController" as WebController
+participant "AuctionProductService" as Service
+participant "AuctionProductsProxyRepository" as ProxyRepo
+participant "API AuctionProductsController" as ApiController
+participant "AuctionProductsRepository" as Repository
+participant "ApplicationDbContext" as DbContext
+database "SQL Database" as Database
+
+User -> Browser: Enter amount in bid field
+User -> Browser: Click "Place Bid" button
+Browser -> Browser: Validate bid amount (min value)
+Browser -> WebController: Submit bid form data
+
+WebController -> WebController: Validate form data
+WebController -> Service: Request to place bid with user ID and amount
+
+Service -> Service: Validate business rules
+note right of Service: Check if:\n- Bid > current price\n- User has enough balance\n- User isn't the seller\n- Auction is active
+
+Service -> ProxyRepo: Send bid to server API
+ProxyRepo -> ApiController: Forward bid request to API
+
+ApiController -> Repository: Request auction by ID
+Repository -> DbContext: Query for auction with relevant data
+DbContext -> Database: Execute database query
+Database --> DbContext: Return auction data
+DbContext --> Repository: Return populated auction object
+Repository --> ApiController: Send auction to controller
+
+ApiController -> ApiController: Verify auction exists and is active
+
+ApiController -> ApiController: Create bid record with user ID, amount and timestamp
+note right of ApiController: Create a new bid record
+
+ApiController -> ApiController: Associate bid with auction
+note right of ApiController: Link bid to auction
+
+ApiController -> ApiController: Update auction's current price
+note right of ApiController: Set price to new bid amount
+
+ApiController -> Repository: Save updated auction
+Repository -> DbContext: Add changes to context
+DbContext -> Database: Open database transaction
+DbContext -> Database: Save changes
+Database --> DbContext: Confirm changes saved
+DbContext -> Database: Commit transaction
+Database --> DbContext: Confirm transaction complete
+DbContext --> Repository: Report successful save
+Repository --> ApiController: Confirm auction updated
+
+ApiController --> ProxyRepo: Send success confirmation
+ProxyRepo --> Service: Report bid accepted
+Service --> WebController: Confirm successful bid
+WebController --> Browser: Direct to auction details page
+Browser --> User: Display auction with updated bid history
+@enduml
+
+--------------------------------------
+planetUML link:
+https://editor.plantuml.com/uml/ZLN1RYCt3BthAmXVjWMQ7_1XiLcd1HROeDaQII-zo3EqhKOZQKNAYV--rCGQpNXWkoTBydjy9FMe-KAi8wVEAZPi4UvJmyOx-6hQrhWTF4NV817SmQEEhyYFiZ5AwOPzXCKpOLo09iWB5IIIQKpGZc7nDsxWQ_Hl1P7NCz3ZoweeYb0hArfvnz5RUw99c79oJfuIrnWFfi6UT5fVWvFylX__mk39I2d7dZUSdJ6Vljt8yZwO_vSbdIdMxHah16iQdPaFVGFmdNl2i5EjPhtHXB1O__WE3wTT3oeRfVAzmDtdqlqb_2xa2BhpIMICWurfOMlGjdFeIZ9uXSMJrGrcFonWavYzKnbn3dxHraX6c0EMyBzq8d3GDk6lOyxuIeMvJflEy4SYFdQGwr9g39gpgbxbp2Z51alfyi-4nC0UGgwc5tipl8UKS_hs0DgLh9KwqIOHQdc9Z4CYYCaYAUVbB9hTdi5lAtorHscTsIx_SNUvTV0PcXGZEeOG1P6F-txlDG4wdtPxs6YhtUWlG-uJ0-yH27D5-OyodOP0o-g0usohVQMfwDfSPIwP184HnCLgG0XyQjeb_E7ZcuuVh5WRbcbg0itSwjlQNNrARdEKZggA47orxH9-99GpkRQ1qDz4H8k7xFt-BWTy9XSxYtlViKcCC7Z_Pmwc2W3knb8vCqxH5PrPv6aT1HryI5OpjWFFR_x5XYSLpTid7QyCzj0C_ytQD-E-O3JRuy36TqDCsPFrecy7MKKiynUnyN7gyD_AKEQeR3earbsO-lT2H0qEtqPnRwToJ-GRexaEMgdjkk1turwBQmlXfjXpo8DPy9zeEcdN1TTuWebYgVBKg1kcN-i3GWhjs2YNFN_Vjj3ijTiX5M_8-IMN_ndGLOjpr8vqBt29a9CfyIyEWoos9dP37YIaza940NUTuR7shRXZh1JO1OkCLwSj-CX0gMcGQ9jidz3r8IjQfU7b0cPtDNyCYn0q7o5qve_Vm_hQ3xdrPX1M48dwpfPlqJohMakcdd-Fnb_B1nEnuP7DeKNMnX84lSFwiHJEyub0mUhZvCairVTvxWtbfgalKclghFeF
